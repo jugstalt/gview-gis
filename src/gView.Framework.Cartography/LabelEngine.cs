@@ -1,4 +1,4 @@
-#nullable enable
+﻿#nullable enable
 
 using gView.Framework.Cartography.Extensions;
 using gView.Framework.Core.Carto;
@@ -251,7 +251,7 @@ internal class LabelEngine2 : ILabelEngine, IDisposable
 
                 if (minx > _bitmap.Width || maxx <= 0 || miny > _bitmap.Height || maxy <= 0)
                 {
-                    continue;  // liegt au�erhalb!!
+                    continue;  // liegt außerhalb!!
                 }
 
                 outside = false;
@@ -327,6 +327,33 @@ internal class LabelEngine2 : ILabelEngine, IDisposable
         }
 
         return LabelAppendResult.Succeeded;
+    }
+
+    public void AddBlockingGeometry(IDisplay display, IGeometry? geometry)
+    {
+        if (geometry is null) return;
+
+        if (display.GeometricTransformer != null && !(geometry is IDisplayPath))
+        {
+            geometry = display.GeometricTransformer.Transform2D(geometry) as IGeometry;
+            if (geometry == null)
+            {
+                return;
+            }
+        }
+
+        IAnnotationPolygonCollision? appendPolygon = null;
+
+        if (geometry is IPoint point)
+        {
+            (double x, double y) = (point.X, point.Y);
+            display.World2Image(ref x, ref y);
+
+            appendPolygon = new AnnotationPolygon((float)x-100f, (float)y-100f, 200f, 200f);
+
+            List<IAnnotationPolygonCollision> indexedPolygons = GetGrid(display, GlobalGridId)[appendPolygon.Envelope.ToEnvelope()];
+            indexedPolygons.Add(appendPolygon);
+        }
     }
 
     public void Draw(IDisplay display, ICancelTracker cancelTracker)

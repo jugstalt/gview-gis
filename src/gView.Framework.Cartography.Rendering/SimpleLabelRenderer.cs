@@ -828,22 +828,29 @@ namespace gView.Framework.Cartography.Rendering
         {
             get
             {
-                switch (_labelPriority)
-                {
-                    case RenderLabelPriority.Always:
-                        return 0;
-                    case RenderLabelPriority.High:
-                        return 100;
-                    case RenderLabelPriority.Normal:
-                        return 0;
-                    case RenderLabelPriority.Low:
-                        return -100;
-                }
-                return 0;
+                return ToPriorty(_labelPriority);
             }
         }
 
         #endregion
+
+        static public int ToPriorty(RenderLabelPriority labelPriority)
+        {
+            // to never change this values
+            // it is also used with FeatureLabelPriorty and stored there as integers
+            switch (labelPriority)
+            {
+                case RenderLabelPriority.Always:
+                    return 0;
+                case RenderLabelPriority.High:
+                    return 100;
+                case RenderLabelPriority.Normal:
+                    return 0;
+                case RenderLabelPriority.Low:
+                    return -100;
+            }
+            return 0;
+        } 
 
         #region IRenderer Member
 

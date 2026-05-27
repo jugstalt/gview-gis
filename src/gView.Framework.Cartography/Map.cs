@@ -19,7 +19,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace gView.Framework.Cartography
 {
@@ -313,31 +312,20 @@ namespace gView.Framework.Cartography
             //
             // Die zu labelden layer ermittel
             //
-            List<IFeatureLayer> labelLayers = new List<IFeatureLayer>();
-            foreach (ILayer layer in layers)
+            List<IFeatureLayer> labelLayers = new();
+
+            foreach (ILayer layer in layers.Where(l => l is IFeatureLayer))
             {
-                if (!(layer is IFeatureLayer))
-                {
-                    continue;
-                }
-
-                if (!layer.LabelInScale(this))
-                {
-                    continue;
-                }
-
                 IFeatureLayer fLayer = (IFeatureLayer)layer;
-                if (fLayer.LabelRenderer == null)
-                {
-                    continue;
-                }
 
-                if (fLayer.LabelRenderer.RenderMode == LabelRenderMode.RenderWithFeature)
+                if (fLayer.LabelRenderer is not null)
                 {
-                    continue;
+                    if (fLayer.LabelInScale(this) 
+                        && fLayer.LabelRenderer.RenderMode != LabelRenderMode.RenderWithFeature)
+                    {
+                        labelLayers.Add(fLayer);
+                    }
                 }
-
-                labelLayers.Add(fLayer);
             }
             labelLayers = ListOperations<IFeatureLayer>.Swap(labelLayers);
             labelLayers = ListOperations<IFeatureLayer>.Sort(labelLayers, new LabelLayersPrioritySorter());
@@ -358,6 +346,7 @@ namespace gView.Framework.Cartography
 
                 IPriority p1 = x.LabelRenderer as IPriority;
                 IPriority p2 = y.LabelRenderer as IPriority;
+
                 if (p1 == null || p2 == null)
                 {
                     return 0;

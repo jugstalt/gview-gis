@@ -303,6 +303,11 @@ namespace gView.Framework.Cartography.LayerRenderers
 
                                 renderer.Draw(_map, feature);
 
+                                if (layer.FeatureLabelPriority.HasValue)
+                                {
+                                    _map.LabelEngine.AddBlockingGeometry(_map.Display, feature.Shape);
+                                }
+
                                 if (labelRenderer != null)
                                 {
                                     labelRenderer.Draw(_map, layer, feature);

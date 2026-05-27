@@ -1,4 +1,4 @@
-@inject PluginManagerService PluginManager
+﻿@inject PluginManagerService PluginManager
 @inject ICartoApplicationScopeService AppScope
 @inherits BaseHandler
 
@@ -10,6 +10,9 @@
                          Value="@(Layer?.LabelRenderer is not null)"
                          ValueChanged="(chk) => LabelFeaturesChecked(chk)"
                          Label="Label features for this layer" />
+
+            
+
             @if (Layer?.LabelRenderer is not null)
             {
                 <GvCard Title="Label Renderers">
@@ -29,6 +32,36 @@
                     </GvCardContentNoPadding>
                 </GvCard>
             }
+
+            @if (Layer is not null)
+            {
+                <GvCard Title="Feature Priorty">
+                    <GvCardContent>
+						<MudSelect T="int?" Label="Consider Features for labeling"
+								   @bind-Value="Layer.FeatureLabelPriority">
+							<MudSelectItem Value="(int?)null">None</MudSelectItem>
+							<MudSelectItem Value="(int?)SimpleLabelRenderer.ToPriorty(SimpleLabelRenderer.RenderLabelPriority.Low)">Low</MudSelectItem>
+							<MudSelectItem Value="(int?)SimpleLabelRenderer.ToPriorty(SimpleLabelRenderer.RenderLabelPriority.Normal)">Normal</MudSelectItem>
+							<MudSelectItem Value="(int?)SimpleLabelRenderer.ToPriorty(SimpleLabelRenderer.RenderLabelPriority.High)">High</MudSelectItem>
+						</MudSelect>
+                        @if (Layer.FeatureLabelPriority.HasValue)
+                        {
+                            <MudAlert Severity="Severity.Info" Variant="Variant.Text" Dense NoIcon>
+                                This setting can be used to prevent labels from overlapping with the 
+                                geometries of this layer.
+
+                                If this value is not None, the feature geometry will also be included 
+                                in overlap detection during labeling. Only set this value when necessary, 
+                                as it may negatively impact performance.
+
+                                This value is also taken into account even if the layer itself is not labeled.
+                            </MudAlert>
+                        }
+                    </GvCardContent>
+					
+                </GvCard>
+            }
+
             <GvCard Title="Copy From">
                 <MudList Dense="true" T="string"
                          Style="padding:0px">

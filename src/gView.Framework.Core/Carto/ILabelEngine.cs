@@ -11,6 +11,7 @@ namespace gView.Framework.Core.Carto
         void Init(IDisplay display, bool directDraw);
         LabelAppendResult TryAppend(IDisplay display, IFeatureLayer layer, ITextSymbol symbol, IGeometry geometry, bool chechForOverlap);
         LabelAppendResult TryAppend(IDisplay display, IFeatureLayer layer, List<IAnnotationPolygonCollision> aPolygons, IGeometry geometry, bool checkForOverlap);
+        void AddBlockingGeometry(IDisplay display, IGeometry? geometry);
         void Draw(IDisplay display, ICancelTracker cancelTracker);
         void Release();
 
