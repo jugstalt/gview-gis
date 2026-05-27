@@ -11,17 +11,15 @@ using gView.Framework.Core.UI;
 using gView.Framework.Data;
 using gView.Framework.Data.Extensions;
 using gView.Framework.Geometry;
-using gView.Framework.Geometry.Extensions;
-using gView.Framework.Geometry.Proj;
 using gView.Framework.IO;
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace gView.Framework.Cartography
 {
@@ -99,7 +97,7 @@ namespace gView.Framework.Cartography
             _layerDescriptions = original._layerDescriptions;
             _layerCopyrightTexts = original._layerCopyrightTexts;
 
-            MapServiceProperties = 
+            MapServiceProperties =
                 original.MapServiceProperties?.Clone()
                 ?? new MapServiceProperties();
 
@@ -533,7 +531,7 @@ namespace gView.Framework.Cartography
 
             foreach (ILayer layer in _layers)
             {
-                if(_toc.GetTOCElement(layer) == null)
+                if (_toc.GetTOCElement(layer) == null)
                 {
                     continue;
                 }
@@ -814,7 +812,7 @@ namespace gView.Framework.Cartography
             }
 
             // also remove von grouplayers
-            foreach(var groupLayer in _layers.Where(l => l is IGroupLayer)
+            foreach (var groupLayer in _layers.Where(l => l is IGroupLayer)
                                              .Select(l => (IGroupLayer)l))
             {
                 groupLayer.TryRemoveLayer(layer);
@@ -1100,7 +1098,7 @@ namespace gView.Framework.Cartography
             // there was a typo in "WebMercatorScaleBehavior" in some legacy files...
             // so check the old name first:
             var legacyTypoWebMercatorBehavior = (int)stream.Load("WebMercatorScaleBehavoir", -99);
-            WebMercatorScaleBehavior = legacyTypoWebMercatorBehavior == -99 
+            WebMercatorScaleBehavior = legacyTypoWebMercatorBehavior == -99
                 ? (WebMercatorScaleBehavior)stream.Load("WebMercatorScaleBehavior", (int)WebMercatorScaleBehavior.Default)
                 : (WebMercatorScaleBehavior)legacyTypoWebMercatorBehavior;
 

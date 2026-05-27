@@ -11,14 +11,14 @@ namespace gView.DataSources.Unknown;
 /// </summary>
 public class UnknownFeatureClass : FeatureClass
 {
-    private readonly IDataset _dadtaset;
+    private readonly IDataset _dataset;
     public UnknownFeatureClass(IDataset dataset, string name)
     {
         Name = name;
         GeometryType = Framework.Core.Geometry.GeometryType.Aggregate;
 
-        _dadtaset = dataset;
+        _dataset = dataset;
     }
 
-    public override IDataset Dataset => _dadtaset;
+    public override IDataset Dataset => _dataset;
 }

@@ -46,11 +46,18 @@ internal class LayerSettings : ICartoButtonWithSubItems
         {
             yield return new((int)LayerSettingsDialog.Page.Filter, "Filter", "basic:filter");
         }
+        
+        if (layer?.IsRasterLayer() == true)
+        {
+            yield return new((int)LayerSettingsDialog.Page.Raster, "Raster Settings", "basic:drop-50");
+        }
 
         if(layer?.HasDataSource() == true)
         {
             yield return new((int)LayerSettingsDialog.Page.Source, "Source", "basic:database");
         }
+
+        yield return new((int)LayerSettingsDialog.Page.Description, "Description & (c)", "basic:copyright");
     }
 
     public void Dispose()
@@ -123,6 +130,7 @@ internal class LayerSettings : ICartoButtonWithSubItems
             clonedSelection.SelectionSet = originalSelection.SelectionSet;
         }
 
+        originalLayer.DatasetID = clonedLayer.DatasetID;
         originalMap.ReplaceLayer(originalLayer, clonedLayer);
 
         #region Description

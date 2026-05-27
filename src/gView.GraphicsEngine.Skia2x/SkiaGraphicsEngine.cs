@@ -22,7 +22,9 @@ namespace gView.GraphicsEngine.Skia
 
         #region IGraphicsEngine
 
-        public string EngineName => "SkiaSharp 2.x";
+        public string EngineName => "SkiaSharp";
+
+        public string EngineDisplayName => "SkiaSharp 2.x";
 
         public float ScreenDpi { get; }
 

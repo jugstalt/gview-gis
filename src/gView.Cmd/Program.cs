@@ -4,6 +4,7 @@ using gView.Cmd.Services;
 using gView.Framework.Common;
 using Microsoft.Extensions.DependencyInjection;
 
+SystemInfo.RegisterApplicationEnvironment(SystemInfo.App.Command);
 SystemInfo.RegisterGdal1_10_PluginEnvironment();
 SystemInfo.RegisterProj4Lib(gView.Framework.Geometry.GeometricTransformerFactory.PROJ_LIB);
 

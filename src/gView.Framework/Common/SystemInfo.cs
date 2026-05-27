@@ -1,6 +1,7 @@
 ﻿using gView.GraphicsEngine.GdiPlus;
 using gView.GraphicsEngine.Skia;
 using System;
+using System.Data;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
@@ -10,7 +11,7 @@ namespace gView.Framework.Common
 {
     public class SystemInfo
     {
-        public static Version Version = new Version(8, 26, 2101);
+        public static Version Version = new Version(8, 26, 2202);
 
         #region -> Private Variables
 
@@ -33,6 +34,13 @@ namespace gView.Framework.Common
         static public bool IsLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
         static public bool IsWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
         static public bool IsOSX = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
+
+        static public App CurrentApp { get; private set; }
+
+        static public void RegisterApplicationEnvironment(App currentApp)
+        {
+            CurrentApp = currentApp;
+        }
 
         static public void RegisterGdal1_10_PluginEnvironment()
         {
@@ -89,6 +97,17 @@ namespace gView.Framework.Common
                 set { serialNo = value; }
             }
         }
+        #endregion
+
+        #region Enums
+
+        public enum App 
+        {
+            Server = 0,
+            WebApps = 1,
+            Command = 2,
+        }
+
         #endregion
     }
 }

@@ -19,6 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\gView.DataSources.Unknown\gView.DataSources.Unknown.csproj" />
     <ProjectReference Include="..\gView.Framework.Core\gView.Framework.Core.csproj" />
     <ProjectReference Include="..\gView.Framework.Data\gView.Framework.Data.csproj" />
     <ProjectReference Include="..\gView.Framework.Geometry\gView.Framework.Geometry.csproj" />

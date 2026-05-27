@@ -87,7 +87,9 @@ else
                                                     } 
                                                     else
                                                     {
-                                                        <MudText @ondblclick="() => StartEditLayerName((TocTreeNode)context)">
+                                                        <MudText 
+                                                            Color="@(context.Value?.Layers.Any(l => l.IsInvalidLayer()) == true ? Color.Error : Color.Default)"
+                                                            @ondblclick="() => StartEditLayerName((TocTreeNode)context)">
                                                             @context.Text
                                                         </MudText>
                                                     }
