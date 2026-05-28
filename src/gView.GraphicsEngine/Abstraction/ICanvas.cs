@@ -62,6 +62,7 @@ namespace gView.GraphicsEngine.Abstraction
         void FillPie(IBrush brush, CanvasRectangle rect, float startAngle, float sweepAngle);
 
         CanvasSizeF MeasureText(string text, IFont font);
+        float GetBaselineOffest(IFont font, string text, IDrawTextFormat? format);
 
         IDisplayCharacterRanges DisplayCharacterRanges(IFont font, IDrawTextFormat format, string text);
 

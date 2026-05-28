@@ -78,27 +78,26 @@ namespace gView.Framework.Data
 
         public List<int> XYIndices(IEnvelope env)
         {
-            List<int> ret = new List<int>();
+            // Compute the cell range the envelope covers and return every cell index
+            // in that range. The old corner-only approach missed intermediate cells
+            // when the envelope spanned more than 2 cells in either direction.
+            int ixMin = (int)Math.Floor((env.MinX - _bounds.MinX) / _cX);
+            int ixMax = (int)Math.Floor((env.MaxX - _bounds.MinX) / _cX);
+            int iyMin = (int)Math.Floor((env.MinY - _bounds.MinY) / _cY);
+            int iyMax = (int)Math.Floor((env.MaxY - _bounds.MinY) / _cY);
 
-            int i = XYIndex(new Point(env.MinX, env.MinY));
-            ret.Add(i);
+            ixMin = Math.Clamp(ixMin, 0, _cellsX - 1);
+            ixMax = Math.Clamp(ixMax, 0, _cellsX - 1);
+            iyMin = Math.Clamp(iyMin, 0, _cellsY - 1);
+            iyMax = Math.Clamp(iyMax, 0, _cellsY - 1);
 
-            i = XYIndex(new Point(env.MinX, env.MaxY));
-            if (!ret.Contains(i))
+            var ret = new List<int>((ixMax - ixMin + 1) * (iyMax - iyMin + 1));
+            for (int iy = iyMin; iy <= iyMax; iy++)
             {
-                ret.Add(i);
-            }
-
-            i = XYIndex(new Point(env.MaxX, env.MaxY));
-            if (!ret.Contains(i))
-            {
-                ret.Add(i);
-            }
-
-            i = XYIndex(new Point(env.MaxX, env.MinY));
-            if (!ret.Contains(i))
-            {
-                ret.Add(i);
+                for (int ix = ixMin; ix <= ixMax; ix++)
+                {
+                    ret.Add(iy * _cellsX + ix);
+                }
             }
 
             return ret;

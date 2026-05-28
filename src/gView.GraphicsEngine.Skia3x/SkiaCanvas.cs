@@ -302,12 +302,17 @@ class SkiaCanvas : ICanvas
 
         if (text.IsMultiline())
         {
-            var fontHeight = font.Size.FontSizePointsToPixels();
+            //var fontHeight = font.Size.FontSizePointsToPixels();
+
+            var skFont = GetSKFont(font);
+            // https://github.com/mono/SkiaSharp/issues/1147
+            var lineHeight = skFont.Metrics.CapHeight + skFont.Metrics.Descent;
+
             foreach (var line in text.GetLines())
             {
-                GetSKFont(font).MeasureText(line, out bounds);
+                skFont.MeasureText(line, out bounds);
                 size.Width = Math.Max(size.Width, bounds.Width);
-                size.Height += fontHeight;
+                size.Height += lineHeight;
             }
         }
         else
@@ -323,6 +328,32 @@ class SkiaCanvas : ICanvas
         }
 
         return size;
+    }
+
+    public float GetBaselineOffest(IFont font, string text, IDrawTextFormat? format)
+    {
+        if (format is null) return 0;
+
+        var skFont = GetSKFont(font);
+
+        var far = -skFont.Metrics.Bottom; 
+        var near = -skFont.Metrics.Top; 
+
+        var offset = 0f;
+        switch (format.LineAlignment)
+        {
+            case StringAlignment.Far:
+                offset += far;
+                break;
+            case StringAlignment.Center:
+                offset += 0f; //(far + near) * .5f;
+                break;
+            case StringAlignment.Near:
+                offset += -far; // near;
+                break;
+        }
+
+        return offset;
     }
 
     public void ResetTransform()
@@ -431,54 +462,36 @@ class SkiaCanvas : ICanvas
         {
             var skAlignment = (SKTextAlign)format.EngineElement;
 
-            //skPaint.TextAlign = skAlignment;
-            //if(format.LineAlignment != StringAlignment.Far)
+            var far = -skFont.Metrics.Bottom; // -skPaint.FontMetrics.Bottom /*- height * 0.00f*/;
+            var near = -skFont.Metrics.Top; // -skPaint.FontMetrics.Top;
+            // https://github.com/mono/SkiaSharp/issues/1147
+            var lineHeight = skFont.Metrics.CapHeight + skFont.Metrics.Descent;
+
+            switch (format.LineAlignment)
             {
-                //var height = font.Size.FontSizePointsToPixels() * 0.72f; //this.MeasureText("X", font).Height;
-                //switch(format.LineAlignment)
-                //{
-                //    case StringAlignment.Center:
-                //        point.Y += skPaint.FontMetrics != null ? skPaint.FontMetrics.XHeight / 2f : height / 2.5f;
-                //        break;
-                //    case StringAlignment.Near:
-                //        point.Y += skPaint.FontMetrics != null ? skPaint.FontMetrics.CapHeight : height;
-                //        break;
-                //}
+                case StringAlignment.Far:
+                    point.Y += far;
 
-                //var capHeight = skPaint.FontMetrics != null ? skPaint.FontMetrics.CapHeight : height * 0.75f;
+                    var span = text.AsSpan();
+                    if (span.IsMultiline())
+                    {
+                        point.Y -= (span.LinesCount() - 1) * (lineHeight);
+                    }
+                    break;
+                case StringAlignment.Center:
+                    point.Y += (far + near) * .5f;
 
-
-                var far = -skFont.Metrics.Bottom; // -skPaint.FontMetrics.Bottom /*- height * 0.00f*/;
-                var near = -skFont.Metrics.Top; // -skPaint.FontMetrics.Top;
-
-                switch (format.LineAlignment)
-                {
-                    case StringAlignment.Far:
-                        point.Y += far;
-
-                        var span = text.AsSpan();
-                        if (span.IsMultiline())
-                        {
-                            point.Y += (span.LinesCount() - 1) * (skFont.Metrics.Ascent /*skPaint.FontMetrics.Ascent*/);
-                        }
-
-                        break;
-                    case StringAlignment.Center:
-                        point.Y += (far + near) * .5f;
-
-                        var span2 = text.AsSpan();
-                        if (span2.IsMultiline())
-                        {
-                            point.Y += (span2.LinesCount() - 1) * (skFont.Metrics.Ascent /*skPaint.FontMetrics.Ascent*/) * .5f;
-                        }
-
-                        //point.Y = this.MeasureText(text, font).Height;
-                        break;
-                    case StringAlignment.Near:
-                        point.Y += near;
-                        break;
-                }
+                    var span2 = text.AsSpan();
+                    if (span2.IsMultiline())
+                    {
+                        point.Y -= (span2.LinesCount() - 1) * (lineHeight) * .5f;
+                    }
+                    break;
+                case StringAlignment.Near:
+                    point.Y += near;
+                    break;
             }
+
         }
 
         return skPaint;
@@ -492,13 +505,16 @@ class SkiaCanvas : ICanvas
 
         if (text.Contains("\n"))
         {
+            // https://github.com/mono/SkiaSharp/issues/1147
+            var lineHeight = skFont.Metrics.CapHeight + skFont.Metrics.Descent;
+
             String[] lines = text.Replace("\r", "").Split('\n');
 
             foreach (var line in lines)
             {
                 DrawText(line, point.X, point.Y, skPaint, skFont, font, format);
 
-                point.Y += skFont.Size;
+                point.Y += lineHeight;
             }
         }
         else
@@ -515,13 +531,16 @@ class SkiaCanvas : ICanvas
 
         if (text.Contains("\n"))
         {
+            // https://github.com/mono/SkiaSharp/issues/1147
+            var lineHeight = skFont.Metrics.CapHeight + skFont.Metrics.Descent;
+
             String[] lines = text.Replace("\r", "").Split('\n');
 
             foreach (var line in lines)
             {
                 DrawText(line, x, y, skPaint, skFont, font, format);
 
-                y += skFont.Size; // skPaint.TextSize;
+                y += lineHeight;
             }
         }
         else
@@ -533,11 +552,11 @@ class SkiaCanvas : ICanvas
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void DrawText(string text, float x, float y, SKPaint skPaint, SKFont skFont, IFont font, IDrawTextFormat? format = null)
     {
-        if(_canvas is null) { return; }
+        if (_canvas is null) { return; }
 
         font.LockObject.InterLock(() =>
-            _canvas?.DrawText(text, x, y, 
-                format?.Alignment.ToSkTextAlign() ?? SKTextAlign.Left, 
+            _canvas?.DrawText(text, x, y,
+                format?.Alignment.ToSkTextAlign() ?? SKTextAlign.Left,
                 skFont, skPaint)
         );
 

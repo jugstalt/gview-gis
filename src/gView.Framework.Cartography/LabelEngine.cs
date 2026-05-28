@@ -1,5 +1,7 @@
 ﻿#nullable enable
 
+//#define RENDER_COLLITION_POLYGONS
+
 using gView.Framework.Cartography.Extensions;
 using gView.Framework.Core.Carto;
 using gView.Framework.Core.Common;
@@ -28,6 +30,7 @@ internal class LabelEngine2 : ILabelEngine, IDisposable
     private GraphicsEngine.ArgbColor _back;
     private bool _first = true, _directDraw = false;
     private Dictionary<int, GridArray<List<IAnnotationPolygonCollision>>> _gridArrayPolygonsDict = new();
+    private Dictionary<RenderLabelPriority, List<IAnnotationPolygonCollision>> _pendingBlockingPolygons = new();
 
     public LabelEngine2()
     {
@@ -47,6 +50,7 @@ internal class LabelEngine2 : ILabelEngine, IDisposable
             _bitmap = null;
         }
         _gridArrayPolygonsDict.Clear();
+        _pendingBlockingPolygons.Clear();
     }
 
     #region ILabelEngine Member
@@ -137,11 +141,15 @@ internal class LabelEngine2 : ILabelEngine, IDisposable
                 #region Check with all existing labels
 
                 var labelPolygons = symbol.AnnotationPolygon(display, geometry, symbolAlignment) ?? [];
-                
+                if(labelPolygons.Count == 0)  // no polygons: sometimes curved texts can't be solved: self overlapping, etc
+                {
+                    labelAppendResult = LabelAppendResult.WrongArguments;
+                }
+
                 foreach (var labelPolygon in labelPolygons)
                 {
                     labelAppendResult = AppendResult(display, GlobalGridId, symbol, labelPolygon, checkForOverlap, symbolAlignment);
-                    if(labelAppendResult == LabelAppendResult.Succeeded)
+                    if (labelAppendResult == LabelAppendResult.Succeeded)
                     {
                         appendPolygon = labelPolygon;
                         break;
@@ -154,7 +162,8 @@ internal class LabelEngine2 : ILabelEngine, IDisposable
 
                 if (symbol is ISymbolSpacing spacing
                     && spacing.SymbolSpacingType != SymbolSpacingType.None
-                    && (spacing.SymbolSpacingX > 0f || spacing.SymbolSpacingY > 0f))
+                    && (spacing.SymbolSpacingX > 0f || spacing.SymbolSpacingY > 0f)
+                    && labelPolygons.Count > 0)
                 {
                     //
                     // Symbolspacing: Check if other features of this layers are close
@@ -162,7 +171,7 @@ internal class LabelEngine2 : ILabelEngine, IDisposable
                     var labelPolygonsWithSpacing = labelPolygons
                         .Select(p => p.WithSpacing(
                                             spacing.SymbolSpacingType,
-                                            spacing.SymbolSpacingX, 
+                                            spacing.SymbolSpacingX,
                                             spacing.SymbolSpacingY
                                         )
                         )
@@ -197,12 +206,18 @@ internal class LabelEngine2 : ILabelEngine, IDisposable
             if (appendPolygon != null)
             {
                 List<IAnnotationPolygonCollision> indexedPolygons = GetGrid(display, GlobalGridId)[appendPolygon.Envelope.ToEnvelope()];
+#if DEBUG && RENDER_COLLITION_POLYGONS
+                DrawAnnotationPolyon(display, appendPolygon);
+#endif
                 indexedPolygons.Add(appendPolygon);
             }
 
             if (appendPolygonWithSpacing != null)
             {
                 List<IAnnotationPolygonCollision> indexedPolygons = GetGrid(display, layer.ID)[appendPolygonWithSpacing.Envelope.ToEnvelope()];
+#if DEBUG && RENDER_COLLITION_POLYGONS
+                DrawAnnotationPolyon(display, appendPolygonWithSpacing);
+#endif
                 indexedPolygons.Add(appendPolygonWithSpacing);
             }
 
@@ -258,44 +273,16 @@ internal class LabelEngine2 : ILabelEngine, IDisposable
 
                 if (!_first && checkForOverlap)
                 {
-                    //if (Algorithm == OverlapAlgorirthm.Pixel)
-                    //{
-                    //    #region Pixel Methode
-
-                    //    for (int x = minx; x < maxx; x++)
-                    //    {
-                    //        for (int y = miny; y < maxy; y++)
-                    //        {
-                    //            //if (x < 0 || x >= _bm.Width || y < 0 || y >= _bm.Height) continue;
-
-                    //            if (polyCollision.Contains(x, y))
-                    //            {
-                    //                //_bm.SetPixel(x, y, Color.Yellow);
-                    //                if (!_back.Equals(_bitmap.GetPixel(x, y)))
-                    //                {
-                    //                    return LabelAppendResult.Overlap;
-                    //                }
-                    //            }
-                    //        }
-                    //    }
-
-                    //    #endregion
-                    //}
-                    //else
+                    labelPolyon = polyCollision;
+                    foreach (List<IAnnotationPolygonCollision> indexedPolygons in GetGrid(display).Collect(new Envelope(env.MinX, env.MinY, env.MaxX, env.MaxY)))
                     {
-                        #region Geometrie Methode
-                        labelPolyon = polyCollision;
-                        foreach (List<IAnnotationPolygonCollision> indexedPolygons in GetGrid(display).Collect(new Envelope(env.MinX, env.MinY, env.MaxX, env.MaxY)))
+                        foreach (IAnnotationPolygonCollision lp in indexedPolygons)
                         {
-                            foreach (IAnnotationPolygonCollision lp in indexedPolygons)
+                            if (lp.CheckCollision(polyCollision) == true)
                             {
-                                if (lp.CheckCollision(polyCollision) == true)
-                                {
-                                    return LabelAppendResult.Overlap;
-                                }
+                                return LabelAppendResult.Overlap;
                             }
                         }
-                        #endregion
                     }
                 }
                 else
@@ -304,11 +291,7 @@ internal class LabelEngine2 : ILabelEngine, IDisposable
 
                     if (Algorithm == OverlapAlgorirthm.Geometry)
                     {
-                        #region Geometrie Methode
-
                         labelPolyon = polyCollision;
-
-                        #endregion
                     }
                 }
                 labelPolyonEnvelope = new Envelope(env.MinX, env.MinY, env.MaxX, env.MaxY);
@@ -319,17 +302,19 @@ internal class LabelEngine2 : ILabelEngine, IDisposable
             }
         }
 
-
         if (labelPolyon != null)
         {
             List<IAnnotationPolygonCollision> indexedPolygons = GetGrid(display)[labelPolyonEnvelope];
+#if DEBUG && RENDER_COLLITION_POLYGONS
+            DrawAnnotationPolyon(display, labelPolyon);
+#endif
             indexedPolygons.Add(labelPolyon);
         }
 
         return LabelAppendResult.Succeeded;
     }
 
-    public void AddBlockingGeometry(IDisplay display, IGeometry? geometry)
+    public void AddBlockingGeometry(IDisplay display, IGeometry? geometry, float size = 10f, RenderLabelPriority priority = RenderLabelPriority.Normal)
     {
         if (geometry is null) return;
 
@@ -342,18 +327,121 @@ internal class LabelEngine2 : ILabelEngine, IDisposable
             }
         }
 
-        IAnnotationPolygonCollision? appendPolygon = null;
-
         if (geometry is IPoint point)
         {
-            (double x, double y) = (point.X, point.Y);
-            display.World2Image(ref x, ref y);
-
-            appendPolygon = new AnnotationPolygon((float)x-100f, (float)y-100f, 200f, 200f);
-
-            List<IAnnotationPolygonCollision> indexedPolygons = GetGrid(display, GlobalGridId)[appendPolygon.Envelope.ToEnvelope()];
-            indexedPolygons.Add(appendPolygon);
+            AddBlockingPoint(display, point, size, priority);
         }
+        else if (geometry is IMultiPoint multiPoint)
+        {
+            for (int i = 0; i < multiPoint.PointCount; i++)
+            {
+                AddBlockingPoint(display, multiPoint[i], size, priority);
+            }
+        }
+        else if (geometry is IPolyline polyline)
+        {
+            foreach (IPath path in polyline.Paths)
+            {
+                for (int i = 0; i < path.PointCount - 1; i++)
+                {
+                    AddBlockingSegment(display, path[i], path[i + 1], size, priority);
+                }
+            }
+        }
+        else if (geometry is IPolygon polygon)
+        {
+            foreach (IRing ring in polygon.Rings)
+            {
+                for (int i = 0; i < ring.PointCount; i++)
+                {
+                    AddBlockingSegment(display, ring[i], ring[(i + 1) % ring.PointCount], size, priority);
+                }
+            }
+        }
+    }
+
+    public void IndexBlockingGeometryToPriority(IDisplay display, RenderLabelPriority priority)
+    {
+        // Index all pending polygons at the given priority level AND all higher
+        // priority levels (Always=0 is highest, Low=3 is lowest).
+        // E.g. passing Normal(2) also flushes Always(0) and High(1).
+        var keysToIndex = _pendingBlockingPolygons.Keys
+            .Where(p => p != RenderLabelPriority.Always && p.ToIntPriority() >= priority.ToIntPriority())
+            .OrderByDescending(p => p.ToIntPriority())
+            .ToList();
+
+        foreach (var key in keysToIndex)
+        {
+            foreach (var polygon in _pendingBlockingPolygons[key])
+            {
+                List<IAnnotationPolygonCollision> indexedPolygons =
+                    GetGrid(display, GlobalGridId)[polygon.Envelope.ToEnvelope()];
+#if DEBUG && RENDER_COLLITION_POLYGONS
+                DrawAnnotationPolyon(display, polygon);
+#endif
+                indexedPolygons.Add(polygon);
+                _first = false;
+            }
+
+            _pendingBlockingPolygons.Remove(key);
+        }
+    }
+
+    private void AddBlockingPoint(IDisplay display, IPoint point, float size, RenderLabelPriority priority)
+    {
+        double x = point.X, y = point.Y;
+        display.World2Image(ref x, ref y);
+
+        var polygon = new AnnotationPolygon((float)x - size / 2f, (float)y - size / 2f, size, size);
+        StageBlockingPolygon(display, polygon, priority);
+    }
+
+    private void AddBlockingSegment(IDisplay display, IPoint from, IPoint to, float size, RenderLabelPriority priority)
+    {
+        double x0 = from.X, y0 = from.Y;
+        double x1 = to.X, y1 = to.Y;
+        display.World2Image(ref x0, ref y0);
+        display.World2Image(ref x1, ref y1);
+
+        double dx = x1 - x0;
+        double dy = y1 - y0;
+        double length = Math.Sqrt(dx * dx + dy * dy);
+        if (length < 0.01) return;   // degenerate segment
+
+        // angle in degrees, measured from positive x-axis
+        double angleDeg = Math.Atan2(dy, dx) * 180.0 / Math.PI;
+
+        // place the rectangle so its long axis (width) runs along the segment,
+        // and its short axis (height) equals size
+        float cx = (float)((x0 + x1) / 2.0);
+        float cy = (float)((y0 + y1) / 2.0);
+        float w = (float)length;
+        float h = size;
+
+        var polygon = new AnnotationPolygon(cx - w / 2f, cy - h / 2f, w, h);
+        polygon.Rotate(cx, cy, angleDeg);
+
+        StageBlockingPolygon(display, polygon, priority);
+    }
+
+    private void StageBlockingPolygon(IDisplay display, IAnnotationPolygonCollision polygon, RenderLabelPriority priority)
+    {
+        AnnotationPolygonEnvelope env = polygon.Envelope;
+
+        // Discard polygons that lie completely outside the visible display area.
+        if (env.MaxX < 0 || env.MinX > display.ImageWidth ||
+            env.MaxY < 0 || env.MinY > display.ImageHeight)
+        {
+            return;
+        }
+
+        if (!_pendingBlockingPolygons.TryGetValue(priority, out var list))
+        {
+            list = new List<IAnnotationPolygonCollision>();
+            _pendingBlockingPolygons[priority] = list;
+        }
+
+        list.Add(polygon);
     }
 
     public void Draw(IDisplay display, ICancelTracker cancelTracker)
@@ -373,9 +461,9 @@ internal class LabelEngine2 : ILabelEngine, IDisposable
         Dispose();
     }
 
-    public GraphicsEngine.Abstraction.ICanvas? LabelCanvas
+    public GraphicsEngine.Abstraction.ICanvas LabelCanvas
     {
-        get { return _canvas; }
+        get { return _canvas!; }
     }
 
     #endregion
@@ -383,11 +471,11 @@ internal class LabelEngine2 : ILabelEngine, IDisposable
     #region Helper
 
     private LabelAppendResult AppendResult(
-                    IDisplay display, 
-                    int id, 
+                    IDisplay display,
+                    int id,
                     ITextSymbol symbol,
-                    IAnnotationPolygonCollision aPolygon, 
-                    bool checkForOverlap, 
+                    IAnnotationPolygonCollision aPolygon,
+                    bool checkForOverlap,
                     TextSymbolAlignment symbolAlignment
             )
     {
@@ -499,6 +587,64 @@ internal class LabelEngine2 : ILabelEngine, IDisposable
             ? _gridArrayPolygonsDict[id]
             : CreateGrid(display, id);
     }
+
+#if DEBUG && RENDER_COLLITION_POLYGONS
+    private void DrawAnnotationPolyon(IDisplay display, IAnnotationPolygonCollision polygon)
+    {
+        if (polygon is AnnotationPolygonCollection polygonCollection)
+        {
+            foreach(var childPolygon in polygonCollection)
+            {
+                DrawAnnotationPolyon(display, childPolygon);
+            }
+
+            return;
+        }
+
+        using var pen = gView.GraphicsEngine.Current.Engine.CreatePen(GraphicsEngine.ArgbColor.Cyan, 2f);
+
+        if (polygon is AnnotationPolygon annoPolygon)
+        {
+            var points = annoPolygon.ToCoords();
+
+            display.Canvas.DrawLine(pen,
+                new GraphicsEngine.CanvasPointF(points[0].X, points[0].Y),
+                new GraphicsEngine.CanvasPointF(points[1].X, points[1].Y));
+
+            display.Canvas.DrawLine(pen,
+                new GraphicsEngine.CanvasPointF(points[1].X, points[1].Y),
+                new GraphicsEngine.CanvasPointF(points[2].X, points[2].Y));
+
+            display.Canvas.DrawLine(pen,
+                new GraphicsEngine.CanvasPointF(points[2].X, points[2].Y),
+                new GraphicsEngine.CanvasPointF(points[3].X, points[3].Y));
+
+            display.Canvas.DrawLine(pen,
+                new GraphicsEngine.CanvasPointF(points[3].X, points[3].Y),
+                new GraphicsEngine.CanvasPointF(points[0].X, points[0].Y));
+
+            return;
+        }
+
+        var envelope = polygon.Envelope;
+
+        display.Canvas.DrawLine(pen,
+            new GraphicsEngine.CanvasPointF(envelope.MinX, envelope.MinY),
+            new GraphicsEngine.CanvasPointF(envelope.MaxX, envelope.MinY));
+
+        display.Canvas.DrawLine(pen,
+            new GraphicsEngine.CanvasPointF(envelope.MaxX, envelope.MinY),
+            new GraphicsEngine.CanvasPointF(envelope.MaxX, envelope.MaxY));
+
+        display.Canvas.DrawLine(pen,
+            new GraphicsEngine.CanvasPointF(envelope.MaxX, envelope.MaxY),
+            new GraphicsEngine.CanvasPointF(envelope.MinX, envelope.MaxY));
+
+        display.Canvas.DrawLine(pen,
+            new GraphicsEngine.CanvasPointF(envelope.MinX, envelope.MaxY),
+            new GraphicsEngine.CanvasPointF(envelope.MinX, envelope.MinY));
+    }
+#endif
 
     #endregion
 

@@ -1,4 +1,4 @@
-@inherits BaseHandler
+﻿@inherits BaseHandler
 
 @inject IApplicationScopeFactory AppScopeFactory
 @inject ICartoDocumentService CartoDocument
@@ -46,10 +46,10 @@
         <GvCardContent>
             <GvGrid ColumnCount="2">
                 <GvGridItem>
-                    <MudSelect T="SimpleLabelRenderer.RenderLabelPriority" 
+                    <MudSelect T="RenderLabelPriority" 
                                @bind-Value="_renderer.LabelPriority"
                                Label="Priority">
-                        @(GvUtilities.EnumToSelectItems<SimpleLabelRenderer.RenderLabelPriority>())
+                        @(GvUtilities.EnumToSelectItems<RenderLabelPriority>())
                     </MudSelect>
                 </GvGridItem>
                 <GvGridItem>

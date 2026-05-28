@@ -1,4 +1,6 @@
-﻿using gView.Framework.Core.Geometry;
+﻿#nullable enable
+
+using gView.Framework.Core.Geometry;
 using gView.Framework.Core.Symbology;
 using gView.Framework.Core.Common;
 using System.Collections.Generic;
@@ -11,7 +13,8 @@ namespace gView.Framework.Core.Carto
         void Init(IDisplay display, bool directDraw);
         LabelAppendResult TryAppend(IDisplay display, IFeatureLayer layer, ITextSymbol symbol, IGeometry geometry, bool chechForOverlap);
         LabelAppendResult TryAppend(IDisplay display, IFeatureLayer layer, List<IAnnotationPolygonCollision> aPolygons, IGeometry geometry, bool checkForOverlap);
-        void AddBlockingGeometry(IDisplay display, IGeometry? geometry);
+        void AddBlockingGeometry(IDisplay display, IGeometry? geometry, float size = 10f, RenderLabelPriority priority = RenderLabelPriority.Normal);
+        void IndexBlockingGeometryToPriority(IDisplay display, RenderLabelPriority priority);
         void Draw(IDisplay display, ICancelTracker cancelTracker);
         void Release();
 

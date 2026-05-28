@@ -1,4 +1,5 @@
-﻿@inject PluginManagerService PluginManager
+﻿@using gView.Framework.Cartography.Extensions
+@inject PluginManagerService PluginManager
 @inject ICartoApplicationScopeService AppScope
 @inherits BaseHandler
 
@@ -37,12 +38,12 @@
             {
                 <GvCard Title="Feature Priorty">
                     <GvCardContent>
-						<MudSelect T="int?" Label="Consider Features for labeling"
+                        <MudSelect T="RenderLabelPriority?" Label="Consider Features for labeling"
 								   @bind-Value="Layer.FeatureLabelPriority">
-							<MudSelectItem Value="(int?)null">None</MudSelectItem>
-							<MudSelectItem Value="(int?)SimpleLabelRenderer.ToPriorty(SimpleLabelRenderer.RenderLabelPriority.Low)">Low</MudSelectItem>
-							<MudSelectItem Value="(int?)SimpleLabelRenderer.ToPriorty(SimpleLabelRenderer.RenderLabelPriority.Normal)">Normal</MudSelectItem>
-							<MudSelectItem Value="(int?)SimpleLabelRenderer.ToPriorty(SimpleLabelRenderer.RenderLabelPriority.High)">High</MudSelectItem>
+                            <MudSelectItem Value="(RenderLabelPriority?)null">None</MudSelectItem>
+                            <MudSelectItem Value="(RenderLabelPriority?)RenderLabelPriority.Low">Low</MudSelectItem>
+                            <MudSelectItem Value="(RenderLabelPriority?)RenderLabelPriority.Normal">Normal</MudSelectItem>
+                            <MudSelectItem Value="(RenderLabelPriority?)RenderLabelPriority.High">High</MudSelectItem>
 						</MudSelect>
                         @if (Layer.FeatureLabelPriority.HasValue)
                         {

@@ -16,6 +16,7 @@ using System;
 using System.Threading.Tasks;
 using gView.Framework.Cartography.Extensions;
 using gView.Framework.Data.Extensions;
+using System.Linq;
 
 namespace gView.Framework.Cartography.LayerRenderers
 {
@@ -259,6 +260,20 @@ namespace gView.Framework.Cartography.LayerRenderers
 
                 #endregion
 
+                var hasFeatureLabelPriority = layer.FeatureLabelPriority.HasValue && layer.FeatureLabelPriority != RenderLabelPriority.Always;
+                var blockingSize =
+                    hasFeatureLabelPriority
+                        ? renderer?.Symbols
+                                   .Select(s => s switch
+                                   {
+                                       ISymbolSize symbolSize => symbolSize.SymbolSize,
+                                       IPenWidth penWidth => penWidth.PenWidth,
+                                       _ => -1f
+                                   })
+                                   .Where(s => s > 0.0f)
+                                   .Max() ?? 10f
+                        : 0f;
+
                 using (IFeatureCursor fCursor = await fClass.GetFeaturesOrderedIfRequired(MapHelper.MapQueryFilter(filter)))
                 {
                     _map.FireOnUserInterface(false);
@@ -303,9 +318,9 @@ namespace gView.Framework.Cartography.LayerRenderers
 
                                 renderer.Draw(_map, feature);
 
-                                if (layer.FeatureLabelPriority.HasValue)
+                                if (hasFeatureLabelPriority)
                                 {
-                                    _map.LabelEngine.AddBlockingGeometry(_map.Display, feature.Shape);
+                                    _map.LabelEngine.AddBlockingGeometry(_map.Display, feature.Shape, blockingSize, layer.FeatureLabelPriority!.Value);  // uses default size
                                 }
 
                                 if (labelRenderer != null)

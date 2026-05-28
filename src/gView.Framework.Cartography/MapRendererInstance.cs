@@ -336,8 +336,17 @@ public class MapRendererInstance : Map, IMapRenderer
                     {
                         //StreamImage(ref _msGeometry, _bitmap);
 
+                        var currentLabelPriority = RenderLabelPriority.High;
+                        Display.LabelEngine.IndexBlockingGeometryToPriority(Display, currentLabelPriority);
+
                         foreach (IFeatureLayer fLayer in labelLayers)
                         {
+                            if(currentLabelPriority != fLayer.LabelRenderer.RenderPriority && fLayer.LabelRenderer.RenderPriority != RenderLabelPriority.Always)
+                            {
+                                currentLabelPriority = fLayer.LabelRenderer.RenderPriority;
+                                Display.LabelEngine.IndexBlockingGeometryToPriority(Display, currentLabelPriority);
+                            }
+
                             SetGeotransformer(fLayer, geoTransformer);
 
                             FeatureCounter fCounter = new FeatureCounter();

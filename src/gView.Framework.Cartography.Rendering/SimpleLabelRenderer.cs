@@ -14,7 +14,7 @@ using gView.Framework.Symbology;
 using gView.GraphicsEngine.Abstraction;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
+using gView.Framework.Cartography.Extensions;
 using System.Threading.Tasks;
 
 namespace gView.Framework.Cartography.Rendering
@@ -28,18 +28,7 @@ namespace gView.Framework.Cartography.Rendering
             OnPerFeature = 1,
             OnPerPart = 2 
         }
-        public enum RenderLabelPriority 
-        {
-            [Description("Always (no overlay check)")]
-            Always = 0,
-            [Description("High (overlay check)")]
-            High = 1,
-            [Description("Normal (overlay check)")]
-            Normal = 2,
-            [Description("Low (overlay check)")]
-            Low = 3 
         
-        }
         public enum CartographicLineLabeling 
         { 
             Parallel = 0, 
@@ -236,13 +225,7 @@ namespace gView.Framework.Cartography.Rendering
             }
         }
 
-        public int RenderPriority
-        {
-            get
-            {
-                return 3 - (int)_labelPriority;
-            }
-        }
+        public RenderLabelPriority RenderPriority => _labelPriority;
 
         public void Draw(IDisplay display, IFeatureLayer layer, IFeature feature)
         {
@@ -824,33 +807,9 @@ namespace gView.Framework.Cartography.Rendering
 
         #region IPriority Member
 
-        public int Priority
-        {
-            get
-            {
-                return ToPriorty(_labelPriority);
-            }
-        }
-
+        public int Priority => _labelPriority.ToIntPriority();
+          
         #endregion
-
-        static public int ToPriorty(RenderLabelPriority labelPriority)
-        {
-            // to never change this values
-            // it is also used with FeatureLabelPriorty and stored there as integers
-            switch (labelPriority)
-            {
-                case RenderLabelPriority.Always:
-                    return 0;
-                case RenderLabelPriority.High:
-                    return 100;
-                case RenderLabelPriority.Normal:
-                    return 0;
-                case RenderLabelPriority.Low:
-                    return -100;
-            }
-            return 0;
-        } 
 
         #region IRenderer Member
 

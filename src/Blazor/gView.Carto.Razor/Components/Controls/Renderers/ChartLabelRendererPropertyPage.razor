@@ -1,4 +1,4 @@
-@using gView.Framework.Data.Filters
+﻿@using gView.Framework.Data.Filters
 
 @inherits BaseHandler
 @inject IApplicationScopeFactory AppScopeFactory
@@ -17,10 +17,10 @@
                     </MudSelect>
                 </GvGridItem>
                 <GvGridItem>
-                    <MudSelect T="SimpleLabelRenderer.RenderLabelPriority"
+                    <MudSelect T="RenderLabelPriority"
                                @bind-Value="_renderer.LabelPriority"
                                Label="Priority">
-                        @(GvUtilities.EnumToSelectItems<SimpleLabelRenderer.RenderLabelPriority>())
+                        @(GvUtilities.EnumToSelectItems<RenderLabelPriority>())
                     </MudSelect>
                 </GvGridItem>
                 

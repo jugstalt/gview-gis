@@ -497,49 +497,60 @@ namespace gView.Framework.Symbology
 
             var size = MeasureStringSize(display, text);
 
-            return AnnotationPolygon(display, size, x, y, symbolAlignment);
+            return AnnotationPolygon(display, text, size, x, y, symbolAlignment);
         }
 
-        private AnnotationPolygon AnnotationPolygon(IDisplay display, CanvasSizeF size, float x, float y, TextSymbolAlignment alignment)
+        private AnnotationPolygon AnnotationPolygon(IDisplay display, string text, CanvasSizeF size, float x, float y, TextSymbolAlignment alignment)
         {
+            var textAlignment = StringFormatFromAlignment(alignment);
+
             float x1 = 0, y1 = 0;
             switch (alignment)
             {
                 case TextSymbolAlignment.rightAlignOver:
                     x1 = x - size.Width;
-                    y1 = y - size.Height;
+                    //y1 = y - size.Height;
+                    y1 = y + display.Canvas.GetBaselineOffest(_font, text, textAlignment) - size.Height;
                     break;
                 case TextSymbolAlignment.rightAlignCenter:
                     x1 = x - size.Width;
-                    y1 = y - size.Height / 2f;
+                    //y1 = y - size.Height / 2f;
+                    y1 = y + display.Canvas.GetBaselineOffest(_font, text, textAlignment) - size.Height / 2f;
                     break;
                 case TextSymbolAlignment.rightAlignUnder:
                     x1 = x - size.Width;
-                    y1 = y;
+                    //y1 = y;
+                    y1 = y + display.Canvas.GetBaselineOffest(_font, text, textAlignment);
                     break;
                 case TextSymbolAlignment.Over:
                     x1 = x - size.Width / 2f;
-                    y1 = y - size.Height;
+                    //y1 = y - size.Height;
+                    y1 = y + display.Canvas.GetBaselineOffest(_font, text, textAlignment) - size.Height;
                     break;
                 case TextSymbolAlignment.Center:
                     x1 = x - size.Width / 2f;
-                    y1 = y - size.Height / 2f;
+                    //y1 = y - size.Height / 2f;
+                    y1 = y + display.Canvas.GetBaselineOffest(_font, text, textAlignment) - size.Height / 2f;
                     break;
                 case TextSymbolAlignment.Under:
                     x1 = x - size.Width / 2f;
-                    y1 = y;
+                    //y1 = y;
+                    y1 = y + display.Canvas.GetBaselineOffest(_font, text, textAlignment);
                     break;
                 case TextSymbolAlignment.leftAlignOver:
                     x1 = x;
-                    y1 = y - size.Height;
+                    //y1 = y - size.Height;
+                    y1 = y + display.Canvas.GetBaselineOffest(_font, text, textAlignment) - size.Height;
                     break;
                 case TextSymbolAlignment.leftAlignCenter:
                     x1 = x;
-                    y1 = y - size.Height / 2f;
+                    //y1 = y - size.Height / 2f;
+                    y1 = y + display.Canvas.GetBaselineOffest(_font, text, textAlignment) - size.Height / 2f;
                     break;
                 case TextSymbolAlignment.leftAlignUnder:
                     x1 = x;
-                    y1 = y;
+                    //y1 = y;
+                    y1 = y + display.Canvas.GetBaselineOffest(_font, text, textAlignment);
                     break;
             }
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 
 namespace gView.Framework.Core.Carto
 {
@@ -34,6 +35,18 @@ namespace gView.Framework.Core.Carto
     public enum GrabberMode { Pointer, Vertex }
 
     public enum LabelRenderMode { RenderWithFeature, UseRenderPriority }
+
+    public enum RenderLabelPriority
+    {
+        [Description("Always (no overlay check)")]
+        Always = 0,
+        [Description("High (overlay check)")]
+        High = 1,
+        [Description("Normal (overlay check)")]
+        Normal = 2,
+        [Description("Low (overlay check)")]
+        Low = 3
+    }
 
     public enum WebMercatorScaleBehavior
     {

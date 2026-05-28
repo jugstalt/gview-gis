@@ -177,7 +177,7 @@ namespace gView.Framework.XML
             set { m_labelrenderer = value; }
         }
 
-        public int? FeatureLabelPriority { get; set; } = null;
+        public RenderLabelPriority? FeatureLabelPriority { get; set; } = null;
 
         public IQueryFilter FilterQuery
         {

@@ -321,6 +321,11 @@ internal class GdiCanvas : ICanvas
         return new CanvasSizeF(sizeF.Width, sizeF.Height);
     }
 
+    public float GetBaselineOffest(IFont font, string text, IDrawTextFormat? format)
+    {
+        return 0;
+    }
+
     public IDisplayCharacterRanges DisplayCharacterRanges(IFont font, IDrawTextFormat format, string text)
     {
         CheckUsability();

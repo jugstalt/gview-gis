@@ -10,7 +10,7 @@ namespace gView.Framework.Core.Data
         IFeatureRenderer SelectionRenderer { get; set; }
         ILabelRenderer LabelRenderer { get; set; }
 
-        int? FeatureLabelPriority { get; set; } 
+        RenderLabelPriority? FeatureLabelPriority { get; set; } 
 
         bool ApplyRefScale { get; set; }
         bool ApplyLabelRefScale { get; set; }
