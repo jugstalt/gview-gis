@@ -60,8 +60,8 @@ public static class Extensions
 
                 X = p1.X,
                 Y = p1.Y,
-                Z = addZ ? p1.Z : null,
-                M = addM ? p1.M : null
+                Z = addZ ? p1.Z.MakeNullIfNaN() : null,
+                M = addM ? p1.M.MakeNullIfNaN() : null
             };
 
             return jsonPoint;
@@ -79,9 +79,9 @@ public static class Extensions
                     points.Add(
                         (addZ, addM) switch
                         {
-                            (true, true) => new double?[] { point.X, point.Y, point.Z, point.M },
-                            (true, false) => new double?[] { point.X, point.Y, point.Z },
-                            (false, true) => new double?[] { point.X, point.Y, point.M },
+                            (true, true) => new double?[] { point.X, point.Y, point.Z.MakeNullIfNaN(), point.M.MakeNullIfNaN() },
+                            (true, false) => new double?[] { point.X, point.Y, point.Z.MakeNullIfNaN() },
+                            (false, true) => new double?[] { point.X, point.Y, point.M.MakeNullIfNaN() },
                             _ => new double?[] { point.X, point.Y }
                         });
                 }
@@ -124,8 +124,8 @@ public static class Extensions
                     var point = path[p];
                     points[p, 0] = point.X;
                     points[p, 1] = point.Y;
-                    if (addZ) points[p, 2] = point.Z;
-                    if (addM) points[p, addZ ? 3 : 2] = point.M;
+                    if (addZ) points[p, 2] = point.Z.MakeNullIfNaN();
+                    if (addM) points[p, addZ ? 3 : 2] = point.M.MakeNullIfNaN();
                 }
                 paths.Add(points);
             }
@@ -157,8 +157,8 @@ public static class Extensions
                     var point = ring[p];
                     points[p, 0] = point.X;
                     points[p, 1] = point.Y;
-                    if (addZ) points[p, 2] = point.Z;
-                    if (addM) points[p, addZ ? 3 : 2] = point.M;
+                    if (addZ) points[p, 2] = point.Z.MakeNullIfNaN();
+                    if (addM) points[p, addZ ? 3 : 2] = point.M.MakeNullIfNaN();
                 }
                 rings.Add(points);
             }
@@ -262,6 +262,9 @@ public static class Extensions
     }
 
     #endregion
+
+    private static double? MakeNullIfNaN(this double number)
+        => double.IsNaN(number) ? null : number;
 
     #region EditResponse
 
