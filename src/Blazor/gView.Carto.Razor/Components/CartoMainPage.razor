@@ -72,7 +72,16 @@
 <script src="_content/gView.Carto.Razor/js/carto.js"></script>
 
 @code {
-    private MudTheme _theme = new();
+    private MudTheme _theme = new()
+    {
+        // Typography = new Typography()
+        // {
+        //     Default = new DefaultTypography()
+        //     {
+        //         FontSize = "0.1rem"
+        //     }
+        // }
+    };
     private bool _isDarkMode = true;
 
     private ICartoButton[]? _cartoButtons;

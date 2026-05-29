@@ -1,4 +1,4 @@
-.carto-main {
+﻿.carto-main {
     position: absolute;
     left: 0px;
     top: 0px;
@@ -613,3 +613,34 @@
 .carto-main.dark .toc .legend table {
     color: #ccc;
 }
+
+
+
+
+/* more dense MudBlazor layout */
+/*
+.mud-input-control {
+    margin-top: 2px;
+    margin-bottom: 2px;
+}
+
+.mud-button {
+    min-height: 28px;
+    padding: 2px 8px;
+}
+
+.mud-table-cell {
+    padding: 4px 8px;
+}
+
+.mud-list-item {
+    padding-top: 2px;
+    padding-bottom: 2px;
+}
+
+.mud-expand-panel .mud-expand-panel-header  {
+    padding: 4px 0px;
+    min-height: unset;
+}
+
+*/

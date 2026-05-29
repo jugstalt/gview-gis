@@ -65,7 +65,7 @@ namespace gView.Framework.OGC
         /// If true, circular arc segments (wkbCircularString) are geometrically interpolated
         /// into linear point sequences. If false, the original control points are used as-is.
         /// </summary>
-        public const bool InterpolateCircularArcs = true;
+        public const bool InterpolateCircularArcs = false;
 
         /// <summary>
         /// Angular step size in degrees used to interpolate circular arc segments (wkbCircularString).
