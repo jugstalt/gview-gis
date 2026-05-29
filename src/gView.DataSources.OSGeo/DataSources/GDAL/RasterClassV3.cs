@@ -1,4 +1,4 @@
-using gView.Framework.Core.Carto;
+﻿using gView.Framework.Core.Carto;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Data.Cursors;
 using gView.Framework.Core.Geometry;
@@ -280,7 +280,7 @@ namespace gView.DataSources.GDAL
                 picEnv.MaxX = Math.Min(picEnv.MaxX, _iWidth);
                 picEnv.MaxY = Math.Min(picEnv.MaxY, _iHeight);
 
-                // Ecken zur�cktransformieren -> Welt
+                // Ecken zurücktransformieren -> Welt
                 vecs = new vector2[3];
                 vecs[0] = new vector2(picEnv.MinX, picEnv.MinY);
                 vecs[1] = new vector2(picEnv.MaxX, picEnv.MinY);
@@ -890,7 +890,7 @@ namespace gView.DataSources.GDAL
             if (this.SpatialReference != null && sRef != null &&
                 !sRef.Equals(this.SpatialReference))
             {
-                point = GeometricTransformerFactory.Transform2D(point, sRef, this.SpatialReference, display.DatumTransformations) as IPoint;
+                point = GeometricTransformerFactory.Transform2D(point, sRef, this.SpatialReference, display?.DatumTransformations) as IPoint;
             }
             if (point == null)
             {
