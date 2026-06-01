@@ -12,6 +12,7 @@ using gView.Framework.Geometry;
 using gView.Framework.Geometry.GeoProcessing;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -213,6 +214,10 @@ public class MapRendererInstance : Map, IMapRenderer
                     }
 
                     List<IFeatureLayer> labelLayers = OrderedLabelLayers(layers);
+                    bool hasFeatureLabelPriority = layers.Any(f =>
+                        f is IFeatureLayer fLayer
+                        && fLayer.FeatureLabelPriority.HasValue
+                        && fLayer.RenderInScale(this));
 
                     #endregion
 
@@ -260,7 +265,7 @@ public class MapRendererInstance : Map, IMapRenderer
                                 }
                                 else
                                 {
-                                    rlt.UseLabelRenderer = labelLayers.IndexOf(fLayer) == 0;  // letzten Layer gleich mitlabeln
+                                    rlt.UseLabelRenderer = hasFeatureLabelPriority == false && labelLayers.IndexOf(fLayer) == 0;  // letzten Layer gleich mitlabeln
                                 }
 
                                 if (rlt.UseLabelRenderer)
@@ -331,8 +336,17 @@ public class MapRendererInstance : Map, IMapRenderer
                     {
                         //StreamImage(ref _msGeometry, _bitmap);
 
+                        var currentLabelPriority = RenderLabelPriority.High;
+                        Display.LabelEngine.IndexBlockingGeometryToPriority(Display, currentLabelPriority);
+
                         foreach (IFeatureLayer fLayer in labelLayers)
                         {
+                            if(currentLabelPriority != fLayer.LabelRenderer.RenderPriority && fLayer.LabelRenderer.RenderPriority != RenderLabelPriority.Always)
+                            {
+                                currentLabelPriority = fLayer.LabelRenderer.RenderPriority;
+                                Display.LabelEngine.IndexBlockingGeometryToPriority(Display, currentLabelPriority);
+                            }
+
                             SetGeotransformer(fLayer, geoTransformer);
 
                             FeatureCounter fCounter = new FeatureCounter();

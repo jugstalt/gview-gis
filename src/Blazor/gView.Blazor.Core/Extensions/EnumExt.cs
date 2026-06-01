@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace gView.Blazor.Core.Extensions;
 
-static public class EnumExtensions
+static public class EnumExt
 {
     public static string GetDescription(this Enum value)
     {

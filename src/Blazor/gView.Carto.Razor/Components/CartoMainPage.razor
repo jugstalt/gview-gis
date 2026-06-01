@@ -1,10 +1,12 @@
-@using gView.Blazor.Core.Services.Abstraction
+﻿@using gView.Blazor.Core.Services.Abstraction
 
 @inject IScopeContextService ScopeContext
 @inject SettingsService Settings
 @inject ICartoApplicationScopeService AppScope
+@inject IconService IconService
+@inject PluginManagerService PluginManager
 
-<div class="carto-main @(_isDarkMode ? "dark": "light")">
+<div class="carto-main @(_isDarkMode ? "dark": "light")" oncontextmenu="return false">
     <MudThemeProvider @bind-IsDarkMode="@_isDarkMode" Theme="_theme" />
 
     <MudPaper Class="toolbar" Elevation="2">
@@ -31,13 +33,61 @@
     <MudPaper Class="status-bar" Elevation="2">
         <StatusBar />
     </MudPaper>
+
+    <MudMenu PositionAtCursor @ref="_contextMenu" Dense>
+        @foreach (var menuItem in _contextMenuItems ?? [])
+        {
+            @if(menuItem.IsDivider)
+            {
+                <MudDivider />
+            } 
+            else if (  menuItem.SubItems is not null)
+            {
+                <MudMenu Label="@menuItem.Text"
+                StartIcon=@(IconService.FromString(menuItem.Icon!))>
+                    @foreach (var subMenuItem in menuItem.SubItems)
+                    {
+                        <MudMenuItem Disabled="@subMenuItem.Disabled"
+                        Label="@subMenuItem.Text"
+                        Icon=@(IconService.FromString(subMenuItem.Icon!))
+                        OnClick="@(() => subMenuItem.Action())">
+
+                        </MudMenuItem>
+                    }
+                </MudMenu>
+            }
+            else
+            {
+                <MudMenuItem Disabled="@menuItem.Disabled"
+                Label="@menuItem.Text"
+                Icon=@(IconService.FromString(menuItem.Icon!))
+                OnClick="@(() => menuItem.Action())">
+                </MudMenuItem>
+            }
+        }
+    </MudMenu>
+    
 </div>
 
 <script src="_content/gView.Carto.Razor/js/carto.js"></script>
 
 @code {
-    private MudTheme _theme = new();
+    private MudTheme _theme = new()
+    {
+        // Typography = new Typography()
+        // {
+        //     Default = new DefaultTypography()
+        //     {
+        //         FontSize = "0.1rem"
+        //     }
+        // }
+    };
     private bool _isDarkMode = true;
+
+    private ICartoButton[]? _cartoButtons;
+
+    private MudMenu _contextMenu = null!;
+    private List<ContextMenuItem>? _contextMenuItems = null;
 
     private void ToggleDarkmode()
     {
@@ -51,7 +101,191 @@
         // Task.Run(async () =>
         // {
         //     await Task.Delay(2000);
-            
+
         // });
+
+        _cartoButtons = PluginManager.GetPlugins<ICartoButton>(gView.Framework.Common.Plugins.Type.ICartoButton).ToArray();
+
+        AppScope.EventBus.OnShowContextMenuAsync += ShowContextMenu;
     }
+
+    #region Context Menu
+
+    async private Task ShowContextMenu(object mouseArgs, object contextItem)
+    {
+        _contextMenuItems = contextItem switch
+        {
+            ITocElement tocElement => BuildMenuItems(tocElement),
+            IMap map => BuildMenuItems(map),
+            _ => null
+        };
+
+        if(_contextMenuItems?.Any() != true)
+        {
+            return;
+        }
+
+        StateHasChanged(); // important: rerender menu
+
+        await _contextMenu.OpenMenuAsync(mouseArgs as MouseEventArgs ?? new MouseEventArgs());
+    }
+
+    private List<ContextMenuItem> BuildMenuItems(ITocElement? tocElement)
+    {
+        if (tocElement is null || _cartoButtons is null || AppScope is null)
+            return [];
+
+        var menuItems = new List<ContextMenuItem>([
+            new() {
+                Text = tocElement.Name,
+                Disabled = true
+            },
+            ContextMenuItem.CreateDivider()
+        ]);
+
+        var lastOrderDec = 0;
+        foreach (var cartoButton in _cartoButtons
+                .Where(cb => cb.Target == CartoToolTarget.SelectedTocItem && cb.IsVisible(AppScope))
+                .OrderBy(cb => cb.SortOrder))
+        {
+            int orderDec = cartoButton.SortOrder / 10;
+
+            if(orderDec > lastOrderDec)
+            {
+                lastOrderDec = orderDec;
+                menuItems.Add(ContextMenuItem.CreateDivider());
+            }
+
+            var item = new ContextMenuItem()
+            {
+                Text = cartoButton.Name,
+                Icon = cartoButton.Icon,
+                Disabled = cartoButton.IsDisabled(AppScope),
+                Action = () => cartoButton.OnClick(AppScope)
+            };
+
+            if (cartoButton is ICartoButtonWithSubItems cartoButtonWithSubItems)
+            {
+                item.SubItems = cartoButtonWithSubItems.SubItems(AppScope).Select(i => new ContextMenuItem()
+                {
+                    Text = i.Title,
+                    Icon = i.Icon,
+                    Action = () => cartoButtonWithSubItems.OnClick(AppScope, i.Id)
+                }).ToArray();
+            }
+
+            menuItems.Add(item);
+        }
+
+        menuItems.Add(ContextMenuItem.CreateDivider());
+
+        foreach (var cartoButton in _cartoButtons
+                .Where(cb => PluginManager.PluginGuid(cb) == new Guid("D1464197-2220-4895-954A-23A1379CFDFB")))  // TocSettings
+        {
+            var item = new ContextMenuItem()
+            {
+                Text = cartoButton.Name,
+                Icon = cartoButton.Icon,
+                Disabled = cartoButton.IsDisabled(AppScope),
+                Action = () => cartoButton.OnClick(AppScope)
+            };
+
+            menuItems.Add(item);
+        }
+
+        return menuItems;
+    }
+
+    private List<ContextMenuItem> BuildMenuItems(IMap map)
+    {
+        if (map is null || _cartoButtons is null || AppScope is null)
+            return [];
+
+        var menuItems = new List<ContextMenuItem>([
+            new() {
+                Text = map.Name,
+                Disabled = true
+            },
+            ContextMenuItem.CreateDivider()
+        ]);
+
+        var lastOrderDec = 0;
+        foreach (var cartoButton in _cartoButtons
+                .Where(cb => cb.Target == CartoToolTarget.Map && cb.IsVisible(AppScope))
+                .OrderBy(cb => cb.SortOrder))
+        {
+            int orderDec = cartoButton.SortOrder / 10;
+
+            if (orderDec > lastOrderDec)
+            {
+                lastOrderDec = orderDec;
+                menuItems.Add(ContextMenuItem.CreateDivider());
+            }
+
+            var item = new ContextMenuItem()
+            {
+                Text = cartoButton.Name,
+                Icon = cartoButton.Icon,
+                Disabled = cartoButton.IsDisabled(AppScope),
+                Action = () => cartoButton.OnClick(AppScope)
+            };
+
+            if (cartoButton is ICartoButtonWithSubItems cartoButtonWithSubItems)
+            {
+                item.SubItems = cartoButtonWithSubItems.SubItems(AppScope).Select(i => new ContextMenuItem()
+                {
+                    Text = i.Title,
+                    Icon = i.Icon,
+                    Action = () => cartoButtonWithSubItems.OnClick(AppScope, i.Id)
+                }).ToArray();
+            }
+
+            menuItems.Add(item);
+        }
+
+        menuItems.Add(ContextMenuItem.CreateDivider());
+
+        foreach (var cartoButton in _cartoButtons
+                .Where(cb => 
+                    PluginManager.PluginGuid(cb) == new Guid("540E07A0-B783-4D6D-AF65-3BC63740A3E9") ||  // Save
+                    PluginManager.PluginGuid(cb) == new Guid("1CA4CC29-FA96-4E0B-862F-C1D8CEDA7335") ||  // Save As
+                    PluginManager.PluginGuid(cb) == new Guid("362F584A-DD46-4269-A3D2-BD7EE82F5DDC") ||  // Publish
+                    PluginManager.PluginGuid(cb) == new Guid("D6A44B2E-1883-4D69-984B-2468E98216CD")     // new map
+                )
+                .OrderBy(cb => cb.SortOrder))  
+        {
+            var item = new ContextMenuItem()
+            {
+                Text = cartoButton.Name,
+                Icon = cartoButton.Icon,
+                Disabled = cartoButton.IsDisabled(AppScope),
+                Action = () => cartoButton.OnClick(AppScope)
+            };
+
+            menuItems.Add(item);
+        }
+
+        return menuItems;
+    }
+
+    #endregion
+
+    #region Item Classes
+
+    private sealed class ContextMenuItem
+    {
+        public string Text { get; set; } = "";
+        public string? Icon { get; set; }
+        public bool Disabled { get; set; }
+        public Action Action { get; set; } = () => { };
+
+        public IEnumerable<ContextMenuItem>? SubItems = null!;
+
+        public bool IsDivider => String.IsNullOrEmpty(this.Text);
+
+        public static ContextMenuItem CreateDivider() => new();
+    }
+
+    #endregion
+
 }

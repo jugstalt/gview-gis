@@ -5,6 +5,13 @@ namespace gView.Interoperability.GeoServices.Rest.DTOs.Features.Geometry
 {
     public class JsonGeometryDTO
     {
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [JsonPropertyName("hasZ")]
+        public bool? HasZ { get; set; }
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [JsonPropertyName("hasM")]
+        public bool? HasM { get; set; }
+
         // AREA
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         [JsonPropertyName("rings")]
@@ -22,6 +29,12 @@ namespace gView.Interoperability.GeoServices.Rest.DTOs.Features.Geometry
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         [JsonPropertyName("y")]
         public double? Y { get; set; }
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [JsonPropertyName("z")]
+        public double? Z { get; set; }
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [JsonPropertyName("m")]
+        public double? M { get; set; }
 
         // MULTI POINT ]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
@@ -41,20 +54,6 @@ namespace gView.Interoperability.GeoServices.Rest.DTOs.Features.Geometry
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         [JsonPropertyName("ymax")]
         public double? YMax { get; set; }
-
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        [JsonPropertyName("hasZ")]
-        public bool? HasZ { get; set; }
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        [JsonPropertyName("hasM")]
-        public bool? HasM { get; set; }
-
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        [JsonPropertyName("z")]
-        public double? Z { get; set; }
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        [JsonPropertyName("m")]
-        public double? M { get; set; }
 
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         [JsonPropertyName("spatialReference")]

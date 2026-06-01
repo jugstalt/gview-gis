@@ -144,7 +144,7 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
 
             AsSqlParameter = false;
 
-            var wkt = WKT.ToWKT(shape);
+            var wkt = WKT.ToWKT(shape, fClass.HasZ, fClass.HasM);
 
             sqlStatementHeader.Append("DECLARE @");
             sqlStatementHeader.Append(fClass.ShapeFieldName);
@@ -268,7 +268,8 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
 
                     if ($"[{fc.ShapeFieldName}]".Equals(fieldName, StringComparison.OrdinalIgnoreCase))
                     {
-                        fieldNames.Append(fc.ShapeFieldName + ".STAsBinary() as temp_geometry");
+                        string geometrySqlFunc = fc.HasZ || fc.HasM ? "AsBinaryZM()" : "STAsBinary()";
+                        fieldNames.Append($"{fc.ShapeFieldName}.{geometrySqlFunc} as temp_geometry");
                         shapeFieldName = "temp_geometry";
                     }
                     else
@@ -372,8 +373,13 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
                 foreach (var sdeLayer in RepoProvider.Layers)
                 {
                     layers.Add(new DatasetElement(
-                       await SdeFeatureClass.Create(this, $"{sdeLayer.Owner}.{sdeLayer.TableName}",
-                          String.IsNullOrWhiteSpace(sdeLayer.MultiVersionedViewName) ? null : $"{sdeLayer.Owner}.{sdeLayer.MultiVersionedViewName}")));
+                       await SdeFeatureClass.Create(
+                           this, 
+                           $"{sdeLayer.Owner}.{sdeLayer.TableName}",
+                           String.IsNullOrWhiteSpace(sdeLayer.MultiVersionedViewName) 
+                            ? null 
+                            : $"{sdeLayer.Owner}.{sdeLayer.MultiVersionedViewName}")
+                       ));
                 }
 
                 _layers = layers;

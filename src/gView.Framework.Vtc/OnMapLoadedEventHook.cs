@@ -193,7 +193,7 @@ public class OnMapLoadedEventHook : IMapEventHook
                         UseExpression = true,
                         LabelExpression = "",
                         LabelExpressionValueFunc = layer.Layout?.TextFieldExpression.ToValueFunc(),
-                        LabelPriority = SimpleLabelRenderer.RenderLabelPriority.Normal,
+                        LabelPriority = RenderLabelPriority.Normal,
                     };
 
                     featureLayer.FeatureRenderer = new VtcFeatureRenderer(symbol);

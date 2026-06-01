@@ -1,4 +1,4 @@
-@inherits BaseHandler
+﻿@inherits BaseHandler
 @implements IDisposable
 @inject IExplorerApplicationScopeService AppScope
 @inject PluginManagerService PluginManager
@@ -121,7 +121,7 @@
     {
         if (_selected?.Value is not null && await _selected.Value.SecureRefreshAsync() == true)
         {
-            _selected.Children = null;
+            _selected.RemoveAllChildren();
             await LoadServerData(_selected);
 
             return true;
@@ -135,7 +135,7 @@
     async private Task<ExplorerTreeNode?> SelectTreeNode(int index, IExplorerObject[] exObjects, ExplorerTreeNode? currentNode = null)
     {
         var treeNodes = currentNode is not null 
-            ? currentNode.Children?.Cast<ExplorerTreeNode>()
+            ? currentNode.Children?.Cast<ExplorerTreeNode>().ToList()
             : TreeNodes;
 
         if (treeNodes == null)
@@ -201,12 +201,12 @@
     {
         if (parentNode.IsServerLoaded)
         {
-            return parentNode.Children?.Cast<ExplorerTreeNode>();
+            return parentNode.Children?.Cast<ExplorerTreeNode>().ToArray();
         }
 
         var exObject = parentNode.Value;
 
-        parentNode.Children = new List<TreeItemData<IExplorerObject>>();
+        parentNode.RemoveAllChildren();
 
         if (exObject is IExplorerParentObject)
         {
@@ -218,11 +218,11 @@
                 {
                     continue;
                 }
-                parentNode.Children.Add(new ExplorerTreeNode(childObject));
+                parentNode.AddChild(new ExplorerTreeNode(childObject));
             }
         }
 
-        return parentNode.Children.Cast<ExplorerTreeNode>();
+        return parentNode.Children!.Cast<ExplorerTreeNode>().ToArray();
     });
 
 

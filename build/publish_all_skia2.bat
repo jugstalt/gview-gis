@@ -1,0 +1,3 @@
+﻿call publish_cmd_skia2.bat
+call publish_webapps_skia2.bat
+call publish_server_skia2.bat

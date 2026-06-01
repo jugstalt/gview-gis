@@ -41,7 +41,7 @@ namespace gView.Framework.Cartography.LayerRenderers
             if (rootLayer != null)
             {
                 _interpolMethod = rootLayer.InterpolationMethod;
-                _transparency = rootLayer.Opacity;
+                _transparency = rootLayer.Opacity / 100f;
                 _transColor = rootLayer.TransparentColor;
                 _filter = rootLayer.FilterImplementation;
             }
@@ -239,10 +239,7 @@ namespace gView.Framework.Cartography.LayerRenderers
                 }
                 if (_map != null)
                 {
-                    if (_map != null)
-                    {
-                        _map.AddRequestException(new Exception("RenderRasterLayerThread: " + (_layer != null ? _layer.Title : string.Empty) + "\n" + ex.Message, ex));
-                    }
+                    _map.AddRequestException(new Exception("RenderRasterLayerThread: " + (_layer != null ? _layer.Title : string.Empty) + "\n" + ex.Message, ex));
                 }
             }
             finally

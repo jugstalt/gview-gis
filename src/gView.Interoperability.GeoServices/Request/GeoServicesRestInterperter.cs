@@ -643,9 +643,15 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
                     #endregion
 
                     bool transform = false;
+                    bool hasZ = query.ReturnZ && (tableClass as IFeatureClass)?.HasZ == true;
+                    bool hasM = query.ReturnM && (tableClass as IFeatureClass)?.HasM == true;
+
                     using (var geoTransfromer = GeometricTransformerFactory.Create(serviceMap.Display?.DatumTransformations))
                     {
-                        if (tableClass is IFeatureClass && ((IFeatureClass)tableClass).SpatialReference == null && filter.FeatureSpatialReference != null && serviceMap.LayerDefaultSpatialReference != null)
+                        if (tableClass is IFeatureClass fc && 
+                            fc.SpatialReference == null && 
+                            filter.FeatureSpatialReference != null && 
+                            serviceMap.LayerDefaultSpatialReference != null)
                         {
                             geoTransfromer.SetSpatialReferences(serviceMap.LayerDefaultSpatialReference, filter.FeatureSpatialReference);
                             transform = true;
@@ -749,7 +755,7 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
                                             }
                                         }
 
-                                        jsonFeature.Geometry = feature.Shape?.ToJsonGeometry();
+                                        jsonFeature.Geometry = feature.Shape?.ToJsonGeometry(hasZ, hasM);
 
                                         jsonFeatures.Add(jsonFeature);
                                         firstFeature = false;

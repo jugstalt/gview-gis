@@ -1,4 +1,4 @@
-@using System.Text
+﻿@using System.Text
 @using gView.Framework.IO
 
 @GvUtilities.InfoText("All values here are for information only. You can not change this values on this page.")
@@ -7,8 +7,19 @@
 {
     <GvCard Title="Dataset">
         <GvCardContent>
-            <MudTextField Label="Dataset Type" ReadOnly="true"
-                          Value="_dataset.GetType().ToString()" />
+            @if(_dataset is IFeatureDataset && Map?.Datasets.Any() == true)
+            {
+                <MudSelect T="IDataset" Label="Dataset Type"
+                           @bind-Value="_dataset">
+                    @foreach(var dataset in Map.Datasets.Where(d => d is IFeatureDataset))
+                    {
+                        <MudSelectItem Value="dataset">@dataset.GetType().ToString()</MudSelectItem>
+                    }
+                </MudSelect>
+            } else {
+                <MudTextField Label="Dataset Type" ReadOnly="true"
+                              Value="_dataset.GetType().ToString()" />
+            }
             <MudTextField Label="Dataset Name" ReadOnly="true"
                           Value="_dataset.DatasetName" />
             <MudTextField Label="Connection String" ReadOnly="true" Lines="5"
@@ -16,6 +27,48 @@
         </GvCardContent>
     </GvCard>
 }
+
+
+<GvCard Title="Class">
+    <GvCardContent>
+        @{
+            var fcNames = DatasetClassNames().GetAwaiter().GetResult(); 
+        }
+        @if (_dataset is IFeatureDataset && fcNames?.Any() == true)
+        {
+            <MudSelect Label="Name" MultiSelection="false" T="String"
+                       @bind-Value="_clsName">
+                @foreach (var fcName in fcNames)
+                {
+                    <MudSelectItem Value="fcName">
+                        @fcName
+                    </MudSelectItem>
+                }
+            </MudSelect>
+            @if((_clsName != Layer?.Title
+                || Map?.Datasets.IndexOf(_dataset) != Layer?.DatasetID)
+                && fcNames.Contains(_clsName))
+            {
+                    <MudButton Color="Color.Secondary" 
+                               Variant="Variant.Filled"
+                               OnClick="OnClassSelectionCanceled">
+                        Cancel
+                    </MudButton>
+                    <MudButton Color="Color.Primary" 
+                               Variant="Variant.Filled"
+                               OnClick="OnChangeClassName">
+                        Change
+                    </MudButton>
+            }
+        } 
+        else 
+        {
+            <MudTextField Label="Name" ReadOnly="true" 
+                          Value="@(Layer?.Title ?? "")" />
+        }
+    </GvCardContent>
+</GvCard>
+
 
 @if(Layer is not null)
 {
@@ -31,14 +84,16 @@
     [Parameter] public ILayer? Layer { get; set; }
 
     private IDataset? _dataset;
+    private string _clsName = "";
 
-
-    protected override void OnParametersSet()
+    async protected override Task OnParametersSetAsync()
     {
         base.OnParametersSet();
 
         if (Map is not null && Layer is not null)
         {
+            _clsName = Layer.Title;
+
             var datasets = Map.Datasets.ToArray();
 
             if (Layer.DatasetID >= 0 && Layer.DatasetID < datasets.Length)
@@ -46,6 +101,64 @@
                 _dataset = datasets[Layer.DatasetID];
             }
         }
+    }
+
+    private void OnClassSelectionCanceled()
+    {
+        if(Layer is null || Map is null) return;
+
+        _clsName = Layer.Title;
+        _dataset = Map.Datasets.ToArray()[Layer.DatasetID];
+    }
+
+    async private Task OnChangeClassName()
+    {
+        if(_dataset is null || Map is null)
+        {
+            return;
+        }
+
+        if (Layer is gView.Framework.Data.Layer layer)
+        {
+            var oldTitle = layer.Title;
+            var oldClass = layer.Class;
+            try
+            {
+                var datasetElement = await _dataset.Element(_clsName);
+                if (datasetElement?.Class is not null)
+                {
+                    layer.Title = _clsName;
+                    layer.Class = datasetElement.Class;
+                    layer.DatasetID = Map.Datasets.IndexOf(_dataset);
+                }
+            }
+            catch(Exception)
+            {
+                layer.Title = oldTitle;
+                layer.Class = oldClass;
+
+                _clsName = oldTitle;
+            }
+        }
+    }
+
+    async private Task<List<string>> DatasetClassNames()
+    {
+        if(Layer is null || _dataset is null) return [];
+
+        if (Layer.Class is IFeatureClass layerFc)
+        {
+            return (await _dataset.Elements())
+                .Where(e => e.Class is IFeatureClass fc 
+                    && (fc.GeometryType == layerFc.GeometryType || layerFc.GeometryType == GeometryType.Aggregate))
+                .Select(e => e.Class.Name)
+                .ToList();
+        }
+        
+        return (await _dataset.Elements())
+                .Select(e => e.Class.Name)
+                .ToList();
+
     }
 
     // Hide Password etc

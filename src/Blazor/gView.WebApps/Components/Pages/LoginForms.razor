@@ -1,7 +1,6 @@
 ﻿@page "/login-forms"
 @using Microsoft.AspNetCore.Authentication
 @using Microsoft.AspNetCore.Authentication.Cookies
-@using Microsoft.AspNetCore.Identity
 @using System.Security.Claims
 @using System.ComponentModel.DataAnnotations
 @using gView.WebApps.Model
@@ -25,18 +24,20 @@
                     <MudAlert Severity="Severity.Error">@_errorMessage</MudAlert>
                 }
             
-                <MudTextField @bind-Value="Model.Username" ShrinkLabel
-                              Label="Username"
-                              Variant="Variant.Outlined"
-                              name = "Model.Username"
-                              Immediate="true" />
+                @if (Model is not null)
+                {
+                    <MudTextField @bind-Value="Model.Username" ShrinkLabel
+                    Label="Username"
+                    Variant="Variant.Outlined"
+                    name = "Model.Username"
+                    Immediate="true" />
 
-                <MudTextField @bind-Value="Model.Password" ShrinkLabel
-                              Label="Password"
-                              Variant="Variant.Outlined"
-                              name="Model.Password"
-                              InputType="InputType.Password"/>
-
+                    <MudTextField @bind-Value="Model.Password" ShrinkLabel
+                    Label="Password"
+                    Variant="Variant.Outlined"
+                    name="Model.Password"
+                    InputType="InputType.Password"/>
+                }
             </GvCardContent>
             <GvCardActions>
                 <MudButton ButtonType="ButtonType.Submit"
@@ -56,7 +57,7 @@
     private HttpContext? HttpContext;
 
     [SupplyParameterFromForm]
-    private LoginForm Model { get; set; } = new LoginForm();
+    private LoginForm? Model { get; set; } = null;
 
     private AuthConfigModel? _authConfig;
 
@@ -71,6 +72,8 @@
     {
         base.OnInitialized();
 
+        Model ??= new LoginForm();
+
         HttpContext = HttpContextAccessor.HttpContext!;
 
         _authConfig = new AuthConfigModel();
@@ -81,6 +84,11 @@
     {
         try
         {
+            if(Model is null)
+            {
+                throw new Exception("Model is NULL");    
+            }
+
             var userInfo = ValidateUser(Model.Username, Model.Password);
 
             if (userInfo.UserType == UserType.Unknown)

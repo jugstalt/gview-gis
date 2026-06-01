@@ -18,6 +18,8 @@ namespace gView.GraphicsEngine.GdiPlus
 
         public string EngineName => "GdiPlus";
 
+        public string EngineDisplayName => "GDI+ (GdiPlus)";
+
         public float ScreenDpi { get; }
 
         public bool MeasuresTextWithPadding => true;

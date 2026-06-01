@@ -1,4 +1,4 @@
-@using gView.Framework.Symbology;
+﻿@using gView.Framework.Symbology;
 @using gView.Framework.Core.Symbology
 
 @inherits BaseHandler
@@ -6,7 +6,7 @@
 
 @if(SymbolProtoType is not null)
 {
-    <div style="max-height:600px;overflow:auto">
+    <div style="max-height:600px;overflow:auto;background:#ccc">
         @foreach(var symbol in SymbolProtoType switch
                 {
                     IPointSymbol => SymbolGallery[typeof(IPointSymbol)].ToArray(),
@@ -402,6 +402,7 @@
                     GlowingColor = GraphicsEngine.ArgbColor.Yellow,
                     SymbolSmoothingMode = SymbolSmoothing.AntiAlias
                 },
+                // black/yellow
                 new GlowingTextSymbol()
                 {
                     FontColor = GraphicsEngine.ArgbColor.Black,
@@ -423,6 +424,65 @@
                     GlowingColor = GraphicsEngine.ArgbColor.Yellow,
                     SymbolSmoothingMode = SymbolSmoothing.AntiAlias
                 },
+                // black/white
+                new GlowingTextSymbol()
+                {
+                    FontColor = GraphicsEngine.ArgbColor.Black,
+                    Font = GraphicsEngine.Current.Engine?.CreateFont("Arial", 10f),
+                    GlowingColor = GraphicsEngine.ArgbColor.White,
+                    SymbolSmoothingMode = SymbolSmoothing.AntiAlias
+                },
+                new GlowingTextSymbol()
+                {
+                    FontColor = GraphicsEngine.ArgbColor.Black,
+                    Font = GraphicsEngine.Current.Engine?.CreateFont("Arial", 15f),
+                    GlowingColor = GraphicsEngine.ArgbColor.White,
+                    SymbolSmoothingMode = SymbolSmoothing.AntiAlias
+                },
+                new GlowingTextSymbol()
+                {
+                    FontColor = GraphicsEngine.ArgbColor.Black,
+                    Font = GraphicsEngine.Current.Engine?.CreateFont("Arial", 20f),
+                    GlowingColor = GraphicsEngine.ArgbColor.White,
+                    SymbolSmoothingMode = SymbolSmoothing.AntiAlias
+                },
+                new GlowingTextSymbol()
+                {
+                    FontColor = GraphicsEngine.ArgbColor.Black,
+                    Font = GraphicsEngine.Current.Engine?.CreateFont("Arial", 30f),
+                    GlowingColor = GraphicsEngine.ArgbColor.White,
+                    SymbolSmoothingMode = SymbolSmoothing.AntiAlias
+                },
+                // white/black
+                new GlowingTextSymbol()
+                {
+                    FontColor = GraphicsEngine.ArgbColor.White,
+                    Font = GraphicsEngine.Current.Engine?.CreateFont("Arial", 10f),
+                    GlowingColor = GraphicsEngine.ArgbColor.Black,
+                    SymbolSmoothingMode = SymbolSmoothing.AntiAlias
+                },
+                new GlowingTextSymbol()
+                {
+                    FontColor = GraphicsEngine.ArgbColor.White,
+                    Font = GraphicsEngine.Current.Engine?.CreateFont("Arial", 15f),
+                    GlowingColor = GraphicsEngine.ArgbColor.Black,
+                    SymbolSmoothingMode = SymbolSmoothing.AntiAlias
+                },
+                new GlowingTextSymbol()
+                {
+                    FontColor = GraphicsEngine.ArgbColor.White,
+                    Font = GraphicsEngine.Current.Engine?.CreateFont("Arial", 20f),
+                    GlowingColor = GraphicsEngine.ArgbColor.Black,
+                    SymbolSmoothingMode = SymbolSmoothing.AntiAlias
+                },
+                new GlowingTextSymbol()
+                {
+                    FontColor = GraphicsEngine.ArgbColor.White,
+                    Font = GraphicsEngine.Current.Engine?.CreateFont("Arial", 30f),
+                    GlowingColor = GraphicsEngine.ArgbColor.Black,
+                    SymbolSmoothingMode = SymbolSmoothing.AntiAlias
+                },
+
                 new BlockoutTextSymbol()
                 {
                     FontColor = GraphicsEngine.ArgbColor.Black,

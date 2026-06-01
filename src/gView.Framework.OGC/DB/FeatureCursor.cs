@@ -26,7 +26,8 @@ namespace gView.Framework.OGC.DB
         OgcSpatialFeatureclass _fc = null;
 
         private OgcSpatialFeatureCursor(OgcSpatialFeatureclass fc, IQueryFilter filter)
-            : base(fc?.SpatialReference,
+            : base(fc, 
+                   fc?.SpatialReference,
                    filter?.FeatureSpatialReference, 
                    filter?.DatumTransformations)
         {

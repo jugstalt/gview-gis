@@ -1,4 +1,4 @@
-@inherits ModalDialogFormBase<ManageMapDatasetsModel>
+﻿@inherits ModalDialogFormBase<ManageMapDatasetsModel>
 @inject IconService IconService
 @inject ICartoApplicationScopeService AppScope
 
@@ -89,19 +89,30 @@
                     }
                 </GvGridItem>
             </GvGrid>
+            @if (!String.IsNullOrEmpty(_errorMessage))
+            {
+                <MudAlert Severity="Severity.Error">@_errorMessage</MudAlert>
+            }
+            @if (!String.IsNullOrEmpty(_successMessage))
+            {
+                <MudAlert Severity="Severity.Success">@_successMessage</MudAlert>
+            }
         </DialogBody>
         <DialogButtons>
             <MudButton OnClick="base.Close">
                 Close
             </MudButton>
         </DialogButtons>
-    </ModalDialogFormBase>
+    </ModalDialogFormBase> 
 }
 
 @code {
     private List<DatasetListItem> _datasetItems = new();
     private DatasetListItem? _selectedDatasetItem;
     private List<IDatasetElement> _selectedDatasetMapElements = new();
+
+    private string _errorMessage = "";
+    private string _successMessage = "";
 
     protected override Task OnInitializedAsync() => HandleAsync(async () =>
     {
@@ -132,6 +143,8 @@
 
     private void OnDatasetItemSelected(DatasetListItem item) => Handle(() =>
     {
+        RemoveAllMessages();
+
         if (Model.Map is null) return;
 
         _selectedDatasetItem = item;
@@ -141,14 +154,42 @@
 
     async private Task OnConnectionStringChanged(string newConnectionString)
     {
+        RemoveAllMessages();
+
         if (_selectedDatasetItem?.Dataset is not null)
         {
-            await _selectedDatasetItem.Dataset.SetConnectionString(newConnectionString);
+            try
+            {
+                await _selectedDatasetItem.Dataset.SetConnectionString(newConnectionString); 
+                if(!await _selectedDatasetItem.Dataset.Open())
+                {
+                    throw new Exception("Can't open dataset");
+                }
+            
+                var dsIndex = Model.Map!.Datasets.IndexOf(_selectedDatasetItem.Dataset);
+
+                foreach(var layer in Model.Map.MapElements.Where(l => l.DatasetID == dsIndex))
+                {
+                    if(layer.Class == null && layer is gView.Framework.Data.Layer l)
+                    {
+                        var dsElement = await _selectedDatasetItem.Dataset.Element(layer.Title);
+                        l.Class = dsElement?.Class;
+                    }
+                }
+
+				_successMessage = "Successfully change connection string";
+			}
+			catch (Exception ex)
+			{
+				_errorMessage = ex.Message;
+			}
         }
     }
 
     private void OnRemoveDataset()
     {
+        RemoveAllMessages();
+
         if (Model.Map is not null 
             && _selectedDatasetItem?.Dataset is not null)
         {
@@ -160,6 +201,8 @@
 
     private void OnRemoveUnusedDatasets()
     {
+        RemoveAllMessages();
+
         if (Model.Map is not null)
         {
             foreach (var datasetItem in _datasetItems.Where(e => e.LayerCount == 0))
@@ -173,12 +216,19 @@
 
     private void OnMapCompress()
     {
+        RemoveAllMessages();
+
         if(Model.Map is not null)
         {
             Model.Map.Compress(); 
 
             BuildTree();
         }
+    }
+
+    private void RemoveAllMessages()
+    {
+        _errorMessage = _successMessage = "";
     }
 
     #region Item Classes

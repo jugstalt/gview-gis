@@ -6,8 +6,19 @@
 
   <ItemGroup>
     <ProjectReference Include="..\gView.GraphicsEngine.GdiPlus\gView.GraphicsEngine.GdiPlus.csproj" />
-    <ProjectReference Include="..\gView.GraphicsEngine.Skia\gView.GraphicsEngine.Skia.csproj" />
     <ProjectReference Include="..\gView.GraphicsEngine\gView.GraphicsEngine.csproj" />
   </ItemGroup>
+
+	<PropertyGroup>
+		<SkiaVariant Condition="'$(SkiaVariant)' == ''">Skia3</SkiaVariant>
+	</PropertyGroup>
+
+	<ItemGroup Condition="'$(SkiaVariant)' == 'Skia2'">
+		<ProjectReference Include="..\gView.GraphicsEngine.Skia2x\gView.GraphicsEngine.Skia2x.csproj" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(SkiaVariant)' == 'Skia3'">
+		<ProjectReference Include="..\gView.GraphicsEngine.Skia3x\gView.GraphicsEngine.Skia3x.csproj" />
+	</ItemGroup>
 
 </Project>

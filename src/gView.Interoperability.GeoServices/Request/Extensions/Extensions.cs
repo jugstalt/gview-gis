@@ -1,6 +1,6 @@
-﻿using gView.Framework.Core.Geometry;
+﻿using gView.Framework.Common;
+using gView.Framework.Core.Geometry;
 using gView.Framework.Geometry;
-using gView.Framework.Common;
 using gView.Interoperability.GeoServices.Rest.DTOs.Features.Geometry;
 using gView.Interoperability.GeoServices.Rest.DTOs.FeatureServer;
 using System;
@@ -49,24 +49,26 @@ public static class Extensions
 
     #region Geometry
 
-    static public JsonGeometryDTO ToJsonGeometry(this IGeometry shape)
+    static public JsonGeometryDTO ToJsonGeometry(this IGeometry shape, bool addZ = false, bool addM = false)
     {
-        if (shape is IPoint)
+        if (shape is IPoint p1)
         {
-            var point = (IPoint)shape;
-
             var jsonPoint = new JsonGeometryDTO()
             {
-                X = ((Point)shape).X,
-                Y = ((IPoint)shape).Y
+                HasZ = addZ ? true : null,
+                HasM = addM ? true : null,
+
+                X = p1.X,
+                Y = p1.Y,
+                Z = addZ ? p1.Z.MakeNullIfNaN() : null,
+                M = addM ? p1.M.MakeNullIfNaN() : null
             };
 
             return jsonPoint;
         }
-        if (shape is IMultiPoint)
-        {
-            var multiPoint = (IMultiPoint)shape;
 
+        if (shape is IMultiPoint multiPoint)
+        {
             List<double?[]> points = new List<double?[]>();
 
             for (int p = 0, pointCount = multiPoint.PointCount; p < pointCount; p++)
@@ -74,12 +76,22 @@ public static class Extensions
                 var point = multiPoint[p];
                 if (point != null)
                 {
-                    points.Add(new double?[] { point.X, point.Y });
+                    points.Add(
+                        (addZ, addM) switch
+                        {
+                            (true, true) => new double?[] { point.X, point.Y, point.Z.MakeNullIfNaN(), point.M.MakeNullIfNaN() },
+                            (true, false) => new double?[] { point.X, point.Y, point.Z.MakeNullIfNaN() },
+                            (false, true) => new double?[] { point.X, point.Y, point.M.MakeNullIfNaN() },
+                            _ => new double?[] { point.X, point.Y }
+                        });
                 }
             }
 
             var jsonMultipoint = new JsonGeometryDTO()
             {
+                HasZ = addZ ? true : null,
+                HasM = addM ? true : null,
+
                 Points = points.ToArray()
             };
 
@@ -95,10 +107,8 @@ public static class Extensions
                 YMax = ((IEnvelope)shape).MaxY,
             };
         }
-        if (shape is IPolyline)
+        if (shape is IPolyline polyline)
         {
-            var polyline = (IPolyline)shape;
-
             List<double?[,]> paths = new List<double?[,]>();
             for (int r = 0, pathCount = polyline.PathCount; r < pathCount; r++)
             {
@@ -108,27 +118,30 @@ public static class Extensions
                     continue;
                 }
 
-                double?[,] points = new double?[path.PointCount, 2];
+                double?[,] points = new double?[path.PointCount, 2 + (addZ ? 1 : 0) + (addM ? 1 : 0)];
                 for (int p = 0, pointCount = path.PointCount; p < pointCount; p++)
                 {
                     var point = path[p];
                     points[p, 0] = point.X;
                     points[p, 1] = point.Y;
+                    if (addZ) points[p, 2] = point.Z.MakeNullIfNaN();
+                    if (addM) points[p, addZ ? 3 : 2] = point.M.MakeNullIfNaN();
                 }
                 paths.Add(points);
             }
 
             var jsonPolyline = new JsonGeometryDTO()
             {
+                HasZ = addZ ? true : null,
+                HasM = addM ? true : null,
+
                 Paths = paths.ToArray()
             };
 
             return jsonPolyline;
         }
-        if (shape is IPolygon)
+        if (shape is IPolygon polygon)
         {
-            var polygon = (IPolygon)shape;
-
             List<double?[,]> rings = new List<double?[,]>();
             for (int r = 0, ringCount = polygon.RingCount; r < ringCount; r++)
             {
@@ -138,18 +151,23 @@ public static class Extensions
                     continue;
                 }
 
-                double?[,] points = new double?[ring.PointCount, 2];
+                double?[,] points = new double?[ring.PointCount, 2 + (addZ ? 1 : 0) + (addM ? 1 : 0)];
                 for (int p = 0, pointCount = ring.PointCount; p < pointCount; p++)
                 {
                     var point = ring[p];
                     points[p, 0] = point.X;
                     points[p, 1] = point.Y;
+                    if (addZ) points[p, 2] = point.Z.MakeNullIfNaN();
+                    if (addM) points[p, addZ ? 3 : 2] = point.M.MakeNullIfNaN();
                 }
                 rings.Add(points);
             }
 
             var jsonPolylgon = new JsonGeometryDTO()
             {
+                HasZ = addZ ? true : null,
+                HasM = addM ? true : null,
+
                 Rings = rings.ToArray()
             };
 
@@ -169,7 +187,7 @@ public static class Extensions
 
         if (geometry.X.HasValue && geometry.Y.HasValue)
         {
-            shape = new Point(geometry.X.Value, geometry.Y.Value);
+            shape = new Point(geometry.X.Value, geometry.Y.Value).AddZM(geometry);
         }
         else if (geometry.XMin.HasValue && geometry.YMin.HasValue && geometry.XMax.HasValue && geometry.YMax.HasValue)
         {
@@ -190,7 +208,7 @@ public static class Extensions
                 var path = new Path();
                 for (int i = 0, pointCount = jsonPath.GetLength(0); i < pointCount; i++)
                 {
-                    path.AddPoint(new Point(jsonPath[i, 0].Value, jsonPath[i, 1].Value));
+                    path.AddPoint(new Point(jsonPath[i, 0].Value, jsonPath[i, 1].Value).AddZM(jsonPath, i, geometry));
                 }
                 polyline.AddPath(path);
             }
@@ -212,7 +230,7 @@ public static class Extensions
                 var ring = new Ring();
                 for (int i = 0, pointCount = jsonRing.GetLength(0); i < pointCount; i++)
                 {
-                    ring.AddPoint(new Point(jsonRing[i, 0].Value, jsonRing[i, 1].Value));
+                    ring.AddPoint(new Point(jsonRing[i, 0].Value, jsonRing[i, 1].Value).AddZM(jsonRing, i, geometry));
                 }
                 polygon.AddRing(ring);
             }
@@ -228,7 +246,7 @@ public static class Extensions
                 var point = geometry.Points[p];
                 if (point != null && point.Length >= 2)
                 {
-                    multiPoint.AddPoint(new Point(point[0].Value, point[1].Value));
+                    multiPoint.AddPoint(new Point(point[0].Value, point[1].Value).AddZM(point, geometry));
                 }
             }
 
@@ -245,6 +263,9 @@ public static class Extensions
 
     #endregion
 
+    private static double? MakeNullIfNaN(this double number)
+        => double.IsNaN(number) ? null : number;
+
     #region EditResponse
 
     static public IEnumerable<JsonFeatureServerResponseDTO.JsonResponse> ToEditJsonResponse(this IEnumerable<int> objectIds, bool succeeded)
@@ -254,6 +275,56 @@ public static class Extensions
             Success = succeeded,
             ObjectId = objectId
         });
+    }
+
+    #endregion
+
+    #region PointExtension
+
+    static private Point AddZM(this Point point, double?[] xyzm, JsonGeometryDTO geometry)
+    {
+        var index = 2;
+
+        if (geometry.HasZ == true && index < xyzm.Length)
+        {
+            point.Z = xyzm[index++] ?? 0D;
+        }
+        if (geometry.HasM == true && index < xyzm.Length)
+        {
+            point.M = xyzm[index++] ?? 0D;
+        }
+
+        return point;
+    }
+
+    static private Point AddZM(this Point point, double?[,] xyzm, int pointIndex, JsonGeometryDTO geometry)
+    {
+        var index = 2;
+
+        if (geometry.HasZ == true && index < xyzm.GetLength(1))
+        {
+            point.Z = xyzm[pointIndex, index++] ?? 0D;
+        }
+        if (geometry.HasM == true && index < xyzm.GetLength(1))
+        {
+            point.M = xyzm[pointIndex, index++] ?? 0D;
+        }
+
+        return point;
+    }
+
+    static private Point AddZM(this Point point, JsonGeometryDTO geometry)
+    {
+        if (geometry.HasZ == true)
+        {
+            point.Z = geometry.Z ?? 0D;
+        }
+        if (geometry.HasM == true)
+        {
+            point.M = geometry.M ?? 0D;
+        }
+
+        return point;
     }
 
     #endregion

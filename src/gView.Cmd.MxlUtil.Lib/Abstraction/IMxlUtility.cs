@@ -1,4 +1,5 @@
 ﻿using gView.Cmd.Core.Abstraction;
+using gView.Framework.Core.Common;
 
 namespace gView.Cmd.MxlUtil.Lib.Abstraction
 {
@@ -6,7 +7,7 @@ namespace gView.Cmd.MxlUtil.Lib.Abstraction
     {
         string Name { get; }
 
-        Task<bool> Run(string[] args, ICommandLogger? logger = null);
+        Task<bool> Run(string[] args, ICancelTracker? cancelTracker = null, ICommandLogger? logger = null);
 
         string Description();
         string HelpText();

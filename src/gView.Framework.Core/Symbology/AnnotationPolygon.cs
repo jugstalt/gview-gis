@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Drawing;
-using System.IO.Pipes;
 
 namespace gView.Framework.Core.Symbology
 {
@@ -19,8 +17,20 @@ namespace gView.Framework.Core.Symbology
             _height = height;
         }
 
+        private AnnotationPolygon(float x1, float y1, float width, float height, double angle, double cosA, double sinA)
+        {
+            _x1 = x1;
+            _y1 = y1;
+            _width = width;
+            _height = height;
+            _angle = angle;
+            cos_a = cosA;
+            sin_a = sinA;
+        }
+
         public void Rotate(float x0, float y0, double angle)
         {
+            _points = null;
             _angle = angle;
 
             if (_angle != 0.0)
@@ -139,10 +149,6 @@ namespace gView.Framework.Core.Symbology
         {
             if (type == SymbolSpacingType.None) return this;
 
-            var envelope = this.Envelope;
-            float centerX = (envelope.MinX + envelope.MaxX) * 0.5f;
-            float centerY = (envelope.MinY + envelope.MaxY) * 0.5f;
-
             float x1, y1, width = _width, height = _height;
 
             var (minWidth, minHeight) = type switch
@@ -157,10 +163,13 @@ namespace gView.Framework.Core.Symbology
                 width = Math.Max(minWidth, width);
                 height = Math.Max(minHeight, height);
 
-                x1 = centerX - width / 2f;
-                y1 = centerY - height / 2f;
+                // Compute new top-left corner in world space so that the enlarged
+                // rectangle keeps the same center and the same rotation as the original.
+                var center = this.CenterPoint;
+                x1 = center.X - (float)(cos_a * width / 2 - sin_a * height / 2);
+                y1 = center.Y - (float)(sin_a * width / 2 + cos_a * height / 2);
 
-                return new AnnotationPolygon(x1, y1, width, height);
+                return new AnnotationPolygon(x1, y1, width, height, _angle, cos_a, sin_a);
             }
 
             return this;           
@@ -168,19 +177,22 @@ namespace gView.Framework.Core.Symbology
 
         private static bool HasSeperateLine(AnnotationPolygon tester, AnnotationPolygon cand)
         {
-            for (int i = 1; i <= tester._points.Length; i++)
+            // A rectangle has only 2 unique face normals (opposite edges are parallel),
+            // so we only need to test half the edges. Normalize() is also omitted because
+            // both intervals are projected onto the same (possibly scaled) axis, making the
+            // relative overlap check valid without the sqrt.
+            int halfLen = tester._points.Length / 2;
+            for (int i = 1; i <= halfLen; i++)
             {
-                GraphicsEngine.CanvasPointF p1 = tester[i];
+                GraphicsEngine.CanvasPointF p1 = tester._points[i];
                 Vector2dF ortho = new Vector2dF(p1, tester._points[i - 1]);
                 ortho.ToOrtho();
-                ortho.Normalize();
 
                 float t_min = 0f, t_max = 0f, c_min = 0f, c_max = 0f;
                 MinMaxAreaForOrhtoSepLine(p1, ortho, tester, ref t_min, ref t_max);
                 MinMaxAreaForOrhtoSepLine(p1, ortho, cand, ref c_min, ref c_max);
 
-                if (t_min <= c_max && t_max <= c_min ||
-                    c_min <= t_max && c_max <= t_min)
+                if (t_max < c_min || c_max < t_min)
                 {
                     return true;
                 }
@@ -225,9 +237,19 @@ namespace gView.Framework.Core.Symbology
             }
         }
 
-        public float X1 { get { return _x1; } set { _x1 = value; } }
-        public float Y1 { get { return _y1; } set { _y1 = value; } }
-        public double Angle { get { return _angle; } set { _angle = value; } }
+        public float X1 { get { return _x1; } set { _x1 = value; _points = null; } }
+        public float Y1 { get { return _y1; } set { _y1 = value; _points = null; } }
+        public double Angle
+        {
+            get { return _angle; }
+            set
+            {
+                _angle = value;
+                cos_a = Math.Cos(_angle * Math.PI / 180.0);
+                sin_a = Math.Sin(_angle * Math.PI / 180.0);
+                _points = null;
+            }
+        }
 
         public GraphicsEngine.CanvasPointF CenterPoint
         {

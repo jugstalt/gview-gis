@@ -1,4 +1,4 @@
-@inherits ModalDialogFormBase<RasterTileCacheConnectionModel>
+﻿@inherits ModalDialogFormBase<RasterTileCacheConnectionModel>
 @inject IExplorerApplicationScopeService AppScope
 
 <ModalDialogFormBase T="RasterTileCacheConnectionModel"
@@ -19,8 +19,8 @@
             </GvGridItem>
 
             <GvGridItem>
-                <MudTabs Outlined="true" Rounded="true" PanelClass="pa-6" ApplyEffectsToContainer="true">
-                    <MudTabPanel Text="Cache Extent/Origin">
+                <MudTabs Outlined="true" Rounded="true" ApplyEffectsToContainer="true">
+						<MudTabPanel Text="Cache Extent/Origin" PanelClass="pa-6">
                          <GvGrid ColumnCount="1">
                                 <GvGridItem>
                                     <ExtentControl Extent="Model.Extent" />

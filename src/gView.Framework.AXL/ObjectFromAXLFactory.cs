@@ -1,4 +1,4 @@
-using gView.Framework.Cartography.Rendering;
+﻿using gView.Framework.Cartography.Rendering;
 using gView.Framework.Cartography.Rendering.Abstractions;
 using gView.Framework.Core.Carto;
 using gView.Framework.Core.Data;
@@ -299,16 +299,16 @@ namespace gView.Framework.AXL
                 switch (axl.Attributes["labelweight"].Value.ToLower())
                 {
                     case "no_weight":
-                        renderer.LabelPriority = Cartography.Rendering.SimpleLabelRenderer.RenderLabelPriority.Low;
+                        renderer.LabelPriority = RenderLabelPriority.Low;
                         break;
                     case "med_weight":
-                        renderer.LabelPriority = Cartography.Rendering.SimpleLabelRenderer.RenderLabelPriority.Normal;
+                        renderer.LabelPriority = RenderLabelPriority.Normal;
                         break;
                     case "high_weight":
-                        renderer.LabelPriority = Cartography.Rendering.SimpleLabelRenderer.RenderLabelPriority.High;
+                        renderer.LabelPriority = RenderLabelPriority.High;
                         break;
                     case "always":
-                        renderer.LabelPriority = Cartography.Rendering.SimpleLabelRenderer.RenderLabelPriority.Always;
+                        renderer.LabelPriority = RenderLabelPriority.Always;
                         break;
                 }
             }
@@ -552,16 +552,16 @@ namespace gView.Framework.AXL
                 }
                 switch (renderer.LabelPriority)
                 {
-                    case Cartography.Rendering.SimpleLabelRenderer.RenderLabelPriority.Low:
+                    case RenderLabelPriority.Low:
                         sb.Append(@" labelweight =""no_weight""");
                         break;
-                    case Cartography.Rendering.SimpleLabelRenderer.RenderLabelPriority.Normal:
+                    case RenderLabelPriority.Normal:
                         sb.Append(@" labelweight =""med_weight""");
                         break;
-                    case Cartography.Rendering.SimpleLabelRenderer.RenderLabelPriority.High:
+                    case RenderLabelPriority.High:
                         sb.Append(@" labelweight =""high_weight""");
                         break;
-                    case Cartography.Rendering.SimpleLabelRenderer.RenderLabelPriority.Always:
+                    case RenderLabelPriority.Always:
                         sb.Append(@" labelweight =""always""");
                         break;
                 }
@@ -964,7 +964,7 @@ namespace gView.Framework.AXL
             }
 
             sb.Append(" hotspot=\"" + symbol.HorizontalOffset.ToString(_nhi) + "," + symbol.VerticalOffset.ToString(_nhi) + "\"");
-            // Die Symbolrotation h�ngt bei gView am Renderer
+            // Die Symbolrotation hängt bei gView am Renderer
             //sb.Append(SymbolRotation2AXLParameters(rotation));
             sb.Append("/>");
 

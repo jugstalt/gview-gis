@@ -1,4 +1,5 @@
-﻿using gView.Framework.Core.Carto;
+﻿using gView.Framework.Common;
+using gView.Framework.Core.Carto;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.IO;
 using gView.Framework.Data;
@@ -115,6 +116,25 @@ internal class PersistLayer : IPersistableLoadAsync
         // für ein späters speichern des projektes die werte merken
         if (_element is NullLayer nullLayer)
         {
+            if(SystemInfo.CurrentApp == SystemInfo.App.WebApps)
+            {
+                // Invalid Layer ?
+                // Load in Carto, user can change layer source to correct the class an save map
+
+                var invalidLayer = _map.MapElements
+                    .FirstOrDefault(l =>
+                            l.Class == null
+                            && l is not IGroupLayer
+                            && l.Title == name
+                            && l.ID == _id_);
+
+                if(invalidLayer is not null)
+                {
+                    _element = invalidLayer;
+                    return true;
+                }
+            }
+
             //// 
             ////  Use this, if you MXL is currput => all grouplayers missing!! 
             ////  Repairs the groups with the loss of settings (scales, etc)

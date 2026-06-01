@@ -4,11 +4,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="MongoDB.Driver" Version="3.8.1" />
-  </ItemGroup>
-
+	
   <ItemGroup>
     <ProjectReference Include="..\..\gView.Cmd.CopyFeatureclass.Lib\gView.Cmd.CopyFeatureclass.Lib.csproj" />
     <ProjectReference Include="..\..\gView.Cmd.ElasticSearch.Lib\gView.Cmd.ElasticSearch.Lib.csproj" />
@@ -26,6 +22,7 @@
     <ProjectReference Include="..\..\gView.DataSources.PostGIS\gView.DataSources.PostGIS.csproj" />
     <ProjectReference Include="..\..\gView.DataSources.Shape\gView.DataSources.Shape.csproj" />
     <ProjectReference Include="..\..\gView.DataSources.TileCache\gView.DataSources.TileCache.csproj" />
+    <ProjectReference Include="..\..\gView.DataSources.Unknown\gView.DataSources.Unknown.csproj" />
     <ProjectReference Include="..\..\gView.DataSources.VectorTileCache\gView.DataSources.VectorTileCache.csproj" />
     <ProjectReference Include="..\..\gView.Framework.Vtc\gView.Framework.Vtc.csproj" />
     <ProjectReference Include="..\..\gView.Interoperability.ArcXML\gView.Interoperability.ArcXML.csproj" />

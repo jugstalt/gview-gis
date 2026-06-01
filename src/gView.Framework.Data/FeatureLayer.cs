@@ -86,6 +86,8 @@ namespace gView.Framework.Data
                 this.MaxRefScaleFactor = layer.MaxRefScaleFactor;
                 this.MaxLabelRefScaleFactor = layer.MaxLabelRefScaleFactor;
 
+                this.FeatureLabelPriority = layer.FeatureLabelPriority;
+
                 _fields.CopyFrom(layer.Fields, this.Class);
                 _geometryType = layer.LayerGeometryType;
 
@@ -181,6 +183,8 @@ namespace gView.Framework.Data
             get { return _labelRenderer; }
             set { _labelRenderer = value; }
         }
+        public RenderLabelPriority? FeatureLabelPriority { get; set; } = null;
+
         virtual public IFeatureClass FeatureClass
         {
             get { return _class as IFeatureClass; }
@@ -313,6 +317,12 @@ namespace gView.Framework.Data
             this.MaxRefScaleFactor = (float)stream.Load("maxRefScaleFactor", 0f);
             this.MaxLabelRefScaleFactor = (float)stream.Load("maxLabelRefScaleFactor", 0f);
 
+            try
+            {
+                this.FeatureLabelPriority = (RenderLabelPriority?)(int?)stream.Load("featureLabelPriority", (int?)null);
+            }
+            catch { }
+
             _geometryType = (GeometryType)stream.Load("geomType", (int)GeometryType.Unknown);
 
             string filterQuery = (string)stream.Load("FilterQuery", "");
@@ -379,6 +389,11 @@ namespace gView.Framework.Data
             if (this.MaxLabelRefScaleFactor > 0f)
             {
                 stream.Save("maxLabelRefScaleFactor", this.MaxLabelRefScaleFactor);
+            }
+
+            if(this.FeatureLabelPriority.HasValue)
+            {
+                stream.Save("featureLabelPriority", (int)this.FeatureLabelPriority.Value);
             }
 
             if (_geometryType != GeometryType.Unknown)

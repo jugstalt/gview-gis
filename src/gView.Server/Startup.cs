@@ -34,6 +34,7 @@ public class Startup
         Configuration = configuration.BuildConfigParsers();
         Environment = environment;
 
+        SystemInfo.RegisterApplicationEnvironment(SystemInfo.App.Server);
         SystemInfo.RegisterGdal1_10_PluginEnvironment();
         SystemInfo.RegisterProj4Lib(GeometricTransformerFactory.PROJ_LIB);
         SystemVariables.UseDiagnostic =

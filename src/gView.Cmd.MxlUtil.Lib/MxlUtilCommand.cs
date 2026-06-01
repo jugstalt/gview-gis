@@ -21,7 +21,8 @@ internal class MxlUtilCommand : ICommand
             [
                 new MxlDatasets(),
                 new MxlToFdb(),
-                new PublishService()
+                new PublishService(),
+                new ConvertAprx()
             ];
     }
 
@@ -65,6 +66,7 @@ internal class MxlUtilCommand : ICommand
                         .SelectMany(p => new string[]{ $"-{p.Key}", p.Value.ToString() ?? "" })
                         .ToArray()
                         , 
+                    cancelTracker,
                     logger
                 );
         }

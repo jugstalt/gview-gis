@@ -1,11 +1,12 @@
 ﻿using gView.Cmd.Core.Abstraction;
 using gView.Cmd.MxlUtil.Lib.Abstraction;
 using gView.Cmd.MxlUtil.Lib.Exceptions;
+using gView.Framework.Core.Common;
 using gView.Interoperability.GeoServices.Rest.DTOs;
 using gView.Server.Models;
-using System.Text.Json;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Text.Json;
 
 // Example
 // PublishService -mxl C:\gview5\mxl\sqlite\basis_sqlite.mxl -server https://localhost:44331 -service test-publish/basis1 -client publish-123 -secret publish-123
@@ -44,7 +45,7 @@ Optional arguments:
 ";
         }
 
-        async public Task<bool> Run(string[] args, ICommandLogger? logger = null)
+        async public Task<bool> Run(string[] args, ICancelTracker? cancelTracker = null, ICommandLogger? logger = null)
         {
             string inFile = String.Empty;
             string server = String.Empty;

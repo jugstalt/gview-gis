@@ -28,6 +28,11 @@ static public class LayerExtensions
             _ => false
         };
 
+    static public bool IsInvalidLayer(this ILayer? layer) =>
+         layer is not null 
+         && layer.Class is null
+         && !layer.IsGroupLayer();
+
     static public bool IsGroupLayer(this ILayer layer) => layer is IGroupLayer;
 
     static public bool IsFeatureLyer(this ILayer layer) => layer is IFeatureLayer;
@@ -40,8 +45,10 @@ static public class LayerExtensions
     static public string ErrorMessage(this ILayer layer)
         => (layer as IErrorMessage)?.LastErrorMessage ?? "";
 
-    static public bool CanFeatureRender(this ILayer layer) => layer is IFeatureLayer;
-    static public bool CanLabelRenderer(this ILayer layer) => layer is IFeatureLayer;
+    static public bool CanFeatureRender(this ILayer layer) => 
+        layer is IFeatureLayer && !layer.IsInvalidLayer();
+    static public bool CanLabelRenderer(this ILayer layer) => 
+        layer is IFeatureLayer && !layer.IsInvalidLayer();
 
     static public bool ImplementsLayerComposition(this ILayer layer)
         => layer is IFeatureLayerComposition 

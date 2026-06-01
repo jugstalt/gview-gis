@@ -105,6 +105,42 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde.Repo
                     }
                 }
 
+                // Definitions
+                // [Definition] is an XML with infos about the layer (Domains, ..., M and Z Values)
+                command.CommandText =
+                    """
+                    select 
+                      Name,
+                      HasM = Definition.exist('//*[local-name()="HasM" and (text()="true" or text()="1")]'),
+                      HasZ = Definition.exist('//*[local-name()="HasZ" and (text()="true" or text()="1")]')
+                    from sde.GDB_ITEMS
+                    """;
+                using (var reader = await command.ExecuteReaderAsync())
+                {
+                    while (await reader.ReadAsync())
+                    {
+                        var name = reader["Name"]?.ToString().Split(".") ?? [];
+
+                        (string schemaName, string tableName) = name.Length switch
+                        {
+                            >= 2 => (name[name.Length - 2], name[name.Length - 1]),
+                            1 => ("", name[0]),
+                            _ => ("", "")
+                        };
+
+                        var geometryColumn = SdeGeometryColumns.FirstOrDefault(c => c.Owner.Equals(schemaName, StringComparison.OrdinalIgnoreCase) && c.TableName.Equals(tableName, StringComparison.OrdinalIgnoreCase));
+                        if(geometryColumn != null)
+                        {
+                            if (reader["HasM"]?.ToString() != "False")
+                            {
+                                
+                            }
+                            geometryColumn.HasM = 1.Equals(reader["HasM"]) || true.Equals(reader["HasM"]);
+                            geometryColumn.HasZ = 1.Equals(reader["HasZ"]) || true.Equals(reader["HasZ"]);
+                        }
+                    }
+                }
+
                 return true;
             }
         }
@@ -301,33 +337,33 @@ SELECT @newid ""Next RowID""";
             return fields;
         }
 
-        async public Task<GeometryType> FeatureClassGeometryType(IFeatureClass fc)
+        async public Task<(GeometryType geometryType, bool hasZ, bool hasM)> FeatureClassGeometryType(IFeatureClass fc)
         {
             await this.Refresh();
 
             var fields = new FieldCollection();
 
-            var fcName = fc.Name.ToLower();
-            var geomColumn = SdeGeometryColumns.Where(c => $"{c.Owner}.{c.TableName}".ToLower() == fcName).FirstOrDefault();
+            var fcName = fc.Name;
+            var geomColumn = SdeGeometryColumns.FirstOrDefault(c => $"{c.Owner}.{c.TableName}".Equals(fcName, StringComparison.OrdinalIgnoreCase));
 
             if (geomColumn != null)
             {
                 switch (geomColumn.GeometryType.HasValue ? (SdeTypes.SdeGeometryTppe)geomColumn.GeometryType.Value : SdeTypes.SdeGeometryTppe.unknown)
                 {
                     case SdeTypes.SdeGeometryTppe.point:
-                        return GeometryType.Point;
+                        return (GeometryType.Point, geomColumn.HasZ, geomColumn.HasM);
                     case SdeTypes.SdeGeometryTppe.multipoint:
-                        return GeometryType.Multipoint;
+                        return (GeometryType.Multipoint, geomColumn.HasZ, geomColumn.HasM);
                     case SdeTypes.SdeGeometryTppe.linestring:
                     case SdeTypes.SdeGeometryTppe.multilinestring:
-                        return GeometryType.Polyline;
+                        return (GeometryType.Polyline, geomColumn.HasZ, geomColumn.HasM);
                     case SdeTypes.SdeGeometryTppe.polygon:
                     case SdeTypes.SdeGeometryTppe.multipolygon:
-                        return GeometryType.Polygon;
+                        return (GeometryType.Polygon, geomColumn.HasZ, geomColumn.HasM);
                 }
             }
 
-            return GeometryType.Unknown;
+            return (GeometryType.Unknown, false, false);
         }
 
         #endregion

@@ -12,10 +12,13 @@ namespace gView.Framework.Data
 {
     public abstract class FeatureCursor : IFeatureCursorSkills, IDiagnostics
     {
-        private IGeometricTransformer _transformer = null;
+        private readonly IGeometricTransformer _transformer = null;
+        private readonly TransformMethod _transformMethod;
         private bool _knowsFunctions = true;
 
+
         public FeatureCursor(
+                IGeometryDef geomDef,
                 ISpatialReference fcSRef, 
                 ISpatialReference toSRef,
                 IDatumTransformations datumTransformations)
@@ -26,6 +29,13 @@ namespace gView.Framework.Data
                 //_transformer.FromSpatialReference = fcSRef;
                 //_transformer.ToSpatialReference = toSRef;
                 _transformer.SetSpatialReferences(fcSRef, toSRef);
+
+                _transformMethod = (geomDef?.HasZ, geomDef?.HasM) switch
+                {
+                    (true, _) => TransformMethod.KeepZM,
+                    (_, true) => TransformMethod.KeepZM,
+                    _ => TransformMethod._2D  // default...
+                };
             }
         }
 
@@ -33,7 +43,7 @@ namespace gView.Framework.Data
         {
             if (feature != null && _transformer != null && feature.Shape != null)
             {
-                feature.Shape = _transformer.Transform2D(feature.Shape) as IGeometry;
+                feature.Shape = _transformer.Transform2D(feature.Shape, _transformMethod) as IGeometry;
             }
         }
 
@@ -67,7 +77,7 @@ namespace gView.Framework.Data
                 }
 
                 cloned.Shape = (IGeometry)feature.Shape.Clone();
-                cloned.Shape = _transformer.Transform2D(cloned.Shape) as IGeometry;
+                cloned.Shape = _transformer.Transform2D(cloned.Shape, _transformMethod) as IGeometry;
 
                 return cloned;
             }

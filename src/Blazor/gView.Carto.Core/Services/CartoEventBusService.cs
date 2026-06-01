@@ -91,4 +91,8 @@ public class CartoEventBusService
     public event Func<ILayer, ILayer?, Task>? OnRefreshDataTableAsync;
     public Task FireRefreshDataTableAsync(ILayer layer, ILayer? oldLayer)
         => OnRefreshDataTableAsync?.FireAsync(layer, oldLayer) ?? Task.CompletedTask;
+
+    public event Func<object, object, Task>? OnShowContextMenuAsync;
+    public Task FireShowContextMenuAsync(object mouseArgs, object contextItem)
+        => OnShowContextMenuAsync?.FireAsync(mouseArgs, contextItem) ?? Task.CompletedTask;
 }

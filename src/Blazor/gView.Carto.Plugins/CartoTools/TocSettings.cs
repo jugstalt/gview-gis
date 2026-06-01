@@ -54,6 +54,7 @@ internal class TocSettings : ICartoButton
                     new TocOrderingModel()
                     {
                         SelectedGroupElement = selectedGroupElement,
+                        SelectedTocElement = selectedTocElement,
                         MapName = original.Name,
                         Toc = original.TOC
                     },

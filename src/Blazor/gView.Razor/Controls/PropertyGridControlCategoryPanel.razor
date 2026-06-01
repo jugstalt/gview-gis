@@ -1,4 +1,4 @@
-@using System.Reflection
+﻿@using System.Reflection
 @using System.ComponentModel
 @using gView.GraphicsEngine
 
@@ -168,21 +168,15 @@
                             else if (propertyInfo.PropertyType == typeof(ArgbColor))
                             {
                                 <ColorSelectorButton ArgbColor="(ArgbColor)Properties[propertyInfo]!"
-                                ArgbColorChanged="(col) => PropertyChanged(propertyInfo, col)" />
+                                                     ArgbColorChanged="(col) => PropertyChanged(propertyInfo, col)" />
                             }
                             else if (propertyInfo.PropertyType.IsEnum)
                             {
-                                var multiSelect = propertyInfo.PropertyType.IsFlagsEnum();
+                                var enumType = propertyInfo.PropertyType;
+                                var isFlags = enumType.IsDefined(typeof(FlagsAttribute), false);
 
-                                <MudSelect T="object" Value="Properties[propertyInfo]!"
-                                           MultiSelection="multiSelect"
-                                           SelectedValues="multiSelect ? propertyInfo.PropertyType.EnumsToHashset((int)Properties[propertyInfo]!) : null"
-                                           SelectedValuesChanged="(val) => PropertyChanged(propertyInfo, val)">
-                                    @foreach (var enumValue in Enum.GetValues(propertyInfo.PropertyType))
-                                    {
-                                        <MudSelectItem Value="enumValue">@enumValue.ToString()?.SplitCamelCase()</MudSelectItem>
-                                    }
-                                </MudSelect>
+                                <DynamicComponent Type="@GetEnumComponentType(enumType, isFlags)"
+                                                  Parameters="@GetEnumParameters(propertyInfo, isFlags)" />
                             }
                             else if (propertyInfo.PropertyType == typeof(bool))
                             {
@@ -300,4 +294,130 @@
 
         return Task.CompletedTask;
     });
+
+    #region Enums
+
+    private Type GetEnumComponentType(Type enumType, bool isFlags)
+    {
+        return isFlags
+            ? typeof(EnumSelectFlags<>).MakeGenericType(enumType)
+            : typeof(EnumSelect<>).MakeGenericType(enumType);
+    }
+
+    // private Dictionary<string, object?> GetEnumParameters(
+    //     PropertyInfo propertyInfo,
+    //     Type enumType,
+    //     bool isFlags)
+    // {
+    //     if (!isFlags)
+    //     {
+    //         return new()
+    //         {
+    //             ["Value"] = Properties![propertyInfo],
+    //             ["ValueChanged"] = CreateEnumChangedCallback(propertyInfo, enumType)
+    //         };
+    //     }
+
+    //     return new()
+    //     {
+    //         ["SelectedValues"] = EnumToSelectedValues(propertyInfo),
+    //         ["SelectedValuesChanged"] = CreateFlagsChangedCallback(propertyInfo, enumType)
+    //     };
+    // }
+
+    private Dictionary<string, object?> GetEnumParameters(
+        PropertyInfo propertyInfo,
+        bool isFlags)
+    {
+        if (isFlags)
+        {
+            return new()
+            {
+                ["SelectedValues"] = EnumToSelectedValues(propertyInfo),
+                ["Changed"] = EventCallback.Factory.Create<object?>(this, value =>
+                {
+                    Properties![propertyInfo] = value;
+                    PropertyChanged(propertyInfo, value);
+                })
+            };
+        }
+
+        return new()
+        {
+            ["Value"] = Properties![propertyInfo],
+            ["Changed"] = EventCallback.Factory.Create<object?>(this, value =>
+            {
+                Properties[propertyInfo] = value;
+                PropertyChanged(propertyInfo, value);
+            })
+        };
+    }
+
+    private object CreateEnumChangedCallback(PropertyInfo propertyInfo, Type enumType)
+    {
+        var method = typeof(EventCallbackFactory)
+            .GetMethods()
+            .First(m =>
+                m.Name == nameof(EventCallbackFactory.Create) &&
+                m.IsGenericMethod &&
+                m.GetParameters().Length == 2);
+
+        var genericMethod = method.MakeGenericMethod(enumType);
+
+        Action<object?> callback = value =>
+        {
+            Properties![propertyInfo] = value;
+            PropertyChanged(propertyInfo, value);
+        };
+
+        return genericMethod.Invoke(
+            EventCallback.Factory,
+            new object?[] { this, callback })!;
+    }
+
+    private object CreateFlagsChangedCallback(PropertyInfo propertyInfo, Type enumType)
+    {
+        return EventCallback.Factory.Create<IEnumerable<object>>(this, values =>
+        {
+            long combined = 0;
+
+            foreach (var value in values)
+            {
+                combined |= Convert.ToInt64(value);
+            }
+
+            var enumValue = Enum.ToObject(enumType, combined);
+
+            Properties![propertyInfo] = enumValue;
+            PropertyChanged(propertyInfo, enumValue);
+        });
+    }
+
+    private object EnumToSelectedValues(PropertyInfo propertyInfo)
+    {
+        var enumType = propertyInfo.PropertyType;
+
+        var currentValue = Properties![propertyInfo];
+
+        if (currentValue is null)
+        {
+            return Array.CreateInstance(enumType, 0);
+        }
+
+        var values = Enum.GetValues(enumType)
+            .Cast<object>()
+            .Where(v => ((Enum)currentValue).HasFlag((Enum)v))
+            .ToArray();
+
+        var typedArray = Array.CreateInstance(enumType, values.Length);
+
+        for (int i = 0; i < values.Length; i++)
+        {
+            typedArray.SetValue(values[i], i);
+        }
+
+        return typedArray;
+    }
+
+    #endregion
 }

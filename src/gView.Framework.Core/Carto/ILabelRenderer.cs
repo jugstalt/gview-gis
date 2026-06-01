@@ -1,7 +1,6 @@
 ﻿using gView.Framework.Core.Data;
 using gView.Framework.Core.Data.Filters;
 using gView.Framework.Core.IO;
-using gView.Framework.Core.Common;
 
 namespace gView.Framework.Core.Carto
 {
@@ -10,7 +9,7 @@ namespace gView.Framework.Core.Carto
         void PrepareQueryFilter(IDisplay display, IFeatureLayer layer, IQueryFilter filter);
 
         LabelRenderMode RenderMode { get; }
-        int RenderPriority { get; }
+        RenderLabelPriority RenderPriority { get; }
 
         void Draw(IDisplay disp, IFeatureLayer layer, IFeature feature);
     }

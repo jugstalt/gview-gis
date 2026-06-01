@@ -1,4 +1,4 @@
-using gView.Framework.Cartography.Rendering.Abstractions;
+﻿using gView.Framework.Cartography.Rendering.Abstractions;
 using gView.Framework.Common;
 using gView.Framework.Core.Carto;
 using gView.Framework.Core.Common;
@@ -69,10 +69,7 @@ namespace gView.Framework.Cartography.Rendering
             }
         }
 
-        public int RenderPriority
-        {
-            get { return 0; }
-        }
+        public RenderLabelPriority RenderPriority => RenderLabelPriority.Always;
 
         public void Draw(IDisplay disp, IFeatureLayer layer, IFeature feature)
         {
@@ -410,18 +407,8 @@ namespace gView.Framework.Cartography.Rendering
                 }
             }
 
-            public int RenderPriority
-            {
-                get
-                {
-                    if (_renderer != null)
-                    {
-                        return _renderer.RenderPriority;
-                    }
-
-                    return 0;
-                }
-            }
+            public RenderLabelPriority RenderPriority =>
+                _renderer?.RenderPriority ?? RenderLabelPriority.Always;
 
             public void Draw(IDisplay disp, IFeatureLayer layer, IFeature feature)
             {

@@ -25,7 +25,8 @@ namespace gView.DataSources.Fdb.MSSql
         string _sql;
 
         private SqlFDBFeatureCursorIDs(IGeometryDef geomDef, ISpatialReference toSRef, IDatumTransformations datumTransformations)
-            : base(geomDef?.SpatialReference, toSRef, datumTransformations)
+            : base(geomDef, 
+                   geomDef?.SpatialReference, toSRef, datumTransformations)
         {
 
         }

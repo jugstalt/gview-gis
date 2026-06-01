@@ -15,7 +15,7 @@
                 <div class="version">@Model.Version</div>
                 <a style="color: var(--mud-palette-primary);" href="https://github.com/jugstalt/gview-gis" target="_blank">Github Repository & Documentation</a>
                 <div>User: @IdentityProvider.Identity.UserNameAndRole()</div>
-                <div>Graphics Engine: @(gView.GraphicsEngine.Current.Engine?.EngineName ?? "Unknown")</div>
+                <div>Graphics Engine: @(gView.GraphicsEngine.Current.Engine?.EngineDisplayName ?? "Unknown")</div>
                 <pre class="license">
                     @licText
                 </pre>

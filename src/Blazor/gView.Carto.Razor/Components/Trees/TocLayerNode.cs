@@ -11,12 +11,11 @@ public class TocLayerNode : TocTreeNode, ITocLayerNode
     {
         if (tocElement.HasLegendItems())
         {
-            this.Children = new List<TreeItemData<ITocElement>>() 
-            {
-                new TocLegendNode(tocElement)
-            };
+            base.AddChild(new TocLegendNode(tocElement));
         }
     }
+
+
 
     public override bool Selected 
     {

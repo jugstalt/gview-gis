@@ -1968,7 +1968,7 @@ namespace gView.DataSources.Fdb.SQLite
             string _sql;
 
             private SQLiteFDBFeatureCursorIDs(IGeometryDef geomDef, ISpatialReference toSRef, IDatumTransformations datumTransformations)
-                : base(geomDef?.SpatialReference, toSRef, datumTransformations)
+                : base(geomDef, geomDef?.SpatialReference, toSRef, datumTransformations)
             {
 
             }

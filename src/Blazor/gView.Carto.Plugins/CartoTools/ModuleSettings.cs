@@ -10,7 +10,7 @@ namespace gView.Carto.Plugins.CartoTools;
 [RestorePointAction(RestoreAction.SetRestorePointOnClick)]
 internal class ModuleSettings: ICartoButton
 {
-    public string Name => "Module Settings";
+    public string Name => "Module Settings (Editing...)";
 
     public string ToolTip => "";
 

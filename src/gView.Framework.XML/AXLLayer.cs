@@ -1,4 +1,4 @@
-using gView.Framework.Core.Carto;
+ï»¿using gView.Framework.Core.Carto;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Data.Filters;
 using gView.Framework.Core.Geometry;
@@ -176,6 +176,9 @@ namespace gView.Framework.XML
             get { return m_labelrenderer; }
             set { m_labelrenderer = value; }
         }
+
+        public RenderLabelPriority? FeatureLabelPriority { get; set; } = null;
+
         public IQueryFilter FilterQuery
         {
             get { return m_filterQuery; }
@@ -540,7 +543,7 @@ namespace gView.Framework.XML
         }
 
 
-        // gibt zurück ob Karte Selektion hat...
+        // gibt zurÃ¼ck ob Karte Selektion hat...
         public bool AXLaddSelection(FeatureQueryResponse fqr, string selectionColor)
         {
             if (!(fqr.layer is AXLFeatureLayer))
@@ -624,8 +627,8 @@ namespace gView.Framework.XML
                 if (fqr.dispBuffer == true && fqr.bufferMethode == featureQueryMethode.ID)
                 {
                     //
-                    // Falls "Alle anzeigen" von einem Puffer-Erbebnis aufgerufen wird, soll nicht über den Envelope
-                    // selektiert werden. Dabei würden die ursprünglichen, zum Buffer aufgezogenen Features selektiert werden.
+                    // Falls "Alle anzeigen" von einem Puffer-Erbebnis aufgerufen wird, soll nicht Ã¼ber den Envelope
+                    // selektiert werden. Dabei wÃ¼rden die ursprÃ¼nglichen, zum Buffer aufgezogenen Features selektiert werden.
                     // --> nur das wirklich gepufferte Feature selektieren... (Atlas3)
                     //
                     m_xWriter.WriteStartElement("QUERY");

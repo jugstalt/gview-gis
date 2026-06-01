@@ -545,8 +545,13 @@ namespace gView.Server.AppCode
                     }
                     //layers = ModifyLayerList(layers);
                     List<IFeatureLayer> labelLayers = this.OrderedLabelLayers(layers);
+                    bool hasFeatureLabelPriority = layers.Any(f =>
+                        f is IFeatureLayer fLayer
+                        && fLayer.FeatureLabelPriority.HasValue
+                        && fLayer.RenderInScale(this));
 
                     LabelEngine.Init(this.Display, false);
+                    
                     foreach (IDatasetElement element in layers)
                     {
                         if (!cancelTracker.Continue)
@@ -604,7 +609,7 @@ namespace gView.Server.AppCode
                                 }
                                 else
                                 {
-                                    rlt.UseLabelRenderer = labelLayers.IndexOf(fLayer) == 0;  // letzten Layer gleich mitlabeln
+                                    rlt.UseLabelRenderer = hasFeatureLabelPriority == false && labelLayers.IndexOf(fLayer) == 0;  // letzten Layer gleich mitlabeln
                                 }
 
                                 if (rlt.UseLabelRenderer)
@@ -657,8 +662,17 @@ namespace gView.Server.AppCode
                     // Label Features
                     if (labelLayers.Count != 0)
                     {
+                        var currentLabelPriority = RenderLabelPriority.High;
+                        Display.LabelEngine.IndexBlockingGeometryToPriority(Display, currentLabelPriority);
+
                         foreach (IFeatureLayer fLayer in labelLayers)
                         {
+                            if (currentLabelPriority != fLayer.LabelRenderer.RenderPriority && fLayer.LabelRenderer.RenderPriority != RenderLabelPriority.Always)
+                            {
+                                currentLabelPriority = fLayer.LabelRenderer.RenderPriority;
+                                Display.LabelEngine.IndexBlockingGeometryToPriority(Display, currentLabelPriority);
+                            }
+
                             this.SetGeotransformer(fLayer, geoTransformer);
 
                             if (!fLayer.Visible)

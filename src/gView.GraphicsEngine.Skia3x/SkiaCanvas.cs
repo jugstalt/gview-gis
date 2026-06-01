@@ -1,16 +1,17 @@
-﻿using gView.GraphicsEngine.Abstraction;
+﻿#nullable enable
+
+using gView.GraphicsEngine.Abstraction;
+using gView.GraphicsEngine.Extensions;
 using gView.GraphicsEngine.Skia.Extensions;
 using SkiaSharp;
 using System;
 using System.Runtime.CompilerServices;
-using gView.GraphicsEngine.Extensions;
-using System.Linq;
 
 namespace gView.GraphicsEngine.Skia;
 
 class SkiaCanvas : ICanvas
 {
-    private SKCanvas _canvas;
+    private SKCanvas? _canvas;
 
     internal SkiaCanvas(SKCanvas canvas)
     {
@@ -33,7 +34,7 @@ class SkiaCanvas : ICanvas
 
     public IDisplayCharacterRanges DisplayCharacterRanges(IFont font, IDrawTextFormat format, string text)
     {
-        return new DisplayCharacterRanges(_canvas, GetSKPaint(font), format, text);
+        return new DisplayCharacterRanges(_canvas, GetSKFont(font), format, text);
     }
 
     public void Flush()
@@ -53,46 +54,68 @@ class SkiaCanvas : ICanvas
 
     public void DrawBitmap(IBitmap bitmap, CanvasPoint point)
     {
-        _canvas?.DrawBitmap((SKBitmap)bitmap.EngineElement, point.ToSKPoint(), new SKPaint()
-        {
-            FilterQuality = this.InterpolationMode.ToSKFilterQuality(),
-        });
+        using var image = SKImage.FromBitmap((SKBitmap)bitmap.EngineElement);
+        _canvas?.DrawImage(image, point.ToSKPoint(), this.InterpolationMode.ToSKSamplingOpitons());
+
+        //_canvas?.DrawBitmap((SKBitmap)bitmap.EngineElement, point.ToSKPoint(), new SKPaint()
+        //{
+
+        //    FilterQuality = this.InterpolationMode.ToSKFilterQuality(),
+        //});
     }
 
     public void DrawBitmap(IBitmap bitmap, CanvasPointF pointF)
     {
-        _canvas?.DrawBitmap((SKBitmap)bitmap.EngineElement, pointF.ToSKPoint(), new SKPaint()
-        {
-            FilterQuality = this.InterpolationMode.ToSKFilterQuality()
-        });
+        using var image = SKImage.FromBitmap((SKBitmap)bitmap.EngineElement);
+        _canvas?.DrawImage(image, pointF.ToSKPoint(), this.InterpolationMode.ToSKSamplingOpitons());
+
+        //_canvas?.DrawBitmap((SKBitmap)bitmap.EngineElement, pointF.ToSKPoint(), new SKPaint()
+        //{
+        //    FilterQuality = this.InterpolationMode.ToSKFilterQuality()
+        //});
     }
 
     public void DrawBitmap(IBitmap bitmap, CanvasRectangle dest, CanvasRectangle source, float opacity = 1)
     {
-        _canvas?.DrawBitmap((SKBitmap)bitmap.EngineElement, source.ToSKRect(), dest.ToSKRect(), new SKPaint()
+        using var image = SKImage.FromBitmap((SKBitmap)bitmap.EngineElement);
+        _canvas?.DrawImage(image, source.ToSKRect(), dest.ToSKRect(), this.InterpolationMode.ToSKSamplingOpitons(), new SKPaint()
         {
-            FilterQuality = this.InterpolationMode.ToSKFilterQuality(),
-            Color = SKColors.Black.WithAlpha((byte)(255 * opacity))
+            Color = SKColors.Black.WithAlpha((byte)(255 * opacity)),
+
         });
+
+        //_canvas?.DrawBitmap((SKBitmap)bitmap.EngineElement, source.ToSKRect(), dest.ToSKRect(), new SKPaint()
+        //{
+        //    FilterQuality = this.InterpolationMode.ToSKFilterQuality(),
+        //    Color = SKColors.Black.WithAlpha((byte)(255 * opacity)),
+
+        //});
     }
 
     public void DrawBitmap(IBitmap bitmap, CanvasRectangleF dest, CanvasRectangleF source)
     {
-        _canvas?.DrawBitmap(
-            (SKBitmap)bitmap.EngineElement,
+        using var image = SKImage.FromBitmap((SKBitmap)bitmap.EngineElement);
+        _canvas?.DrawImage(
+            image,
             FitDrawBitmapSourceRectangle(source).ToSKRect(),
             dest.ToSKRect(),
-            new SKPaint()
-            {
-                FilterQuality = this.InterpolationMode.ToSKFilterQuality()
-            });
+            this.InterpolationMode.ToSKSamplingOpitons());
+
+        //_canvas?.DrawBitmap(
+        //    (SKBitmap)bitmap.EngineElement,
+        //    FitDrawBitmapSourceRectangle(source).ToSKRect(),
+        //    dest.ToSKRect(),
+        //    new SKPaint()
+        //    {
+        //        FilterQuality = this.InterpolationMode.ToSKFilterQuality()
+        //    });
     }
 
     public void DrawBitmap(IBitmap bitmap, CanvasPointF[] points, CanvasRectangleF source, float opacity = 1)
     {
         // not correct
         // var dest = new CanvasRectangleF(points[0].X, points[0].Y, points[1].X - points[0].X, points[2].Y - points[0].Y);
-        
+
         // solution
         // https://docs.microsoft.com/en-us/xamarin/xamarin-forms/user-interface/graphics/skiasharp/transforms/3d-rotation
         var skMatrix = ComputeMatrix(new SKSize(source.Width, source.Height),
@@ -104,11 +127,19 @@ class SkiaCanvas : ICanvas
 
         _canvas?.SetMatrix(skMatrix);
 
-        _canvas?.DrawBitmap((SKBitmap)bitmap.EngineElement, 0f, 0f, new SKPaint()
-        {
-            FilterQuality = this.InterpolationMode.ToSKFilterQuality(),
-            Color = SKColors.Black.WithAlpha((byte)(255 * opacity))
-        });
+        using var image = SKImage.FromBitmap((SKBitmap)bitmap.EngineElement);
+        _canvas?.DrawImage(image, 0, 0,
+            this.InterpolationMode.ToSKSamplingOpitons(),
+            new SKPaint()
+            {
+                Color = SKColors.Black.WithAlpha((byte)(255 * opacity))
+            });
+
+        //_canvas?.DrawBitmap((SKBitmap)bitmap.EngineElement, 0f, 0f, new SKPaint()
+        //{
+        //    FilterQuality = this.InterpolationMode.ToSKFilterQuality(),
+        //    Color = SKColors.Black.WithAlpha((byte)(255 * opacity))
+        //});
 
         _canvas?.ResetMatrix();
     }
@@ -198,22 +229,22 @@ class SkiaCanvas : ICanvas
 
     public void DrawText(string text, IFont font, IBrush brush, CanvasPoint point)
     {
-        DrawMultilineText(text.RemoveReturns(), point.ToSKPoint(), GetSKPaint(font, (SKPaint)brush.EngineElement), font);
+        DrawMultilineText(text.RemoveReturns(), point.ToSKPoint(), (SKPaint)brush.EngineElement, font);
     }
 
     public void DrawText(string text, IFont font, IBrush brush, int x, int y)
     {
-        DrawMultilineText(text.RemoveReturns(), x, y, GetSKPaint(font, (SKPaint)brush.EngineElement), font);
+        DrawMultilineText(text.RemoveReturns(), x, y, (SKPaint)brush.EngineElement, font);
     }
 
     public void DrawText(string text, IFont font, IBrush brush, CanvasPointF pointF)
     {
-        DrawMultilineText(text.RemoveReturns(), pointF.ToSKPoint(), GetSKPaint(font, (SKPaint)brush.EngineElement), font);
+        DrawMultilineText(text.RemoveReturns(), pointF.ToSKPoint(), (SKPaint)brush.EngineElement, font);
     }
 
     public void DrawText(string text, IFont font, IBrush brush, float x, float y)
     {
-        DrawMultilineText(text.RemoveReturns(), x, y, GetSKPaint(font, (SKPaint)brush.EngineElement), font);
+        DrawMultilineText(text.RemoveReturns(), x, y, (SKPaint)brush.EngineElement, font);
     }
 
     public void DrawText(string text, IFont font, IBrush brush, CanvasRectangleF rectangleF)
@@ -235,7 +266,7 @@ class SkiaCanvas : ICanvas
         var skPoint = point.ToSKPoint();
         var skPaint = GetSKPaint(font, (SKPaint)brush.EngineElement, format, ref text, ref skPoint);
 
-        DrawMultilineText(text, skPoint, skPaint, font);
+        DrawMultilineText(text, skPoint, skPaint, font, format);
     }
 
     public void DrawText(string text, IFont font, IBrush brush, int x, int y, IDrawTextFormat format)
@@ -243,7 +274,7 @@ class SkiaCanvas : ICanvas
         var skPoint = new SKPoint(x, y);
         var skPaint = GetSKPaint(font, (SKPaint)brush.EngineElement, format, ref text, ref skPoint);
 
-        DrawMultilineText(text, skPoint, skPaint, font);
+        DrawMultilineText(text, skPoint, skPaint, font, format);
     }
 
     public void DrawText(string text, IFont font, IBrush brush, CanvasPointF pointF, IDrawTextFormat format)
@@ -251,7 +282,7 @@ class SkiaCanvas : ICanvas
         var skPoint = pointF.ToSKPoint();
         var skPaint = GetSKPaint(font, (SKPaint)brush.EngineElement, format, ref text, ref skPoint);
 
-        DrawMultilineText(text, skPoint, skPaint, font);
+        DrawMultilineText(text, skPoint, skPaint, font, format);
     }
 
     public void DrawText(string text, IFont font, IBrush brush, float x, float y, IDrawTextFormat format)
@@ -259,7 +290,7 @@ class SkiaCanvas : ICanvas
         var skPoint = new SKPoint(x, y);
         var skPaint = GetSKPaint(font, (SKPaint)brush.EngineElement, format, ref text, ref skPoint);
 
-        DrawMultilineText(text, skPoint, skPaint, font);
+        DrawMultilineText(text, skPoint, skPaint, font, format);
     }
 
     public CanvasSizeF MeasureText(string text, IFont font)
@@ -271,17 +302,22 @@ class SkiaCanvas : ICanvas
 
         if (text.IsMultiline())
         {
-            var fontHeight = font.Size.FontSizePointsToPixels();
+            //var fontHeight = font.Size.FontSizePointsToPixels();
+
+            var skFont = GetSKFont(font);
+            // https://github.com/mono/SkiaSharp/issues/1147
+            var lineHeight = skFont.Metrics.CapHeight + skFont.Metrics.Descent;
+
             foreach (var line in text.GetLines())
             {
-                GetSKPaint(font).MeasureText(line, ref bounds);
+                skFont.MeasureText(line, out bounds);
                 size.Width = Math.Max(size.Width, bounds.Width);
-                size.Height += fontHeight;
+                size.Height += lineHeight;
             }
         }
         else
         {
-            GetSKPaint(font).MeasureText(text, ref bounds);
+            GetSKFont(font).MeasureText(text, out bounds);
             size.Width = bounds.Width;
             size.Height = bounds.Height;
         }
@@ -292,6 +328,32 @@ class SkiaCanvas : ICanvas
         }
 
         return size;
+    }
+
+    public float GetBaselineOffest(IFont font, string text, IDrawTextFormat? format)
+    {
+        if (format is null) return 0;
+
+        var skFont = GetSKFont(font);
+
+        var far = -skFont.Metrics.Bottom; 
+        var near = -skFont.Metrics.Top; 
+
+        var offset = 0f;
+        switch (format.LineAlignment)
+        {
+            case StringAlignment.Far:
+                offset += far;
+                break;
+            case StringAlignment.Center:
+                offset += 0f; //(far + near) * .5f;
+                break;
+            case StringAlignment.Near:
+                offset += -far; // near;
+                break;
+        }
+
+        return offset;
     }
 
     public void ResetTransform()
@@ -339,7 +401,7 @@ class SkiaCanvas : ICanvas
         var skPaint = (SKPaint)pen.EngineElement;
 
         skPaint.IsAntialias = this.SmoothingMode == SmoothingMode.AntiAlias;
-        
+
         return skPaint;
     }
 
@@ -356,12 +418,20 @@ class SkiaCanvas : ICanvas
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private SKPaint GetSKPaint(IFont font)
     {
-        var skPaint = (SKPaint)font.EngineElement;
+        var skPaint = ((SkiaFontPaint)(font.EngineElement)).SKPaint;
 
         skPaint.IsAntialias = this.SmoothingMode == SmoothingMode.AntiAlias;
         skPaint.TextEncoding = SKTextEncoding.Utf16;
 
         return skPaint;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private SKFont GetSKFont(IFont font)
+    {
+        var skFont = ((SkiaFontPaint)(font.EngineElement)).SKFont;
+
+        return skFont;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -376,9 +446,10 @@ class SkiaCanvas : ICanvas
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private SKPaint GetSKPaint(IFont font, SKPaint brush, IDrawTextFormat format, ref string text, ref SKPoint point)
+    private SKPaint GetSKPaint(IFont font, SKPaint brush, IDrawTextFormat? format, ref string text, ref SKPoint point)
     {
         var skPaint = GetSKPaint(font, brush);
+        var skFont = GetSKFont(font);
 
         if (this.TextRenderingHint == TextRenderingHint.AntiAlias)
         {
@@ -389,107 +460,104 @@ class SkiaCanvas : ICanvas
 
         if (format != null)
         {
-            var skAlignment = (SKPaint)format.EngineElement;
+            var skAlignment = (SKTextAlign)format.EngineElement;
 
-            skPaint.TextAlign = skAlignment.TextAlign;
-            //if(format.LineAlignment != StringAlignment.Far)
+            var far = -skFont.Metrics.Bottom; // -skPaint.FontMetrics.Bottom /*- height * 0.00f*/;
+            var near = -skFont.Metrics.Top; // -skPaint.FontMetrics.Top;
+            // https://github.com/mono/SkiaSharp/issues/1147
+            var lineHeight = skFont.Metrics.CapHeight + skFont.Metrics.Descent;
+
+            switch (format.LineAlignment)
             {
-                //var height = font.Size.FontSizePointsToPixels() * 0.72f; //this.MeasureText("X", font).Height;
-                //switch(format.LineAlignment)
-                //{
-                //    case StringAlignment.Center:
-                //        point.Y += skPaint.FontMetrics != null ? skPaint.FontMetrics.XHeight / 2f : height / 2.5f;
-                //        break;
-                //    case StringAlignment.Near:
-                //        point.Y += skPaint.FontMetrics != null ? skPaint.FontMetrics.CapHeight : height;
-                //        break;
-                //}
+                case StringAlignment.Far:
+                    point.Y += far;
 
-                //var capHeight = skPaint.FontMetrics != null ? skPaint.FontMetrics.CapHeight : height * 0.75f;
+                    var span = text.AsSpan();
+                    if (span.IsMultiline())
+                    {
+                        point.Y -= (span.LinesCount() - 1) * (lineHeight);
+                    }
+                    break;
+                case StringAlignment.Center:
+                    point.Y += (far + near) * .5f;
 
-                var far = -skPaint.FontMetrics.Bottom /*- height * 0.00f*/;
-                var near = -skPaint.FontMetrics.Top;
-
-                switch (format.LineAlignment)
-                {
-                    case StringAlignment.Far:
-                        point.Y += far;
-
-                        var span = text.AsSpan();
-                        if(span.IsMultiline())
-                        {
-                            point.Y += (span.LinesCount() - 1) * (skPaint.FontMetrics.Ascent);
-                        }
-                        
-                        break;
-                    case StringAlignment.Center:
-                        point.Y += (far + near) * .5f;
-
-                        var span2 = text.AsSpan();
-                        if (span2.IsMultiline())
-                        {
-                            point.Y += (span2.LinesCount() - 1) * (skPaint.FontMetrics.Ascent) * .5f;
-                        }
-                        
-                        //point.Y = this.MeasureText(text, font).Height;
-                        break;
-                    case StringAlignment.Near:
-                        point.Y += near;
-                        break;
-                }
+                    var span2 = text.AsSpan();
+                    if (span2.IsMultiline())
+                    {
+                        point.Y -= (span2.LinesCount() - 1) * (lineHeight) * .5f;
+                    }
+                    break;
+                case StringAlignment.Near:
+                    point.Y += near;
+                    break;
             }
+
         }
 
         return skPaint;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void DrawMultilineText(string text, SKPoint point, SKPaint paint, IFont font)
+    private void DrawMultilineText(string text, SKPoint point, SKPaint brush, IFont font, IDrawTextFormat? format = null)
     {
+        var skPaint = GetSKPaint(font, brush);
+        var skFont = GetSKFont(font);
+
         if (text.Contains("\n"))
         {
+            // https://github.com/mono/SkiaSharp/issues/1147
+            var lineHeight = skFont.Metrics.CapHeight + skFont.Metrics.Descent;
+
             String[] lines = text.Replace("\r", "").Split('\n');
 
             foreach (var line in lines)
             {
-                //_canvas?.DrawText(line, point, paint);
-                DrawText(line, point.X, point.Y, paint, font);
+                DrawText(line, point.X, point.Y, skPaint, skFont, font, format);
 
-                point.Y += paint.TextSize;
+                point.Y += lineHeight;
             }
         }
         else
         {
-            //_canvas?.DrawText(text, point, paint);
-            DrawText(text, point.X, point.Y, paint, font);
+            DrawText(text, point.X, point.Y, skPaint, skFont, font, format);
         }
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void DrawMultilineText(string text, float x, float y, SKPaint paint, IFont font)
+    private void DrawMultilineText(string text, float x, float y, SKPaint brush, IFont font, IDrawTextFormat? format = null)
     {
+        var skPaint = GetSKPaint(font, brush);
+        var skFont = GetSKFont(font);
+
         if (text.Contains("\n"))
         {
+            // https://github.com/mono/SkiaSharp/issues/1147
+            var lineHeight = skFont.Metrics.CapHeight + skFont.Metrics.Descent;
+
             String[] lines = text.Replace("\r", "").Split('\n');
 
             foreach (var line in lines)
             {
-                DrawText(line, x, y, paint, font);
+                DrawText(line, x, y, skPaint, skFont, font, format);
 
-                y += paint.TextSize;
+                y += lineHeight;
             }
         }
         else
         {
-            DrawText(text, x, y, paint, font);
+            DrawText(text, x, y, skPaint, skFont, font, format);
         }
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void DrawText(string text, float x, float y, SKPaint paint, IFont font)
+    private void DrawText(string text, float x, float y, SKPaint skPaint, SKFont skFont, IFont font, IDrawTextFormat? format = null)
     {
+        if (_canvas is null) { return; }
+
         font.LockObject.InterLock(() =>
-            _canvas?.DrawText(text, x, y, paint)
+            _canvas?.DrawText(text, x, y,
+                format?.Alignment.ToSkTextAlign() ?? SKTextAlign.Left,
+                skFont, skPaint)
         );
 
         if (font.Style.HasFlag(FontStyle.Underline) ||
@@ -498,18 +566,18 @@ class SkiaCanvas : ICanvas
             #region Draw underline/strikout line
 
             var sizeF = this.MeasureText(text, font);
-            float strokeWidth = paint.StrokeWidth;
+            float strokeWidth = skPaint.StrokeWidth;
             float w2 = sizeF.Width / 2f,
                   x1 = x - sizeF.Width / 2f,
                   x2 = x + sizeF.Width / 2f;
 
-            switch (paint.TextAlign)
+            switch (format?.Alignment)
             {
-                case SKTextAlign.Left:
+                case StringAlignment.Near:
                     x1 += w2;
                     x2 += w2;
                     break;
-                case SKTextAlign.Right:
+                case StringAlignment.Far:
                     x1 -= w2;
                     x2 -= w2;
                     break;
@@ -517,27 +585,26 @@ class SkiaCanvas : ICanvas
 
             if (font.Style.HasFlag(FontStyle.Underline))
             {
-                float lineY = y + paint.TextSize * 0.1f;
+                float lineY = y + skFont.Size * 0.1f;
 
-                paint.StrokeWidth = paint.TextSize * 0.1f;
+                skPaint.StrokeWidth = skFont.Size * 0.1f;
                 _canvas.DrawLine(x1, lineY,
-                                 x2, lineY, paint);
+                                 x2, lineY, skPaint);
             }
             if (font.Style.HasFlag(FontStyle.Strikeout))
             {
-                float lineY = y - paint.TextSize / 3f * 0.82f; // empiric
+                float lineY = y - skFont.Size / 3f * 0.82f; // empiric
 
-                paint.StrokeWidth = paint.TextSize * 0.05f;
+                skPaint.StrokeWidth = skFont.Size * 0.05f;
                 _canvas.DrawLine(x1, lineY,
-                                 x2, lineY, paint);
+                                 x2, lineY, skPaint);
             }
 
-            paint.StrokeWidth = strokeWidth;
+            skPaint.StrokeWidth = strokeWidth;
 
             #endregion
         }
     }
-
 
     #region Matrix
 

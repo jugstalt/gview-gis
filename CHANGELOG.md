@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 8.26.2205
+
+Using .NET 10
+
+## Added
+
+- WebApps: Usability
+  - Carto:
+    - Context Menus on TOC Items (Layers/Map)
+    - Layer Source (Layer settings): Layer and dataset can changed inside app
+    - ...
+
+- Server: GeoServices an serve and edit SDE Layers with Z- and M-Values
+
+- Reading WKB from DB: Support auf Curves. Curves can be read (converted internally to simple lines)
+
+- Labeling Engine:
+  - Feature Priority: Features (Geometry of geo-object) can take a priority
+    in labeling to avoid label to overlap this features.
+  - Some bugfixing in labeling engine: in edge cases an overlapping of 
+    labels was possible
+
+- Graphics Engine: Skia upgrade to SkiaSharp 3.x
+
 ## 7.x
 
 Using .NET 9

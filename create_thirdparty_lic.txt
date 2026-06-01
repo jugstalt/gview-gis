@@ -1,0 +1,14 @@
+﻿dotnet tool install --global ThirdLicense
+thirdlicense --help
+
+thirdlicense --output THIRD-PARTY-NOTICES.txt --project gview-gis.sln
+
+// event Powershell to shrink
+$content = Get-Content THIRD-PARTY-NOTICES.txt
+
+$filtered = $content | Where-Object {
+    $_ -notmatch '^License notice for Microsoft\.' -and
+    $_ -notmatch '^License notice for System\.'
+}
+
+$filtered | Set-Content THIRD-PARTY-NOTICES-clean.txt

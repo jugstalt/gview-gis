@@ -11,15 +11,12 @@ using gView.Framework.Core.UI;
 using gView.Framework.Data;
 using gView.Framework.Data.Extensions;
 using gView.Framework.Geometry;
-using gView.Framework.Geometry.Extensions;
-using gView.Framework.Geometry.Proj;
 using gView.Framework.IO;
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -99,7 +96,7 @@ namespace gView.Framework.Cartography
             _layerDescriptions = original._layerDescriptions;
             _layerCopyrightTexts = original._layerCopyrightTexts;
 
-            MapServiceProperties = 
+            MapServiceProperties =
                 original.MapServiceProperties?.Clone()
                 ?? new MapServiceProperties();
 
@@ -315,31 +312,20 @@ namespace gView.Framework.Cartography
             //
             // Die zu labelden layer ermittel
             //
-            List<IFeatureLayer> labelLayers = new List<IFeatureLayer>();
-            foreach (ILayer layer in layers)
+            List<IFeatureLayer> labelLayers = new();
+
+            foreach (ILayer layer in layers.Where(l => l is IFeatureLayer))
             {
-                if (!(layer is IFeatureLayer))
-                {
-                    continue;
-                }
-
-                if (!layer.LabelInScale(this))
-                {
-                    continue;
-                }
-
                 IFeatureLayer fLayer = (IFeatureLayer)layer;
-                if (fLayer.LabelRenderer == null)
-                {
-                    continue;
-                }
 
-                if (fLayer.LabelRenderer.RenderMode == LabelRenderMode.RenderWithFeature)
+                if (fLayer.LabelRenderer is not null)
                 {
-                    continue;
+                    if (fLayer.LabelInScale(this) 
+                        && fLayer.LabelRenderer.RenderMode != LabelRenderMode.RenderWithFeature)
+                    {
+                        labelLayers.Add(fLayer);
+                    }
                 }
-
-                labelLayers.Add(fLayer);
             }
             labelLayers = ListOperations<IFeatureLayer>.Swap(labelLayers);
             labelLayers = ListOperations<IFeatureLayer>.Sort(labelLayers, new LabelLayersPrioritySorter());
@@ -360,6 +346,7 @@ namespace gView.Framework.Cartography
 
                 IPriority p1 = x.LabelRenderer as IPriority;
                 IPriority p2 = y.LabelRenderer as IPriority;
+
                 if (p1 == null || p2 == null)
                 {
                     return 0;
@@ -533,7 +520,7 @@ namespace gView.Framework.Cartography
 
             foreach (ILayer layer in _layers)
             {
-                if(_toc.GetTOCElement(layer) == null)
+                if (_toc.GetTOCElement(layer) == null)
                 {
                     continue;
                 }
@@ -814,7 +801,7 @@ namespace gView.Framework.Cartography
             }
 
             // also remove von grouplayers
-            foreach(var groupLayer in _layers.Where(l => l is IGroupLayer)
+            foreach (var groupLayer in _layers.Where(l => l is IGroupLayer)
                                              .Select(l => (IGroupLayer)l))
             {
                 groupLayer.TryRemoveLayer(layer);
@@ -1100,7 +1087,7 @@ namespace gView.Framework.Cartography
             // there was a typo in "WebMercatorScaleBehavior" in some legacy files...
             // so check the old name first:
             var legacyTypoWebMercatorBehavior = (int)stream.Load("WebMercatorScaleBehavoir", -99);
-            WebMercatorScaleBehavior = legacyTypoWebMercatorBehavior == -99 
+            WebMercatorScaleBehavior = legacyTypoWebMercatorBehavior == -99
                 ? (WebMercatorScaleBehavior)stream.Load("WebMercatorScaleBehavior", (int)WebMercatorScaleBehavior.Default)
                 : (WebMercatorScaleBehavior)legacyTypoWebMercatorBehavior;
 

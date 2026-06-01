@@ -1,4 +1,4 @@
-@inherits ModalDialogFormBase<NewFdbDatasetModel>
+﻿@inherits ModalDialogFormBase<NewFdbDatasetModel>
 @inject IExplorerApplicationScopeService AppScope
 
 <ModalDialogFormBase T="NewFdbDatasetModel"
@@ -25,8 +25,8 @@
                 </GvGridItem>
 
                 <GvGridItem>
-                    <MudTabs Elevation="1" Rounded="true" PanelClass="pa-6" ApplyEffectsToContainer="true">
-                        <MudTabPanel Text="Spatial Reference">
+                    <MudTabs Elevation="1" Rounded="true" ApplyEffectsToContainer="true">
+                        <MudTabPanel Text="Spatial Reference" PanelClass="pa-6">
                             <GvGrid ColumnCount="1">
                                 <GvGridItem>
                                     <SpatialReferenceControl SpatialReference="Model.SpatialReference" 

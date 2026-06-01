@@ -1221,9 +1221,9 @@ public class GeoServicesRestController : BaseController
 
             result = result ?? new JsonLayerDTO();
 
-            var geometryType = datasetElement.Class is IFeatureClass ?
-                ((IFeatureClass)datasetElement.Class).GeometryType :
-                GeometryType.Unknown;
+            var geometryType = datasetElement.Class is IFeatureClass 
+                ? ((IFeatureClass)datasetElement.Class).GeometryType
+                : GeometryType.Unknown;
 
             if (geometryType == GeometryType.Unknown && datasetElement is IFeatureLayer)   // if layer is SQL Spatial with undefined geometrytype...
             {
@@ -1241,9 +1241,11 @@ public class GeoServicesRestController : BaseController
             result.Type = type;
             result.ParentLayer = parentLayer;
             result.DrawingInfo = drawingInfo;
-            result.GeometryType = datasetElement.Class is IFeatureClass ?
-                Interoperability.GeoServices.Rest.DTOs.JsonLayerDTO.ToGeometryType(geometryType).ToString() :
-                EsriGeometryType.esriGeometryNull.ToString();
+            result.GeometryType = datasetElement.Class is IFeatureClass
+                ? Interoperability.GeoServices.Rest.DTOs.JsonLayerDTO.ToGeometryType(geometryType).ToString()
+                : EsriGeometryType.esriGeometryNull.ToString();
+            result.HasZ = (datasetElement.Class as IFeatureClass)?.HasZ ?? false;
+            result.HasM = (datasetElement.Class as IFeatureClass)?.HasM ?? false;
             result.SupportsDynamicLegends = tocElement?.Layers?.Any(l => l is IFeatureLayer) ?? false;
             result.Description = map.GetLayerDescription(layerId);
             result.CopyrightText = map.GetLayerCopyrightText(layerId);

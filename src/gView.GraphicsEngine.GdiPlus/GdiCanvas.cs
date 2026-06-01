@@ -1,4 +1,6 @@
-﻿using gView.GraphicsEngine.Abstraction;
+﻿#nullable enable
+
+using gView.GraphicsEngine.Abstraction;
 using gView.GraphicsEngine.GdiPlus.Extensions;
 using System;
 using System.Drawing;
@@ -319,6 +321,11 @@ internal class GdiCanvas : ICanvas
 
         var sizeF = _graphics.MeasureString(text, (Font)font.EngineElement);
         return new CanvasSizeF(sizeF.Width, sizeF.Height);
+    }
+
+    public float GetBaselineOffest(IFont font, string text, IDrawTextFormat? format)
+    {
+        return 0;
     }
 
     public IDisplayCharacterRanges DisplayCharacterRanges(IFont font, IDrawTextFormat format, string text)
