@@ -1,3 +1,5 @@
+﻿@inject IJSRuntime JSRuntime
+
 <div class="dataexplorer-main @(_isDarkMode ? "dark": "light")">
     <MudThemeProvider @bind-IsDarkMode="@_isDarkMode" Theme="_theme" />
     
@@ -28,11 +30,27 @@
 <script src="_content/gView.DataExplorer.Razor/js/dataexplorer.js"></script>
 
 @code{
+    private const string DarkModeStorageKey = "gview_darkmode";
+
     private MudTheme _theme = new();
     private bool _isDarkMode = true;
 
-    private void ToggleDarkmode()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var stored = await JSRuntime.InvokeAsync<string?>("localStorage.getItem", DarkModeStorageKey);
+            if (stored is not null && bool.TryParse(stored, out var isDark))
+            {
+                _isDarkMode = isDark;
+                StateHasChanged();
+            }
+        }
+    }
+
+    private async Task ToggleDarkmode()
     {
         _isDarkMode = !_isDarkMode;
+        await JSRuntime.InvokeVoidAsync("localStorage.setItem", DarkModeStorageKey, _isDarkMode.ToString());
     }
 }

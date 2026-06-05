@@ -1,4 +1,4 @@
-@using Microsoft.JSInterop
+﻿@using Microsoft.JSInterop
 @using gView.Blazor.Core.Models
 @using gView.Blazor.Core.Services.Abstraction
 @using gView.Framework.Common
@@ -128,6 +128,8 @@
     private const string LoginUri = "login";
     private const string LogoutUri = "logout";
 
+    private const string DarkModeStorageKey = "gview_darkmode";
+
     private MudTheme _theme = new();
     private bool _isDarkMode = true;
     private AppIdentity? _identity;
@@ -138,9 +140,23 @@
         _identity = IdentityProvider.Identity;
     }
 
-    private void ToggleDarkmode()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var stored = await JSRuntime.InvokeAsync<string?>("localStorage.getItem", DarkModeStorageKey);
+            if (stored is not null && bool.TryParse(stored, out var isDark))
+            {
+                _isDarkMode = isDark;
+                StateHasChanged();
+            }
+        }
+    }
+
+    private async Task ToggleDarkmode()
     {
         _isDarkMode = !_isDarkMode;
+        await JSRuntime.InvokeVoidAsync("localStorage.setItem", DarkModeStorageKey, _isDarkMode.ToString());
     }
 
     async private Task NavigateTo(string uri, bool newTab = false)

@@ -5,6 +5,7 @@
 @inject ICartoApplicationScopeService AppScope
 @inject IconService IconService
 @inject PluginManagerService PluginManager
+@inject IJSRuntime JSRuntime
 
 <div class="carto-main @(_isDarkMode ? "dark": "light")" oncontextmenu="return false">
     <MudThemeProvider @bind-IsDarkMode="@_isDarkMode" Theme="_theme" />
@@ -82,6 +83,8 @@
         //     }
         // }
     };
+    private const string DarkModeStorageKey = "gview_darkmode";
+
     private bool _isDarkMode = true;
 
     private ICartoButton[]? _cartoButtons;
@@ -89,9 +92,23 @@
     private MudMenu _contextMenu = null!;
     private List<ContextMenuItem>? _contextMenuItems = null;
 
-    private void ToggleDarkmode()
+    private async Task ToggleDarkmode()
     {
         _isDarkMode = !_isDarkMode;
+        await JSRuntime.InvokeVoidAsync("localStorage.setItem", DarkModeStorageKey, _isDarkMode.ToString());
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var stored = await JSRuntime.InvokeAsync<string?>("localStorage.getItem", DarkModeStorageKey);
+            if (stored is not null && bool.TryParse(stored, out var isDark))
+            {
+                _isDarkMode = isDark;
+                StateHasChanged();
+            }
+        }
     }
 
     async protected override Task OnInitializedAsync()
