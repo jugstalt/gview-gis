@@ -1,4 +1,4 @@
-using gView.Framework.Core.Carto;
+﻿using gView.Framework.Core.Carto;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Data.Cursors;
 using gView.Framework.Core.Data.Filters;
@@ -534,7 +534,7 @@ namespace gView.DataSources.Fdb.MSSql
 
         #region IMulitPointIdentify Member
 
-        async public Task<ICursor> MultiPointQuery(IDisplay dispaly, IPointCollection points, ISpatialReference sRef, IUserData userdata)
+        async public Task<ICursor> MultiPointQuery(IDisplay display, IPointCollection points, ISpatialReference sRef, IUserData userdata)
         {
             IMultiPoint mPoint = new MultiPoint(points);
             List<IRasterLayer> layers = await QueryChildLayers(mPoint, String.Empty);
@@ -566,7 +566,7 @@ namespace gView.DataSources.Fdb.MSSql
                         {
                             contextDict.AddIfNotExists(pointIdentifyClass, (c) => c.CreatePointIdentifyContext());
 
-                            using (ICursor cursor = await pointIdentifyClass.PointQuery(dispaly, point, sRef, userdata, contextDict[pointIdentifyClass]))
+                            using (ICursor cursor = await pointIdentifyClass.PointQuery(display, point, sRef, userdata, contextDict[pointIdentifyClass]))
                             {
                                 if (cursor is IRowCursor)
                                 {
