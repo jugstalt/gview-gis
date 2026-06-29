@@ -251,13 +251,35 @@ class SkiaCanvas : ICanvas
     {
         var skPaint = GetSKPaint(font, (SKPaint)brush.EngineElement);
         var center = rectangleF.Center;
+        var format = new SkiaDrawTextFormat()
+        {
+            Alignment = StringAlignment.Near,
+            LineAlignment = StringAlignment.Near,
+        };
         var size = this.MeasureText(text, font);
 
+        if (text.IsMultiline())
+        {
+            var skFont = GetSKFont(font);
+            var lineHeight = skFont.Metrics.CapHeight + skFont.Metrics.Descent;
+            var linesCount = text.AsSpan().LinesCount();
+
+            center.Y -= lineHeight * linesCount / 2f;
+            center.Y += GetBaselineOffest(font, text, format) * linesCount;
+        }
+        else
+        {
+            center.Y += GetBaselineOffest(font, text, format);
+        }
         DrawMultilineText(
                 text.RemoveReturns(),
-                new CanvasPointF(center.X - size.Width / 2f, center.Y - size.Height / 2f).ToSKPoint(),
+                new CanvasPointF(
+                    center.X - size.Width / 2f, 
+                    center.Y
+                    ).ToSKPoint(),
                 skPaint,
-                font
+                font, 
+                format
              );
     }
 

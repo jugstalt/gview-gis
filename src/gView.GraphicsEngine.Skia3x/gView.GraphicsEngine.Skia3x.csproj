@@ -6,7 +6,7 @@
   </PropertyGroup>
 
 	<PropertyGroup>
-		<Version>6.25.1401</Version>
+		<Version>8.26.2801</Version>
 		<PackageProjectUrl>https://github.com/jugstalt/gview-gis</PackageProjectUrl>
 		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
 		<RepositoryUrl>https://github.com/jugstalt/gview-gis</RepositoryUrl>

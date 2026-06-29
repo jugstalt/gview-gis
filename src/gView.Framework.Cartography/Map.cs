@@ -1785,8 +1785,12 @@ namespace gView.Framework.Cartography
                 StringBuilder sb = new StringBuilder();
                 foreach (Exception ex in _requestExceptions)
                 {
-                    sb.Append("Exception: " + ex.Message + "\r\n");
-                    sb.Append(ex.StackTrace + "\r\n");
+                    if (sb.Length > 0) sb.Append("\r\n");
+                    sb.Append($"Exception: {ex.Message}");
+                    if (!String.IsNullOrEmpty(ex.StackTrace))
+                    {
+                        sb.Append($"\r\n{ex.StackTrace}");
+                    }
                 }
 
                 using (var font = GraphicsEngine.Current.Engine.CreateFont("Arial", 12))
