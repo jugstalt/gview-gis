@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 8.26.3101
+
+## Fixed
+
+- PostGIS: Feature classes whose id/primary-key column is not numeric (e.g. `varchar`/GUID `gid`,
+  or a real primary key of type `oid`) could silently load zero features, without any visible error.
+  - Primary-key detection now also recognizes `oid` columns, not just `integer`/`bigint`.
+  - If no numeric id column can be found at all, features now load with a generated feature id
+    (always negative, so it can never be confused with a real database id) instead of disappearing.
+  - Errors that occur while reading rows are no longer swallowed silently.
+
 ## 8.26.2205
 
 Using .NET 10

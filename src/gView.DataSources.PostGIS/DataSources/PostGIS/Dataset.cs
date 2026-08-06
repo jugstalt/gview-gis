@@ -1,4 +1,4 @@
-using gView.Framework.Core.Data;
+ï»¿using gView.Framework.Core.Data;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Core.Common;
 using gView.Framework.Db;
@@ -160,7 +160,7 @@ namespace gView.DataSources.PostGIS
         public override string DbTableName(string tableName)
         {
             string schema = GetTableDbSchema(tableName);
-            string tabName = "\"" + tableName.Replace(".", "\".\"") + "\"";  // falls tablename schon schema enthält -> . durch "." ersetzen -> "schema"."tablename"
+            string tabName = "\"" + tableName.Replace(".", "\".\"") + "\"";  // falls tablename schon schema enthï¿½lt -> . durch "." ersetzen -> "schema"."tablename"
 
             return String.IsNullOrEmpty(schema) ? tabName : "\"" + schema + "\"" + "." + tabName;
         }
@@ -377,10 +377,18 @@ namespace gView.DataSources.PostGIS
                 tableName = tableName.Substring(schema.Length + 1);
             }
 
-            return @"SELECT a.attname
-FROM pg_index i
-JOIN pg_attribute a ON a.attrelid=i.indrelid AND a.attnum=ANY(i.indkey)
-WHERE i.indrelid='" + schema + "." + tableName + @"'::regclass AND i.indisprimary AND (format_type(a.atttypid, a.atttypmod)='integer' OR format_type(a.atttypid, a.atttypmod)='bigint')";
+            return $"""
+                SELECT a.attname
+                FROM pg_index i
+                JOIN pg_attribute a ON a.attrelid = i.indrelid AND a.attnum = ANY(i.indkey)
+                WHERE i.indrelid = '{schema}.{tableName}'::regclass
+                    AND i.indisprimary
+                    AND (
+                        format_type(a.atttypid, a.atttypmod) = 'oid'
+                        OR format_type(a.atttypid, a.atttypmod) = 'integer'
+                        OR format_type(a.atttypid, a.atttypmod) = 'bigint'
+                    )
+                """;
         }
 
         #region IDatasetCapabilities 

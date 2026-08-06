@@ -25,6 +25,15 @@ namespace gView.Framework.OGC.DB
         protected ISpatialReference _sRef = null;
         internal string _geometry_columns_type = String.Empty;
 
+        /// <summary>
+        /// True if <see cref="IDFieldName"/> resolves to a real integer/oid database column.
+        /// When false (e.g. the id/primary-key column turned out to be a varchar/uuid), the
+        /// feature cursor falls back to generated feature ids instead of trying to convert
+        /// the column value. Generated ids are always negative (see OgcSpatialFeatureCursor)
+        /// so they can never be mistaken for a real, stable database id.
+        /// </summary>
+        public bool HasIntegerIdField { get; private set; } = false;
+
         protected OgcSpatialFeatureclass() { }
         private OgcSpatialFeatureclass(OgcSpatialDataset dataset, DataRow geometry_columns_row)
         {
@@ -152,7 +161,12 @@ namespace gView.Framework.OGC.DB
                         bool foundId = false, foundShape = false;
                         foreach (DataRow row in schema.Rows)
                         {
-                            if (row["ColumnName"].ToString() == _idfield && foundId == false)
+                            // Only trust the configured id field as the feature OID source if it is
+                            // actually an integer/oid column. A varchar/uuid "gid" (seen in the wild,
+                            // e.g. when the real primary key is a differently named oid/int column)
+                            // must NOT be accepted here - it would blow up later when the cursor tries
+                            // to Convert.ToInt32() it (see OgcSpatialFeatureCursor.NextFeature).
+                            if (row["ColumnName"].ToString() == _idfield && foundId == false && IsIntegerColumnType(row["DataType"]))
                             {
                                 foundId = true;
                                 _fields.Add(new Field(_idfield, FieldType.ID,
@@ -245,13 +259,37 @@ namespace gView.Framework.OGC.DB
                             _fields.Add(field);
                         }
 
+                        HasIntegerIdField = foundId;
+                        if (!foundId)
+                        {
+                            // Don't let this go unnoticed: no usable integer/oid id column was found
+                            // (see the check above). The cursor will use generated sequential ids
+                            // instead - features still load, but selection/editing by id is not stable.
+                            _lastException = new InvalidOperationException(
+                                $"Feature class '{_name}': configured id field '{_idfield}' is missing or not an " +
+                                 "integer/oid column. Falling back to generated sequential feature ids.");
+                        }
                     }
                 }
             }
             catch (Exception ex)
             {
-                string msg = ex.Message;
+                _lastException = ex;
             }
+        }
+
+        private static bool IsIntegerColumnType(object dataType)
+        {
+            if (dataType is not Type type)
+            {
+                return false;
+            }
+
+            // System.UInt32 covers PostgreSQL's "oid" type (Npgsql maps oid -> uint).
+            return type == typeof(int) ||
+                   type == typeof(short) ||
+                   type == typeof(long) ||
+                   type == typeof(uint);
         }
 
         public string GeometryTypeString
