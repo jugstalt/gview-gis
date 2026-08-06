@@ -1,4 +1,4 @@
-using gView.Framework.Common.Extensions;
+﻿using gView.Framework.Common.Extensions;
 using gView.Framework.Core.Common;
 using gView.Framework.Core.UI;
 using System;
@@ -62,6 +62,23 @@ namespace gView.Framework.Common
 
         public static bool InitSilent = false;
 
+        /// <summary>
+        /// Blazor/Razor UI component plugins (e.g. "gView.Carto.Razor.dll", "gView.*.Blazor.*.dll")
+        /// are only usable inside the Blazor web host (gView.WebApps). Their dependencies
+        /// (Microsoft.AspNetCore.Components.*) are typically not resolvable/deployed for the
+        /// REST server (gView.Server) or console applications (gView.Cmd), which would otherwise
+        /// fail with FileNotFoundException/ReflectionTypeLoadException. So these assemblies are
+        /// skipped entirely outside of SystemInfo.App.WebApps.
+        /// </summary>
+        private static bool SkipUiComponentPlugins
+            => SystemInfo.CurrentApp != SystemInfo.App.WebApps;
+
+        private static bool IsUiComponentAssembly(string fileName)
+        {
+            var name = fileName.ToLowerInvariant();
+            return name.Contains(".blazor.") || name.Contains(".razor.") || name == "gview.webapps.dll";
+        }
+
         public static void Init()
         {
             var currentEngine = GraphicsEngine.Current.Engine;
@@ -87,6 +104,11 @@ namespace gView.Framework.Common
 
                 foreach (FileInfo dll in entryAssembly.Directory.GetFiles("*.dll").Where(f => f.Name.ToLower().StartsWith("gview.")))
                 {
+                    if (SkipUiComponentPlugins && IsUiComponentAssembly(dll.Name))
+                    {
+                        continue;
+                    }
+
                     currentDll = dll.Name;
 
                     OnParseAssembly?.Invoke(dll.Name);
