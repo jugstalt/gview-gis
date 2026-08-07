@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 8.26.3102
+
+## Fixed
+
+- PostGIS/MSSqlSpatial/Sde: the generated-feature-id fallback introduced in 8.26.3101 could
+  incorrectly kick in for `SdeFeatureClass` and `MSSqlSpatial.Featureclass` even when a perfectly
+  valid, numeric id field was found, because they resolve their id field via their own logic
+  instead of `OgcSpatialFeatureclass.ReadSchema()` and never updated `HasIntegerIdField`
+  accordingly. Both now set the flag correctly, so real database ids are used again where
+  available.
+
 ## 8.26.3101
 
 ## Fixed

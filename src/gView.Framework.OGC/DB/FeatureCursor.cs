@@ -169,34 +169,7 @@ namespace gView.Framework.OGC.DB
                         else if (fieldname == _idField)
                         {
                             feature.Fields.Add(new FieldValue(fieldname, obj));
-
-                            // No try/catch on the hot path: HasIntegerIdField only promises the *column*
-                            // is numeric, not that every single value converts cleanly (NULL, overflow, ...),
-                            // so we still need a fallback - but TryConvertToOid() never throws to get there.
-                            if (_fc == null || !_fc.HasIntegerIdField || !TryConvertToOid(obj, out int oid))
-                            {
-                                if (_fc != null && _fc.HasIntegerIdField)
-                                {
-                                    // schema said numeric, this value wasn't - keep it visible instead of
-                                    // just losing the feature silently.
-                                    _fc.LastException = new InvalidCastException(
-                                        $"Could not convert id value '{obj}' (field '{_idField}') to an integer feature id.");
-                                }
-
-                                // No usable integer/oid id column was found for this feature class
-                                // (see OgcSpatialFeatureclass.HasIntegerIdField), or this particular value
-                                // wasn't convertible - use a generated id so the feature still loads instead
-                                // of silently vanishing (this used to throw a FormatException per row that
-                                // got swallowed below, so the whole layer ended up empty without any visible
-                                // error).
-                                //
-                                // Generated ids count DOWN from -1 (never 0/positive) so they can never
-                                // collide with a real db id and are trivially recognizable as synthetic
-                                // (real serial/bigserial/oid values are always >= 0).
-                                oid = --_generatedOid;
-                            }
-
-                            feature.OID = oid;
+                            feature.OID = ResolveOid(obj);
                         }
                         else
                         {
@@ -226,6 +199,39 @@ namespace gView.Framework.OGC.DB
         }
 
         #endregion
+
+        /// <summary>
+        /// Resolves the feature id for a row's id-column value: the real database value when
+        /// possible, otherwise a generated (always negative) id so the feature loads instead of
+        /// silently vanishing (this used to throw a FormatException per row that got swallowed
+        /// in NextFeature()'s catch block, so the whole layer ended up empty without any visible
+        /// error).
+        /// </summary>
+        private int ResolveOid(object idColumnValue)
+        {
+            // HasIntegerIdField only promises the *column* is numeric, not that every single
+            // value converts cleanly (NULL, overflow, ...) - TryConvertToOid() never throws,
+            // so there's no try/catch needed on this hot path either way.
+            bool idFieldIsNumeric = _fc != null && _fc.HasIntegerIdField;
+
+            if (idFieldIsNumeric && TryConvertToOid(idColumnValue, out int oid))
+            {
+                return oid;
+            }
+
+            if (idFieldIsNumeric)
+            {
+                // Schema said this column is numeric, but this particular value wasn't - keep
+                // it visible instead of just losing the feature silently.
+                _fc.LastException = new InvalidCastException(
+                    $"Could not convert id value '{idColumnValue}' (field '{_idField}') to an integer feature id.");
+            }
+
+            // Generated ids count DOWN from -1 (never 0/positive) so they can never collide with
+            // a real db id and are trivially recognizable as synthetic (real serial/bigserial/oid
+            // values are always >= 0).
+            return --_generatedOid;
+        }
 
         /// <summary>
         /// Converts a db value known to come from an integer/oid column to an int feature id,

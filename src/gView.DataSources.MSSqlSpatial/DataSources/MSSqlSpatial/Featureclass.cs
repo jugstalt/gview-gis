@@ -48,6 +48,12 @@ namespace gView.DataSources.MSSqlSpatial
                                 featureClass._idfield = field.name;
                                 field.type = FieldType.ID;
 
+                                // ReadSchema() already ran and couldn't resolve _idfield at that point,
+                                // so it left HasIntegerIdField at false. This candidate lookup found a
+                                // proper integer field afterwards - correct the flag, otherwise the
+                                // cursor would use generated ids despite a perfectly good id field.
+                                featureClass.HasIntegerIdField = true;
+
                                 break;
                             }
                         }

@@ -32,7 +32,7 @@ namespace gView.Framework.OGC.DB
         /// the column value. Generated ids are always negative (see OgcSpatialFeatureCursor)
         /// so they can never be mistaken for a real, stable database id.
         /// </summary>
-        public bool HasIntegerIdField { get; private set; } = false;
+        public bool HasIntegerIdField { get; protected set; } = false;
 
         protected OgcSpatialFeatureclass() { }
         private OgcSpatialFeatureclass(OgcSpatialDataset dataset, DataRow geometry_columns_row)

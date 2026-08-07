@@ -31,6 +31,12 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
             featureClass._idfield = featureClass._fields.ToEnumerable()
                 .FirstOrDefault(f => f.type == FieldType.ID)?.name;
 
+            // This class builds its schema from the SDE repository metadata instead of calling
+            // base.ReadSchema(), so HasIntegerIdField is never set there - without this, the feature
+            // cursor would fall back to generated ids for every SDE feature class, even though the
+            // repository-provided FieldType.ID column is a real, numeric, stable id.
+            featureClass.HasIntegerIdField = !String.IsNullOrEmpty(featureClass._idfield);
+
             featureClass._shapefield = featureClass._fields.ToEnumerable()
                 .FirstOrDefault(f => f.type == FieldType.Shape)?.name;
 
