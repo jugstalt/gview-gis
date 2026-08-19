@@ -1,0 +1,341 @@
+using gView.Cmd.MxlUtil.Lib.Utilities.Aprx;
+using gView.Cmd.MxlUtil.Lib.Utilities.Aprx.Models;
+using gView.Framework.Cartography.Rendering;
+using gView.Framework.Core.Symbology;
+using gView.Framework.Data;
+using gView.Framework.Symbology;
+using gView.GraphicsEngine;
+
+namespace gView.Cmd.MxlUtil.Lib.Tests.Utilities.Aprx;
+
+/// <summary>
+/// Tests for <see cref="AprxMapConverter"/>'s symbol conversion (point/line/polygon,
+/// character markers, hatch fills, dash patterns, unsupported-layer fallbacks) and color
+/// conversion (RGB/CMYK/Gray/HSV, ESRI's 0-100 alpha).
+/// </summary>
+public class SymbolConversionTests
+{
+    private static ISymbol ConvertSimpleSymbol(CimSymbol symbol, out List<string> warnings)
+    {
+        var w = new List<string>();
+        warnings = w;
+        var converter = new AprxMapConverter(warn: w.Add);
+        var cimLayer = Cim.FeatureLayer(
+            featureTable: Cim.FeatureTable(),
+            renderer: Cim.SimpleRenderer(symbol));
+        var result = new AprxMapResult(Cim.Map(), [cimLayer]);
+
+        var map = converter.Convert(result);
+        var renderer = (SimpleRenderer)((FeatureLayer)map.MapElements[0]).FeatureRenderer!;
+        return renderer.Symbol!;
+    }
+
+    // -----------------------------------------------------------------------
+    // Point symbols
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public void PointSymbol_CharacterMarker_ProducesTrueTypeMarkerSymbol()
+    {
+        var symbol = ConvertSimpleSymbol(
+            Cim.PointSymbol(Cim.CharacterMarker(characterIndex: 65, size: 12, color: Cim.Rgb(0, 0, 255))),
+            out _);
+
+        var marker = Assert.IsType<TrueTypeMarkerSymbol>(symbol);
+        Assert.Equal((byte)65, marker.Charakter.Value);
+        Assert.Equal(255, marker.Color.B);
+    }
+
+    [Fact]
+    public void PointSymbol_CharacterMarkerColorFromNestedFillSymbol_WhenNoDirectColor()
+    {
+        var symbol = ConvertSimpleSymbol(
+            Cim.PointSymbol(new CimCharacterMarker
+            {
+                CharacterIndex = 65,
+                Symbol = Cim.PolygonSymbol(Cim.SolidFill(Cim.Rgb(10, 20, 30)))
+            }),
+            out _);
+
+        var marker = Assert.IsType<TrueTypeMarkerSymbol>(symbol);
+        Assert.Equal(10, marker.Color.R);
+        Assert.Equal(20, marker.Color.G);
+        Assert.Equal(30, marker.Color.B);
+    }
+
+    [Fact]
+    public void PointSymbol_NoMarkerLayers_FallsBackToSimplePointFromFillAndStroke()
+    {
+        var symbol = ConvertSimpleSymbol(
+            Cim.PointSymbol(Cim.SolidFill(Cim.Rgb(255, 0, 0)), Cim.SolidStroke(Cim.Rgb(0, 0, 0), width: 2)),
+            out _);
+
+        var point = Assert.IsType<SimplePointSymbol>(symbol);
+        Assert.Equal(255, point.FillColor.R);
+        Assert.Equal(2f, point.PenWidth);
+    }
+
+    [Fact]
+    public void PointSymbol_DisabledLayer_IsSkipped()
+    {
+        var symbol = ConvertSimpleSymbol(
+            Cim.PointSymbol(Cim.CharacterMarker(characterIndex: 65, enable: false)),
+            out _);
+
+        // The disabled character marker is skipped, falling back to a plain point (no fill/stroke -> defaults).
+        Assert.IsType<SimplePointSymbol>(symbol);
+    }
+
+    [Fact]
+    public void PointSymbol_MultipleMarkerLayers_ProducesSymbolCollectionInReverseOrder()
+    {
+        var symbol = ConvertSimpleSymbol(
+            Cim.PointSymbol(
+                Cim.CharacterMarker(characterIndex: 1),
+                Cim.CharacterMarker(characterIndex: 2)),
+            out _);
+
+        var collection = Assert.IsType<SymbolCollection>(symbol);
+        Assert.Equal(2, collection.Symbols.Count);
+        // Source order is drawn bottom-to-top in CIM; the converter reverses so index 0 is the
+        // *last* CIM layer (drawn last = visually on top).
+        var first = Assert.IsType<TrueTypeMarkerSymbol>(collection.Symbols[0].Symbol);
+        var second = Assert.IsType<TrueTypeMarkerSymbol>(collection.Symbols[1].Symbol);
+        Assert.Equal((byte)2, first.Charakter.Value);
+        Assert.Equal((byte)1, second.Charakter.Value);
+    }
+
+    // -----------------------------------------------------------------------
+    // Line symbols
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public void LineSymbol_SolidStroke_ProducesSimpleLineSymbolWithColorAndWidth()
+    {
+        var symbol = ConvertSimpleSymbol(
+            Cim.LineSymbol(Cim.SolidStroke(Cim.Rgb(255, 128, 0), width: 3)),
+            out _);
+
+        var line = Assert.IsType<SimpleLineSymbol>(symbol);
+        Assert.Equal(255, line.PenColor.R);
+        Assert.Equal(128, line.PenColor.G);
+        Assert.Equal(3f, line.PenWidth);
+    }
+
+    [Fact]
+    public void LineSymbol_NoStrokeLayers_ProducesDefaultSimpleLineSymbol()
+    {
+        var symbol = ConvertSimpleSymbol(Cim.LineSymbol(), out _);
+
+        Assert.IsType<SimpleLineSymbol>(symbol);
+    }
+
+    [Fact]
+    public void LineSymbol_DisabledStroke_IsSkipped()
+    {
+        var symbol = ConvertSimpleSymbol(
+            Cim.LineSymbol(Cim.SolidStroke(Cim.Rgb(255, 0, 0), enable: false)),
+            out _);
+
+        Assert.IsType<SimpleLineSymbol>(symbol); // falls back to the default, not the disabled one
+    }
+
+    [Fact]
+    public void LineSymbol_MultipleStrokes_ProducesSymbolCollectionInReverseOrder()
+    {
+        var symbol = ConvertSimpleSymbol(
+            Cim.LineSymbol(
+                Cim.SolidStroke(Cim.Rgb(255, 0, 0), width: 1),
+                Cim.SolidStroke(Cim.Rgb(0, 255, 0), width: 2)),
+            out _);
+
+        var collection = Assert.IsType<SymbolCollection>(symbol);
+        Assert.Equal(2, collection.Symbols.Count);
+        var first = Assert.IsType<SimpleLineSymbol>(collection.Symbols[0].Symbol);
+        Assert.Equal(2f, first.PenWidth); // second CIM layer drawn last -> first after reversing
+    }
+
+    [Theory]
+    [InlineData(new double[] { 1, 3 }, LineDashStyle.Dot)]      // short dash relative to gap -> dot
+    [InlineData(new double[] { 4, 2 }, LineDashStyle.Dash)]
+    [InlineData(new double[] { 4, 2, 1, 2 }, LineDashStyle.DashDot)]
+    [InlineData(new double[] { 4, 2, 1, 2, 1, 2 }, LineDashStyle.DashDotDot)]
+    public void LineSymbol_DashTemplate_ResolvesToClosestDashStyle(double[] template, LineDashStyle expected)
+    {
+        var symbol = ConvertSimpleSymbol(
+            Cim.LineSymbol(Cim.SolidStroke(Cim.Rgb(0, 0, 0), effects: [Cim.Dashes(template)])),
+            out _);
+
+        var line = Assert.IsType<SimpleLineSymbol>(symbol);
+        Assert.Equal(expected, line.DashStyle);
+    }
+
+    [Fact]
+    public void LineSymbol_UnknownGeometricEffect_ProducesWarningAndIsIgnored()
+    {
+        var symbol = ConvertSimpleSymbol(
+            Cim.LineSymbol(Cim.SolidStroke(Cim.Rgb(0, 0, 0), effects: [new CimUnknownGeometricEffect { TypeName = "CIMGeometricEffectOffset" }])),
+            out var warnings);
+
+        Assert.IsType<SimpleLineSymbol>(symbol);
+        Assert.Contains(warnings, w => w.Contains("CIMGeometricEffectOffset"));
+    }
+
+    // -----------------------------------------------------------------------
+    // Polygon symbols
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public void PolygonSymbol_SolidFillAndStroke_ProducesSimpleFillSymbol()
+    {
+        var symbol = ConvertSimpleSymbol(
+            Cim.PolygonSymbol(Cim.SolidFill(Cim.Rgb(0, 200, 0)), Cim.SolidStroke(Cim.Rgb(0, 0, 0), width: 1)),
+            out _);
+
+        var fill = Assert.IsType<SimpleFillSymbol>(symbol);
+        Assert.Equal(200, fill.FillColor.G);
+        Assert.NotNull(fill.OutlineSymbol);
+    }
+
+    [Fact]
+    public void PolygonSymbol_StrokeOnly_ProducesTransparentFillWithOutline()
+    {
+        var symbol = ConvertSimpleSymbol(
+            Cim.PolygonSymbol(Cim.SolidStroke(Cim.Rgb(0, 0, 0), width: 1)),
+            out _);
+
+        var fill = Assert.IsType<SimpleFillSymbol>(symbol);
+        Assert.Equal(0, fill.FillColor.A);
+        Assert.NotNull(fill.OutlineSymbol);
+    }
+
+    [Fact]
+    public void PolygonSymbol_HatchFill_ProducesHatchSymbolWithColorFromInnerLineSymbol()
+    {
+        var symbol = ConvertSimpleSymbol(
+            Cim.PolygonSymbol(Cim.HatchFill(rotation: 45, lineSymbol: Cim.LineSymbol(Cim.SolidStroke(Cim.Rgb(255, 0, 0))))),
+            out _);
+
+        var hatch = Assert.IsType<HatchSymbol>(symbol);
+        Assert.Equal(HatchStyle.ForwardDiagonal, hatch.HatchStyle);
+        Assert.Equal(255, hatch.ForeColor.R);
+    }
+
+    [Theory]
+    [InlineData(0, HatchStyle.Horizontal)]
+    [InlineData(90, HatchStyle.Vertical)]
+    [InlineData(45, HatchStyle.ForwardDiagonal)]
+    [InlineData(135, HatchStyle.BackwardDiagonal)]
+    public void PolygonSymbol_HatchFillRotation_MapsToClosestHatchStyle(double rotation, HatchStyle expected)
+    {
+        var symbol = ConvertSimpleSymbol(Cim.PolygonSymbol(Cim.HatchFill(rotation)), out _);
+
+        var hatch = Assert.IsType<HatchSymbol>(symbol);
+        Assert.Equal(expected, hatch.HatchStyle);
+    }
+
+    [Fact]
+    public void PolygonSymbol_PictureFill_FallsBackToSimpleFillSymbolWithWarning()
+    {
+        var symbol = ConvertSimpleSymbol(Cim.PolygonSymbol(Cim.PictureFill("hatch.png")), out var warnings);
+
+        Assert.IsType<SimpleFillSymbol>(symbol);
+        Assert.Contains(warnings, w => w.Contains("CIMPictureFill"));
+    }
+
+    [Fact]
+    public void PolygonSymbol_MultipleFillLayers_ProducesSymbolCollectionWithOutlineOnFirstOnly()
+    {
+        var symbol = ConvertSimpleSymbol(
+            Cim.PolygonSymbol(
+                Cim.SolidFill(Cim.Rgb(255, 0, 0)),
+                Cim.SolidFill(Cim.Rgb(0, 255, 0)),
+                Cim.SolidStroke(Cim.Rgb(0, 0, 0))),
+            out _);
+
+        var collection = Assert.IsType<SymbolCollection>(symbol);
+        Assert.Equal(2, collection.Symbols.Count);
+
+        // Reversed: index 0 is the second CIM fill layer (drawn last / on top), which - being
+        // the *last* fill layer in CIM order, not the first - must NOT carry the outline.
+        var top = Assert.IsType<SimpleFillSymbol>(collection.Symbols[0].Symbol);
+        Assert.Null(top.OutlineSymbol);
+
+        var bottom = Assert.IsType<SimpleFillSymbol>(collection.Symbols[1].Symbol);
+        Assert.NotNull(bottom.OutlineSymbol);
+    }
+
+    // -----------------------------------------------------------------------
+    // Color conversion (RGB / CMYK / Gray / HSV, ESRI 0-100 alpha)
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public void Color_Rgb_MapsDirectly()
+    {
+        var symbol = ConvertSimpleSymbol(Cim.PolygonSymbol(Cim.SolidFill(Cim.Rgb(10, 20, 30))), out _);
+
+        var fill = Assert.IsType<SimpleFillSymbol>(symbol);
+        Assert.Equal(10, fill.FillColor.R);
+        Assert.Equal(20, fill.FillColor.G);
+        Assert.Equal(30, fill.FillColor.B);
+    }
+
+    [Theory]
+    [InlineData(100, 255)]
+    [InlineData(0, 0)]
+    [InlineData(50, 127)] // 50/100 * 255 = 127.5 -> truncated to 127 (byte cast)
+    public void Color_EsriAlpha_ConvertsFromZeroToHundredScale(double esriAlpha, byte expectedByte)
+    {
+        var symbol = ConvertSimpleSymbol(Cim.PolygonSymbol(Cim.SolidFill(Cim.Rgb(255, 0, 0, esriAlpha))), out _);
+
+        var fill = Assert.IsType<SimpleFillSymbol>(symbol);
+        Assert.Equal(expectedByte, fill.FillColor.A);
+    }
+
+    [Fact]
+    public void Color_Gray_ReplicatesLevelAcrossAllChannels()
+    {
+        var symbol = ConvertSimpleSymbol(Cim.PolygonSymbol(Cim.SolidFill(Cim.Gray(128))), out _);
+
+        var fill = Assert.IsType<SimpleFillSymbol>(symbol);
+        Assert.Equal(128, fill.FillColor.R);
+        Assert.Equal(128, fill.FillColor.G);
+        Assert.Equal(128, fill.FillColor.B);
+    }
+
+    [Fact]
+    public void Color_Cmyk_FullBlack_ProducesBlack()
+    {
+        var symbol = ConvertSimpleSymbol(Cim.PolygonSymbol(Cim.SolidFill(Cim.Cmyk(0, 0, 0, 100))), out _);
+
+        var fill = Assert.IsType<SimpleFillSymbol>(symbol);
+        Assert.Equal(0, fill.FillColor.R);
+        Assert.Equal(0, fill.FillColor.G);
+        Assert.Equal(0, fill.FillColor.B);
+    }
+
+    [Fact]
+    public void Color_Cmyk_NoInk_ProducesWhite()
+    {
+        var symbol = ConvertSimpleSymbol(Cim.PolygonSymbol(Cim.SolidFill(Cim.Cmyk(0, 0, 0, 0))), out _);
+
+        var fill = Assert.IsType<SimpleFillSymbol>(symbol);
+        Assert.Equal(255, fill.FillColor.R);
+        Assert.Equal(255, fill.FillColor.G);
+        Assert.Equal(255, fill.FillColor.B);
+    }
+
+    [Theory]
+    [InlineData(0, 255, 0, 0)]      // red
+    [InlineData(120, 0, 255, 0)]    // green
+    [InlineData(240, 0, 0, 255)]    // blue
+    public void Color_Hsv_FullSaturationAndValue_ProducesExpectedPrimary(double hue, byte r, byte g, byte b)
+    {
+        var symbol = ConvertSimpleSymbol(Cim.PolygonSymbol(Cim.SolidFill(Cim.Hsv(hue, 100, 100))), out _);
+
+        var fill = Assert.IsType<SimpleFillSymbol>(symbol);
+        Assert.Equal(r, fill.FillColor.R);
+        Assert.Equal(g, fill.FillColor.G);
+        Assert.Equal(b, fill.FillColor.B);
+    }
+}

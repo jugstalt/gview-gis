@@ -22,16 +22,19 @@ namespace gView.Cmd.MxlUtil.Lib.Utilities.Aprx;
 internal class AprxMapConverter
 {
     private readonly Action<string>? _warn;
+    private readonly Action<string>? _info;
     private string _currentLayerName = string.Empty;
     private readonly DatasetPluginOptions? _datasetOptions;
     // Pool of open datasets keyed by their effective connection string (after {dbname} substitution)
     private readonly Dictionary<string, IDataset> _datasetPool = new(StringComparer.OrdinalIgnoreCase);
 
     /// <param name="warn">Optional callback invoked for non-fatal conversion warnings.</param>
+    /// <param name="info">Optional callback invoked for informational conversion notices (e.g. a label expression that was successfully translated).</param>
     /// <param name="datasetPlugin">When supplied, all imported feature classes are bound to this dataset instead of <see cref="UnknownFeatureDataset"/>.</param>
-    public AprxMapConverter(Action<string>? warn = null, DatasetPluginOptions? datasetPlugin = null)
+    public AprxMapConverter(Action<string>? warn = null, Action<string>? info = null, DatasetPluginOptions? datasetPlugin = null)
     {
         _warn = warn;
+        _info = info;
         _datasetOptions = datasetPlugin;
     }
 
@@ -561,7 +564,17 @@ internal class AprxMapConverter
         var renderer = new SimpleLabelRenderer();
 
         // --- Determine whether the expression is a simple field reference ---
-        var expression = cimLabel.Expression ?? cimLabel.FieldNames?.FirstOrDefault() ?? string.Empty;
+        // FieldNames entries are plain field names (no brackets, never an expression), so the
+        // fallback needs to be bracketed here - otherwise the "is this just [Field]?" check below
+        // never matches, and a plain field name gets misrouted into AprxLabelExpressionParser
+        // (which rejects it, since it isn't valid VB) and ends up flagged as a "complex" expression.
+        var fieldNameFallback = cimLabel.FieldNames?.FirstOrDefault();
+        var bracketedFallback = fieldNameFallback is not null
+            ? (fieldNameFallback.StartsWith('[') && fieldNameFallback.EndsWith(']')
+                ? fieldNameFallback           // already bracketed - don't double-wrap it
+                : $"[{fieldNameFallback}]")
+            : null;
+        var expression = cimLabel.Expression ?? bracketedFallback ?? string.Empty;
         var fieldMatch = System.Text.RegularExpressions.Regex.Match(expression, @"^\[([^\]]+)\]$");
         if (fieldMatch.Success)
         {
@@ -569,10 +582,44 @@ internal class AprxMapConverter
         }
         else if (!string.IsNullOrEmpty(expression))
         {
-            // Complex expression: set on renderer as-is so gView can evaluate it
-            renderer.FieldName = expression;   // used as fallback field name
-            renderer.LabelExpression = expression;
-            renderer.UseExpression = true;
+            if (AprxLabelExpressionParser.TryConvert(expression, out var conversion) && conversion is not null)
+            {
+                // Successfully reduced the (VBScript-like) ArcGIS Pro expression to a gView
+                // expression: plain text with [Field] placeholders, optionally wrapped in
+                // gView's "@@start/@@if/@@endif/@@end" conditional-line mini-script.
+                renderer.FieldName = conversion.Expression;   // used as fallback field name
+                renderer.LabelExpression = conversion.Expression;
+                renderer.UseExpression = true;
+
+                var kind = conversion.IsConditional
+                    ? "gView conditional label script"
+                    : "gView placeholder text";
+
+                _info?.Invoke($"""
+                    Layer '{_currentLayerName}': LabelRenderer expression converted to {kind}:
+                    ------------------------------------------------------------------
+                    Original (ArcGIS Pro):
+                    {expression}
+                    ------------------------------------------------------------------
+                    Converted (gView):
+                    {conversion.Expression}
+                    ------------------------------------------------------------------
+                    """);
+            }
+            else
+            {
+                // Complex expression: set on renderer as-is so gView can evaluate it
+                renderer.FieldName = expression;   // used as fallback field name
+                renderer.LabelExpression = expression;
+                renderer.UseExpression = true;
+
+                _warn?.Invoke($"""
+                    Layer '{_currentLayerName}': LabelRenderer with (complex?) expression:
+                    ------------------------------------------------------------------
+                    {expression}
+                    ------------------------------------------------------------------
+                    """);
+            }
         }
 
         if (cimLabel.TextSymbol?.Symbol is CimTextSymbol textSym)

@@ -157,7 +157,7 @@ internal class ConvertAprx : IMxlUtility
 
             log.Info($"Found {mapResults.Count} map(s) in APRX.");
 
-            var converter = new AprxMapConverter(warn: log.Warning, datasetPlugin: datasetOptions);
+            var converter = new AprxMapConverter(warn: log.Warning, info: msg => log.Info(msg, alwaysPrint: true), datasetPlugin: datasetOptions);
 
             var mapResult = mapResults[0];
             log.Info($"Converting map: '{mapResult.Map.Name}' ({mapResult.Layers.Count} layer(s))");

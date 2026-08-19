@@ -5,6 +5,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 8.26.3302
+
+## Added
+
+- MxlUtil ConvertAprx: ArcGIS Pro VBScript-like label expressions are now translated into gView
+  label expressions instead of always falling back to a warning. Handles:
+  - plain string literals and `&`/`+` concatenation of literals, `[Field]` references, and
+    `vbNewLine`/`vbCrLf`/`vbTab`
+  - `round(...)` calls, mapped onto gView's existing `[Field:F2]`-style format placeholders
+  - ArcGIS Pro rich-text formatting tags (`<CLR>`, `<BOL>`, `<ITA>`, `<UND>`, ...), stripped since
+    gView label symbols can't render per-run text formatting
+  - `Function ... If/ElseIf/[Else] ... End Function` branching, including `and (... or ...)`
+    groups and `[Field] = "Value"` / `<> "Value"` comparisons, reduced to gView's
+    `@@start/@@if/@@endif/@@end` conditional-line mini-script. Every conditional reduction is
+    exhaustively verified against the original VB semantics before being accepted, so an
+    unsupported shape always falls back to the previous warning instead of risking wrong output.
+  - chained VB `Replace(...)` calls, mapped onto the existing `@@replace(search,replacement)`
+    mini-script command
+- Testing: added an xUnit test project layout (`src/tests/<Project>.Tests`) and test coverage for
+  `SimpleScriptInterpreter`, `AprxLabelExpressionParser`, `AprxMapConverter` and `AprxReader`.
+
+## Fixed
+
+- `SimpleScriptInterpreter`: nested `@@if(...)/@@endif` now uses a proper condition stack instead
+  of a single flag, so an inner `@@endif` no longer incorrectly re-enables content that's still
+  inside an outer, false `@@if`.
+- MxlUtil ConvertAprx: a label's fallback to its first `fieldNames` entry (used when no
+  `expression` is set) is now bracketed as `[Field]` before the "is this a plain field reference?"
+  check, so a plain field name is no longer misrouted into the expression parser and flagged as a
+  "complex" expression.
+
 ## 8.26.3102
 
 ## Fixed

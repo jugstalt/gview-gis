@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace gView.Framework.Common
@@ -22,7 +24,13 @@ namespace gView.Framework.Common
                 var expr_lines = script.Split('\n');
 
                 StringBuilder sb = new StringBuilder();
-                bool interpret = false, useLine = true;
+                bool interpret = false;
+                // Stack of active "@@if(...)" conditions - a line is only emitted while every
+                // enclosing condition is true, so "@@if(...)" blocks can be nested to express an
+                // AND of several checks (e.g. "field A present" nested inside "field B present").
+                // An empty stack means "no active condition" => line is shown (matches the
+                // original, non-nested behaviour where a single @@if/@@endif pair was allowed).
+                var conditionStack = new Stack<bool>();
 
                 for (int i = 1, to = expr_lines.Length; i < to; i++)
                 {
@@ -35,13 +43,16 @@ namespace gView.Framework.Common
                     else if (expr_line.StartsWith("@@if("))
                     {
                         var commandResult = GetCommand(expr_line);
-                        useLine = CheckCondition(commandResult.arguments);
+                        conditionStack.Push(CheckCondition(commandResult.arguments));
                     }
                     else if (expr_line == "@@endif")
                     {
-                        useLine = true;
+                        if (conditionStack.Count > 0)
+                        {
+                            conditionStack.Pop();
+                        }
                     }
-                    else if (interpret == false && useLine)
+                    else if (interpret == false && conditionStack.All(c => c))
                     {
                         if (sb.Length > 0)
                         {
