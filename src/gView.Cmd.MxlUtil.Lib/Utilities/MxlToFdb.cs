@@ -176,7 +176,7 @@ namespace gView.Cmd.MxlUtil.Lib.Utilities
 
                         var targetFc = (await targetFeatureDataset.Element(targetFcName))?.Class as IFeatureClass;
 
-                        if (targetFc != null)
+                        if (targetFc is not null)
                         {
                             var count = await targetFc.CountFeatures();
                             if (count > 0)
@@ -189,9 +189,12 @@ namespace gView.Cmd.MxlUtil.Lib.Utilities
                                 {
                                     throw new Exception($"Can't delete existing (empty) featureclass {targetFcName}");
                                 }
+
+                                targetFc = null;
                             }
                         }
-                        else
+
+                        if(targetFc is null)
                         {
                             var fcId = await targetDatabase.CreateFeatureClass(
                                 targetFeatureDataset.DatasetName,

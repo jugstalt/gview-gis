@@ -184,7 +184,7 @@ internal class ConvertAprx : IMxlUtility
             }
 
             var doc = new gView.Cmd.MxlUtil.Lib.MxlDocument();
-            doc.Readonly = true;
+            //doc.Readonly = true;
             doc.AddMap(map);
             doc.FocusMap = map;
 
