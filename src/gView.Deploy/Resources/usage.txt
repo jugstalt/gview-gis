@@ -3,6 +3,50 @@ Usage:
 
 gview.deploy.exe [parameters]
 
-parameters: 
-     -p,--profile my-profile 
-                  (eg. develepment, test, stating, production) 
+Every value normally asked for interactively can also be passed as a parameter.
+If all required values are given, gview.deploy runs without any prompts.
+
+Basic parameters:
+     -h,  --help, -?
+                  show this help and exit
+     -p,  --profile <name>
+                  (eg. development, test, staging, production)
+     -v,  --version <version>
+                  version to deploy (eg. 1.2.3.4), or "latest" to use the
+                  newest version found locally (combine with --download to
+                  fetch it from GitHub first)
+          --product <Everything|Server|WebApps>
+                  what to deploy (default when unattended: Everything)
+
+Non-interactive control:
+     -y,  --yes
+                  accept the default answer (Y) for every Y/N confirmation
+                  and default --product to "Everything" if not given
+          --download / --skip-download (or --no-download)
+                  explicitly answer the "download latest version from
+                  GitHub" question, overrides -y/--yes
+          --confirm / --no-confirm
+                  explicitly answer the "do you want to continue" question,
+                  overrides -y/--yes
+
+Deploy profile parameters (only needed once per profile, then stored):
+          --target-installation-path <path>
+          --repository-path <path>
+          --server-url <url>
+                  (eg. http://localhost:45622)
+          --admin-username <name>
+          --admin-password <password>
+          --carto-username <name>
+          --carto-password <password>
+
+Example (fully unattended, first run of a new profile):
+     gview.deploy.exe -p production -v 1.2.3.4 --product Everything -y ^
+       --repository-path C:\apps\gview-gis\production\gview-repository ^
+       --server-url http://localhost:45622 ^
+       --admin-username admin --admin-password "Str0ng!Pass" ^
+       --carto-username carto --carto-password "Str0ng!Pass"
+
+Example (update an existing profile, unattended - the profile parameters
+above are already stored from the first run and don't need to be repeated):
+     gview.deploy.exe -p production -v latest --download -y
+     gview.deploy.exe -p production -v latest --skip-download -y

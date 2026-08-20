@@ -17,8 +17,21 @@ Console.WriteLine($"******************************************");
 Console.WriteLine($"Work-Directory: {workDirectory}");
 Console.WriteLine();
 
+if (args != null && args.Any(a => a is "-h" or "--help" or "-?"))
+{
+    new ConsoleService().WriteUsageMessage();
+    return;
+}
+
 string profile = String.Empty,
-       version = String.Empty;
+       version = String.Empty,
+       productArg = String.Empty;
+
+bool yesFlag = false;
+bool? downloadAnswer = null;
+bool? continueAnswer = null;
+
+var modelArgs = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
 var consoleService = new ConsoleService();
 
@@ -26,20 +39,57 @@ try
 {
     if (args != null)
     {
-        for (int i = 0; i < args.Length - 1; i++)
+        for (int i = 0; i < args.Length; i++)
         {
             switch (args[i])
             {
                 case "-p":
                 case "--profile":
-                    profile = args[i + 1];
+                    profile = args.ElementAtOrDefault(++i) ?? String.Empty;
                     break;
                 case "-v":
                 case "--version":
-                    version = args[i + 1];
+                    version = args.ElementAtOrDefault(++i) ?? String.Empty;
+                    break;
+                case "--product":
+                    productArg = args.ElementAtOrDefault(++i) ?? String.Empty;
+                    break;
+                case "-y":
+                case "--yes":
+                    // accept the default answer for every Y/N confirmation and, if
+                    // --product isn't given either, fall back to "Everything"
+                    yesFlag = true;
+                    break;
+                case "--download":
+                    downloadAnswer = true;
+                    break;
+                case "--skip-download":
+                case "--no-download":
+                    downloadAnswer = false;
+                    break;
+                case "--confirm":
+                    continueAnswer = true;
+                    break;
+                case "--no-confirm":
+                    continueAnswer = false;
+                    break;
+                default:
+                    // any other "--xxx value" pair is kept around and matched later
+                    // against the [ModelProperty] flags of the deploy model
+                    // (eg. --repository-path, --admin-username, --admin-password, ...)
+                    if (args[i].StartsWith("--") && i + 1 < args.Length)
+                    {
+                        modelArgs[args[i]] = args[++i];
+                    }
                     break;
             }
         }
+    }
+
+    if (yesFlag)
+    {
+        downloadAnswer ??= true;
+        continueAnswer ??= true;
     }
 
     var ioService = new IOService();
@@ -49,11 +99,11 @@ try
     if (String.IsNullOrEmpty(profile))
     {
         profile = consoleService.ChooseFrom(repoService.Profiles(), "profile", allowNewValues: true, examples: "production, staging, test").Trim();
-
-        repoService.CreateProfile(profile);
     }
 
-    if (consoleService.DoYouWant("to download latetest version from GitHub"))
+    repoService.CreateProfile(profile);
+
+    if (consoleService.DoYouWant("to download latetest version from GitHub", downloadAnswer))
     {
         try
         {
@@ -112,6 +162,17 @@ try
     {
         version = consoleService.ChooseFrom(versionService.GetVersions(AppName.Server).Take(5), "version");
     }
+    else if (version.Equals("latest", StringComparison.OrdinalIgnoreCase))
+    {
+        var latestVersion = versionService.GetVersions(AppName.Server).FirstOrDefault();
+        if (String.IsNullOrEmpty(latestVersion))
+        {
+            throw new Exception("Can't resolve --version latest: no local version found. Download a version first (eg. --download).");
+        }
+
+        Console.WriteLine($"Resolved --version latest to {latestVersion}");
+        version = latestVersion;
+    }
 
     if (String.IsNullOrEmpty(profile) ||
         String.IsNullOrEmpty(version))
@@ -120,22 +181,39 @@ try
         return;
     }
 
-    var product = Enum.Parse<Product>(
-            consoleService
-                .ChooseFrom(["Everything", "gView.Server", "gView.WebApps"], "product")
-                .Split('.')
-                .Last(),
-                true
-            );
+    Product product;
+    if (!String.IsNullOrEmpty(productArg))
+    {
+        product = Enum.Parse<Product>(productArg.Split('.').Last(), true);
+    }
+    else if (yesFlag)
+    {
+        product = Product.Everything;
+        Console.WriteLine("No --product given, using default 'Everything' (non-interactive mode).");
+    }
+    else
+    {
+        product = Enum.Parse<Product>(
+                consoleService
+                    .ChooseFrom(["Everything", "gView.Server", "gView.WebApps"], "product")
+                    .Split('.')
+                    .Last(),
+                    true
+                );
+    }
 
     Console.WriteLine($"Deploy '{product}' from version {version} to profile {profile}");
-    if (!consoleService.DoYouWantToContinue())
+    if (!consoleService.DoYouWant("to continue", continueAnswer))
     {
         return;
     }
 
     var deployVersionModel = repoService.GetDeployModel(profile);
-    if (consoleService.InputRequiredModelProperties(deployVersionModel))
+
+    var modelPropertiesChanged = consoleService.ApplyModelPropertiesFromArgs(deployVersionModel, modelArgs);
+    modelPropertiesChanged |= consoleService.InputRequiredModelProperties(deployVersionModel);
+
+    if (modelPropertiesChanged)
     {
         repoService.SetDeployVersionModel(profile, deployVersionModel);
     }

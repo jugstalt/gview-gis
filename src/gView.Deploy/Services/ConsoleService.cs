@@ -83,6 +83,23 @@ class ConsoleService
 
     public bool DoYouWantToContinue() => DoYouWant("to continue");
 
+    /// <summary>
+    /// Same as <see cref="DoYouWant(string, char)"/>, but if <paramref name="forcedAnswer"/>
+    /// is set the question is answered automatically (non-interactive mode) instead of
+    /// reading it from the console.
+    /// </summary>
+    public bool DoYouWant(string prompt, bool? forcedAnswer, char defaultInput = 'Y')
+    {
+        if (forcedAnswer.HasValue)
+        {
+            Console.WriteLine($"Do you want {prompt}? Y/N [{defaultInput.ToString().ToUpper()}] => {(forcedAnswer.Value ? "Y" : "N")} (non-interactive)");
+
+            return forcedAnswer.Value;
+        }
+
+        return DoYouWant(prompt, defaultInput);
+    }
+
     public bool DoYouWant(string prompt, char defaultInput = 'Y')
     {
         Console.Write($"Do you want {prompt}? Y/N [{defaultInput.ToString().ToUpper()}]");
@@ -172,6 +189,52 @@ class ConsoleService
         return hasChanged;
     }
 
+    /// <summary>
+    /// Applies values passed on the command line (eg. --repository-path, --admin-username, ...)
+    /// to the model's [ModelProperty] properties, so <see cref="InputRequiredModelProperties"/>
+    /// doesn't need to prompt for them. Values are validated/formatted the same way as
+    /// interactive input. Existing (already set) values are overwritten, so profiles can be
+    /// re-configured non-interactively.
+    /// </summary>
+    public bool ApplyModelPropertiesFromArgs(object model, IReadOnlyDictionary<string, string> args)
+    {
+        bool hasChanged = false;
+        var modelType = model.GetType();
+
+        foreach (var property in modelType.GetProperties())
+        {
+            var modelPropertyAttr = property.GetCustomAttribute<ModelPropertyAttribute>();
+            if (modelPropertyAttr == null)
+            {
+                continue;
+            }
+
+            var flag = modelPropertyAttr.GetCliFlag(property);
+            if (!args.TryGetValue(flag, out var val) || String.IsNullOrEmpty(val))
+            {
+                continue;
+            }
+
+            if (!String.IsNullOrEmpty(modelPropertyAttr.RegexPattern) && !Regex.IsMatch(val, modelPropertyAttr.RegexPattern))
+            {
+                throw new Exception($"Value for {flag} don't match pattern: {modelPropertyAttr.RegexNotMatchMessage}");
+            }
+
+            val = modelPropertyAttr.PropertyFormat switch
+            {
+                PropertyFormat.Hash256 => val.ToSha256Hash(),
+                PropertyFormat.Hash512 => val.ToSha512Hash(),
+                _ => val
+            };
+
+            property.SetValue(model, val, null);
+            Console.WriteLine($"{modelPropertyAttr.Prompt ?? property.Name}: (set from {flag})");
+            hasChanged = true;
+        }
+
+        return hasChanged;
+    }
+
     private string InputPassword()
     {
         string passwort = "";
@@ -199,7 +262,20 @@ class ConsoleService
 
     public void WriteCharLine(char character)
     {
-        Console.Write(new string(character, Console.WindowWidth));
+        int width;
+        try
+        {
+            // throws when running headless / with redirected output (eg. in CI or
+            // other unattended automation), which is exactly the scenario the
+            // non-interactive parameters are meant to support
+            width = Console.WindowWidth;
+        }
+        catch (IOException)
+        {
+            width = 80;
+        }
+
+        Console.Write(new string(character, width));
     }
 
     public void WriteBlock(string message, char blockChar = '*')

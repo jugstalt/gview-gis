@@ -16,6 +16,13 @@ internal class ModelPropertyAttribute : Attribute
 
     public string Placeholder { get; set; } = String.Empty;
 
+    /// <summary>
+    /// Name of the command line parameter (without leading "--") used to pass this
+    /// property's value non-interactively, e.g. "server-url". If empty, the flag is
+    /// derived from the property name (kebab-case), e.g. "RepositoryPath" -> "repository-path".
+    /// </summary>
+    public string CliName { get; set; } = String.Empty;
+
     public string RegexPattern { get; set; } = String.Empty;
     public string RegexNotMatchMessage { get; set; } = String.Empty;
 

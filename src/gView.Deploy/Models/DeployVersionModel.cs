@@ -24,7 +24,8 @@ internal class DeployVersionModel
 
     [ModelProperty(Prompt = "gView Server online url",
                    DefaultValue = "http://localhost:45622",
-                   Placeholder = "server-url")]
+                   Placeholder = "server-url",
+                   CliName = "server-url")]
     public string ServerOnlineResource { get; set; } = "";
 
     [ModelProperty(Prompt = "gView Admin Username",
