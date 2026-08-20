@@ -116,45 +116,28 @@ public class MapServiceDeploymentManager
     {
         await _accessControl.CheckPublishAccess(mapName.FolderName(), usr, pwd);
 
-        if (!await ReloadMap(mapName))
-        {
-            return String.Empty;
-        }
-
-        //if (IMS.mapServer == null || IMS.mapServer[mapName] == null)
-        //    return String.Empty;
-
-        FileInfo fi = new FileInfo((_mapServiceManager.Options.ServicesPath + @"/" + mapName + ".meta").ToPlatformPath());
-        if (!fi.Exists)
-        {
-            return String.Empty;
-        }
-
-        using (StreamReader sr = new StreamReader(fi.FullName.ToPlatformPath()))
-        {
-            string ret = sr.ReadToEnd();
-            sr.Close();
-            return ret;
-        }
+        return await GetMetadata(mapName);
     }
+
+    async public Task<string> GetMetadata(string mapName, IIdentity identity)
+    {
+        await _accessControl.CheckPublishAccess(mapName.FolderName(), identity);
+
+        return await GetMetadata(mapName);
+    }
+
     async public Task<bool> SetMetadata(string mapName, string metadata, string usr, string pwd)
     {
         await _accessControl.CheckPublishAccess(mapName.FolderName(), usr, pwd);
 
-        FileInfo fi = new FileInfo(_mapServiceManager.Options.ServicesPath + @"/" + mapName + ".meta");
+        return await SetMetadata(mapName, metadata);
+    }
 
-        StringReader sr = new StringReader(metadata);
-        XmlStream xmlStream = new XmlStream("");
-        xmlStream.ReadStream(sr);
-        xmlStream.WriteStream(fi.FullName);
+    async public Task<bool> SetMetadata(string mapName, string metadata, IIdentity identity)
+    {
+        await _accessControl.CheckPublishAccess(mapName.FolderName(), identity);
 
-        if (await ReloadMap(mapName))
-        {
-            await FireReloadMapMessage(mapName);
-            return true;
-        }
-
-        return false;
+        return await SetMetadata(mapName, metadata);
     }
 
     async public Task<IMap> LoadMap(string name)
@@ -239,6 +222,48 @@ public class MapServiceDeploymentManager
     }
 
     #region Helper
+
+    async private Task<string> GetMetadata(string mapName)
+    {
+        if (!await ReloadMap(mapName))
+        {
+            return String.Empty;
+        }
+
+        //if (IMS.mapServer == null || IMS.mapServer[mapName] == null)
+        //    return String.Empty;
+
+        FileInfo fi = new FileInfo((_mapServiceManager.Options.ServicesPath + @"/" + mapName + ".meta").ToPlatformPath());
+        if (!fi.Exists)
+        {
+            return String.Empty;
+        }
+
+        using (StreamReader sr = new StreamReader(fi.FullName.ToPlatformPath()))
+        {
+            string ret = sr.ReadToEnd();
+            sr.Close();
+            return ret;
+        }
+    }
+
+    async private Task<bool> SetMetadata(string mapName, string metadata)
+    {
+        FileInfo fi = new FileInfo(_mapServiceManager.Options.ServicesPath + @"/" + mapName + ".meta");
+
+        StringReader sr = new StringReader(metadata);
+        XmlStream xmlStream = new XmlStream("");
+        xmlStream.ReadStream(sr);
+        xmlStream.WriteStream(fi.FullName);
+
+        if (await ReloadMap(mapName))
+        {
+            await FireReloadMapMessage(mapName);
+            return true;
+        }
+
+        return false;
+    }
 
     async private Task<bool> AddMap(string mapName, string mapXml)
     {
