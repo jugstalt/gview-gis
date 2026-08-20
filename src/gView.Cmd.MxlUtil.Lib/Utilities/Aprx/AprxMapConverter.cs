@@ -127,8 +127,20 @@ internal class AprxMapConverter
             map.ZoomTo(new Envelope(extent.XMin, extent.YMin, extent.XMax, extent.YMax));
         }
 
-        map.Display.ReferenceScale = 1000;
-        map.Display.DisplayUnits = map.Display.MapUnits = GeoUnits.Meters;
+        // Map units: derive from the resolved spatial reference instead of assuming Meters -
+        // wrong units silently break ReferenceScale-based symbol scaling below.
+        var resolvedUnit = map.LayerDefaultSpatialReference?.SpatialParameters?.Unit;
+        map.Display.DisplayUnits = map.Display.MapUnits =
+            (resolvedUnit is null or GeoUnits.Unknown) ? GeoUnits.Meters : resolvedUnit.Value;
+
+        // ArcGIS Pro only ties symbol/text sizes to ground distance (so they visually grow/
+        // shrink as you zoom) when the author explicitly sets a reference scale (Map
+        // Properties -> General -> Reference Scale). Without one, symbols keep a constant
+        // page size at every map scale. Mirror that: use the CIM's referenceScale when
+        // present, otherwise 0 disables gView's reference-scale symbol scaling entirely
+        // (Display.ReferenceScale <= 0) instead of forcing an arbitrary scale that would make
+        // symbols render at a different size than in ArcGIS Pro.
+        map.Display.ReferenceScale = cimMap.ReferenceScale ?? 0;
 
         // Add layers in the same order as in the APRX so the TOC matches
         foreach (var cimLayer in mapResult.Layers)
@@ -750,10 +762,15 @@ internal class AprxMapConverter
         return symbol;
     }
 
+    // Caches the ink-centering correction (see GetGlyphCenteringCorrectionFraction) per
+    // font+character so it's only measured once even if many layers share a symbol font.
+    private readonly Dictionary<(string FontFamily, char Character), (float X, float Y)> _glyphCenteringCorrectionCache = new();
+
     private TrueTypeMarkerSymbol ConvertCharacterMarker(CimCharacterMarker marker)
     {
         var ttmSymbol = new TrueTypeMarkerSymbol() { SymbolSmoothingMode = SymbolSmoothing.AntiAlias };
 
+        var character = (char)(byte)marker.CharacterIndex;
         ttmSymbol.Charakter = new Charakter() { Value = (byte)marker.CharacterIndex };
         ttmSymbol.Font = gView.GraphicsEngine.Current.Engine.CreateFont(
             marker.FontFamilyName,
@@ -774,7 +791,134 @@ internal class AprxMapConverter
             ttmSymbol.Angle = (float)-marker.Rotation;
         }
 
+        // ArcGIS Pro's anchorPoint moves the point of the symbol that is placed at the
+        // feature's geometry away from the symbol's bounding-box center (gView's implicit
+        // anchor, StringAlignment.Center/Center). It's expressed in the symbol's own
+        // coordinate space (x right, y up) and applied *before* rotation. "Relative" units
+        // span -1..1 across the full symbol extent, so one unit equals half of Size.
+        // offsetX/offsetY are plain post-rotation translations in the same axis convention.
+        // gView's HorizontalOffset/VerticalOffset are always applied in screen space
+        // (independent of rotation, see TrueTypeMarkerSymbol.PerformSymbolTransformation),
+        // which matches offsetX/offsetY directly and anchorPoint whenever the marker isn't
+        // rotated. Both need their Y component flipped to move from CIM's y-up convention
+        // into gView's screen space (y down).
+        var (anchorX, anchorY) = ResolveAnchorPoint(marker);
+
+        // Many ArcGIS Pro marker/dingbat fonts ship with bogus ascent/descent metadata that
+        // has nothing to do with where the glyph is actually drawn (e.g. an ascent far larger
+        // than the font's own em-size). gView centers a character marker using those line
+        // metrics (StringAlignment.Center), so on such fonts the glyph can render well off the
+        // feature point even when the CIM symbol has no anchorPoint/offset at all. Measure the
+        // glyph's actual rendered ink and add a correction that re-centers on it instead.
+        var (glyphCorrectionX, glyphCorrectionY) = GetGlyphCenteringCorrectionFraction(marker.FontFamilyName, character);
+
+        double hOffset = -anchorX + marker.OffsetX + glyphCorrectionX * marker.Size;
+        double vOffset = anchorY - marker.OffsetY + glyphCorrectionY * marker.Size;
+
+        ttmSymbol.HorizontalOffset = (float)hOffset;
+        ttmSymbol.VerticalOffset = (float)vOffset;
+
         return ttmSymbol;
+    }
+
+    private static (double X, double Y) ResolveAnchorPoint(CimCharacterMarker marker)
+    {
+        if (marker.AnchorPoint == null)
+        {
+            return (0, 0);
+        }
+
+        var isAbsolute = string.Equals(marker.AnchorPointUnits, "Absolute", StringComparison.OrdinalIgnoreCase);
+        var scale = isAbsolute ? 1.0 : marker.Size / 2.0;
+
+        return (marker.AnchorPoint.X * scale, marker.AnchorPoint.Y * scale);
+    }
+
+    /// <summary>
+    /// Measures how far a character's actually-rendered ink drifts from gView's default
+    /// StringAlignment.Center/Center anchor (which is based on the font's ascent/descent line
+    /// metrics), by rendering the glyph offscreen through the current graphics engine and
+    /// scanning it. Returns the correction needed to re-center on the visible glyph instead,
+    /// expressed as a *fraction of font size* so callers can scale it to any marker size.
+    /// Returns (0,0) if the glyph can't be rendered/measured (e.g. font not installed).
+    /// </summary>
+    private (float X, float Y) GetGlyphCenteringCorrectionFraction(string fontFamilyName, char character)
+    {
+        var key = (fontFamilyName, character);
+        if (_glyphCenteringCorrectionCache.TryGetValue(key, out var cached))
+        {
+            return cached;
+        }
+
+        var correction = (X: 0f, Y: 0f);
+        try
+        {
+            const float measureSize = 100f;
+            const int canvasSize = 300;
+            const float center = canvasSize / 2f;
+
+            var engine = gView.GraphicsEngine.Current.Engine;
+
+            using var font = engine.CreateFont(fontFamilyName, measureSize);
+            using var bitmap = engine.CreateBitmap(canvasSize, canvasSize);
+            using var canvas = bitmap.CreateCanvas();
+            using var brush = engine.CreateSolidBrush(ArgbColor.Black);
+
+            canvas.Clear(ArgbColor.White);
+            canvas.TextRenderingHint = GraphicsEngine.TextRenderingHint.AntiAlias;
+
+            var format = engine.CreateDrawTextFormat();
+            format.Alignment = StringAlignment.Center;
+            format.LineAlignment = StringAlignment.Center;
+
+            canvas.DrawText(character.ToString(), font, brush, center, center, format);
+            canvas.Flush();
+
+            int minX = canvasSize, maxX = -1, minY = canvasSize, maxY = -1;
+            for (var y = 0; y < canvasSize; y++)
+            {
+                for (var x = 0; x < canvasSize; x++)
+                {
+                    var p = bitmap.GetPixel(x, y);
+                    if (p.R < 250 || p.G < 250 || p.B < 250)
+                    {
+                        if (x < minX) { minX = x; }
+                        if (x > maxX) { maxX = x; }
+                        if (y < minY) { minY = y; }
+                        if (y > maxY) { maxY = y; }
+                    }
+                }
+            }
+
+            var pixelsPerNominalUnit = engine.ScreenDpi / 72f;
+            correction = (
+                X: ComputeAxisCorrectionFraction(center, minX, maxX, pixelsPerNominalUnit, measureSize),
+                Y: ComputeAxisCorrectionFraction(center, minY, maxY, pixelsPerNominalUnit, measureSize));
+        }
+        catch (Exception ex)
+        {
+            _warn?.Invoke($"Could not measure glyph centering for font '{fontFamilyName}' char {(int)character}: {ex.Message}");
+        }
+
+        _glyphCenteringCorrectionCache[key] = correction;
+        return correction;
+    }
+
+    /// <summary>
+    /// Pure part of <see cref="GetGlyphCenteringCorrectionFraction"/>: given the drawn ink's
+    /// pixel extent along one axis, returns the correction - as a fraction of font size -
+    /// needed to move that ink's center back onto <paramref name="drawCenter"/>.
+    /// </summary>
+    internal static float ComputeAxisCorrectionFraction(float drawCenter, int inkMin, int inkMax, float pixelsPerNominalUnit, float measureSize)
+    {
+        if (inkMax < inkMin || pixelsPerNominalUnit <= 0 || measureSize <= 0)
+        {
+            // No ink found (blank/missing glyph), or degenerate scale - no correction possible.
+            return 0f;
+        }
+
+        var inkCenter = (inkMin + inkMax) / 2f;
+        return (drawCenter - inkCenter) / pixelsPerNominalUnit / measureSize;
     }
 
     private ISymbol ConvertLineSymbol(CimLineSymbol cimLine)

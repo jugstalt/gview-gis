@@ -29,6 +29,15 @@ internal class CimMap
     public CimEnvelope? DefaultExtent { get; set; }
 
     /// <summary>
+    /// The map's reference scale (ArcGIS Pro: Map Properties -> General -> Reference Scale),
+    /// in the map's ground units per page unit (e.g. 1000 for "1:1000"). Absent/null when the
+    /// author never set one - ArcGIS Pro then keeps symbol/text sizes constant in page units
+    /// regardless of the current map scale, instead of scaling them with ground distance.
+    /// </summary>
+    [JsonPropertyName("referenceScale")]
+    public double? ReferenceScale { get; set; }
+
+    /// <summary>
     /// Inline layer definitions – used when layer definitions are embedded
     /// directly inside the mapx file rather than stored in separate lyrx files.
     /// </summary>

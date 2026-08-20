@@ -105,6 +105,90 @@ public class SymbolConversionTests
         Assert.Equal((byte)1, second.Charakter.Value);
     }
 
+    // Character-marker offset tests use a *differential* assertion: every converted
+    // TrueTypeMarkerSymbol also carries an automatic glyph-ink-centering correction (see
+    // GetGlyphCenteringCorrectionFraction) whose exact value depends on the font actually
+    // resolved on the machine running the test, so it can't be asserted directly. Comparing
+    // against a same-font/char/size baseline conversion (with no anchorPoint/offset) cancels
+    // that shared term out, leaving just the contribution under test.
+
+    private static TrueTypeMarkerSymbol ConvertCharacterMarkerSymbol(CimCharacterMarker marker) =>
+        Assert.IsType<TrueTypeMarkerSymbol>(ConvertSimpleSymbol(Cim.PointSymbol(marker), out _));
+
+    [Fact]
+    public void PointSymbol_CharacterMarkerWithoutAnchorOrOffset_IsDeterministic()
+    {
+        // No anchorPoint/offsetX/Y -> whatever offset ends up on the symbol is purely the
+        // automatic glyph-centering correction, which must be stable for the same font/char.
+        var marker1 = ConvertCharacterMarkerSymbol(Cim.CharacterMarker(characterIndex: 65));
+        var marker2 = ConvertCharacterMarkerSymbol(Cim.CharacterMarker(characterIndex: 65));
+
+        Assert.Equal(marker1.HorizontalOffset, marker2.HorizontalOffset);
+        Assert.Equal(marker1.VerticalOffset, marker2.VerticalOffset);
+    }
+
+    [Fact]
+    public void PointSymbol_CharacterMarkerRelativeAnchorPoint_ProducesScaledInverseOffset()
+    {
+        var baseline = ConvertCharacterMarkerSymbol(Cim.CharacterMarker(characterIndex: 65, size: 12));
+
+        // A relative anchor point of (0.5, 0.5) on a size-12 marker (half-extent = 6pt) means
+        // "place the point half-way to the top-right corner (3pt, 3pt in symbol space) at the
+        // feature", which pulls the glyph itself down-left of the feature -> gView offset
+        // (-3, 3) in screen (y-down) coordinates, on top of the (shared, cancelled-out) glyph
+        // centering correction.
+        var marker = ConvertCharacterMarkerSymbol(Cim.CharacterMarker(
+            characterIndex: 65,
+            size: 12,
+            anchorPoint: Cim.Point2D(0.5, 0.5)));
+
+        Assert.Equal(-3f, marker.HorizontalOffset - baseline.HorizontalOffset, 3);
+        Assert.Equal(3f, marker.VerticalOffset - baseline.VerticalOffset, 3);
+    }
+
+    [Fact]
+    public void PointSymbol_CharacterMarkerAbsoluteAnchorPoint_IsNotScaledBySize()
+    {
+        var baseline = ConvertCharacterMarkerSymbol(Cim.CharacterMarker(characterIndex: 65, size: 12));
+
+        var marker = ConvertCharacterMarkerSymbol(Cim.CharacterMarker(
+            characterIndex: 65,
+            size: 12,
+            anchorPoint: Cim.Point2D(3, -2),
+            anchorPointUnits: "Absolute"));
+
+        Assert.Equal(-3f, marker.HorizontalOffset - baseline.HorizontalOffset, 3);
+        Assert.Equal(-2f, marker.VerticalOffset - baseline.VerticalOffset, 3);
+    }
+
+    [Fact]
+    public void PointSymbol_CharacterMarkerOffsetXY_MapsDirectlyWithYFlipped()
+    {
+        var baseline = ConvertCharacterMarkerSymbol(Cim.CharacterMarker(characterIndex: 65));
+
+        var marker = ConvertCharacterMarkerSymbol(Cim.CharacterMarker(characterIndex: 65, offsetX: 4, offsetY: 5));
+
+        Assert.Equal(4f, marker.HorizontalOffset - baseline.HorizontalOffset, 3);
+        Assert.Equal(-5f, marker.VerticalOffset - baseline.VerticalOffset, 3);
+    }
+
+    [Theory]
+    // No ink found (blank/missing glyph) -> no correction.
+    [InlineData(150f, 10, -1, 96f / 72f, 100f, 0f)]
+    // Ink exactly centered on the draw point -> no correction needed.
+    [InlineData(150f, 100, 200, 96f / 72f, 100f, 0f)]
+    // Ink sits entirely below the draw point (in pixel/screen-down terms) by 96px at
+    // measureSize=100 and 96 px/inch (i.e. 1 nominal unit per pixel) -> 1 unit of
+    // correction is needed to pull the *next* draw point up so the ink re-centers.
+    [InlineData(0f, 96, 96, 1f, 100f, -0.96f)]
+    public void ComputeAxisCorrectionFraction_MatchesExpected(
+        float drawCenter, int inkMin, int inkMax, float pixelsPerNominalUnit, float measureSize, float expected)
+    {
+        var result = AprxMapConverter.ComputeAxisCorrectionFraction(drawCenter, inkMin, inkMax, pixelsPerNominalUnit, measureSize);
+
+        Assert.Equal(expected, result, 4);
+    }
+
     // -----------------------------------------------------------------------
     // Line symbols
     // -----------------------------------------------------------------------
