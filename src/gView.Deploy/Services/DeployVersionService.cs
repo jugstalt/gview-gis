@@ -11,7 +11,7 @@ internal enum AppName
 
 internal class DeployVersionService
 {
-    public static readonly Version DeployToolVersion = new Version(1, 25, 3601);
+    public static readonly Version DeployToolVersion = new Version(8, 26, 3301);
 
     private readonly Dictionary<AppName, string> zipPrefix;
 
