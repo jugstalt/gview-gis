@@ -5,6 +5,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 8.26.3303
+
+## Added
+
+- `gView.Deploy`: more command-line parameters, so a profile can be deployed fully
+  non-interactively. New: `--product`, `-y`/`--yes`, `--download`/`--skip-download`,
+  `--confirm`/`--no-confirm`, `-h`/`--help`, `-v`/`--version latest` (resolves to the newest
+  locally available version), and one `--<property-name>` flag per deploy-profile property
+  (`--repository-path`, `--server-url`, `--admin-username`, `--admin-password`,
+  `--carto-username`, `--carto-password`, `--target-installation-path`).
+- `gView.Server.exe` offline/CLI commands: services can now be managed without starting the HTTP
+  server (no port is bound). The process reads the full server configuration (DI, plugins,
+  `ServicesPath`) exactly like a normal server start, then exits with `0` on success or a non-zero
+  code (message on `stderr`) on failure:
+  - `--publish --mxl <mxl-file> --service <folder/servicename>`: validates the MXL, renames its
+    first map to `folder/servicename`, and writes `.mxl`/`.meta` to `ServicesPath`.
+  - `--remove --service <folder/servicename>`: deletes `.mxl`/`.svc`/`.meta` of the service from
+    `ServicesPath`.
+  - `--catalog [--format text|xml|json]`: lists all registered services (root level plus one
+    folder level); defaults to text output.
+  - `--get-metadata --service <folder/servicename> [--out <path>]`: prints the service's `.meta`
+    XML, or writes it to a file with `--out`. An empty result (no service/no metadata) is not an
+    error.
+  - `--set-metadata --service <folder/servicename> --metadata <xml-file>`: writes the given XML as
+    the service's `.meta` and reloads the service.
+- `MapServiceDeploymentManager`: `GetMetadata`/`SetMetadata` now have identity-based overloads (in
+  addition to the existing user/password ones), and their shared file-I/O logic was factored out
+  into private helpers so both the HTTP and the new CLI commands go through the same code path.
+
 ## 8.26.3302
 
 ## Added
