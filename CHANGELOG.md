@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 8.26.3401
+
+## Changed
+
+- `gView.Server.exe` offline commands (`--publish`, `--remove`, `--catalog`, `--get-metadata`,
+  `--set-metadata`): `PlugInManager.Init()` now runs with `InitSilent = true`, so it no longer
+  prints one "added ..." line per plugin type to the console.
+
+## Fixed
+
+- `gView.Server.exe --publish`: fixed a `"No maps found in document"` error on every publish. An
+  `.mxl` file on disk has a `<MapServer>` root wrapping `<MapDocument>`, but
+  `MapServiceDeploymentManager.AddMap` expects a bare `<MapDocument>` fragment as its `mapXml`
+  argument - the same unwrapping `BrowseServicesController.AddService` already does for HTTP
+  uploads. Added `MxlFile.ExtractMapDocumentXmlAsync` and used it in `PublishCommand` before
+  calling `AddMap`.
+
 ## 8.26.3303
 
 ## Added
