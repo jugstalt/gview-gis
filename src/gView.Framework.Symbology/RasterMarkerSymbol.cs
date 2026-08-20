@@ -22,7 +22,7 @@ namespace gView.Framework.Symbology
         private IBitmap _image = null;
 
         [Browsable(true)]
-        [PropertyDescription(EditorPropertyType = typeof(FileInfo))]
+        [PropertyDescription(EditorPropertyType = typeof(FileInfo), FileExtensions = ".png,.jpg,.jpeg,.gif,.bmp,.webp")]
         public string Filename
         {
             get

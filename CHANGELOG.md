@@ -7,7 +7,33 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## 8.26.3402
 
+## Added
+
+- New `SvgMarkerSymbol` (`gView.Framework.Symbology`): renders point markers from SVG markup
+  (a file path, or a `resource:<name>` embedded map resource) instead of a font glyph, so the
+  symbol no longer depends on a font being installed on the rendering server. Rasterized via
+  the new `IGraphicsEngine.RasterizeSvg` (Skia2x/Skia3x, backed by `Svg.Skia`) and cached per
+  symbol instance; the cache only rebuilds when the requested pixel size changes materially
+  (~15%), and rasterizes at a size-dependent oversampling factor so rotated symbols stay crisp
+  instead of blurring at small on-screen sizes.
+  - Thread-safe: `gView.Server` shares layers/renderers/symbols by reference across
+    concurrently handled requests against the same map (`RequireClone() => false`), so the
+    bitmap cache is an immutable, atomically-swapped snapshot rather than mutated in place -
+    avoiding a use-after-dispose race under concurrent rendering.
+  - `GdiGraphicsEngine.RasterizeSvg` (no SVG renderer available under GDI+) now returns a
+    generic placeholder marker instead of throwing, so a map using the GDI+ engine still
+    renders, just without the actual SVG artwork.
+- Blazor Carto: new `ResourcePickerDialog` for picking a map resource (used by
+  `SvgMarkerSymbol`/`RasterMarkerSymbol`'s `Filename` property) - shows a thumbnail preview per
+  resource and filters the list to the extensions relevant for the property being edited (new
+  `PropertyDescriptionAttribute.FileExtensions`), instead of listing every map resource
+  regardless of type.
+
 ## Fixed
+
+- Blazor Carto: `ResourcesPickerPropertyEditor`'s resource-picker dialog was titled
+  "Color Gradient" (copy-paste leftover from `ColorGradientPropertyEditor`) instead of
+  describing what it actually does.
 
 - MxlUtil ConvertAprx: converted `CIMCharacterMarker` point symbols could render visibly offset
   from their feature's location.

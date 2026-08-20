@@ -21,6 +21,15 @@ public class PropertyDescriptionAttribute : Attribute
 
     public Type? EditorPropertyType { get; set; } = null;
 
+    /// <summary>
+    /// Comma-separated list of file extensions (e.g. ".svg" or ".png,.jpg,.jpeg")
+    /// this property's editor should offer/accept. Currently used by
+    /// <see cref="EditorPropertyType"/> == typeof(FileInfo) editors (e.g. the
+    /// map-resource picker) to filter out irrelevant resources. Empty means
+    /// "no filter".
+    /// </summary>
+    public string FileExtensions { get; set; } = "";
+
     public (float min, float max, float step, string format)? Range =>
         MinValue < MaxValue
             ? (MinValue,

@@ -1,6 +1,7 @@
 ﻿using gView.GraphicsEngine.Abstraction;
 using gView.GraphicsEngine.Threading;
 using SkiaSharp;
+using Svg.Skia;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -57,6 +58,51 @@ namespace gView.GraphicsEngine.Skia
         public IBitmap CreateBitmap(string filename)
         {
             return new SkiaBitmap(filename);
+        }
+
+        public IBitmap RasterizeSvg(byte[] svgBytes, int pixelWidth, int pixelHeight)
+        {
+            if (svgBytes == null || svgBytes.Length == 0)
+            {
+                throw new ArgumentException("svgBytes must not be empty", nameof(svgBytes));
+            }
+
+            pixelWidth = Math.Max(1, pixelWidth);
+            pixelHeight = Math.Max(1, pixelHeight);
+
+            using var svg = new SKSvg();
+            SKPicture picture;
+            using (var svgStream = new MemoryStream(svgBytes))
+            {
+                picture = svg.Load(svgStream);
+            }
+
+            if (picture is null)
+            {
+                throw new InvalidOperationException("Could not parse SVG source.");
+            }
+
+            var bitmap = CreateBitmap(pixelWidth, pixelHeight, PixelFormat.Rgba32);
+            var skBitmap = (SKBitmap)bitmap.EngineElement;
+
+            var bounds = picture.CullRect;
+            float boundsWidth = bounds.Width > 0 ? bounds.Width : pixelWidth;
+            float boundsHeight = bounds.Height > 0 ? bounds.Height : pixelHeight;
+
+            using (var canvas = new SKCanvas(skBitmap))
+            {
+                canvas.Clear(SKColors.Transparent);
+
+                float sx = pixelWidth / boundsWidth;
+                float sy = pixelHeight / boundsHeight;
+
+                canvas.Translate(-bounds.Left * sx, -bounds.Top * sy);
+                canvas.Scale(sx, sy);
+                canvas.DrawPicture(picture);
+                canvas.Flush();
+            }
+
+            return bitmap;
         }
 
         #endregion

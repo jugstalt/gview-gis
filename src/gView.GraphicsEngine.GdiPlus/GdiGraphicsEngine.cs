@@ -2,6 +2,7 @@
 using gView.GraphicsEngine.Threading;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 
@@ -47,6 +48,42 @@ namespace gView.GraphicsEngine.GdiPlus
         public IBitmap CreateBitmap(string filename)
         {
             return new GdiBitmap(filename);
+        }
+
+        /// <summary>
+        /// GDI+ has no SVG renderer available (Skia is the engine SVG markers are
+        /// designed for; GDI+ is the legacy/opt-in fallback). Rather than fail the
+        /// draw call - and with it the whole map render, since a thrown exception
+        /// here would bubble out of the calling symbol's draw - this returns a
+        /// generic placeholder marker instead. The map still renders; the affected
+        /// symbols just don't show their actual SVG artwork under GDI+.
+        /// </summary>
+        public IBitmap RasterizeSvg(byte[] svgBytes, int pixelWidth, int pixelHeight)
+        {
+            pixelWidth = Math.Max(1, pixelWidth);
+            pixelHeight = Math.Max(1, pixelHeight);
+
+            var bitmap = CreateBitmap(pixelWidth, pixelHeight, PixelFormat.Rgba32);
+            var gdiBitmap = (Bitmap)bitmap.EngineElement;
+
+            using (var g = Graphics.FromImage(gdiBitmap))
+            {
+                g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                g.Clear(Color.Transparent);
+
+                var inset = Math.Max(1f, Math.Min(pixelWidth, pixelHeight) * 0.1f);
+                var rect = new RectangleF(inset, inset, pixelWidth - 2 * inset, pixelHeight - 2 * inset);
+                var penWidth = Math.Max(1f, Math.Min(pixelWidth, pixelHeight) / 12f);
+
+                using (var fill = new SolidBrush(Color.FromArgb(160, 160, 160, 160)))
+                using (var pen = new Pen(Color.FromArgb(220, 90, 90, 90), penWidth))
+                {
+                    g.FillEllipse(fill, rect);
+                    g.DrawEllipse(pen, rect);
+                }
+            }
+
+            return bitmap;
         }
 
         public IDrawTextFormat CreateDrawTextFormat()

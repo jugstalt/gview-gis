@@ -1,6 +1,7 @@
-﻿using gView.Carto.Core.Services.Abstraction;
+using gView.Carto.Core.Services.Abstraction;
 using gView.Carto.Razor.Components.Dialogs.Models;
 using gView.Framework.Blazor.Services.Abstraction;
+using gView.Framework.Core.Reflection;
 using gView.Razor.Abstractions;
 using System.Reflection;
 
@@ -15,13 +16,30 @@ internal class ResourcesPickerPropertyEditor : IPropertyGridEditAsync
                                    PropertyInfo propertyInfo)
     {
         var service = scope.GetApplicationScope<ICartoApplicationScopeService>();
+        var resourceContainer = service.Document?.Map?.ResourceContainer;
+
+        var extensions = propertyInfo.GetCustomAttribute<PropertyDescriptionAttribute>()?
+            .FileExtensions
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            ?? [];
+
+        var resourceNames = resourceContainer?.Names ?? [];
+        if (extensions.Length > 0)
+        {
+            resourceNames = resourceNames.Where(name =>
+                extensions.Any(ext => name.EndsWith(ext, StringComparison.OrdinalIgnoreCase)));
+        }
+
+        var resources = resourceNames.ToDictionary(
+            name => name,
+            name => resourceContainer?[name] ?? []);
 
         var model = await scope.ShowModalDialog(
-            typeof(gView.Carto.Razor.Components.Dialogs.ListSelectorDialog<string>),
-            $"Color Gradient",
-            new ListSelectorModel<string>()
+            typeof(gView.Carto.Razor.Components.Dialogs.ResourcePickerDialog),
+            $"Select Resource",
+            new ResourcePickerModel()
             {
-                Items = service.Document?.Map?.ResourceContainer?.Names ?? []
+                Resources = resources
             });
 
         var resourceName = model?.Result.SelectedItem;

@@ -1,0 +1,80 @@
+@inherits ModalDialogFormBase<ResourcePickerModel>
+
+<ModalDialogFormBase T="ResourcePickerModel"
+                     OnDialogClose="base.OnDialogClose"
+                     Model="base.Model">
+    <FormContent>
+        <GvScrollable>
+            @if (Model.Resources.Count == 0)
+            {
+                <MudAlert Severity="Severity.Info" Dense="true">No matching resources found.</MudAlert>
+            }
+            else
+            {
+                <MudList SelectedValueChanged="OnItemSelected" T="string">
+                    @foreach (var resourceName in Model.Resources.Keys)
+                    {
+                        <MudListItem Value="resourceName">
+                            <div style="display:flex; align-items:center; gap:12px;">
+                                <div class="gview-resource-picker-thumb">
+                                    <img src="@GetPreviewSrc(resourceName)" alt="" />
+                                </div>
+                                <span>@resourceName</span>
+                            </div>
+                        </MudListItem>
+                    }
+                </MudList>
+            }
+        </GvScrollable>
+    </FormContent>
+</ModalDialogFormBase>
+
+<style>
+    .gview-resource-picker-thumb {
+        width: 32px;
+        height: 32px;
+        flex: none;
+        background-image:
+            linear-gradient(45deg, rgba(128,128,128,.3) 25%, transparent 25%),
+            linear-gradient(-45deg, rgba(128,128,128,.3) 25%, transparent 25%),
+            linear-gradient(45deg, transparent 75%, rgba(128,128,128,.3) 75%),
+            linear-gradient(-45deg, transparent 75%, rgba(128,128,128,.3) 75%);
+        background-size: 8px 8px;
+        background-position: 0 0, 0 4px, 4px -4px, -4px 0px;
+    }
+
+    .gview-resource-picker-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+</style>
+
+@code {
+    private void OnItemSelected(string resourceName)
+    {
+        Model.Result.SelectedItem = resourceName;
+    }
+
+    private string GetPreviewSrc(string resourceName)
+    {
+        if (!Model.Resources.TryGetValue(resourceName, out var bytes) || bytes is null || bytes.Length == 0)
+        {
+            return "";
+        }
+
+        return $"data:{MimeTypeFromExtension(resourceName)};base64,{Convert.ToBase64String(bytes)}";
+    }
+
+    private static string MimeTypeFromExtension(string resourceName)
+        => System.IO.Path.GetExtension(resourceName).ToLowerInvariant() switch
+        {
+            ".svg" => "image/svg+xml",
+            ".png" => "image/png",
+            ".jpg" or ".jpeg" => "image/jpeg",
+            ".gif" => "image/gif",
+            ".bmp" => "image/bmp",
+            ".webp" => "image/webp",
+            _ => "application/octet-stream"
+        };
+}
