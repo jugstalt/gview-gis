@@ -5,6 +5,46 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 8.26.3402
+
+## Fixed
+
+- MxlUtil ConvertAprx: converted `CIMCharacterMarker` point symbols could render visibly offset
+  from their feature's location.
+  - `anchorPoint`/`anchorPointUnits`/`offsetX`/`offsetY` were not read from the CIM at all;
+    `AprxMapConverter.ConvertCharacterMarker` now maps them onto the resulting
+    `TrueTypeMarkerSymbol`'s `HorizontalOffset`/`VerticalOffset`.
+  - Added `GetGlyphCenteringCorrectionFraction`, which renders the marker's glyph offscreen
+    through the current graphics engine and measures its actual ink bounds, then corrects for
+    it. Many ArcGIS Pro marker/dingbat fonts carry bogus ascent/descent metadata that has
+    nothing to do with where the glyph is drawn, which previously threw off
+    `TrueTypeMarkerSymbol`'s line-metrics-based centering (`StringAlignment.Center`) even when
+    the CIM symbol had no anchor point/offset at all.
+- MxlUtil ConvertAprx: stopped forcing every converted map to reference scale 1:1000 and map
+  units of meters. ArcGIS Pro only ties symbol/text sizes to ground distance when the author
+  explicitly sets a reference scale (most maps never do); forcing one made converted symbols
+  resize differently than in ArcGIS Pro as soon as the map was viewed at another scale. `CimMap`
+  now reads `referenceScale` from the CIM (falling back to disabled, matching ArcGIS Pro's
+  default), and map units are derived from the map's resolved spatial reference instead of being
+  hardcoded.
+
+## 8.26.3401
+
+## Changed
+
+- `gView.Server.exe` offline commands (`--publish`, `--remove`, `--catalog`, `--get-metadata`,
+  `--set-metadata`): `PlugInManager.Init()` now runs with `InitSilent = true`, so it no longer
+  prints one "added ..." line per plugin type to the console.
+
+## Fixed
+
+- `gView.Server.exe --publish`: fixed a `"No maps found in document"` error on every publish. An
+  `.mxl` file on disk has a `<MapServer>` root wrapping `<MapDocument>`, but
+  `MapServiceDeploymentManager.AddMap` expects a bare `<MapDocument>` fragment as its `mapXml`
+  argument - the same unwrapping `BrowseServicesController.AddService` already does for HTTP
+  uploads. Added `MxlFile.ExtractMapDocumentXmlAsync` and used it in `PublishCommand` before
+  calling `AddMap`.
+
 ## 8.26.3303
 
 ## Added

@@ -49,14 +49,52 @@ public class MapConversionTests
     }
 
     [Fact]
-    public void Convert_DisplayDefaults_AreAlwaysSet()
+    public void Convert_NoReferenceScaleInCim_DisablesReferenceScaleSymbolSizing()
+    {
+        // ArcGIS Pro only ties symbol/text sizes to ground distance when the author
+        // explicitly sets a reference scale. Most authored maps never do, and forcing an
+        // arbitrary one (e.g. always 1:1000) makes symbols render at the wrong size compared
+        // to ArcGIS Pro as soon as the map is viewed at any other scale.
+        var converter = NewConverter(out _, out _);
+        var result = new AprxMapResult(Cim.Map(), []);
+
+        var map = converter.Convert(result);
+
+        Assert.True(map.Display.ReferenceScale <= 0);
+    }
+
+    [Fact]
+    public void Convert_ReferenceScaleInCim_IsCopiedToDisplay()
+    {
+        var converter = NewConverter(out _, out _);
+        var result = new AprxMapResult(Cim.Map(referenceScale: 2500), []);
+
+        var map = converter.Convert(result);
+
+        Assert.Equal(2500, map.Display.ReferenceScale);
+    }
+
+    [Fact]
+    public void Convert_NoSpatialReference_MapUnitsDefaultToMeters()
     {
         var converter = NewConverter(out _, out _);
         var result = new AprxMapResult(Cim.Map(), []);
 
         var map = converter.Convert(result);
 
-        Assert.Equal(1000, map.Display.ReferenceScale);
+        Assert.Equal(GeoUnits.Meters, map.Display.DisplayUnits);
+        Assert.Equal(GeoUnits.Meters, map.Display.MapUnits);
+    }
+
+    [Fact]
+    public void Convert_ProjectedSpatialReference_MapUnitsMatchSpatialReference()
+    {
+        // EPSG:25832 (ETRS89 / UTM zone 32N) is a projected, metric CRS.
+        var converter = NewConverter(out _, out _);
+        var result = new AprxMapResult(Cim.Map(spatialReference: Cim.SpatialReference(wkid: 25832)), []);
+
+        var map = converter.Convert(result);
+
         Assert.Equal(GeoUnits.Meters, map.Display.DisplayUnits);
         Assert.Equal(GeoUnits.Meters, map.Display.MapUnits);
     }

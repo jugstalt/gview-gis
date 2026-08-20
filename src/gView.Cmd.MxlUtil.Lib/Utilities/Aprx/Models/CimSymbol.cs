@@ -165,11 +165,41 @@ internal class CimCharacterMarker : CimSymbolLayer
     public double Rotation { get; set; }
 
     /// <summary>
+    /// The point within the symbol's own bounding box (x right, y up; origin = center)
+    /// that ArcGIS Pro places at the feature's geometry, applied *before* rotation.
+    /// </summary>
+    [JsonPropertyName("anchorPoint")]
+    public CimPoint2D? AnchorPoint { get; set; }
+
+    /// <summary>"Relative" (fraction of <see cref="Size"/>, -1..1 across the full symbol
+    /// extent) or "Absolute" (points). Defaults to "Relative" when not present.</summary>
+    [JsonPropertyName("anchorPointUnits")]
+    public string? AnchorPointUnits { get; set; }
+
+    /// <summary>Post-rotation translation along X, in points.</summary>
+    [JsonPropertyName("offsetX")]
+    public double OffsetX { get; set; }
+
+    /// <summary>Post-rotation translation along Y, in points.</summary>
+    [JsonPropertyName("offsetY")]
+    public double OffsetY { get; set; }
+
+    /// <summary>
     /// Nested symbol (usually CIMPolygonSymbol) that carries the fill color
     /// of the character marker when no top-level color is set.
     /// </summary>
     [JsonPropertyName("symbol")]
     public CimSymbol? Symbol { get; set; }
+}
+
+/// <summary>A simple 2D point used for CIM anchor points (x right, y up).</summary>
+internal class CimPoint2D
+{
+    [JsonPropertyName("x")]
+    public double X { get; set; }
+
+    [JsonPropertyName("y")]
+    public double Y { get; set; }
 }
 
 internal class CimVectorMarker : CimSymbolLayer

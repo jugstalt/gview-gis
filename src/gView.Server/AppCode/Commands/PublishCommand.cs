@@ -50,7 +50,13 @@ static public class PublishCommand
             var deploymentManager = app.Services.GetRequiredService<MapServiceDeploymentManager>();
             var identity = OfflineServerHost.TrustedIdentity();
 
-            var mapXml = await File.ReadAllTextAsync(mxlPath);
+            var mapXml = await MxlFile.ExtractMapDocumentXmlAsync(mxlPath);
+
+            if (String.IsNullOrWhiteSpace(mapXml))
+            {
+                Console.Error.WriteLine($"Unable to read a <MapDocument> from '{mxlPath}'.");
+                return 1;
+            }
 
             var success = await deploymentManager.AddMap(service, mapXml, identity);
 

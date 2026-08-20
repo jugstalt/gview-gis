@@ -13,13 +13,15 @@ internal static class Cim
         List<CimBaseLayer>? layers = null,
         CimSpatialReference? spatialReference = null,
         CimEnvelope? mapExtent = null,
-        CimEnvelope? defaultExtent = null) => new()
+        CimEnvelope? defaultExtent = null,
+        double? referenceScale = null) => new()
     {
         Name = name,
         LayerDefinitions = layers,
         SpatialReference = spatialReference,
         MapExtent = mapExtent,
-        DefaultExtent = defaultExtent
+        DefaultExtent = defaultExtent,
+        ReferenceScale = referenceScale
     };
 
     public static CimSpatialReference SpatialReference(int wkid, int latestWkid = 0) => new()
@@ -140,15 +142,25 @@ internal static class Cim
         string fontFamilyName = "ESRI Default Marker",
         CimColor? color = null,
         double rotation = 0,
-        bool enable = true) => new()
+        bool enable = true,
+        CimPoint2D? anchorPoint = null,
+        string? anchorPointUnits = null,
+        double offsetX = 0,
+        double offsetY = 0) => new()
     {
         CharacterIndex = characterIndex,
         Size = size,
         FontFamilyName = fontFamilyName,
         Color = color,
         Rotation = rotation,
-        Enable = enable
+        Enable = enable,
+        AnchorPoint = anchorPoint,
+        AnchorPointUnits = anchorPointUnits,
+        OffsetX = offsetX,
+        OffsetY = offsetY
     };
+
+    public static CimPoint2D Point2D(double x, double y) => new() { X = x, Y = y };
 
     public static CimGeometricEffectDashes Dashes(params double[] template) => new() { DashTemplate = [.. template] };
 

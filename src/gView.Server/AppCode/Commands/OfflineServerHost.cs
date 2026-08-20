@@ -22,6 +22,12 @@ static internal class OfflineServerHost
 {
     async static public Task<WebApplication> BuildAsync(string[] args)
     {
+        // Offline commands run for a fraction of a second and are typically
+        // called from a script - don't spam stdout with a per-plugin "added
+        // ..." line for every gView.*.dll (Setup(args) below triggers
+        // PlugInManager.Init()).
+        PlugInManager.InitSilent = true;
+
         var builder = WebApplication
                             .CreateBuilder(args)
                             .Setup(args);
