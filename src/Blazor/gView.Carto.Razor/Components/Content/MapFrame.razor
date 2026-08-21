@@ -2,6 +2,7 @@
 @using gView.Blazor.Core.Extensions
 @using gView.Blazor.Core.Services.Abstraction
 @using Framework.Core.Data.Filters
+@using Microsoft.Extensions.Logging
 
 @inherits BaseHandler
 @implements IAsyncDisposable
@@ -12,7 +13,8 @@
 @inject ICartoApplicationScopeService AppScope
 @inject CartoEventBusService EventBus
 @inject MapControlBackgroundTilesService BackgroundTiles
-@inject MapControlCrsService CrsService 
+@inject MapControlCrsService CrsService
+@inject ILogger<MapFrame> Logger
 
 @if (_mapControl is not null)
 {
@@ -70,7 +72,22 @@
         if (document.Map is Map map)
         {
             // project map sref to current leaflet map transformation
-            var mapBounds = GeoTransformer.Transform(map.Envelope, map.SpatialReference, _mapControlSRef, map.Display?.DatumTransformations)?.Envelope;
+            IEnvelope? mapBounds;
+            try
+            {
+                mapBounds = GeoTransformer.Transform(map.Envelope, map.SpatialReference, _mapControlSRef, map.Display?.DatumTransformations)?.Envelope;
+            }
+            catch (Exception ex)
+            {
+                // The persisted extent is invalid for the map's spatial reference (e.g. leftover
+                // coordinates from a previously different spatial reference). Reset it instead of
+                // aborting the whole load - otherwise the broken extent would just be written back
+                // unchanged the next time the document is saved.
+                Logger.LogWarning(ex, $"Map extent of map '{map.Title}' could not be transformed and was reset.");
+
+                map.Envelope = Envelope.Null();
+                mapBounds = null;
+            }
             //map.SpatialReference = _mapSRef;
             //map.Envelope = mapBounds;
 
