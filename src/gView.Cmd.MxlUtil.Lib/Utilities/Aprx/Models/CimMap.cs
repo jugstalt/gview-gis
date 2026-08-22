@@ -43,4 +43,20 @@ internal class CimMap
     /// </summary>
     [JsonPropertyName("layerDefinitions")]
     public List<CimBaseLayer>? LayerDefinitions { get; set; }
+
+    /// <summary>
+    /// Tells which label placement engine (Maplex vs. the older Standard engine) the map
+    /// uses. Every <see cref="CimLabelClass"/> carries placement properties for *both*
+    /// engines regardless of which one is actually active, so this is needed to pick the
+    /// right one.
+    /// </summary>
+    [JsonPropertyName("generalPlacementProperties")]
+    public CimGeneralPlacementProperties? GeneralPlacementProperties { get; set; }
+}
+
+internal class CimGeneralPlacementProperties
+{
+    /// <summary>"CIMMaplexGeneralPlacementProperties" or "CIMStandardGeneralPlacementProperties".</summary>
+    [JsonPropertyName("type")]
+    public string? Type { get; set; }
 }

@@ -27,6 +27,10 @@ internal class AprxMapConverter
     private readonly DatasetPluginOptions? _datasetOptions;
     // Pool of open datasets keyed by their effective connection string (after {dbname} substitution)
     private readonly Dictionary<string, IDataset> _datasetPool = new(StringComparer.OrdinalIgnoreCase);
+    // Which label engine the current map uses (set once per Convert() call) - every
+    // CimLabelClass carries placement properties for both engines regardless of which one is
+    // actually active, so ConvertLabelRenderer needs to know which block to read.
+    private bool _useMaplexLabelEngine = true;
 
     /// <param name="warn">Optional callback invoked for non-fatal conversion warnings.</param>
     /// <param name="info">Optional callback invoked for informational conversion notices (e.g. a label expression that was successfully translated).</param>
@@ -141,6 +145,14 @@ internal class AprxMapConverter
         // (Display.ReferenceScale <= 0) instead of forcing an arbitrary scale that would make
         // symbols render at a different size than in ArcGIS Pro.
         map.Display.ReferenceScale = cimMap.ReferenceScale ?? 0;
+
+        // ArcGIS Pro's actual default (when the map has no explicit generalPlacementProperties
+        // at all) is the modern Maplex engine; only an explicit "...Standard..." type means the
+        // author is on the older engine.
+        _useMaplexLabelEngine = !string.Equals(
+            cimMap.GeneralPlacementProperties?.Type,
+            "CIMStandardGeneralPlacementProperties",
+            StringComparison.OrdinalIgnoreCase);
 
         // Add layers in the same order as in the APRX so the TOC matches
         foreach (var cimLayer in mapResult.Layers)
@@ -356,7 +368,7 @@ internal class AprxMapConverter
         // Label renderer
         if (cimFeature.LabelVisibility && cimFeature.LabelClasses?.Count > 0)
         {
-            layer.LabelRenderer = ConvertLabelRenderer(cimFeature.LabelClasses[0]);
+            layer.LabelRenderer = ConvertLabelRenderer(cimFeature.LabelClasses[0], DetermineRendererGeometryKind(cimFeature.Renderer));
         }
 
         return layer;
@@ -571,9 +583,18 @@ internal class AprxMapConverter
     // Label renderer conversion
     // -----------------------------------------------------------------------
 
-    private SimpleLabelRenderer ConvertLabelRenderer(CimLabelClass cimLabel)
+    private SimpleLabelRenderer ConvertLabelRenderer(CimLabelClass cimLabel, RendererGeometryKind geometryKind)
     {
         var renderer = new SimpleLabelRenderer();
+
+        // "One label per name/feature/part" - names match 1:1 between CIM and gView.
+        renderer.HowManyLabels = cimLabel.StandardLabelPlacementProperties?.NumLabelsOption switch
+        {
+            "OneLabelPerName" => SimpleLabelRenderer.RenderHowManyLabels.OnPerName,
+            "OneLabelPerFeature" or "OneLabelPerShape" => SimpleLabelRenderer.RenderHowManyLabels.OnPerFeature,
+            "OneLabelPerPart" => SimpleLabelRenderer.RenderHowManyLabels.OnPerPart,
+            _ => renderer.HowManyLabels
+        };
 
         // --- Determine whether the expression is a simple field reference ---
         // FieldNames entries are plain field names (no brackets, never an expression), so the
@@ -639,7 +660,148 @@ internal class AprxMapConverter
             renderer.TextSymbol = BuildTextSymbol(textSym);
         }
 
+        switch (geometryKind)
+        {
+            // Point placement ("around point", ranked by zone: above/center/below x left/
+            // center/right) - for lines/polygons this would fight with the handling below.
+            case RendererGeometryKind.Point:
+            {
+                var zonePriorities = _useMaplexLabelEngine
+                    ? cimLabel.MaplexLabelPlacementProperties?.PointExternalZonePriorities
+                        ?? cimLabel.StandardLabelPlacementProperties?.PointPlacementPriorities
+                    : cimLabel.StandardLabelPlacementProperties?.PointPlacementPriorities
+                        ?? cimLabel.MaplexLabelPlacementProperties?.PointExternalZonePriorities;
+
+                var placementMethod = _useMaplexLabelEngine
+                    ? cimLabel.MaplexLabelPlacementProperties?.PointPlacementMethod
+                    : cimLabel.StandardLabelPlacementProperties?.PointPlacementMethod;
+
+                // "AroundPoint" (try the ranked zones below) is the default for point features
+                // in both engines; other methods (e.g. Maplex's "CenteredOnPoint") don't have a
+                // zone ranking to convert, so leave gView's built-in default (Center) for those.
+                if (zonePriorities != null &&
+                    (placementMethod is null || string.Equals(placementMethod, "AroundPoint", StringComparison.OrdinalIgnoreCase)))
+                {
+                    var alignments = OrderedPointPlacementAlignments(zonePriorities);
+                    if (alignments.Length > 0 && renderer.TextSymbol != null)
+                    {
+                        renderer.TextSymbol.TextSymbolAlignment = alignments[0];
+                        renderer.TextSymbol.SecondaryTextSymbolAlignments = alignments;
+                    }
+                }
+
+                break;
+            }
+
+            case RendererGeometryKind.Line:
+                ApplyLineLabelPlacement(cimLabel, renderer);
+                break;
+        }
+
         return renderer;
+    }
+
+    /// <summary>
+    /// Standard engine only: ArcGIS Pro's simple on/off "place above the line" / "place
+    /// centered on the line" / "place below the line" toggles map directly onto gView's
+    /// existing <see cref="TextSymbolAlignment.Over"/>/<see cref="TextSymbolAlignment.Center"/>/
+    /// <see cref="TextSymbolAlignment.Under"/> - the very same enum used for point placement,
+    /// since <c>SimpleTextSymbol</c> positions text relative to a line's baseline exactly like
+    /// it does relative to a point. "Above" is offered before "centered" before "below" when
+    /// more than one is allowed, matching ArcGIS Pro's own default trial order.
+    /// Maplex doesn't expose an equivalent simple toggle for line labels (it places them via
+    /// offset/anchor-point properties instead), so this only applies when the Standard engine
+    /// is the one actually active for the map.
+    /// </summary>
+    private void ApplyLineLabelPlacement(CimLabelClass cimLabel, SimpleLabelRenderer renderer)
+    {
+        if (_useMaplexLabelEngine || renderer.TextSymbol == null)
+        {
+            return;
+        }
+
+        var position = cimLabel.StandardLabelPlacementProperties?.LineLabelPosition;
+        if (position == null)
+        {
+            return;
+        }
+
+        List<TextSymbolAlignment> candidates = [];
+        if (position.Above) { candidates.Add(TextSymbolAlignment.Over); }
+        if (position.InLine) { candidates.Add(TextSymbolAlignment.Center); }
+        if (position.Below) { candidates.Add(TextSymbolAlignment.Under); }
+
+        if (candidates.Count > 0)
+        {
+            renderer.TextSymbol.TextSymbolAlignment = candidates[0];
+            renderer.TextSymbol.SecondaryTextSymbolAlignments = candidates.ToArray();
+        }
+    }
+
+    /// <summary>
+    /// Converts ArcGIS Pro's 8 point-label placement zones into gView's
+    /// <see cref="TextSymbolAlignment"/> equivalents, ranked best (lowest priority number)
+    /// first - directly usable as <see cref="ILabel.SecondaryTextSymbolAlignments"/>, which
+    /// gView's label engine tries in order until one doesn't collide.
+    /// Mapping derived from SimpleTextSymbol's point placement math (x right / y down):
+    /// zones are named from ArcGIS's point of view (e.g. "aboveLeft" = label appears above and
+    /// to the left of the point), gView's *Align* names instead say which edge of the label
+    /// sits at the point (e.g. "rightAlign" = the label's right edge is at the point, so the
+    /// label extends to the left - i.e. the same "...Left" zone).
+    /// Per ArcGIS Pro's docs (both Maplex and Standard): 1 is tried first, higher numbers
+    /// later - and a priority of *0 means the zone is blocked/prohibited*, not "best". Blocked
+    /// zones are dropped entirely rather than sorted to the front.
+    /// </summary>
+    private static TextSymbolAlignment[] OrderedPointPlacementAlignments(CimPointZonePriorities zones)
+    {
+        (int Priority, TextSymbolAlignment Alignment)[] zonesByPriority =
+        [
+            (zones.AboveLeft, TextSymbolAlignment.rightAlignOver),
+            (zones.AboveCenter, TextSymbolAlignment.Over),
+            (zones.AboveRight, TextSymbolAlignment.leftAlignOver),
+            (zones.CenterLeft, TextSymbolAlignment.rightAlignCenter),
+            (zones.CenterRight, TextSymbolAlignment.leftAlignCenter),
+            (zones.BelowLeft, TextSymbolAlignment.rightAlignUnder),
+            (zones.BelowCenter, TextSymbolAlignment.Under),
+            (zones.BelowRight, TextSymbolAlignment.leftAlignUnder),
+        ];
+
+        return zonesByPriority
+            .Where(z => z.Priority > 0)  // 0 = "prohibit this zone", not "best zone" - exclude it
+            .OrderBy(z => z.Priority)    // lower number = tried first; stable sort keeps the order above on ties
+            .Select(z => z.Alignment)
+            .ToArray();
+    }
+
+    private enum RendererGeometryKind { Unknown, Point, Line, Polygon }
+
+    /// <summary>
+    /// Best-effort check for which geometry type a layer's renderer draws (used to decide
+    /// which of the CIM's label placement properties apply). Scans every symbol reference the
+    /// renderer can carry (single symbol, unique-value classes, class breaks).
+    /// </summary>
+    private static RendererGeometryKind DetermineRendererGeometryKind(CimRenderer? renderer)
+    {
+        if (AnyRendererSymbolIs<CimPointSymbol>(renderer)) { return RendererGeometryKind.Point; }
+        if (AnyRendererSymbolIs<CimLineSymbol>(renderer)) { return RendererGeometryKind.Line; }
+        if (AnyRendererSymbolIs<CimPolygonSymbol>(renderer)) { return RendererGeometryKind.Polygon; }
+
+        return RendererGeometryKind.Unknown;
+    }
+
+    private static bool AnyRendererSymbolIs<T>(CimRenderer? renderer) where T : CimSymbol
+    {
+        return renderer switch
+        {
+            CimSimpleRenderer simple => simple.Symbol?.Symbol is T,
+            CimUniqueValueRenderer uv =>
+                uv.DefaultSymbol?.Symbol is T ||
+                uv.Groups?.SelectMany(g => g.Classes ?? []).Any(c => c.Symbol?.Symbol is T) == true,
+            CimClassBreaksRenderer cb =>
+                cb.DefaultSymbol?.Symbol is T ||
+                cb.Breaks?.Any(b => b.Symbol?.Symbol is T) == true,
+            _ => false
+        };
     }
 
     private ITextSymbol BuildTextSymbol(CimTextSymbol cimText)
