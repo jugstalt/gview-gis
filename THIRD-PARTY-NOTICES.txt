@@ -1,102 +1,14 @@
-﻿License notice for Microsoft.Extensions.DependencyInjection (v10.0.8)
+﻿License notice for ExCSS (v4.3.1)
 ------------------------------------
 
-https://github.com/dotnet/dotnet at 94ea82652cdd4e0f8046b5bd5becbd11461482ca
-
-https://dot.net/
-
-Copyright © Microsoft Corporation. All rights reserved.
+https://github.com/TylerBrinks/ExCSS at c97e84d6126bb2e42658cf5af627d52e697c8779
 
 Licensed under MIT
 
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for Microsoft.Extensions.DependencyInjection.Abstractions (v10.0.8)
-------------------------------------
-
-https://github.com/dotnet/dotnet at 94ea82652cdd4e0f8046b5bd5becbd11461482ca
-
-https://dot.net/
-
-Copyright © Microsoft Corporation. All rights reserved.
-
-Licensed under MIT
-
-Available at https://licenses.nuget.org/MIT
-
-
-License notice for Microsoft.Extensions.Logging (v10.0.8)
-------------------------------------
-
-https://github.com/dotnet/dotnet at 94ea82652cdd4e0f8046b5bd5becbd11461482ca
-
-https://dot.net/
-
-Copyright © Microsoft Corporation. All rights reserved.
-
-Licensed under MIT
-
-Available at https://licenses.nuget.org/MIT
-
-
-License notice for Microsoft.Extensions.Logging.Abstractions (v10.0.8)
-------------------------------------
-
-https://github.com/dotnet/dotnet at 94ea82652cdd4e0f8046b5bd5becbd11461482ca
-
-https://dot.net/
-
-Copyright © Microsoft Corporation. All rights reserved.
-
-Licensed under MIT
-
-Available at https://licenses.nuget.org/MIT
-
-
-License notice for Microsoft.Extensions.Options (v10.0.8)
-------------------------------------
-
-https://github.com/dotnet/dotnet at 94ea82652cdd4e0f8046b5bd5becbd11461482ca
-
-https://dot.net/
-
-Copyright © Microsoft Corporation. All rights reserved.
-
-Licensed under MIT
-
-Available at https://licenses.nuget.org/MIT
-
-
-License notice for Microsoft.Extensions.Primitives (v10.0.8)
-------------------------------------
-
-https://github.com/dotnet/dotnet at 94ea82652cdd4e0f8046b5bd5becbd11461482ca
-
-https://dot.net/
-
-Copyright © Microsoft Corporation. All rights reserved.
-
-Licensed under MIT
-
-Available at https://licenses.nuget.org/MIT
-
-
-License notice for Microsoft.Win32.SystemEvents (v10.0.8)
-------------------------------------
-
-https://github.com/dotnet/dotnet at 94ea82652cdd4e0f8046b5bd5becbd11461482ca
-
-https://dot.net/
-
-Copyright © Microsoft Corporation. All rights reserved.
-
-Licensed under MIT
-
-Available at https://licenses.nuget.org/MIT
-
-
-License notice for SkiaSharp (v3.119.2)
+License notice for HarfBuzzSharp (v8.3.1.3)
 ------------------------------------
 
 https://go.microsoft.com/fwlink/?linkid=868515 at 2888c737ad016d584c74525e2d35db5097ea8576
@@ -108,7 +20,7 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for SkiaSharp.NativeAssets.Linux (v3.119.2)
+License notice for HarfBuzzSharp.NativeAssets.Linux (v8.3.1.3)
 ------------------------------------
 
 https://go.microsoft.com/fwlink/?linkid=868515 at 2888c737ad016d584c74525e2d35db5097ea8576
@@ -120,7 +32,7 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for SkiaSharp.NativeAssets.macOS (v3.119.2)
+License notice for HarfBuzzSharp.NativeAssets.macOS (v8.3.1.3)
 ------------------------------------
 
 https://go.microsoft.com/fwlink/?linkid=868515 at 2888c737ad016d584c74525e2d35db5097ea8576
@@ -132,7 +44,7 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for SkiaSharp.NativeAssets.Win32 (v3.119.2)
+License notice for HarfBuzzSharp.NativeAssets.Win32 (v8.3.1.3)
 ------------------------------------
 
 https://go.microsoft.com/fwlink/?linkid=868515 at 2888c737ad016d584c74525e2d35db5097ea8576
@@ -144,10 +56,228 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for System.Drawing.Common (v10.0.8)
+License notice for Microsoft.Extensions.DependencyInjection (v10.0.10)
 ------------------------------------
 
-https://github.com/dotnet/dotnet at 94ea82652cdd4e0f8046b5bd5becbd11461482ca
+https://github.com/dotnet/dotnet at f7d90799ce4ef09a0bb257852a57248d2a8fb8dd
+
+https://dot.net/
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for Microsoft.Extensions.DependencyInjection.Abstractions (v10.0.10)
+------------------------------------
+
+https://github.com/dotnet/dotnet at f7d90799ce4ef09a0bb257852a57248d2a8fb8dd
+
+https://dot.net/
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for Microsoft.Extensions.Logging (v10.0.10)
+------------------------------------
+
+https://github.com/dotnet/dotnet at f7d90799ce4ef09a0bb257852a57248d2a8fb8dd
+
+https://dot.net/
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for Microsoft.Extensions.Logging.Abstractions (v10.0.10)
+------------------------------------
+
+https://github.com/dotnet/dotnet at f7d90799ce4ef09a0bb257852a57248d2a8fb8dd
+
+https://dot.net/
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for Microsoft.Extensions.Options (v10.0.10)
+------------------------------------
+
+https://github.com/dotnet/dotnet at f7d90799ce4ef09a0bb257852a57248d2a8fb8dd
+
+https://dot.net/
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for Microsoft.Extensions.Primitives (v10.0.10)
+------------------------------------
+
+https://github.com/dotnet/dotnet at f7d90799ce4ef09a0bb257852a57248d2a8fb8dd
+
+https://dot.net/
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for Microsoft.Win32.SystemEvents (v10.0.10)
+------------------------------------
+
+https://github.com/dotnet/dotnet at f7d90799ce4ef09a0bb257852a57248d2a8fb8dd
+
+https://dot.net/
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for ShimSkiaSharp (v5.1.1)
+------------------------------------
+
+https://github.com/wieslawsoltes/Svg.Skia at 3261e036769d0deba1f621265c7ab7000e3ce470
+
+Copyright © Wiesław Šoltés 2026
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for SkiaSharp (v3.119.4)
+------------------------------------
+
+https://go.microsoft.com/fwlink/?linkid=868515 at f568ac94dd768ef9a2f593537cfde2dd0d348ef5
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for SkiaSharp.NativeAssets.Linux (v3.119.4)
+------------------------------------
+
+https://go.microsoft.com/fwlink/?linkid=868515 at f568ac94dd768ef9a2f593537cfde2dd0d348ef5
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for SkiaSharp.NativeAssets.macOS (v3.119.4)
+------------------------------------
+
+https://go.microsoft.com/fwlink/?linkid=868515 at f568ac94dd768ef9a2f593537cfde2dd0d348ef5
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for SkiaSharp.NativeAssets.Win32 (v3.119.4)
+------------------------------------
+
+https://go.microsoft.com/fwlink/?linkid=868515 at f568ac94dd768ef9a2f593537cfde2dd0d348ef5
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for Svg.Animation (v5.1.1)
+------------------------------------
+
+https://github.com/wieslawsoltes/Svg.Skia at 3261e036769d0deba1f621265c7ab7000e3ce470
+
+Copyright © Wiesław Šoltés 2026
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for Svg.Custom (v5.1.1)
+------------------------------------
+
+https://github.com/wieslawsoltes/Svg.Skia at 3261e036769d0deba1f621265c7ab7000e3ce470
+
+Copyright © Wiesław Šoltés 2026
+
+Licensed under MS-PL
+
+Available at https://licenses.nuget.org/MS-PL
+
+
+License notice for Svg.Model (v5.1.1)
+------------------------------------
+
+https://github.com/wieslawsoltes/Svg.Skia at 3261e036769d0deba1f621265c7ab7000e3ce470
+
+Copyright © Wiesław Šoltés 2026
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for Svg.SceneGraph (v5.1.1)
+------------------------------------
+
+https://github.com/wieslawsoltes/Svg.Skia at 3261e036769d0deba1f621265c7ab7000e3ce470
+
+Copyright © Wiesław Šoltés 2026
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for Svg.Skia (v5.1.1)
+------------------------------------
+
+https://github.com/wieslawsoltes/Svg.Skia at 3261e036769d0deba1f621265c7ab7000e3ce470
+
+Copyright © Wiesław Šoltés 2026
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for System.Drawing.Common (v10.0.10)
+------------------------------------
+
+https://github.com/dotnet/dotnet at f7d90799ce4ef09a0bb257852a57248d2a8fb8dd
 
 https://github.com/dotnet/winforms
 
@@ -158,10 +288,10 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for Microsoft.Data.SqlClient (v7.0.1)
+License notice for Microsoft.Data.SqlClient (v7.0.2)
 ------------------------------------
 
-https://github.com/dotnet/sqlclient at 1b18a276671cd9b4d2c0a7cf0bab6c4aaf6472c9
+https://github.com/dotnet/sqlclient at 8c70cec98444338ddb0b97be94c34fde93970241
 
 https://aka.ms/sqlclientproject
 
@@ -172,10 +302,10 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for Npgsql (v10.0.2)
+License notice for Npgsql (v10.0.3)
 ------------------------------------
 
-https://github.com/npgsql/npgsql at 4d57e27b370e2ab2a350ad8bcef78d7ddd97e5ea
+https://github.com/npgsql/npgsql at d3768398c17877b3a916c3c4d87e8e11698991fc
 
 Copyright 2025 © The Npgsql Development Team
 
@@ -196,12 +326,14 @@ Available at https://aka.ms/deprecateLicenseUrl
 LICENSE.txt
 
 
-License notice for SourceGear.sqlite3 (v3.50.4.5)
+License notice for SourceGear.sqlite3 (v3.53.3)
 ------------------------------------
+
+https://github.com/sourcegear/sqlite-builds at 21770fb613c0513b35289e82e2182e5f5e7e17e1
 
 https://sqlite.org/
 
-Copyright 2014-2025 SourceGear, LLC
+Copyright 2014-2026 SourceGear, LLC
 
 Available at https://aka.ms/deprecateLicenseUrl
 
@@ -240,10 +372,10 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for Microsoft.Data.SqlClient.Extensions.Abstractions (v1.0.0)
+License notice for Microsoft.Data.SqlClient.Extensions.Abstractions (v7.0.2)
 ------------------------------------
 
-https://github.com/dotnet/SqlClient at 48b82622d7463aae8e9601bec6b6a20f2e47e2b0
+https://github.com/dotnet/SqlClient at 8c70cec98444338ddb0b97be94c34fde93970241
 
 https://aka.ms/sqlclientproject
 
@@ -254,10 +386,10 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for Microsoft.Data.SqlClient.Internal.Logging (v1.0.0)
+License notice for Microsoft.Data.SqlClient.Internal.Logging (v7.0.2)
 ------------------------------------
 
-https://github.com/dotnet/SqlClient at 48b82622d7463aae8e9601bec6b6a20f2e47e2b0
+https://github.com/dotnet/SqlClient at 8c70cec98444338ddb0b97be94c34fde93970241
 
 https://aka.ms/sqlclientproject
 
@@ -530,12 +662,12 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for Proj4Net.Core (v2.25.1802)
+License notice for Proj4Net.Core (v2.26.2401)
 ------------------------------------
 
-https://github.com/jugstalt/Proj4Net.Core at dd38a63e264e390ecd54fbe90ab6aa029f8b40c3
+https://github.com/jugstalt/Proj4Net.Core at d66a69621d728c31a4d72057a7e60b7ac66370c3
 
-2025, Jürgen Gstaltmaier
+2026, Jürgen Gstaltmaier
 
 Licensed under Apache-2.0
 
@@ -610,10 +742,10 @@ Licensed under Apache-2.0
 Available at https://licenses.nuget.org/Apache-2.0
 
 
-License notice for Microsoft.AspNetCore.WebUtilities (v10.0.8)
+License notice for Microsoft.AspNetCore.WebUtilities (v10.0.10)
 ------------------------------------
 
-https://github.com/dotnet/dotnet at 94ea82652cdd4e0f8046b5bd5becbd11461482ca
+https://github.com/dotnet/dotnet at f7d90799ce4ef09a0bb257852a57248d2a8fb8dd
 
 https://asp.net/
 
@@ -624,10 +756,10 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for Microsoft.Net.Http.Headers (v10.0.8)
+License notice for Microsoft.Net.Http.Headers (v10.0.10)
 ------------------------------------
 
-https://github.com/dotnet/dotnet at 94ea82652cdd4e0f8046b5bd5becbd11461482ca
+https://github.com/dotnet/dotnet at f7d90799ce4ef09a0bb257852a57248d2a8fb8dd
 
 https://asp.net/
 
@@ -658,10 +790,10 @@ Copyright 2017
 License available at https://github.com/madskristensen/BundlerMinifier/blob/master/LICENSE
 
 
-License notice for Microsoft.AspNetCore.Authentication.OpenIdConnect (v10.0.8)
+License notice for Microsoft.AspNetCore.Authentication.OpenIdConnect (v10.0.10)
 ------------------------------------
 
-https://github.com/dotnet/dotnet at 94ea82652cdd4e0f8046b5bd5becbd11461482ca
+https://github.com/dotnet/dotnet at f7d90799ce4ef09a0bb257852a57248d2a8fb8dd
 
 https://asp.net/
 
@@ -672,10 +804,10 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for Microsoft.AspNetCore.Mvc.NewtonsoftJson (v10.0.8)
+License notice for Microsoft.AspNetCore.Mvc.NewtonsoftJson (v10.0.10)
 ------------------------------------
 
-https://github.com/dotnet/dotnet at 94ea82652cdd4e0f8046b5bd5becbd11461482ca
+https://github.com/dotnet/dotnet at f7d90799ce4ef09a0bb257852a57248d2a8fb8dd
 
 https://asp.net/
 
@@ -712,12 +844,12 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for Azure.Core (v1.54.0)
+License notice for Azure.Core (v1.57.0)
 ------------------------------------
 
-https://github.com/Azure/azure-sdk-for-net at 01ff3af0100f62575b20fba4730c77e92713a168
+https://github.com/Azure/azure-sdk-for-net at 3b2e068a7eaa6d4395810077eef1ddb3569056ef
 
-https://github.com/Azure/azure-sdk-for-net/blob/Azure.Core_1.54.0/sdk/core/Azure.Core/README.md
+https://github.com/Azure/azure-sdk-for-net/blob/Azure.Core_1.57.0/sdk/core/Azure.Core/README.md
 
 Copyright © Microsoft Corporation. All rights reserved.
 
@@ -754,12 +886,12 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for Azure.Security.KeyVault.Certificates (v4.8.0)
+License notice for Azure.Security.KeyVault.Certificates (v4.9.0)
 ------------------------------------
 
-https://github.com/Azure/azure-sdk-for-net at 444d6e6d437aaada932a630bfe1a881a7f0f306f
+https://github.com/Azure/azure-sdk-for-net at 57cd837706ce31a21e1ec65c45fdca307581eba4
 
-https://github.com/Azure/azure-sdk-for-net/blob/Azure.Security.KeyVault.Certificates_4.8.0/sdk/keyvault/Azure.Security.KeyVault.Certificates/README.md
+https://github.com/Azure/azure-sdk-for-net/blob/Azure.Security.KeyVault.Certificates_4.9.0/sdk/keyvault/Azure.Security.KeyVault.Certificates/README.md
 
 Copyright © Microsoft Corporation. All rights reserved.
 
@@ -782,12 +914,12 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for Azure.Storage.Common (v12.27.0)
+License notice for Azure.Storage.Common (v12.28.0)
 ------------------------------------
 
-https://github.com/Azure/azure-sdk-for-net at 704f1943b301757f94f9bd37e3f9b6888256e3df
+https://github.com/Azure/azure-sdk-for-net at 8608dd90245dcc1e8d9a30f4fdb6494d8d268d82
 
-https://github.com/Azure/azure-sdk-for-net/blob/Azure.Storage.Common_12.27.0/sdk/storage/Azure.Storage.Common/README.md
+https://github.com/Azure/azure-sdk-for-net/blob/Azure.Storage.Common_12.28.0/sdk/storage/Azure.Storage.Common/README.md
 
 Copyright © Microsoft Corporation. All rights reserved.
 
@@ -846,10 +978,10 @@ Licensed under Apache-2.0
 Available at https://licenses.nuget.org/Apache-2.0
 
 
-License notice for Microsoft.AspNetCore.JsonPatch (v10.0.8)
+License notice for Microsoft.AspNetCore.JsonPatch (v10.0.10)
 ------------------------------------
 
-https://github.com/dotnet/dotnet at 94ea82652cdd4e0f8046b5bd5becbd11461482ca
+https://github.com/dotnet/dotnet at f7d90799ce4ef09a0bb257852a57248d2a8fb8dd
 
 https://asp.net/
 
@@ -874,10 +1006,12 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for Microsoft.CodeAnalysis.Common (v4.5.0)
+License notice for Microsoft.Bcl.Cryptography (v10.0.2)
 ------------------------------------
 
-https://github.com/dotnet/roslyn at 6a5a63bbc9f4449d9bd1e95a8f9624939c3ccdc3
+https://github.com/dotnet/dotnet at 44525024595742ebe09023abe709df51de65009b
+
+https://dot.net/
 
 Copyright © Microsoft Corporation. All rights reserved.
 
@@ -886,10 +1020,12 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for Microsoft.CodeAnalysis.CSharp (v4.5.0)
+License notice for Microsoft.Build.Framework (v18.0.2)
 ------------------------------------
 
-https://github.com/dotnet/roslyn at 6a5a63bbc9f4449d9bd1e95a8f9624939c3ccdc3
+https://github.com/dotnet/msbuild at 995a3dce41788caebf2b8ca6602a7431f08bfd06
+
+http://go.microsoft.com/fwlink/?LinkId=624683
 
 Copyright © Microsoft Corporation. All rights reserved.
 
@@ -898,10 +1034,10 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for Microsoft.CodeAnalysis.CSharp.Workspaces (v4.5.0)
+License notice for Microsoft.CodeAnalysis.Common (v5.0.0)
 ------------------------------------
 
-https://github.com/dotnet/roslyn at 6a5a63bbc9f4449d9bd1e95a8f9624939c3ccdc3
+https://github.com/dotnet/roslyn at 6c4a46a31302167b425d5e0a31ea83c9a9aa1d09
 
 Copyright © Microsoft Corporation. All rights reserved.
 
@@ -910,10 +1046,10 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for Microsoft.CodeAnalysis.Workspaces.Common (v4.5.0)
+License notice for Microsoft.CodeAnalysis.CSharp (v5.0.0)
 ------------------------------------
 
-https://github.com/dotnet/roslyn at 6a5a63bbc9f4449d9bd1e95a8f9624939c3ccdc3
+https://github.com/dotnet/roslyn at 6c4a46a31302167b425d5e0a31ea83c9a9aa1d09
 
 Copyright © Microsoft Corporation. All rights reserved.
 
@@ -922,10 +1058,46 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for Microsoft.EntityFrameworkCore (v8.0.0)
+License notice for Microsoft.CodeAnalysis.CSharp.Workspaces (v5.0.0)
 ------------------------------------
 
-https://github.com/dotnet/efcore at e017dc125bef2f604f85befd8ff27544a5a67c38
+https://github.com/dotnet/roslyn at 6c4a46a31302167b425d5e0a31ea83c9a9aa1d09
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for Microsoft.CodeAnalysis.Workspaces.Common (v5.0.0)
+------------------------------------
+
+https://github.com/dotnet/roslyn at 6c4a46a31302167b425d5e0a31ea83c9a9aa1d09
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for Microsoft.CodeAnalysis.Workspaces.MSBuild (v5.0.0)
+------------------------------------
+
+https://github.com/dotnet/roslyn at 6c4a46a31302167b425d5e0a31ea83c9a9aa1d09
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for Microsoft.EntityFrameworkCore (v10.0.10)
+------------------------------------
+
+https://github.com/dotnet/dotnet at f7d90799ce4ef09a0bb257852a57248d2a8fb8dd
 
 https://docs.microsoft.com/ef/core/
 
@@ -936,10 +1108,10 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for Microsoft.EntityFrameworkCore.Abstractions (v8.0.0)
+License notice for Microsoft.EntityFrameworkCore.Abstractions (v10.0.10)
 ------------------------------------
 
-https://github.com/dotnet/efcore at e017dc125bef2f604f85befd8ff27544a5a67c38
+https://github.com/dotnet/dotnet at f7d90799ce4ef09a0bb257852a57248d2a8fb8dd
 
 https://docs.microsoft.com/ef/core/
 
@@ -950,10 +1122,10 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for Microsoft.EntityFrameworkCore.Analyzers (v8.0.0)
+License notice for Microsoft.EntityFrameworkCore.Analyzers (v10.0.10)
 ------------------------------------
 
-https://github.com/dotnet/efcore at e017dc125bef2f604f85befd8ff27544a5a67c38
+https://github.com/dotnet/dotnet at f7d90799ce4ef09a0bb257852a57248d2a8fb8dd
 
 https://docs.microsoft.com/ef/core/
 
@@ -964,10 +1136,10 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for Microsoft.EntityFrameworkCore.Relational (v8.0.0)
+License notice for Microsoft.EntityFrameworkCore.Relational (v10.0.10)
 ------------------------------------
 
-https://github.com/dotnet/efcore at e017dc125bef2f604f85befd8ff27544a5a67c38
+https://github.com/dotnet/dotnet at f7d90799ce4ef09a0bb257852a57248d2a8fb8dd
 
 https://docs.microsoft.com/ef/core/
 
@@ -978,10 +1150,10 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for Microsoft.Extensions.AmbientMetadata.Application (v10.6.0)
+License notice for Microsoft.Extensions.AmbientMetadata.Application (v10.8.0)
 ------------------------------------
 
-https://github.com/dotnet/extensions at c8437bc222c86c535ef6d763468d655737b1261d
+https://github.com/dotnet/extensions at 8f88b008401bd66a06240d1b7696cd89d921013b
 
 https://dot.net/
 
@@ -992,10 +1164,10 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for Microsoft.Extensions.Compliance.Abstractions (v10.6.0)
+License notice for Microsoft.Extensions.Compliance.Abstractions (v10.8.0)
 ------------------------------------
 
-https://github.com/dotnet/extensions at c8437bc222c86c535ef6d763468d655737b1261d
+https://github.com/dotnet/extensions at 8f88b008401bd66a06240d1b7696cd89d921013b
 
 https://dot.net/
 
@@ -1006,10 +1178,10 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for Microsoft.Extensions.DependencyInjection.AutoActivation (v10.6.0)
+License notice for Microsoft.Extensions.DependencyInjection.AutoActivation (v10.8.0)
 ------------------------------------
 
-https://github.com/dotnet/extensions at c8437bc222c86c535ef6d763468d655737b1261d
+https://github.com/dotnet/extensions at 8f88b008401bd66a06240d1b7696cd89d921013b
 
 https://dot.net/
 
@@ -1020,10 +1192,10 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for Microsoft.Extensions.DependencyModel (v8.0.0)
+License notice for Microsoft.Extensions.DependencyModel (v10.0.10)
 ------------------------------------
 
-https://github.com/dotnet/runtime at 5535e31a712343a63f5d7d796cd874e563e5ac14
+https://github.com/dotnet/dotnet at f7d90799ce4ef09a0bb257852a57248d2a8fb8dd
 
 https://dot.net/
 
@@ -1034,10 +1206,10 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for Microsoft.Extensions.Diagnostics.ExceptionSummarization (v10.6.0)
+License notice for Microsoft.Extensions.Diagnostics.ExceptionSummarization (v10.8.0)
 ------------------------------------
 
-https://github.com/dotnet/extensions at c8437bc222c86c535ef6d763468d655737b1261d
+https://github.com/dotnet/extensions at 8f88b008401bd66a06240d1b7696cd89d921013b
 
 https://dot.net/
 
@@ -1048,10 +1220,10 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for Microsoft.Extensions.Http.Diagnostics (v10.6.0)
+License notice for Microsoft.Extensions.Http.Diagnostics (v10.8.0)
 ------------------------------------
 
-https://github.com/dotnet/extensions at c8437bc222c86c535ef6d763468d655737b1261d
+https://github.com/dotnet/extensions at 8f88b008401bd66a06240d1b7696cd89d921013b
 
 https://dot.net/
 
@@ -1062,10 +1234,10 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for Microsoft.Extensions.Http.Resilience (v10.6.0)
+License notice for Microsoft.Extensions.Http.Resilience (v10.8.0)
 ------------------------------------
 
-https://github.com/dotnet/extensions at c8437bc222c86c535ef6d763468d655737b1261d
+https://github.com/dotnet/extensions at 8f88b008401bd66a06240d1b7696cd89d921013b
 
 https://dot.net/
 
@@ -1076,10 +1248,10 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for Microsoft.Extensions.Resilience (v10.6.0)
+License notice for Microsoft.Extensions.Resilience (v10.8.0)
 ------------------------------------
 
-https://github.com/dotnet/extensions at c8437bc222c86c535ef6d763468d655737b1261d
+https://github.com/dotnet/extensions at 8f88b008401bd66a06240d1b7696cd89d921013b
 
 https://dot.net/
 
@@ -1090,10 +1262,10 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for Microsoft.Extensions.ServiceDiscovery (v10.6.0)
+License notice for Microsoft.Extensions.ServiceDiscovery (v10.8.0)
 ------------------------------------
 
-https://github.com/dotnet/extensions at c8437bc222c86c535ef6d763468d655737b1261d
+https://github.com/dotnet/extensions at 8f88b008401bd66a06240d1b7696cd89d921013b
 
 https://dot.net/
 
@@ -1104,10 +1276,10 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for Microsoft.Extensions.ServiceDiscovery.Abstractions (v10.6.0)
+License notice for Microsoft.Extensions.ServiceDiscovery.Abstractions (v10.8.0)
 ------------------------------------
 
-https://github.com/dotnet/extensions at c8437bc222c86c535ef6d763468d655737b1261d
+https://github.com/dotnet/extensions at 8f88b008401bd66a06240d1b7696cd89d921013b
 
 https://dot.net/
 
@@ -1118,10 +1290,10 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for Microsoft.Extensions.Telemetry (v10.6.0)
+License notice for Microsoft.Extensions.Telemetry (v10.8.0)
 ------------------------------------
 
-https://github.com/dotnet/extensions at c8437bc222c86c535ef6d763468d655737b1261d
+https://github.com/dotnet/extensions at 8f88b008401bd66a06240d1b7696cd89d921013b
 
 https://dot.net/
 
@@ -1132,10 +1304,10 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for Microsoft.Extensions.Telemetry.Abstractions (v10.6.0)
+License notice for Microsoft.Extensions.Telemetry.Abstractions (v10.8.0)
 ------------------------------------
 
-https://github.com/dotnet/extensions at c8437bc222c86c535ef6d763468d655737b1261d
+https://github.com/dotnet/extensions at 8f88b008401bd66a06240d1b7696cd89d921013b
 
 https://dot.net/
 
@@ -1146,10 +1318,10 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for Microsoft.Identity.Client (v4.84.1)
+License notice for Microsoft.Identity.Client (v4.86.1)
 ------------------------------------
 
-https://github.com/AzureAD/microsoft-authentication-library-for-dotnet at 022dcde326245918401c835d7e1c7d90f6b0e347
+https://github.com/AzureAD/microsoft-authentication-library-for-dotnet at d1ac9d011a87630210ac461beb287fe89c60c44f
 
 https://go.microsoft.com/fwlink/?linkid=844761
 
@@ -1174,10 +1346,94 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for MongoDB.Bson (v3.8.1)
+License notice for Microsoft.IdentityModel.Abstractions (v8.19.2)
 ------------------------------------
 
-https://github.com/mongodb/mongo-csharp-driver.git at 67b17d34f0dd1eac2b877a117be4eef830f19afc
+https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet at 25d90ed3f48854036d444541a049089ccd198707
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for Microsoft.IdentityModel.JsonWebTokens (v8.19.2)
+------------------------------------
+
+https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet at 25d90ed3f48854036d444541a049089ccd198707
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for Microsoft.IdentityModel.Logging (v8.19.2)
+------------------------------------
+
+https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet at 25d90ed3f48854036d444541a049089ccd198707
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for Microsoft.IdentityModel.Protocols (v8.19.2)
+------------------------------------
+
+https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet at 25d90ed3f48854036d444541a049089ccd198707
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for Microsoft.IdentityModel.Protocols.OpenIdConnect (v8.19.2)
+------------------------------------
+
+https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet at 25d90ed3f48854036d444541a049089ccd198707
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for Microsoft.IdentityModel.Tokens (v8.19.2)
+------------------------------------
+
+https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet at 25d90ed3f48854036d444541a049089ccd198707
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for Microsoft.VisualStudio.SolutionPersistence (v1.0.52)
+------------------------------------
+
+https://github.com/microsoft/vs-solutionpersistence at 19c3ca7dc997dba2b3a86f6c666e9f717f34c8fe
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for MongoDB.Bson (v3.10.0)
+------------------------------------
+
+https://github.com/mongodb/mongo-csharp-driver.git at 3e1d12614abfc181a14e388aff8daf31f88124b5
 
 https://www.mongodb.com/docs/drivers/csharp/
 
@@ -1188,10 +1444,10 @@ Licensed under Apache-2.0
 Available at https://licenses.nuget.org/Apache-2.0
 
 
-License notice for MongoDB.Driver (v3.8.1)
+License notice for MongoDB.Driver (v3.10.0)
 ------------------------------------
 
-https://github.com/mongodb/mongo-csharp-driver.git at 67b17d34f0dd1eac2b877a117be4eef830f19afc
+https://github.com/mongodb/mongo-csharp-driver.git at 3e1d12614abfc181a14e388aff8daf31f88124b5
 
 https://www.mongodb.com/docs/drivers/csharp/
 
@@ -1202,10 +1458,10 @@ Licensed under Apache-2.0
 Available at https://licenses.nuget.org/Apache-2.0
 
 
-License notice for Mono.TextTemplating (v2.2.1)
+License notice for Mono.TextTemplating (v3.0.0)
 ------------------------------------
 
-https://github.com/mono/t4 at 650c1854cb1f19fe3563dff8d87f3f4713761990
+https://github.com/mono/t4 at cb559e2032efd50b926c12927430c82b44d29b1d
 
 Licensed under MIT
 
@@ -1238,10 +1494,10 @@ Alexandre Mutel
 License available at https://github.com/xoofx/NUglify/blob/master/license.txt
 
 
-License notice for OpenTelemetry (v1.15.3)
+License notice for OpenTelemetry (v1.17.0)
 ------------------------------------
 
-https://github.com/open-telemetry/opentelemetry-dotnet at d622e6c7c899527638b53a6b06919859f5752add
+https://github.com/open-telemetry/opentelemetry-dotnet at e432cd549a81dabfc8b1c7c346c03cdf933013f1
 
 https://opentelemetry.io/
 
@@ -1252,10 +1508,10 @@ Licensed under Apache-2.0
 Available at https://licenses.nuget.org/Apache-2.0
 
 
-License notice for OpenTelemetry.Api (v1.15.3)
+License notice for OpenTelemetry.Api (v1.17.0)
 ------------------------------------
 
-https://github.com/open-telemetry/opentelemetry-dotnet at d622e6c7c899527638b53a6b06919859f5752add
+https://github.com/open-telemetry/opentelemetry-dotnet at e432cd549a81dabfc8b1c7c346c03cdf933013f1
 
 https://opentelemetry.io/
 
@@ -1266,10 +1522,10 @@ Licensed under Apache-2.0
 Available at https://licenses.nuget.org/Apache-2.0
 
 
-License notice for OpenTelemetry.Api.ProviderBuilderExtensions (v1.15.3)
+License notice for OpenTelemetry.Api.ProviderBuilderExtensions (v1.17.0)
 ------------------------------------
 
-https://github.com/open-telemetry/opentelemetry-dotnet at d622e6c7c899527638b53a6b06919859f5752add
+https://github.com/open-telemetry/opentelemetry-dotnet at e432cd549a81dabfc8b1c7c346c03cdf933013f1
 
 https://opentelemetry.io/
 
@@ -1280,10 +1536,10 @@ Licensed under Apache-2.0
 Available at https://licenses.nuget.org/Apache-2.0
 
 
-License notice for OpenTelemetry.Exporter.OpenTelemetryProtocol (v1.15.3)
+License notice for OpenTelemetry.Exporter.OpenTelemetryProtocol (v1.17.0)
 ------------------------------------
 
-https://github.com/open-telemetry/opentelemetry-dotnet at d622e6c7c899527638b53a6b06919859f5752add
+https://github.com/open-telemetry/opentelemetry-dotnet at e432cd549a81dabfc8b1c7c346c03cdf933013f1
 
 https://opentelemetry.io/
 
@@ -1294,10 +1550,10 @@ Licensed under Apache-2.0
 Available at https://licenses.nuget.org/Apache-2.0
 
 
-License notice for OpenTelemetry.Extensions.Hosting (v1.15.3)
+License notice for OpenTelemetry.Extensions.Hosting (v1.17.0)
 ------------------------------------
 
-https://github.com/open-telemetry/opentelemetry-dotnet at d622e6c7c899527638b53a6b06919859f5752add
+https://github.com/open-telemetry/opentelemetry-dotnet at e432cd549a81dabfc8b1c7c346c03cdf933013f1
 
 https://opentelemetry.io/
 
@@ -1308,10 +1564,10 @@ Licensed under Apache-2.0
 Available at https://licenses.nuget.org/Apache-2.0
 
 
-License notice for OpenTelemetry.Instrumentation.AspNetCore (v1.15.2)
+License notice for OpenTelemetry.Instrumentation.AspNetCore (v1.17.0)
 ------------------------------------
 
-https://github.com/open-telemetry/opentelemetry-dotnet-contrib at 96ef3bf6df7c93c59dce07fc0b0d2682d6797e76
+https://github.com/open-telemetry/opentelemetry-dotnet-contrib at 3646636ba929d08b42bf20af02408eba9afc928d
 
 https://opentelemetry.io/
 
@@ -1322,10 +1578,10 @@ Licensed under Apache-2.0
 Available at https://licenses.nuget.org/Apache-2.0
 
 
-License notice for OpenTelemetry.Instrumentation.Http (v1.15.1)
+License notice for OpenTelemetry.Instrumentation.Http (v1.17.0)
 ------------------------------------
 
-https://github.com/open-telemetry/opentelemetry-dotnet-contrib at 8401783fd26f7e53390b79c510424a0774378f07
+https://github.com/open-telemetry/opentelemetry-dotnet-contrib at 63a4530c0428dd4b3821ba815e60acd71641be16
 
 https://opentelemetry.io/
 
@@ -1336,10 +1592,10 @@ Licensed under Apache-2.0
 Available at https://licenses.nuget.org/Apache-2.0
 
 
-License notice for OpenTelemetry.Instrumentation.Runtime (v1.15.1)
+License notice for OpenTelemetry.Instrumentation.Runtime (v1.17.0)
 ------------------------------------
 
-https://github.com/open-telemetry/opentelemetry-dotnet-contrib at b89c765905dbc6db1421ff0a098127d44665c71f
+https://github.com/open-telemetry/opentelemetry-dotnet-contrib at b168b28c759e901b16fd6b43f98a5a628c6c4dc2
 
 https://opentelemetry.io/
 
@@ -1412,12 +1668,12 @@ Licensed under BSD-3-Clause
 Available at https://licenses.nuget.org/BSD-3-Clause
 
 
-License notice for System.ClientModel (v1.10.0)
+License notice for System.ClientModel (v1.13.0)
 ------------------------------------
 
-https://github.com/Azure/azure-sdk-for-net at 6b41983be6c45a7439db0b25f0c0874d7c867ed9
+https://github.com/Azure/azure-sdk-for-net at 36f2f0a6b49c2471ac97761017261bbcff86f0b8
 
-https://github.com/Azure/azure-sdk-for-net/blob/System.ClientModel_1.10.0/sdk/core/System.ClientModel/README.md
+https://github.com/Azure/azure-sdk-for-net/blob/System.ClientModel_1.13.0/sdk/core/System.ClientModel/README.md
 
 Copyright © Microsoft Corporation. All rights reserved.
 
@@ -1426,17 +1682,7 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for System.CodeDom (v4.4.0)
-------------------------------------
-
-https://dot.net/
-
-Copyright © Microsoft Corporation.  All rights reserved.
-
-License available at https://github.com/dotnet/corefx/blob/master/LICENSE.TXT
-
-
-License notice for System.Composition (v6.0.0)
+License notice for System.CodeDom (v6.0.0)
 ------------------------------------
 
 https://github.com/dotnet/runtime at 4822e3c3aa77eb82b2fb33c9321f923cf11ddde6
@@ -1450,10 +1696,10 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for System.Composition.AttributedModel (v6.0.0)
+License notice for System.Composition (v9.0.0)
 ------------------------------------
 
-https://github.com/dotnet/runtime at 4822e3c3aa77eb82b2fb33c9321f923cf11ddde6
+https://github.com/dotnet/runtime at 9d5a6a9aa463d6d10b0b0ba6d5982cc82f363dc3
 
 https://dot.net/
 
@@ -1464,10 +1710,10 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for System.Composition.Convention (v6.0.0)
+License notice for System.Composition.AttributedModel (v9.0.0)
 ------------------------------------
 
-https://github.com/dotnet/runtime at 4822e3c3aa77eb82b2fb33c9321f923cf11ddde6
+https://github.com/dotnet/runtime at 9d5a6a9aa463d6d10b0b0ba6d5982cc82f363dc3
 
 https://dot.net/
 
@@ -1478,10 +1724,10 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for System.Composition.Hosting (v6.0.0)
+License notice for System.Composition.Convention (v9.0.0)
 ------------------------------------
 
-https://github.com/dotnet/runtime at 4822e3c3aa77eb82b2fb33c9321f923cf11ddde6
+https://github.com/dotnet/runtime at 9d5a6a9aa463d6d10b0b0ba6d5982cc82f363dc3
 
 https://dot.net/
 
@@ -1492,10 +1738,10 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for System.Composition.Runtime (v6.0.0)
+License notice for System.Composition.Hosting (v9.0.0)
 ------------------------------------
 
-https://github.com/dotnet/runtime at 4822e3c3aa77eb82b2fb33c9321f923cf11ddde6
+https://github.com/dotnet/runtime at 9d5a6a9aa463d6d10b0b0ba6d5982cc82f363dc3
 
 https://dot.net/
 
@@ -1506,12 +1752,38 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for System.Composition.TypedParts (v6.0.0)
+License notice for System.Composition.Runtime (v9.0.0)
 ------------------------------------
 
-https://github.com/dotnet/runtime at 4822e3c3aa77eb82b2fb33c9321f923cf11ddde6
+https://github.com/dotnet/runtime at 9d5a6a9aa463d6d10b0b0ba6d5982cc82f363dc3
 
 https://dot.net/
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for System.Composition.TypedParts (v9.0.0)
+------------------------------------
+
+https://github.com/dotnet/runtime at 9d5a6a9aa463d6d10b0b0ba6d5982cc82f363dc3
+
+https://dot.net/
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for System.IdentityModel.Tokens.Jwt (v8.19.2)
+------------------------------------
+
+https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet at 25d90ed3f48854036d444541a049089ccd198707
 
 Copyright © Microsoft Corporation. All rights reserved.
 
@@ -1686,10 +1958,10 @@ Available at https://aka.ms/deprecateLicenseUrl
 LICENSE
 
 
-License notice for Microsoft.AspNetCore.Components.Web (v10.0.8)
+License notice for Microsoft.AspNetCore.Components.Web (v10.0.10)
 ------------------------------------
 
-https://github.com/dotnet/dotnet at 94ea82652cdd4e0f8046b5bd5becbd11461482ca
+https://github.com/dotnet/dotnet at f7d90799ce4ef09a0bb257852a57248d2a8fb8dd
 
 https://asp.net/
 
@@ -1700,10 +1972,10 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for MudBlazor (v9.4.0)
+License notice for MudBlazor (v9.7.0)
 ------------------------------------
 
-https://github.com/MudBlazor/MudBlazor at b0319b7b84975ee4440723f128a92cd678c04778
+https://github.com/MudBlazor/MudBlazor at eba929f63366edee9ff916fee748148bb7921a87
 
 https://mudblazor.com/
 
@@ -1740,10 +2012,10 @@ Available at https://aka.ms/deprecateLicenseUrl
 LICENSE
 
 
-License notice for Microsoft.AspNetCore.Authorization (v10.0.8)
+License notice for Microsoft.AspNetCore.Authorization (v10.0.10)
 ------------------------------------
 
-https://github.com/dotnet/dotnet at 94ea82652cdd4e0f8046b5bd5becbd11461482ca
+https://github.com/dotnet/dotnet at f7d90799ce4ef09a0bb257852a57248d2a8fb8dd
 
 https://asp.net/
 
@@ -1754,10 +2026,10 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for Microsoft.AspNetCore.Components (v10.0.8)
+License notice for Microsoft.AspNetCore.Components (v10.0.10)
 ------------------------------------
 
-https://github.com/dotnet/dotnet at 94ea82652cdd4e0f8046b5bd5becbd11461482ca
+https://github.com/dotnet/dotnet at f7d90799ce4ef09a0bb257852a57248d2a8fb8dd
 
 https://asp.net/
 
@@ -1768,10 +2040,10 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for Microsoft.AspNetCore.Components.Analyzers (v10.0.8)
+License notice for Microsoft.AspNetCore.Components.Analyzers (v10.0.10)
 ------------------------------------
 
-https://github.com/dotnet/dotnet at 94ea82652cdd4e0f8046b5bd5becbd11461482ca
+https://github.com/dotnet/dotnet at f7d90799ce4ef09a0bb257852a57248d2a8fb8dd
 
 https://asp.net/
 
@@ -1782,10 +2054,10 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for Microsoft.AspNetCore.Components.Forms (v10.0.8)
+License notice for Microsoft.AspNetCore.Components.Forms (v10.0.10)
 ------------------------------------
 
-https://github.com/dotnet/dotnet at 94ea82652cdd4e0f8046b5bd5becbd11461482ca
+https://github.com/dotnet/dotnet at f7d90799ce4ef09a0bb257852a57248d2a8fb8dd
 
 https://asp.net/
 
@@ -1796,10 +2068,10 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for Microsoft.AspNetCore.Metadata (v10.0.8)
+License notice for Microsoft.AspNetCore.Metadata (v10.0.10)
 ------------------------------------
 
-https://github.com/dotnet/dotnet at 94ea82652cdd4e0f8046b5bd5becbd11461482ca
+https://github.com/dotnet/dotnet at f7d90799ce4ef09a0bb257852a57248d2a8fb8dd
 
 https://asp.net/
 
@@ -1810,10 +2082,10 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for Microsoft.Extensions.Configuration (v10.0.8)
+License notice for Microsoft.Extensions.Configuration (v10.0.10)
 ------------------------------------
 
-https://github.com/dotnet/dotnet at 94ea82652cdd4e0f8046b5bd5becbd11461482ca
+https://github.com/dotnet/dotnet at f7d90799ce4ef09a0bb257852a57248d2a8fb8dd
 
 https://dot.net/
 
@@ -1824,10 +2096,10 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for Microsoft.Extensions.Configuration.Abstractions (v10.0.8)
+License notice for Microsoft.Extensions.Configuration.Abstractions (v10.0.10)
 ------------------------------------
 
-https://github.com/dotnet/dotnet at 94ea82652cdd4e0f8046b5bd5becbd11461482ca
+https://github.com/dotnet/dotnet at f7d90799ce4ef09a0bb257852a57248d2a8fb8dd
 
 https://dot.net/
 
@@ -1838,10 +2110,10 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for Microsoft.Extensions.Configuration.Binder (v10.0.8)
+License notice for Microsoft.Extensions.Configuration.Binder (v10.0.10)
 ------------------------------------
 
-https://github.com/dotnet/dotnet at 94ea82652cdd4e0f8046b5bd5becbd11461482ca
+https://github.com/dotnet/dotnet at f7d90799ce4ef09a0bb257852a57248d2a8fb8dd
 
 https://dot.net/
 
@@ -1852,10 +2124,10 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for Microsoft.Extensions.Diagnostics (v10.0.8)
+License notice for Microsoft.Extensions.Diagnostics (v10.0.10)
 ------------------------------------
 
-https://github.com/dotnet/dotnet at 94ea82652cdd4e0f8046b5bd5becbd11461482ca
+https://github.com/dotnet/dotnet at f7d90799ce4ef09a0bb257852a57248d2a8fb8dd
 
 https://dot.net/
 
@@ -1866,10 +2138,10 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for Microsoft.Extensions.Diagnostics.Abstractions (v10.0.8)
+License notice for Microsoft.Extensions.Diagnostics.Abstractions (v10.0.10)
 ------------------------------------
 
-https://github.com/dotnet/dotnet at 94ea82652cdd4e0f8046b5bd5becbd11461482ca
+https://github.com/dotnet/dotnet at f7d90799ce4ef09a0bb257852a57248d2a8fb8dd
 
 https://dot.net/
 
@@ -1908,10 +2180,10 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for Microsoft.Extensions.Options.ConfigurationExtensions (v10.0.8)
+License notice for Microsoft.Extensions.Options.ConfigurationExtensions (v10.0.10)
 ------------------------------------
 
-https://github.com/dotnet/dotnet at 94ea82652cdd4e0f8046b5bd5becbd11461482ca
+https://github.com/dotnet/dotnet at f7d90799ce4ef09a0bb257852a57248d2a8fb8dd
 
 https://dot.net/
 
@@ -1922,10 +2194,10 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for Microsoft.Extensions.Validation (v10.0.8)
+License notice for Microsoft.Extensions.Validation (v10.0.10)
 ------------------------------------
 
-https://github.com/dotnet/dotnet at 94ea82652cdd4e0f8046b5bd5becbd11461482ca
+https://github.com/dotnet/dotnet at f7d90799ce4ef09a0bb257852a57248d2a8fb8dd
 
 https://asp.net/
 
@@ -1936,10 +2208,10 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for Microsoft.JSInterop (v10.0.8)
+License notice for Microsoft.JSInterop (v10.0.10)
 ------------------------------------
 
-https://github.com/dotnet/dotnet at 94ea82652cdd4e0f8046b5bd5becbd11461482ca
+https://github.com/dotnet/dotnet at f7d90799ce4ef09a0bb257852a57248d2a8fb8dd
 
 https://asp.net/
 
@@ -1990,7 +2262,595 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for Microsoft.AspNetCore.App.Internal.Assets (v10.0.8)
+License notice for Microsoft.AspNetCore.App.Internal.Assets (v10.0.11)
+------------------------------------
+
+https://github.com/dotnet/dotnet at e2f47b0110ed922f21a1522da67279133ce28f32
+
+https://asp.net/
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for Microsoft.Extensions.Configuration.EnvironmentVariables (v10.0.0)
+------------------------------------
+
+https://github.com/dotnet/dotnet at b0f34d51fccc69fd334253924abd8d6853fad7aa
+
+https://dot.net/
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for Microsoft.Extensions.Features (v10.0.10)
+------------------------------------
+
+https://github.com/dotnet/dotnet at f7d90799ce4ef09a0bb257852a57248d2a8fb8dd
+
+https://asp.net/
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for Microsoft.Extensions.FileProviders.Abstractions (v10.0.10)
+------------------------------------
+
+https://github.com/dotnet/dotnet at f7d90799ce4ef09a0bb257852a57248d2a8fb8dd
+
+https://dot.net/
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for Microsoft.Extensions.Hosting.Abstractions (v10.0.10)
+------------------------------------
+
+https://github.com/dotnet/dotnet at f7d90799ce4ef09a0bb257852a57248d2a8fb8dd
+
+https://dot.net/
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for Microsoft.Extensions.Http (v10.0.10)
+------------------------------------
+
+https://github.com/dotnet/dotnet at f7d90799ce4ef09a0bb257852a57248d2a8fb8dd
+
+https://dot.net/
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for Microsoft.Extensions.Logging.Configuration (v10.0.10)
+------------------------------------
+
+https://github.com/dotnet/dotnet at f7d90799ce4ef09a0bb257852a57248d2a8fb8dd
+
+https://dot.net/
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for Microsoft.Extensions.ObjectPool (v10.0.10)
+------------------------------------
+
+https://github.com/dotnet/dotnet at f7d90799ce4ef09a0bb257852a57248d2a8fb8dd
+
+https://asp.net/
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for System.Threading.RateLimiting (v8.0.0)
+------------------------------------
+
+https://github.com/dotnet/runtime at 5535e31a712343a63f5d7d796cd874e563e5ac14
+
+https://dot.net/
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for Aspire.Dashboard.Sdk.win-x64 (v13.4.6)
+------------------------------------
+
+https://github.com/microsoft/aspire at 87fe259e4fc244c599019a7b1304c85a1488f248
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for Aspire.Hosting.AppHost (v13.4.6)
+------------------------------------
+
+https://github.com/microsoft/aspire at 87fe259e4fc244c599019a7b1304c85a1488f248
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for Aspire.Hosting.Orchestration.win-x64 (v13.4.6)
+------------------------------------
+
+https://github.com/microsoft/aspire at 87fe259e4fc244c599019a7b1304c85a1488f248
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for MessageQueueNET.Aspire (v3.24.1801-preview.1)
+------------------------------------
+
+https://github.com/jugstalt/MessageQueueNET at df10cdab52bd98f0d1ab8ebef236fb00dede0911
+
+2024, Jürgen Gstaltmaier
+
+Licensed under Apache-2.0
+
+Available at https://licenses.nuget.org/Apache-2.0
+
+
+License notice for Aspire.Hosting (v13.4.6)
+------------------------------------
+
+https://github.com/microsoft/aspire at 87fe259e4fc244c599019a7b1304c85a1488f248
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for AspNetCore.HealthChecks.Uris (v9.0.0)
+------------------------------------
+
+https://github.com/Xabaril/AspNetCore.Diagnostics.HealthChecks at 2b47b154cb48f1cdf7a7708b3708e8187dc09502
+
+Licensed under Apache-2.0
+
+Available at https://licenses.nuget.org/Apache-2.0
+
+
+License notice for Fractions (v7.3.0)
+------------------------------------
+
+https://github.com/danm-de/Fractions.git at 364cc7bd8d01a741b641bfeff726371150d1e743
+
+https://github.com/danm-de/Fractions
+
+Copyright 2013-2023 Daniel Mueller
+
+Available at https://aka.ms/deprecateLicenseUrl
+
+license.txt
+
+
+License notice for Google.Protobuf (v3.34.1)
+------------------------------------
+
+https://github.com/protocolbuffers/protobuf.git at 4b0c3aacf0657fbf38253b38918d3358dd4319ec
+
+https://github.com/protocolbuffers/protobuf
+
+Copyright 2015, Google Inc.
+
+Licensed under BSD-3-Clause
+
+Available at https://licenses.nuget.org/BSD-3-Clause
+
+
+License notice for Grpc.AspNetCore (v2.80.0)
+------------------------------------
+
+https://github.com/grpc/grpc-dotnet.git at f22747c72676120b2bc69a1ba7c8bed995e29b1b
+
+https://github.com/grpc/grpc-dotnet
+
+Copyright 2019 The gRPC Authors
+
+Licensed under Apache-2.0
+
+Available at https://licenses.nuget.org/Apache-2.0
+
+
+License notice for Grpc.AspNetCore.Server (v2.80.0)
+------------------------------------
+
+https://github.com/grpc/grpc-dotnet.git at f22747c72676120b2bc69a1ba7c8bed995e29b1b
+
+https://github.com/grpc/grpc-dotnet
+
+Copyright 2019 The gRPC Authors
+
+Licensed under Apache-2.0
+
+Available at https://licenses.nuget.org/Apache-2.0
+
+
+License notice for Grpc.AspNetCore.Server.ClientFactory (v2.80.0)
+------------------------------------
+
+https://github.com/grpc/grpc-dotnet.git at f22747c72676120b2bc69a1ba7c8bed995e29b1b
+
+https://github.com/grpc/grpc-dotnet
+
+Copyright 2019 The gRPC Authors
+
+Licensed under Apache-2.0
+
+Available at https://licenses.nuget.org/Apache-2.0
+
+
+License notice for Grpc.Core.Api (v2.80.0)
+------------------------------------
+
+https://github.com/grpc/grpc-dotnet.git at f22747c72676120b2bc69a1ba7c8bed995e29b1b
+
+https://github.com/grpc/grpc-dotnet
+
+Copyright 2019 The gRPC Authors
+
+Licensed under Apache-2.0
+
+Available at https://licenses.nuget.org/Apache-2.0
+
+
+License notice for Grpc.Net.Client (v2.80.0)
+------------------------------------
+
+https://github.com/grpc/grpc-dotnet.git at f22747c72676120b2bc69a1ba7c8bed995e29b1b
+
+https://github.com/grpc/grpc-dotnet
+
+Copyright 2019 The gRPC Authors
+
+Licensed under Apache-2.0
+
+Available at https://licenses.nuget.org/Apache-2.0
+
+
+License notice for Grpc.Net.ClientFactory (v2.80.0)
+------------------------------------
+
+https://github.com/grpc/grpc-dotnet.git at f22747c72676120b2bc69a1ba7c8bed995e29b1b
+
+https://github.com/grpc/grpc-dotnet
+
+Copyright 2019 The gRPC Authors
+
+Licensed under Apache-2.0
+
+Available at https://licenses.nuget.org/Apache-2.0
+
+
+License notice for Grpc.Net.Common (v2.80.0)
+------------------------------------
+
+https://github.com/grpc/grpc-dotnet.git at f22747c72676120b2bc69a1ba7c8bed995e29b1b
+
+https://github.com/grpc/grpc-dotnet
+
+Copyright 2019 The gRPC Authors
+
+Licensed under Apache-2.0
+
+Available at https://licenses.nuget.org/Apache-2.0
+
+
+License notice for Json.More.Net (v2.1.0)
+------------------------------------
+
+https://github.com/json-everything/json-everything at eadd99cb759b9b0b16452bed9a0df97b770f754d
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for JsonPatch.Net (v3.3.0)
+------------------------------------
+
+https://github.com/json-everything/json-everything at 6ba3c853ebf98e1719314876abb4dfdd51344724
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for JsonPointer.Net (v5.2.0)
+------------------------------------
+
+https://github.com/json-everything/json-everything at 6ba3c853ebf98e1719314876abb4dfdd51344724
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for KubernetesClient (v19.0.2)
+------------------------------------
+
+https://github.com/kubernetes-client/csharp at f93cab47eb098242347d6f33752b304fd3bb9302
+
+2017 The Kubernetes Project Authors
+
+Licensed under Apache-2.0
+
+Available at https://licenses.nuget.org/Apache-2.0
+
+
+License notice for MessagePack (v2.5.302)
+------------------------------------
+
+https://github.com/MessagePack-CSharp/MessagePack-CSharp.git at b611da84ea0dc80dc516ac443bd540cd7f1f9d83
+
+https://github.com/MessagePack-CSharp/MessagePack-CSharp
+
+Copyright © Yoshifumi Kawai and contributors. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for MessagePack.Annotations (v2.5.302)
+------------------------------------
+
+https://github.com/MessagePack-CSharp/MessagePack-CSharp.git at b611da84ea0dc80dc516ac443bd540cd7f1f9d83
+
+https://github.com/MessagePack-CSharp/MessagePack-CSharp
+
+Copyright © Yoshifumi Kawai and contributors. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for Microsoft.Extensions.AI.Abstractions (v10.5.2)
+------------------------------------
+
+https://github.com/dotnet/extensions at 2a86d759c251eee39274c191bd9f8e14c58f875a
+
+https://dot.net/
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for Microsoft.Extensions.Caching.Abstractions (v10.0.7)
+------------------------------------
+
+https://github.com/dotnet/dotnet at b16286c2284fecf303dbc12a0bb152476d662e44
+
+https://dot.net/
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for Microsoft.Extensions.Configuration (v10.0.8)
+------------------------------------
+
+https://github.com/dotnet/dotnet at 94ea82652cdd4e0f8046b5bd5becbd11461482ca
+
+https://dot.net/
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for Microsoft.Extensions.Configuration.Abstractions (v10.0.8)
+------------------------------------
+
+https://github.com/dotnet/dotnet at 94ea82652cdd4e0f8046b5bd5becbd11461482ca
+
+https://dot.net/
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for Microsoft.Extensions.Configuration.Binder (v10.0.8)
+------------------------------------
+
+https://github.com/dotnet/dotnet at 94ea82652cdd4e0f8046b5bd5becbd11461482ca
+
+https://dot.net/
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for Microsoft.Extensions.Configuration.CommandLine (v10.0.8)
+------------------------------------
+
+https://github.com/dotnet/dotnet at 94ea82652cdd4e0f8046b5bd5becbd11461482ca
+
+https://dot.net/
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for Microsoft.Extensions.Configuration.EnvironmentVariables (v10.0.8)
+------------------------------------
+
+https://github.com/dotnet/dotnet at 94ea82652cdd4e0f8046b5bd5becbd11461482ca
+
+https://dot.net/
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for Microsoft.Extensions.Configuration.FileExtensions (v10.0.8)
+------------------------------------
+
+https://github.com/dotnet/dotnet at 94ea82652cdd4e0f8046b5bd5becbd11461482ca
+
+https://dot.net/
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for Microsoft.Extensions.Configuration.Json (v10.0.8)
+------------------------------------
+
+https://github.com/dotnet/dotnet at 94ea82652cdd4e0f8046b5bd5becbd11461482ca
+
+https://dot.net/
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for Microsoft.Extensions.Configuration.UserSecrets (v10.0.8)
+------------------------------------
+
+https://github.com/dotnet/dotnet at 94ea82652cdd4e0f8046b5bd5becbd11461482ca
+
+https://dot.net/
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for Microsoft.Extensions.DependencyInjection (v10.0.8)
+------------------------------------
+
+https://github.com/dotnet/dotnet at 94ea82652cdd4e0f8046b5bd5becbd11461482ca
+
+https://dot.net/
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for Microsoft.Extensions.DependencyInjection.Abstractions (v10.0.8)
+------------------------------------
+
+https://github.com/dotnet/dotnet at 94ea82652cdd4e0f8046b5bd5becbd11461482ca
+
+https://dot.net/
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for Microsoft.Extensions.Diagnostics (v10.0.8)
+------------------------------------
+
+https://github.com/dotnet/dotnet at 94ea82652cdd4e0f8046b5bd5becbd11461482ca
+
+https://dot.net/
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for Microsoft.Extensions.Diagnostics.Abstractions (v10.0.8)
+------------------------------------
+
+https://github.com/dotnet/dotnet at 94ea82652cdd4e0f8046b5bd5becbd11461482ca
+
+https://dot.net/
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for Microsoft.Extensions.Diagnostics.HealthChecks (v10.0.8)
 ------------------------------------
 
 https://github.com/dotnet/dotnet at 94ea82652cdd4e0f8046b5bd5becbd11461482ca
@@ -2004,7 +2864,7 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for Microsoft.Extensions.Features (v10.0.8)
+License notice for Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions (v10.0.8)
 ------------------------------------
 
 https://github.com/dotnet/dotnet at 94ea82652cdd4e0f8046b5bd5becbd11461482ca
@@ -2019,6 +2879,48 @@ Available at https://licenses.nuget.org/MIT
 
 
 License notice for Microsoft.Extensions.FileProviders.Abstractions (v10.0.8)
+------------------------------------
+
+https://github.com/dotnet/dotnet at 94ea82652cdd4e0f8046b5bd5becbd11461482ca
+
+https://dot.net/
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for Microsoft.Extensions.FileProviders.Physical (v10.0.8)
+------------------------------------
+
+https://github.com/dotnet/dotnet at 94ea82652cdd4e0f8046b5bd5becbd11461482ca
+
+https://dot.net/
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for Microsoft.Extensions.FileSystemGlobbing (v10.0.8)
+------------------------------------
+
+https://github.com/dotnet/dotnet at 94ea82652cdd4e0f8046b5bd5becbd11461482ca
+
+https://dot.net/
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for Microsoft.Extensions.Hosting (v10.0.8)
 ------------------------------------
 
 https://github.com/dotnet/dotnet at 94ea82652cdd4e0f8046b5bd5becbd11461482ca
@@ -2060,6 +2962,34 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
+License notice for Microsoft.Extensions.Logging (v10.0.8)
+------------------------------------
+
+https://github.com/dotnet/dotnet at 94ea82652cdd4e0f8046b5bd5becbd11461482ca
+
+https://dot.net/
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for Microsoft.Extensions.Logging.Abstractions (v10.0.8)
+------------------------------------
+
+https://github.com/dotnet/dotnet at 94ea82652cdd4e0f8046b5bd5becbd11461482ca
+
+https://dot.net/
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
 License notice for Microsoft.Extensions.Logging.Configuration (v10.0.8)
 ------------------------------------
 
@@ -2074,12 +3004,12 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for Microsoft.Extensions.ObjectPool (v10.0.8)
+License notice for Microsoft.Extensions.Logging.Console (v10.0.8)
 ------------------------------------
 
 https://github.com/dotnet/dotnet at 94ea82652cdd4e0f8046b5bd5becbd11461482ca
 
-https://asp.net/
+https://dot.net/
 
 Copyright © Microsoft Corporation. All rights reserved.
 
@@ -2088,10 +3018,10 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for System.Threading.RateLimiting (v8.0.0)
+License notice for Microsoft.Extensions.Logging.Debug (v10.0.8)
 ------------------------------------
 
-https://github.com/dotnet/runtime at 5535e31a712343a63f5d7d796cd874e563e5ac14
+https://github.com/dotnet/dotnet at 94ea82652cdd4e0f8046b5bd5becbd11461482ca
 
 https://dot.net/
 
@@ -2102,276 +3032,10 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for Aspire.Dashboard.Sdk.win-x64 (v13.3.5)
+License notice for Microsoft.Extensions.Logging.EventLog (v10.0.8)
 ------------------------------------
 
-https://github.com/microsoft/aspire at 70b33bcb5f64c75e3ab6f57616545f35bd43dc81
-
-Copyright © Microsoft Corporation. All rights reserved.
-
-Licensed under MIT
-
-Available at https://licenses.nuget.org/MIT
-
-
-License notice for Aspire.Hosting.AppHost (v13.3.5)
-------------------------------------
-
-https://github.com/microsoft/aspire at 70b33bcb5f64c75e3ab6f57616545f35bd43dc81
-
-Copyright © Microsoft Corporation. All rights reserved.
-
-Licensed under MIT
-
-Available at https://licenses.nuget.org/MIT
-
-
-License notice for Aspire.Hosting.Orchestration.win-x64 (v13.3.5)
-------------------------------------
-
-https://github.com/microsoft/aspire at 70b33bcb5f64c75e3ab6f57616545f35bd43dc81
-
-Copyright © Microsoft Corporation. All rights reserved.
-
-Licensed under MIT
-
-Available at https://licenses.nuget.org/MIT
-
-
-License notice for MessageQueueNET.Aspire (v3.24.1801-preview.1)
-------------------------------------
-
-https://github.com/jugstalt/MessageQueueNET at df10cdab52bd98f0d1ab8ebef236fb00dede0911
-
-2024, Jürgen Gstaltmaier
-
-Licensed under Apache-2.0
-
-Available at https://licenses.nuget.org/Apache-2.0
-
-
-License notice for Aspire.Hosting (v13.3.5)
-------------------------------------
-
-https://github.com/microsoft/aspire at 70b33bcb5f64c75e3ab6f57616545f35bd43dc81
-
-Copyright © Microsoft Corporation. All rights reserved.
-
-Licensed under MIT
-
-Available at https://licenses.nuget.org/MIT
-
-
-License notice for AspNetCore.HealthChecks.Uris (v9.0.0)
-------------------------------------
-
-https://github.com/Xabaril/AspNetCore.Diagnostics.HealthChecks at 2b47b154cb48f1cdf7a7708b3708e8187dc09502
-
-Licensed under Apache-2.0
-
-Available at https://licenses.nuget.org/Apache-2.0
-
-
-License notice for Fractions (v7.3.0)
-------------------------------------
-
-https://github.com/danm-de/Fractions.git at 364cc7bd8d01a741b641bfeff726371150d1e743
-
-https://github.com/danm-de/Fractions
-
-Copyright 2013-2023 Daniel Mueller
-
-Available at https://aka.ms/deprecateLicenseUrl
-
-license.txt
-
-
-License notice for Google.Protobuf (v3.33.5)
-------------------------------------
-
-https://github.com/protocolbuffers/protobuf.git at b6f9284da830b69be787732ffdaa35049d20a088
-
-https://github.com/protocolbuffers/protobuf
-
-Copyright 2015, Google Inc.
-
-Licensed under BSD-3-Clause
-
-Available at https://licenses.nuget.org/BSD-3-Clause
-
-
-License notice for Grpc.AspNetCore (v2.76.0)
-------------------------------------
-
-https://github.com/grpc/grpc-dotnet.git at c52862d2be28c252a20786e08b82c48edcbf7325
-
-https://github.com/grpc/grpc-dotnet
-
-Copyright 2019 The gRPC Authors
-
-Licensed under Apache-2.0
-
-Available at https://licenses.nuget.org/Apache-2.0
-
-
-License notice for Grpc.AspNetCore.Server (v2.76.0)
-------------------------------------
-
-https://github.com/grpc/grpc-dotnet.git at c52862d2be28c252a20786e08b82c48edcbf7325
-
-https://github.com/grpc/grpc-dotnet
-
-Copyright 2019 The gRPC Authors
-
-Licensed under Apache-2.0
-
-Available at https://licenses.nuget.org/Apache-2.0
-
-
-License notice for Grpc.AspNetCore.Server.ClientFactory (v2.76.0)
-------------------------------------
-
-https://github.com/grpc/grpc-dotnet.git at c52862d2be28c252a20786e08b82c48edcbf7325
-
-https://github.com/grpc/grpc-dotnet
-
-Copyright 2019 The gRPC Authors
-
-Licensed under Apache-2.0
-
-Available at https://licenses.nuget.org/Apache-2.0
-
-
-License notice for Grpc.Core.Api (v2.76.0)
-------------------------------------
-
-https://github.com/grpc/grpc-dotnet.git at c52862d2be28c252a20786e08b82c48edcbf7325
-
-https://github.com/grpc/grpc-dotnet
-
-Copyright 2019 The gRPC Authors
-
-Licensed under Apache-2.0
-
-Available at https://licenses.nuget.org/Apache-2.0
-
-
-License notice for Grpc.Net.Client (v2.76.0)
-------------------------------------
-
-https://github.com/grpc/grpc-dotnet.git at c52862d2be28c252a20786e08b82c48edcbf7325
-
-https://github.com/grpc/grpc-dotnet
-
-Copyright 2019 The gRPC Authors
-
-Licensed under Apache-2.0
-
-Available at https://licenses.nuget.org/Apache-2.0
-
-
-License notice for Grpc.Net.ClientFactory (v2.76.0)
-------------------------------------
-
-https://github.com/grpc/grpc-dotnet.git at c52862d2be28c252a20786e08b82c48edcbf7325
-
-https://github.com/grpc/grpc-dotnet
-
-Copyright 2019 The gRPC Authors
-
-Licensed under Apache-2.0
-
-Available at https://licenses.nuget.org/Apache-2.0
-
-
-License notice for Grpc.Net.Common (v2.76.0)
-------------------------------------
-
-https://github.com/grpc/grpc-dotnet.git at c52862d2be28c252a20786e08b82c48edcbf7325
-
-https://github.com/grpc/grpc-dotnet
-
-Copyright 2019 The gRPC Authors
-
-Licensed under Apache-2.0
-
-Available at https://licenses.nuget.org/Apache-2.0
-
-
-License notice for Json.More.Net (v2.1.0)
-------------------------------------
-
-https://github.com/json-everything/json-everything at eadd99cb759b9b0b16452bed9a0df97b770f754d
-
-Licensed under MIT
-
-Available at https://licenses.nuget.org/MIT
-
-
-License notice for JsonPatch.Net (v3.3.0)
-------------------------------------
-
-https://github.com/json-everything/json-everything at 6ba3c853ebf98e1719314876abb4dfdd51344724
-
-Licensed under MIT
-
-Available at https://licenses.nuget.org/MIT
-
-
-License notice for JsonPointer.Net (v5.2.0)
-------------------------------------
-
-https://github.com/json-everything/json-everything at 6ba3c853ebf98e1719314876abb4dfdd51344724
-
-Licensed under MIT
-
-Available at https://licenses.nuget.org/MIT
-
-
-License notice for KubernetesClient (v18.0.13)
-------------------------------------
-
-https://github.com/kubernetes-client/csharp at da717abb6aa92cba43710b5938f35f3793dd6ca2
-
-2017 The Kubernetes Project Authors
-
-Licensed under Apache-2.0
-
-Available at https://licenses.nuget.org/Apache-2.0
-
-
-License notice for MessagePack (v2.5.192)
-------------------------------------
-
-https://github.com/MessagePack-CSharp/MessagePack-CSharp at d3d435b96cf09b9b0afc313bdea4257de6481c9f
-
-https://github.com/neuecc/MessagePack-CSharp
-
-Copyright © Yoshifumi Kawai and contributors. All rights reserved.
-
-Licensed under MIT
-
-Available at https://licenses.nuget.org/MIT
-
-
-License notice for MessagePack.Annotations (v2.5.192)
-------------------------------------
-
-https://github.com/MessagePack-CSharp/MessagePack-CSharp at d3d435b96cf09b9b0afc313bdea4257de6481c9f
-
-https://github.com/neuecc/MessagePack-CSharp
-
-Copyright © Yoshifumi Kawai and contributors. All rights reserved.
-
-Licensed under MIT
-
-Available at https://licenses.nuget.org/MIT
-
-
-License notice for Microsoft.Extensions.AI.Abstractions (v10.3.0)
-------------------------------------
-
-https://github.com/dotnet/extensions at 1055487872e1fa424d49f70355405796f9c3a8e3
+https://github.com/dotnet/dotnet at 94ea82652cdd4e0f8046b5bd5becbd11461482ca
 
 https://dot.net/
 
@@ -2382,10 +3046,10 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for Microsoft.Extensions.Caching.Abstractions (v10.0.3)
+License notice for Microsoft.Extensions.Logging.EventSource (v10.0.8)
 ------------------------------------
 
-https://github.com/dotnet/dotnet at c2435c3e0f46de784341ac3ed62863ce77e117b4
+https://github.com/dotnet/dotnet at 94ea82652cdd4e0f8046b5bd5becbd11461482ca
 
 https://dot.net/
 
@@ -2396,10 +3060,10 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for Microsoft.Extensions.Configuration (v10.0.7)
+License notice for Microsoft.Extensions.Options (v10.0.8)
 ------------------------------------
 
-https://github.com/dotnet/dotnet at b16286c2284fecf303dbc12a0bb152476d662e44
+https://github.com/dotnet/dotnet at 94ea82652cdd4e0f8046b5bd5becbd11461482ca
 
 https://dot.net/
 
@@ -2410,10 +3074,10 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for Microsoft.Extensions.Configuration.Abstractions (v10.0.7)
+License notice for Microsoft.Extensions.Options.ConfigurationExtensions (v10.0.8)
 ------------------------------------
 
-https://github.com/dotnet/dotnet at b16286c2284fecf303dbc12a0bb152476d662e44
+https://github.com/dotnet/dotnet at 94ea82652cdd4e0f8046b5bd5becbd11461482ca
 
 https://dot.net/
 
@@ -2424,10 +3088,10 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for Microsoft.Extensions.Configuration.Binder (v10.0.7)
+License notice for Microsoft.Extensions.Primitives (v10.0.8)
 ------------------------------------
 
-https://github.com/dotnet/dotnet at b16286c2284fecf303dbc12a0bb152476d662e44
+https://github.com/dotnet/dotnet at 94ea82652cdd4e0f8046b5bd5becbd11461482ca
 
 https://dot.net/
 
@@ -2438,388 +3102,10 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for Microsoft.Extensions.Configuration.CommandLine (v10.0.7)
+License notice for Microsoft.NET.StringTools (v18.4.0)
 ------------------------------------
 
-https://github.com/dotnet/dotnet at b16286c2284fecf303dbc12a0bb152476d662e44
-
-https://dot.net/
-
-Copyright © Microsoft Corporation. All rights reserved.
-
-Licensed under MIT
-
-Available at https://licenses.nuget.org/MIT
-
-
-License notice for Microsoft.Extensions.Configuration.EnvironmentVariables (v10.0.7)
-------------------------------------
-
-https://github.com/dotnet/dotnet at b16286c2284fecf303dbc12a0bb152476d662e44
-
-https://dot.net/
-
-Copyright © Microsoft Corporation. All rights reserved.
-
-Licensed under MIT
-
-Available at https://licenses.nuget.org/MIT
-
-
-License notice for Microsoft.Extensions.Configuration.FileExtensions (v10.0.7)
-------------------------------------
-
-https://github.com/dotnet/dotnet at b16286c2284fecf303dbc12a0bb152476d662e44
-
-https://dot.net/
-
-Copyright © Microsoft Corporation. All rights reserved.
-
-Licensed under MIT
-
-Available at https://licenses.nuget.org/MIT
-
-
-License notice for Microsoft.Extensions.Configuration.Json (v10.0.7)
-------------------------------------
-
-https://github.com/dotnet/dotnet at b16286c2284fecf303dbc12a0bb152476d662e44
-
-https://dot.net/
-
-Copyright © Microsoft Corporation. All rights reserved.
-
-Licensed under MIT
-
-Available at https://licenses.nuget.org/MIT
-
-
-License notice for Microsoft.Extensions.Configuration.UserSecrets (v10.0.7)
-------------------------------------
-
-https://github.com/dotnet/dotnet at b16286c2284fecf303dbc12a0bb152476d662e44
-
-https://dot.net/
-
-Copyright © Microsoft Corporation. All rights reserved.
-
-Licensed under MIT
-
-Available at https://licenses.nuget.org/MIT
-
-
-License notice for Microsoft.Extensions.DependencyInjection (v10.0.7)
-------------------------------------
-
-https://github.com/dotnet/dotnet at b16286c2284fecf303dbc12a0bb152476d662e44
-
-https://dot.net/
-
-Copyright © Microsoft Corporation. All rights reserved.
-
-Licensed under MIT
-
-Available at https://licenses.nuget.org/MIT
-
-
-License notice for Microsoft.Extensions.DependencyInjection.Abstractions (v10.0.7)
-------------------------------------
-
-https://github.com/dotnet/dotnet at b16286c2284fecf303dbc12a0bb152476d662e44
-
-https://dot.net/
-
-Copyright © Microsoft Corporation. All rights reserved.
-
-Licensed under MIT
-
-Available at https://licenses.nuget.org/MIT
-
-
-License notice for Microsoft.Extensions.Diagnostics (v10.0.7)
-------------------------------------
-
-https://github.com/dotnet/dotnet at b16286c2284fecf303dbc12a0bb152476d662e44
-
-https://dot.net/
-
-Copyright © Microsoft Corporation. All rights reserved.
-
-Licensed under MIT
-
-Available at https://licenses.nuget.org/MIT
-
-
-License notice for Microsoft.Extensions.Diagnostics.Abstractions (v10.0.7)
-------------------------------------
-
-https://github.com/dotnet/dotnet at b16286c2284fecf303dbc12a0bb152476d662e44
-
-https://dot.net/
-
-Copyright © Microsoft Corporation. All rights reserved.
-
-Licensed under MIT
-
-Available at https://licenses.nuget.org/MIT
-
-
-License notice for Microsoft.Extensions.Diagnostics.HealthChecks (v10.0.7)
-------------------------------------
-
-https://github.com/dotnet/dotnet at b16286c2284fecf303dbc12a0bb152476d662e44
-
-https://asp.net/
-
-Copyright © Microsoft Corporation. All rights reserved.
-
-Licensed under MIT
-
-Available at https://licenses.nuget.org/MIT
-
-
-License notice for Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions (v10.0.7)
-------------------------------------
-
-https://github.com/dotnet/dotnet at b16286c2284fecf303dbc12a0bb152476d662e44
-
-https://asp.net/
-
-Copyright © Microsoft Corporation. All rights reserved.
-
-Licensed under MIT
-
-Available at https://licenses.nuget.org/MIT
-
-
-License notice for Microsoft.Extensions.FileProviders.Abstractions (v10.0.7)
-------------------------------------
-
-https://github.com/dotnet/dotnet at b16286c2284fecf303dbc12a0bb152476d662e44
-
-https://dot.net/
-
-Copyright © Microsoft Corporation. All rights reserved.
-
-Licensed under MIT
-
-Available at https://licenses.nuget.org/MIT
-
-
-License notice for Microsoft.Extensions.FileProviders.Physical (v10.0.7)
-------------------------------------
-
-https://github.com/dotnet/dotnet at b16286c2284fecf303dbc12a0bb152476d662e44
-
-https://dot.net/
-
-Copyright © Microsoft Corporation. All rights reserved.
-
-Licensed under MIT
-
-Available at https://licenses.nuget.org/MIT
-
-
-License notice for Microsoft.Extensions.FileSystemGlobbing (v10.0.7)
-------------------------------------
-
-https://github.com/dotnet/dotnet at b16286c2284fecf303dbc12a0bb152476d662e44
-
-https://dot.net/
-
-Copyright © Microsoft Corporation. All rights reserved.
-
-Licensed under MIT
-
-Available at https://licenses.nuget.org/MIT
-
-
-License notice for Microsoft.Extensions.Hosting (v10.0.7)
-------------------------------------
-
-https://github.com/dotnet/dotnet at b16286c2284fecf303dbc12a0bb152476d662e44
-
-https://dot.net/
-
-Copyright © Microsoft Corporation. All rights reserved.
-
-Licensed under MIT
-
-Available at https://licenses.nuget.org/MIT
-
-
-License notice for Microsoft.Extensions.Hosting.Abstractions (v10.0.7)
-------------------------------------
-
-https://github.com/dotnet/dotnet at b16286c2284fecf303dbc12a0bb152476d662e44
-
-https://dot.net/
-
-Copyright © Microsoft Corporation. All rights reserved.
-
-Licensed under MIT
-
-Available at https://licenses.nuget.org/MIT
-
-
-License notice for Microsoft.Extensions.Http (v10.0.7)
-------------------------------------
-
-https://github.com/dotnet/dotnet at b16286c2284fecf303dbc12a0bb152476d662e44
-
-https://dot.net/
-
-Copyright © Microsoft Corporation. All rights reserved.
-
-Licensed under MIT
-
-Available at https://licenses.nuget.org/MIT
-
-
-License notice for Microsoft.Extensions.Logging (v10.0.7)
-------------------------------------
-
-https://github.com/dotnet/dotnet at b16286c2284fecf303dbc12a0bb152476d662e44
-
-https://dot.net/
-
-Copyright © Microsoft Corporation. All rights reserved.
-
-Licensed under MIT
-
-Available at https://licenses.nuget.org/MIT
-
-
-License notice for Microsoft.Extensions.Logging.Abstractions (v10.0.7)
-------------------------------------
-
-https://github.com/dotnet/dotnet at b16286c2284fecf303dbc12a0bb152476d662e44
-
-https://dot.net/
-
-Copyright © Microsoft Corporation. All rights reserved.
-
-Licensed under MIT
-
-Available at https://licenses.nuget.org/MIT
-
-
-License notice for Microsoft.Extensions.Logging.Configuration (v10.0.7)
-------------------------------------
-
-https://github.com/dotnet/dotnet at b16286c2284fecf303dbc12a0bb152476d662e44
-
-https://dot.net/
-
-Copyright © Microsoft Corporation. All rights reserved.
-
-Licensed under MIT
-
-Available at https://licenses.nuget.org/MIT
-
-
-License notice for Microsoft.Extensions.Logging.Console (v10.0.7)
-------------------------------------
-
-https://github.com/dotnet/dotnet at b16286c2284fecf303dbc12a0bb152476d662e44
-
-https://dot.net/
-
-Copyright © Microsoft Corporation. All rights reserved.
-
-Licensed under MIT
-
-Available at https://licenses.nuget.org/MIT
-
-
-License notice for Microsoft.Extensions.Logging.Debug (v10.0.7)
-------------------------------------
-
-https://github.com/dotnet/dotnet at b16286c2284fecf303dbc12a0bb152476d662e44
-
-https://dot.net/
-
-Copyright © Microsoft Corporation. All rights reserved.
-
-Licensed under MIT
-
-Available at https://licenses.nuget.org/MIT
-
-
-License notice for Microsoft.Extensions.Logging.EventLog (v10.0.7)
-------------------------------------
-
-https://github.com/dotnet/dotnet at b16286c2284fecf303dbc12a0bb152476d662e44
-
-https://dot.net/
-
-Copyright © Microsoft Corporation. All rights reserved.
-
-Licensed under MIT
-
-Available at https://licenses.nuget.org/MIT
-
-
-License notice for Microsoft.Extensions.Logging.EventSource (v10.0.7)
-------------------------------------
-
-https://github.com/dotnet/dotnet at b16286c2284fecf303dbc12a0bb152476d662e44
-
-https://dot.net/
-
-Copyright © Microsoft Corporation. All rights reserved.
-
-Licensed under MIT
-
-Available at https://licenses.nuget.org/MIT
-
-
-License notice for Microsoft.Extensions.Options (v10.0.7)
-------------------------------------
-
-https://github.com/dotnet/dotnet at b16286c2284fecf303dbc12a0bb152476d662e44
-
-https://dot.net/
-
-Copyright © Microsoft Corporation. All rights reserved.
-
-Licensed under MIT
-
-Available at https://licenses.nuget.org/MIT
-
-
-License notice for Microsoft.Extensions.Options.ConfigurationExtensions (v10.0.7)
-------------------------------------
-
-https://github.com/dotnet/dotnet at b16286c2284fecf303dbc12a0bb152476d662e44
-
-https://dot.net/
-
-Copyright © Microsoft Corporation. All rights reserved.
-
-Licensed under MIT
-
-Available at https://licenses.nuget.org/MIT
-
-
-License notice for Microsoft.Extensions.Primitives (v10.0.7)
-------------------------------------
-
-https://github.com/dotnet/dotnet at b16286c2284fecf303dbc12a0bb152476d662e44
-
-https://dot.net/
-
-Copyright © Microsoft Corporation. All rights reserved.
-
-Licensed under MIT
-
-Available at https://licenses.nuget.org/MIT
-
-
-License notice for Microsoft.NET.StringTools (v17.6.3)
-------------------------------------
-
-https://github.com/dotnet/msbuild at 07e2947214f1a9f28a3517762c939d5bebb5f525
+https://github.com/dotnet/msbuild at 6e61e96acff3f3bd97740401540053cc2d49b189
 
 http://go.microsoft.com/fwlink/?LinkId=624683
 
@@ -2830,10 +3116,10 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for Microsoft.VisualStudio.Threading.Only (v17.13.61)
+License notice for Microsoft.VisualStudio.Threading.Only (v17.14.15)
 ------------------------------------
 
-https://github.com/microsoft/vs-threading at 8e1663166286d928a65f9c240219f435f3535f4a
+https://github.com/microsoft/vs-threading at a6094b6fea9846b21867b5c18f1c2c798caa0e24
 
 https://microsoft.github.io/vs-threading/
 
@@ -2844,10 +3130,10 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for Microsoft.VisualStudio.Validation (v17.8.8)
+License notice for Microsoft.VisualStudio.Validation (v17.13.22)
 ------------------------------------
 
-https://github.com/microsoft/vs-validation at 3c615964c53e7b7a909ca5feb38fc9adbe08754f
+https://github.com/microsoft/vs-validation at fd7027e236db97b472614237b1453022e24ef146
 
 https://github.com/Microsoft/vs-validation
 
@@ -2858,38 +3144,40 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for ModelContextProtocol (v1.0.0)
+License notice for ModelContextProtocol (v1.3.0)
 ------------------------------------
 
-https://github.com/modelcontextprotocol/csharp-sdk at 551db0d954ec8b23ac3c3b21470f1b1cd1ba90d3
+https://github.com/modelcontextprotocol/csharp-sdk at 2ce15f4c8af7d1d8c3f3bc141a7cd0830d3dddfb
 
-https://modelcontextprotocol.github.io/csharp-sdk
+https://csharp.sdk.modelcontextprotocol.io/
 
-Copyright © Anthropic and Contributors.
+Copyright © Model Context Protocol a Series of LF Projects, LLC.
 
 Licensed under Apache-2.0
 
 Available at https://licenses.nuget.org/Apache-2.0
 
 
-License notice for ModelContextProtocol.Core (v1.0.0)
+License notice for ModelContextProtocol.Core (v1.3.0)
 ------------------------------------
 
-https://github.com/modelcontextprotocol/csharp-sdk at 551db0d954ec8b23ac3c3b21470f1b1cd1ba90d3
+https://github.com/modelcontextprotocol/csharp-sdk at 2ce15f4c8af7d1d8c3f3bc141a7cd0830d3dddfb
 
-https://modelcontextprotocol.github.io/csharp-sdk
+https://csharp.sdk.modelcontextprotocol.io/
 
-Copyright © Anthropic and Contributors.
+Copyright © Model Context Protocol a Series of LF Projects, LLC.
 
 Licensed under Apache-2.0
 
 Available at https://licenses.nuget.org/Apache-2.0
 
 
-License notice for Nerdbank.Streams (v2.12.87)
+License notice for Nerdbank.MessagePack (v1.2.4)
 ------------------------------------
 
-https://github.com/AArnott/Nerdbank.Streams at b06fc8f2f4e52da3ca7166b34c297b79fd585abb
+https://github.com/AArnott/Nerdbank.MessagePack at 5a6876da3e77b84a15e3a46d632abdce3c2b0529
+
+https://aarnott.github.io/Nerdbank.MessagePack/
 
 Copyright © Andrew Arnott. All rights reserved.
 
@@ -2898,16 +3186,112 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for Polly.Core (v8.6.5)
+License notice for Nerdbank.Streams (v2.13.16)
 ------------------------------------
 
-https://github.com/App-vNext/Polly at 74bf31fff0e0907034994be4df22424aa71818f1
+https://github.com/AArnott/Nerdbank.Streams at c51a94a1ef129c965728b76be202edafe3f3893f
 
-Copyright (c) 2015-2025, App vNext
+Copyright © Andrew Arnott. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for OpenTelemetry (v1.15.3)
+------------------------------------
+
+https://github.com/open-telemetry/opentelemetry-dotnet at d622e6c7c899527638b53a6b06919859f5752add
+
+https://opentelemetry.io/
+
+Copyright The OpenTelemetry Authors
+
+Licensed under Apache-2.0
+
+Available at https://licenses.nuget.org/Apache-2.0
+
+
+License notice for OpenTelemetry.Api (v1.15.3)
+------------------------------------
+
+https://github.com/open-telemetry/opentelemetry-dotnet at d622e6c7c899527638b53a6b06919859f5752add
+
+https://opentelemetry.io/
+
+Copyright The OpenTelemetry Authors
+
+Licensed under Apache-2.0
+
+Available at https://licenses.nuget.org/Apache-2.0
+
+
+License notice for OpenTelemetry.Api.ProviderBuilderExtensions (v1.15.3)
+------------------------------------
+
+https://github.com/open-telemetry/opentelemetry-dotnet at d622e6c7c899527638b53a6b06919859f5752add
+
+https://opentelemetry.io/
+
+Copyright The OpenTelemetry Authors
+
+Licensed under Apache-2.0
+
+Available at https://licenses.nuget.org/Apache-2.0
+
+
+License notice for OpenTelemetry.Exporter.OpenTelemetryProtocol (v1.15.3)
+------------------------------------
+
+https://github.com/open-telemetry/opentelemetry-dotnet at d622e6c7c899527638b53a6b06919859f5752add
+
+https://opentelemetry.io/
+
+Copyright The OpenTelemetry Authors
+
+Licensed under Apache-2.0
+
+Available at https://licenses.nuget.org/Apache-2.0
+
+
+License notice for OpenTelemetry.Extensions.Hosting (v1.15.3)
+------------------------------------
+
+https://github.com/open-telemetry/opentelemetry-dotnet at d622e6c7c899527638b53a6b06919859f5752add
+
+https://opentelemetry.io/
+
+Copyright The OpenTelemetry Authors
+
+Licensed under Apache-2.0
+
+Available at https://licenses.nuget.org/Apache-2.0
+
+
+License notice for Polly.Core (v8.6.6)
+------------------------------------
+
+https://github.com/App-vNext/Polly at 016dd909db880b9d8d07954ff5f4ea3cc1e11c67
+
+Copyright (c) 2015-2026, App vNext
 
 Licensed under BSD-3-Clause
 
 Available at https://licenses.nuget.org/BSD-3-Clause
+
+
+License notice for PolyType (v1.3.1)
+------------------------------------
+
+https://github.com/eiriktsarpalis/PolyType at a887f0b4e39438bbde1713ca18acb11d81b03512
+
+https://eiriktsarpalis.github.io/PolyType/
+
+2024
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
 
 
 License notice for Semver (v3.0.0)
@@ -2922,12 +3306,12 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for StreamJsonRpc (v2.22.23)
+License notice for StreamJsonRpc (v2.25.29+RR)
 ------------------------------------
 
-https://github.com/microsoft/vs-streamjsonrpc at df6b38877cb9289abbd789a6e9a8c146bddf9804
+https://github.com/microsoft/vs-streamjsonrpc at 332cc170a82fa424e0b4f902ab9f9a876e827f38
 
-https://github.com/Microsoft/vs-streamjsonrpc
+https://microsoft.github.io/vs-streamjsonrpc/
 
 Copyright © Microsoft Corporation. All rights reserved.
 
@@ -2936,10 +3320,24 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for System.Diagnostics.EventLog (v10.0.7)
+License notice for System.Diagnostics.EventLog (v10.0.8)
 ------------------------------------
 
-https://github.com/dotnet/dotnet at b16286c2284fecf303dbc12a0bb152476d662e44
+https://github.com/dotnet/dotnet at 94ea82652cdd4e0f8046b5bd5becbd11461482ca
+
+https://dot.net/
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for System.IO.Hashing (v10.0.8)
+------------------------------------
+
+https://github.com/dotnet/dotnet at 94ea82652cdd4e0f8046b5bd5becbd11461482ca
 
 https://dot.net/
 
@@ -3104,10 +3502,10 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for Microsoft.Extensions.Diagnostics.HealthChecks (v8.0.26)
+License notice for Microsoft.Extensions.Diagnostics.HealthChecks (v8.0.27)
 ------------------------------------
 
-https://github.com/dotnet/aspnetcore at 829dd6d36442c2bcf83ebfc9d4159b7ecc15c2ff
+https://github.com/dotnet/aspnetcore at be2530c3035e4bfa7670c6b18f5a64ef89e0e80d
 
 https://asp.net/
 
@@ -3118,10 +3516,10 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions (v8.0.26)
+License notice for Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions (v8.0.27)
 ------------------------------------
 
-https://github.com/dotnet/aspnetcore at 829dd6d36442c2bcf83ebfc9d4159b7ecc15c2ff
+https://github.com/dotnet/aspnetcore at be2530c3035e4bfa7670c6b18f5a64ef89e0e80d
 
 https://asp.net/
 
@@ -3132,44 +3530,52 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for System.Buffers (v4.5.1)
+License notice for System.Buffers (v4.6.1)
 ------------------------------------
 
-https://dot.net/
+https://github.com/dotnet/maintenance-packages at 6b84308c9ad012f53240d72c1d716d7e42546483
 
 Copyright © Microsoft Corporation. All rights reserved.
 
-License available at https://github.com/dotnet/corefx/blob/master/LICENSE.TXT
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
 
 
-License notice for System.Memory (v4.5.5)
+License notice for System.Memory (v4.6.3)
 ------------------------------------
 
-https://dot.net/
+https://github.com/dotnet/maintenance-packages at f62ca0009b038cab4725a720f386623a969d73ad
 
 Copyright © Microsoft Corporation. All rights reserved.
 
-License available at https://github.com/dotnet/corefx/blob/master/LICENSE.TXT
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
 
 
-License notice for System.Numerics.Vectors (v4.4.0)
+License notice for System.Numerics.Vectors (v4.6.1)
 ------------------------------------
 
-https://dot.net/
-
-Copyright © Microsoft Corporation.  All rights reserved.
-
-License available at https://github.com/dotnet/corefx/blob/master/LICENSE.TXT
-
-
-License notice for System.Runtime.CompilerServices.Unsafe (v4.5.3)
-------------------------------------
-
-https://dot.net/
+https://github.com/dotnet/maintenance-packages at 6b84308c9ad012f53240d72c1d716d7e42546483
 
 Copyright © Microsoft Corporation. All rights reserved.
 
-License available at https://github.com/dotnet/corefx/blob/master/LICENSE.TXT
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for System.Runtime.CompilerServices.Unsafe (v6.1.2)
+------------------------------------
+
+https://github.com/dotnet/maintenance-packages at f62ca0009b038cab4725a720f386623a969d73ad
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
 
 
 License notice for SkiaSharp (v2.88.9)
@@ -3187,6 +3593,96 @@ Available at https://licenses.nuget.org/MIT
 
 
 License notice for SkiaSharp.NativeAssets.Linux (v2.88.9)
+------------------------------------
+
+https://github.com/mono/SkiaSharp at 9699cdf046a989423a5e5eca68e7fd813486d81c
+
+https://go.microsoft.com/fwlink/?linkid=868515
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for Svg.Skia (v2.0.0.8)
+------------------------------------
+
+https://github.com/wieslawsoltes/Svg.Skia at 7a4b9962ae8a753236f1f16445ad00abb383a7a1
+
+Copyright © Wiesław Šoltés 2025
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for ExCSS (v4.3.0)
+------------------------------------
+
+https://github.com/TylerBrinks/ExCSS at 7ee5c37b1271136676a451992cb6a6268f2180e1
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for HarfBuzzSharp (v7.3.0.3)
+------------------------------------
+
+https://github.com/mono/SkiaSharp at 9699cdf046a989423a5e5eca68e7fd813486d81c
+
+https://go.microsoft.com/fwlink/?linkid=868515
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for HarfBuzzSharp.NativeAssets.macOS (v7.3.0.3)
+------------------------------------
+
+https://github.com/mono/SkiaSharp at 9699cdf046a989423a5e5eca68e7fd813486d81c
+
+https://go.microsoft.com/fwlink/?linkid=868515
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for HarfBuzzSharp.NativeAssets.Win32 (v7.3.0.3)
+------------------------------------
+
+https://github.com/mono/SkiaSharp at 9699cdf046a989423a5e5eca68e7fd813486d81c
+
+https://go.microsoft.com/fwlink/?linkid=868515
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for ShimSkiaSharp (v2.0.0.8)
+------------------------------------
+
+https://github.com/wieslawsoltes/Svg.Skia at 7a4b9962ae8a753236f1f16445ad00abb383a7a1
+
+Copyright © Wiesław Šoltés 2025
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for SkiaSharp.HarfBuzz (v2.88.9)
 ------------------------------------
 
 https://github.com/mono/SkiaSharp at 9699cdf046a989423a5e5eca68e7fd813486d81c
@@ -3226,5 +3722,159 @@ Copyright © Microsoft Corporation. All rights reserved.
 Licensed under MIT
 
 Available at https://licenses.nuget.org/MIT
+
+
+License notice for Svg.Custom (v2.0.0.8)
+------------------------------------
+
+https://github.com/wieslawsoltes/Svg.Skia at 7a4b9962ae8a753236f1f16445ad00abb383a7a1
+
+Copyright © Wiesław Šoltés 2025
+
+Licensed under MS-PL
+
+Available at https://licenses.nuget.org/MS-PL
+
+
+License notice for Svg.Model (v2.0.0.8)
+------------------------------------
+
+https://github.com/wieslawsoltes/Svg.Skia at 7a4b9962ae8a753236f1f16445ad00abb383a7a1
+
+Copyright © Wiesław Šoltés 2025
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for Microsoft.NET.Test.Sdk (v17.14.1)
+------------------------------------
+
+https://github.com/microsoft/vstest at 490850ae3fdc1b470e3804ceab4f6a41cf89ae51
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for xunit (v2.9.3)
+------------------------------------
+
+https://github.com/xunit/xunit at 9712244020d385955d33136b3fe3e87de43539cd
+
+Copyright (C) .NET Foundation
+
+Licensed under Apache-2.0
+
+Available at https://licenses.nuget.org/Apache-2.0
+
+
+License notice for Microsoft.CodeCoverage (v17.14.1)
+------------------------------------
+
+https://github.com/microsoft/vstest at 490850ae3fdc1b470e3804ceab4f6a41cf89ae51
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for Microsoft.TestPlatform.ObjectModel (v17.14.1)
+------------------------------------
+
+https://github.com/microsoft/vstest at 490850ae3fdc1b470e3804ceab4f6a41cf89ae51
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for Microsoft.TestPlatform.TestHost (v17.14.1)
+------------------------------------
+
+https://github.com/microsoft/vstest at 490850ae3fdc1b470e3804ceab4f6a41cf89ae51
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for Newtonsoft.Json (v13.0.3)
+------------------------------------
+
+https://github.com/JamesNK/Newtonsoft.Json at 0a2e291c0d9c0c7675d445703e51750363a549ef
+
+https://www.newtonsoft.com/json
+
+Copyright © James Newton-King 2008
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+License notice for xunit.abstractions (v2.0.3)
+------------------------------------
+
+https://github.com/xunit/xunit
+
+License available at https://raw.githubusercontent.com/xunit/xunit/master/license.txt
+
+
+License notice for xunit.assert (v2.9.3)
+------------------------------------
+
+https://github.com/xunit/xunit at 9712244020d385955d33136b3fe3e87de43539cd
+
+Copyright (C) .NET Foundation
+
+Licensed under Apache-2.0
+
+Available at https://licenses.nuget.org/Apache-2.0
+
+
+License notice for xunit.core (v2.9.3)
+------------------------------------
+
+https://github.com/xunit/xunit at 9712244020d385955d33136b3fe3e87de43539cd
+
+Copyright (C) .NET Foundation
+
+Licensed under Apache-2.0
+
+Available at https://licenses.nuget.org/Apache-2.0
+
+
+License notice for xunit.extensibility.core (v2.9.3)
+------------------------------------
+
+https://github.com/xunit/xunit at 9712244020d385955d33136b3fe3e87de43539cd
+
+Copyright (C) .NET Foundation
+
+Licensed under Apache-2.0
+
+Available at https://licenses.nuget.org/Apache-2.0
+
+
+License notice for xunit.extensibility.execution (v2.9.3)
+------------------------------------
+
+https://github.com/xunit/xunit at 9712244020d385955d33136b3fe3e87de43539cd
+
+Copyright (C) .NET Foundation
+
+Licensed under Apache-2.0
+
+Available at https://licenses.nuget.org/Apache-2.0
 
 
