@@ -43,4 +43,103 @@ internal class CimLabelClass
 
     [JsonPropertyName("maximumScale")]
     public double MaximumScale { get; set; }
+
+    /// <summary>
+    /// Present when the map uses the (older) Standard label engine
+    /// (<see cref="CimGeneralPlacementProperties"/>) - always populated by ArcGIS Pro
+    /// regardless of which engine is actually active, alongside
+    /// <see cref="MaplexLabelPlacementProperties"/>.
+    /// </summary>
+    [JsonPropertyName("standardLabelPlacementProperties")]
+    public CimStandardLabelPlacementProperties? StandardLabelPlacementProperties { get; set; }
+
+    /// <summary>Present when the map uses the (default, modern) Maplex label engine.</summary>
+    [JsonPropertyName("maplexLabelPlacementProperties")]
+    public CimMaplexLabelPlacementProperties? MaplexLabelPlacementProperties { get; set; }
+}
+
+internal class CimStandardLabelPlacementProperties
+{
+    /// <summary>"OneLabelPerName", "OneLabelPerFeature"/"OneLabelPerShape", or "OneLabelPerPart".</summary>
+    [JsonPropertyName("numLabelsOption")]
+    public string? NumLabelsOption { get; set; }
+
+    [JsonPropertyName("pointPlacementMethod")]
+    public string? PointPlacementMethod { get; set; }
+
+    /// <summary>
+    /// Priority per zone around the point (lower = placed first); ties are broken by the
+    /// fixed zone order below. Only meaningful when <see cref="PointPlacementMethod"/> is
+    /// "AroundPoint" (the standard/default method for point features).
+    /// </summary>
+    [JsonPropertyName("pointPlacementPriorities")]
+    public CimPointZonePriorities? PointPlacementPriorities { get; set; }
+
+    /// <summary>Which side(s) of a line a label may be placed on.</summary>
+    [JsonPropertyName("lineLabelPosition")]
+    public CimStandardLineLabelPosition? LineLabelPosition { get; set; }
+}
+
+/// <summary>
+/// CIMStandardLineLabelPosition: simple on/off gates for line label placement (as opposed to
+/// the point zones' numeric ranking). ArcGIS Pro omits properties left at their default
+/// (false) from the JSON, so absence here means "not allowed", same as an explicit false.
+/// </summary>
+internal class CimStandardLineLabelPosition
+{
+    [JsonPropertyName("above")]
+    public bool Above { get; set; }
+
+    [JsonPropertyName("below")]
+    public bool Below { get; set; }
+
+    /// <summary>Centered on the line.</summary>
+    [JsonPropertyName("inLine")]
+    public bool InLine { get; set; }
+
+    /// <summary>Text follows the line's direction rather than staying horizontal.</summary>
+    [JsonPropertyName("parallel")]
+    public bool Parallel { get; set; }
+}
+
+internal class CimMaplexLabelPlacementProperties
+{
+    [JsonPropertyName("pointPlacementMethod")]
+    public string? PointPlacementMethod { get; set; }
+
+    /// <summary>Same shape/semantics as <see cref="CimStandardLabelPlacementProperties.PointPlacementPriorities"/>.</summary>
+    [JsonPropertyName("pointExternalZonePriorities")]
+    public CimPointZonePriorities? PointExternalZonePriorities { get; set; }
+}
+
+/// <summary>
+/// Placement priority for each of the 8 zones around a point label anchor (both the Maplex
+/// and Standard label engines use this exact shape, just under different property names on
+/// their respective placement-properties objects). Lower value = tried first.
+/// </summary>
+internal class CimPointZonePriorities
+{
+    [JsonPropertyName("aboveLeft")]
+    public int AboveLeft { get; set; }
+
+    [JsonPropertyName("aboveCenter")]
+    public int AboveCenter { get; set; }
+
+    [JsonPropertyName("aboveRight")]
+    public int AboveRight { get; set; }
+
+    [JsonPropertyName("centerLeft")]
+    public int CenterLeft { get; set; }
+
+    [JsonPropertyName("centerRight")]
+    public int CenterRight { get; set; }
+
+    [JsonPropertyName("belowLeft")]
+    public int BelowLeft { get; set; }
+
+    [JsonPropertyName("belowCenter")]
+    public int BelowCenter { get; set; }
+
+    [JsonPropertyName("belowRight")]
+    public int BelowRight { get; set; }
 }

@@ -14,14 +14,21 @@ internal static class Cim
         CimSpatialReference? spatialReference = null,
         CimEnvelope? mapExtent = null,
         CimEnvelope? defaultExtent = null,
-        double? referenceScale = null) => new()
+        double? referenceScale = null,
+        CimGeneralPlacementProperties? generalPlacementProperties = null) => new()
     {
         Name = name,
         LayerDefinitions = layers,
         SpatialReference = spatialReference,
         MapExtent = mapExtent,
         DefaultExtent = defaultExtent,
-        ReferenceScale = referenceScale
+        ReferenceScale = referenceScale,
+        GeneralPlacementProperties = generalPlacementProperties
+    };
+
+    public static CimGeneralPlacementProperties GeneralPlacementProperties(bool maplex) => new()
+    {
+        Type = maplex ? "CIMMaplexGeneralPlacementProperties" : "CIMStandardGeneralPlacementProperties"
     };
 
     public static CimSpatialReference SpatialReference(int wkid, int latestWkid = 0) => new()
@@ -94,11 +101,62 @@ internal static class Cim
     public static CimLabelClass LabelClass(
         string? expression = null,
         List<string>? fieldNames = null,
-        CimSymbolReference? textSymbol = null) => new()
+        CimSymbolReference? textSymbol = null,
+        CimStandardLabelPlacementProperties? standardLabelPlacementProperties = null,
+        CimMaplexLabelPlacementProperties? maplexLabelPlacementProperties = null) => new()
     {
         Expression = expression,
         FieldNames = fieldNames,
-        TextSymbol = textSymbol
+        TextSymbol = textSymbol,
+        StandardLabelPlacementProperties = standardLabelPlacementProperties,
+        MaplexLabelPlacementProperties = maplexLabelPlacementProperties
+    };
+
+    // Defaults to int.MaxValue (worst priority), not 0 - 0 is a legitimate "best" priority in
+    // real CIM data, so leaving unspecified zones at 0 would make them accidentally tie for
+    // first place instead of behaving like "not ranked".
+    public static CimPointZonePriorities PointZonePriorities(
+        int aboveLeft = int.MaxValue, int aboveCenter = int.MaxValue, int aboveRight = int.MaxValue,
+        int centerLeft = int.MaxValue, int centerRight = int.MaxValue,
+        int belowLeft = int.MaxValue, int belowCenter = int.MaxValue, int belowRight = int.MaxValue) => new()
+    {
+        AboveLeft = aboveLeft,
+        AboveCenter = aboveCenter,
+        AboveRight = aboveRight,
+        CenterLeft = centerLeft,
+        CenterRight = centerRight,
+        BelowLeft = belowLeft,
+        BelowCenter = belowCenter,
+        BelowRight = belowRight
+    };
+
+    public static CimStandardLabelPlacementProperties StandardLabelPlacementProperties(
+        string? numLabelsOption = null,
+        string? pointPlacementMethod = "AroundPoint",
+        CimPointZonePriorities? pointPlacementPriorities = null,
+        CimStandardLineLabelPosition? lineLabelPosition = null) => new()
+    {
+        NumLabelsOption = numLabelsOption,
+        PointPlacementMethod = pointPlacementMethod,
+        PointPlacementPriorities = pointPlacementPriorities,
+        LineLabelPosition = lineLabelPosition
+    };
+
+    public static CimStandardLineLabelPosition LineLabelPosition(
+        bool above = false, bool inLine = false, bool below = false, bool parallel = true) => new()
+    {
+        Above = above,
+        InLine = inLine,
+        Below = below,
+        Parallel = parallel
+    };
+
+    public static CimMaplexLabelPlacementProperties MaplexLabelPlacementProperties(
+        string? pointPlacementMethod = "AroundPoint",
+        CimPointZonePriorities? pointExternalZonePriorities = null) => new()
+    {
+        PointPlacementMethod = pointPlacementMethod,
+        PointExternalZonePriorities = pointExternalZonePriorities
     };
 
     public static CimSymbolReference SymbolRef(CimSymbol symbol) => new() { Symbol = symbol };
