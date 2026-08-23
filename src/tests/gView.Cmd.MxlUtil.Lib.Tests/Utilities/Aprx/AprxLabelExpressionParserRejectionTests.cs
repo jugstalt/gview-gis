@@ -61,10 +61,14 @@ public class AprxLabelExpressionParserRejectionTests
     }
 
     [Fact]
-    public void OrConditionWithoutParentheses_MixedWithAnd_IsRejectedAsAmbiguous()
+    public void OrOfCrossFieldAndGroup_IsRejected()
     {
-        // "or" mixed with "and" but not parenthesized to disambiguate precedence - rejected
-        // rather than guessed at.
+        // "A and B or C" parses per standard VB precedence as "(A and B) or C" (and does - see
+        // AprxLabelExpressionParserConditionalTests for a case that resolves cleanly) - but *this*
+        // one still can't be safely guarded: nothing here lets us tell whether "(A and B)" is
+        // already true while building "C"'s guard (different fields, no auto-contradiction), and
+        // without that, both could fire at once and duplicate the output. Correctly rejected
+        // rather than risking that.
         AssertRejected("""
             Function F([A],[B],[C])
             if [A] <> "" and [B] <> "" or [C] <> "" then
@@ -125,12 +129,30 @@ public class AprxLabelExpressionParserRejectionTests
             """);
     }
 
+    // Numeric range comparisons (<, <=, >, >=) and equality/inequality against an unquoted
+    // number (=, <>) themselves ARE supported - see AprxLabelExpressionParserConditionalTests.
+    // This is a remaining unsupported shape around them.
+
     [Fact]
-    public void NumericComparison_IsRejected()
+    public void NumericComparisonAgainstFunctionCall_IsRejected()
     {
         AssertRejected("""
+            Function F([A],[B])
+            if [A] > Len([B]) then
+             F = [A]
+            end if
+            End Function
+            """);
+    }
+
+    [Fact]
+    public void EqualityLiteral_ContainingComma_IsRejected()
+    {
+        // gView's "@@if([Field],Value)" splits its arguments on a bare "," with no escaping - a
+        // "," inside the literal would be silently mis-parsed at runtime.
+        AssertRejected("""
             Function F([A])
-            if [A] > 5 then
+            if [A] = "x,y" then
              F = [A]
             end if
             End Function
@@ -142,4 +164,26 @@ public class AprxLabelExpressionParserRejectionTests
     {
         AssertRejected("\"prefix\" & [FIELD");
     }
+
+    [Fact]
+    public void UnterminatedDoubleQuotedString_IsRejected()
+    {
+        AssertRejected("\"prefix & [FIELD]");
+    }
+
+    [Fact]
+    public void UnterminatedSingleQuotedString_IsRejected()
+    {
+        // A stray, unmatched "'" (e.g. a typo right after a properly closed "..." literal) opens
+        // a single-quoted string that's never closed - must be rejected, not silently swallow the
+        // rest of the expression (including any following [Field] references) into a literal.
+        AssertRejected("\"proj.\"' & [BESCHR]");
+    }
+
+    [Fact]
+    public void DollarFeatureNotFollowedByFieldName_IsRejected()
+    {
+        AssertRejected("$feature.");
+    }
+
 }
