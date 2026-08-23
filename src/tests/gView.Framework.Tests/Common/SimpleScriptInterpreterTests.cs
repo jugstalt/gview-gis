@@ -285,6 +285,35 @@ public class SimpleScriptInterpreterTests
         Assert.Equal("", result);
     }
 
+    [Theory]
+    // Variable-arg "in" operator: "value,in,v1,v2,...,vN" - true if value equals any of v1..vN.
+    // Lets AprxLabelExpressionParser collapse several near-duplicate "@@if(...)" branches that
+    // only differ by one field's specific Equals value into a single check.
+    [InlineData("N,in,N,M,H,F", true)]
+    [InlineData("M,in,N,M,H,F", true)]
+    [InlineData("F,in,N,M,H,F", true)]
+    [InlineData("X,in,N,M,H,F", false)]
+    [InlineData(",in,N,M,H,F", false)]
+    [InlineData("N,IN,N,M,H,F", true)] // operator keyword is case-insensitive, like eq/not/lt/.../ge
+    public void Interpret_InOperator_IsMembershipCheck(string args, bool expectedIncluded)
+    {
+        var script = Script("@@start", $"@@if({args})", "X", "@@endif", "@@end");
+
+        var result = new SimpleScriptInterpreter(script).Interpret();
+
+        Assert.Equal(expectedIncluded ? "X" : "", result);
+    }
+
+    [Fact]
+    public void Interpret_InOperator_WithSingleValue_BehavesLikeEquality()
+    {
+        var scriptMatch = Script("@@start", "@@if(N,in,N)", "X", "@@endif", "@@end");
+        var scriptNoMatch = Script("@@start", "@@if(M,in,N)", "X", "@@endif", "@@end");
+
+        Assert.Equal("X", new SimpleScriptInterpreter(scriptMatch).Interpret());
+        Assert.Equal("", new SimpleScriptInterpreter(scriptNoMatch).Interpret());
+    }
+
     // -----------------------------------------------------------------------
     // @@replace(search,replacement) - applied in order to the built text
     // -----------------------------------------------------------------------

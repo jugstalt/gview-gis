@@ -194,4 +194,123 @@ public class AprxLabelExpressionParserTests
             "Function F([A])\nF = [A]\nEnd Function", out var result));
         Assert.False(result!.IsConditional);
     }
+
+    // -----------------------------------------------------------------------
+    // Single-quoted string literals (ArcGIS Pro's label-expression parser accepts both '...'
+    // and "..." as string literals, unlike strict VBScript where "'" only starts a comment)
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public void TryConvert_SingleQuotedLiteral_IsTreatedLikeDoubleQuoted()
+    {
+        var result = Convert("'proj. ' + [KVS_TYP] + ' ' + [BESCHR]");
+
+        Assert.Equal("proj. [KVS_TYP] [BESCHR]", result);
+    }
+
+    [Fact]
+    public void TryConvert_SingleQuotedLiteralWithEscapedQuote_UnescapesIt()
+    {
+        var result = Convert("'It''s here' & [A]");
+
+        Assert.Equal("It's here[A]", result);
+    }
+
+    [Fact]
+    public void TryConvert_MixedSingleAndDoubleQuotedLiterals_BothWork()
+    {
+        var result = Convert("\"a\" & [X] & 'b'");
+
+        Assert.Equal("a[X]b", result);
+    }
+
+    // -----------------------------------------------------------------------
+    // Arcade's "$feature.Field" syntax - treated like gView's "[Field]"
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public void TryConvert_ArcadeFeatureFieldAccess_BecomesPlaceholder()
+    {
+        var result = Convert("$feature.MELD_TXT");
+
+        Assert.Equal("[MELD_TXT]", result);
+    }
+
+    [Fact]
+    public void TryConvert_ArcadeFeatureFieldAccess_CaseInsensitiveKeyword()
+    {
+        var result = Convert("$FEATURE.MELD_TXT");
+
+        Assert.Equal("[MELD_TXT]", result);
+    }
+
+    [Fact]
+    public void TryConvert_ArcadeFeatureFieldAccess_InsideConcatenation()
+    {
+        var result = Convert("\"X: \" & $feature.A & \" \" & $feature.B");
+
+        Assert.Equal("X: [A] [B]", result);
+    }
+
+    // -----------------------------------------------------------------------
+    // Tolerated real-world source quirks: "%" as a stray "&" typo, and "vbnewnline" as a
+    // common misspelling of "vbNewLine" - neither is valid VBScript, but both are common enough
+    // in real ArcGIS Pro label expressions to tolerate rather than reject outright.
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public void TryConvert_PercentOperator_IsTreatedLikeAmpersand()
+    {
+        var result = Convert("[ART] & \" \" % [USER_TYPE]");
+
+        Assert.Equal("[ART] [USER_TYPE]", result);
+    }
+
+    [Fact]
+    public void TryConvert_MisspelledVbNewLine_BecomesLineBreak()
+    {
+        var result = Convert("\"A\" & vbnewnline & \"B\"");
+
+        Assert.Equal($"A{Environment.NewLine}B", result);
+    }
+
+    [Fact]
+    public void TryConvert_MisspelledVbNewLine_RealWorldExample()
+    {
+        var result = Convert(
+            "\"Sperrfläche für Planauskunft -\" & vbnewnline & \"fehlende Leitungsabschnitte\"");
+
+        Assert.Equal($"Sperrfläche für Planauskunft -{Environment.NewLine}fehlende Leitungsabschnitte", result);
+    }
+
+    // -----------------------------------------------------------------------
+    // Numeric/string cast functions standing alone in a concatenation (not inside round(...)).
+    // A "\n"/"\t" escape sequence inside a string literal is only decoded within a Python "def"
+    // function body (see AprxLabelExpressionParserPythonTests) - here (VB-flavored, no "def"
+    // wrapper) backslashes have no special meaning, matching real VBScript.
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public void TryConvert_StrCastStandalone_UnwrapsToPlainField()
+    {
+        var result = Convert("[N_TP] & str([STPKT_NR])");
+
+        Assert.Equal("[N_TP][STPKT_NR]", result);
+    }
+
+    [Fact]
+    public void TryConvert_IntCastStandalone_UnwrapsToPlainField()
+    {
+        var result = Convert("int([A])");
+
+        Assert.Equal("[A]", result);
+    }
+
+    [Fact]
+    public void TryConvert_BackslashOutsidePythonFunction_IsLiteral()
+    {
+        var result = Convert("'\\n'");
+
+        Assert.Equal("\\n", result);
+    }
 }
