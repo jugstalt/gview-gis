@@ -28,6 +28,7 @@ string profile = String.Empty,
        productArg = String.Empty;
 
 bool yesFlag = false;
+bool portableFlag = false;
 bool? downloadAnswer = null;
 bool? continueAnswer = null;
 
@@ -73,6 +74,11 @@ try
                 case "--no-confirm":
                     continueAnswer = false;
                     break;
+                case "--portable":
+                    // use/download the "portable" zip files
+                    // (gview-server-portable-win64-..., gview-webapps-portable-linux64-...)
+                    portableFlag = true;
+                    break;
                 default:
                     // any other "--xxx value" pair is kept around and matched later
                     // against the [ModelProperty] flags of the deploy model
@@ -86,6 +92,15 @@ try
         }
     }
 
+    if (portableFlag)
+    {
+        Console.WriteLine("Using portable zip files (gview-server-portable-..., gview-webapps-portable-...).");
+
+        // portable zips aren't hosted on GitHub (yet) - skip the download question by
+        // default; --download still forces it if that ever changes
+        downloadAnswer ??= false;
+    }
+
     if (yesFlag)
     {
         downloadAnswer ??= true;
@@ -94,7 +109,7 @@ try
 
     var ioService = new IOService();
     var repoService = new DeployRepositoryService(ioService, workDirectory);
-    var versionService = new DeployVersionService(repoService, ioService);
+    var versionService = new DeployVersionService(repoService, ioService, portableFlag);
 
     if (String.IsNullOrEmpty(profile))
     {
@@ -107,7 +122,7 @@ try
     {
         try
         {
-            var githubReleaseService = new GitHubReleaseService("jugstalt", "gview-gis");
+            var githubReleaseService = new GitHubReleaseService("jugstalt", "gview-gis", portableFlag);
 
             var lastServerInstalledVersion = versionService.GetVersions(AppName.Server).FirstOrDefault() switch
             {

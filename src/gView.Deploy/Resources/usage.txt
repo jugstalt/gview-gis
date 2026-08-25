@@ -17,6 +17,13 @@ Basic parameters:
                   fetch it from GitHub first)
           --product <Everything|Server|WebApps>
                   what to deploy (default when unattended: Everything)
+          --portable
+                  use the portable zip files instead of the regular ones,
+                  eg. gview-server-portable-win64-8.26.3502.zip /
+                  gview-webapps-portable-linux64-8.26.3502.zip; since these
+                  aren't hosted on GitHub (yet), the "download latest
+                  version" question is skipped by default - pass --download
+                  explicitly to force it anyway
 
 Non-interactive control:
      -y,  --yes

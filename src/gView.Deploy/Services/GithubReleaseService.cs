@@ -8,12 +8,14 @@ public class GitHubReleaseService
     private readonly HttpClient _httpClient;
     private readonly string _repositoryOwner;
     private readonly string _repositoryName;
+    private readonly bool _portable;
 
-    public GitHubReleaseService(string repositoryOwner, string repositoryName)
+    public GitHubReleaseService(string repositoryOwner, string repositoryName, bool portable = false)
     {
         _httpClient = new HttpClient();
         _repositoryOwner = repositoryOwner;
         _repositoryName = repositoryName;
+        _portable = portable;
     }
 
     public async Task<List<string>> GetReleaseDownloadUrlsAsync()
@@ -70,9 +72,9 @@ public class GitHubReleaseService
             {
                 foreach (var asset in release.Assets)
                 {
-                    if (asset.Name.EndsWith(".zip") && 
-                        (asset.Name.Contains($"gview-webapps-{PlatformName}-") 
-                        || asset.Name.Contains($"gview-server-{PlatformName}-")))
+                    if (asset.Name.EndsWith(".zip") &&
+                        (asset.Name.Contains($"gview-webapps-{PortableInfix}{PlatformName}-")
+                        || asset.Name.Contains($"gview-server-{PortableInfix}{PlatformName}-")))
                     {
                         var key = asset.Name.StartsWith("gview-webapps") 
                             ? "gview-webapps" 
@@ -116,6 +118,8 @@ public class GitHubReleaseService
         : Platform.IsLinux
            ? "linux64"
            : "unknown";
+
+    private string PortableInfix => _portable ? "portable-" : "";
 }
 
 public class GitHubRelease

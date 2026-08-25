@@ -11,7 +11,7 @@ internal enum AppName
 
 internal class DeployVersionService
 {
-    public static readonly Version DeployToolVersion = new Version(8, 26, 3301);
+    public static readonly Version DeployToolVersion = new Version(8, 26, 3501);
 
     private readonly Dictionary<AppName, string> zipPrefix;
 
@@ -20,18 +20,21 @@ internal class DeployVersionService
     private readonly IOService _ioService;
 
     public DeployVersionService(DeployRepositoryService repositoryService,
-                                IOService ioService)
+                                IOService ioService,
+                                bool portable = false)
     {
+        var portableInfix = portable ? "portable-" : "";
+
         zipPrefix = new Dictionary<AppName, string>();
         if (Platform.IsLinux)
         {
-            zipPrefix.Add(AppName.Server, "gview-server-linux64-");
-            zipPrefix.Add(AppName.WebApps, "gview-webapps-linux64-");
+            zipPrefix.Add(AppName.Server, $"gview-server-{portableInfix}linux64-");
+            zipPrefix.Add(AppName.WebApps, $"gview-webapps-{portableInfix}linux64-");
         }
         else if (Platform.IsWindows)
         {
-            zipPrefix.Add(AppName.Server, "gview-server-win64-");
-            zipPrefix.Add(AppName.WebApps, "gview-webapps-win64-");
+            zipPrefix.Add(AppName.Server, $"gview-server-{portableInfix}win64-");
+            zipPrefix.Add(AppName.WebApps, $"gview-webapps-{portableInfix}win64-");
         }
         else
         {
