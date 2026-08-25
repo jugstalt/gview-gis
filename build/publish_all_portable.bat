@@ -1,0 +1,3 @@
+call publish_cmd_portable.bat
+call publish_webapps_portable.bat
+call publish_server_portable.bat

@@ -590,9 +590,15 @@ internal class AprxMapConverter
         // "One label per name/feature/part" - names match 1:1 between CIM and gView.
         renderer.HowManyLabels = cimLabel.StandardLabelPlacementProperties?.NumLabelsOption switch
         {
-            "OneLabelPerName" => SimpleLabelRenderer.RenderHowManyLabels.OnPerName,
-            "OneLabelPerFeature" or "OneLabelPerShape" => SimpleLabelRenderer.RenderHowManyLabels.OnPerFeature,
-            "OneLabelPerPart" => SimpleLabelRenderer.RenderHowManyLabels.OnPerPart,
+            "OneLabelPerName" =>
+                geometryKind switch
+                {
+                    RendererGeometryKind.Unknown => SimpleLabelRenderer.RenderHowManyLabels.OnPerFeature,
+                    RendererGeometryKind.Point => SimpleLabelRenderer.RenderHowManyLabels.OnPerFeature,
+                    _ => SimpleLabelRenderer.RenderHowManyLabels.OnPerName
+                },
+                "OneLabelPerFeature" or "OneLabelPerShape" => SimpleLabelRenderer.RenderHowManyLabels.OnPerFeature,
+                "OneLabelPerPart" => SimpleLabelRenderer.RenderHowManyLabels.OnPerPart,
             _ => renderer.HowManyLabels
         };
 
