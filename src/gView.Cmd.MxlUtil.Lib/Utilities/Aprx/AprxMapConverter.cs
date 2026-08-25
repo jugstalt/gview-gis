@@ -178,6 +178,22 @@ internal class AprxMapConverter
             case CimFeatureLayer feature:
                 AddFeatureLayer(map, feature);
                 break;
+
+            case CimAnnotationLayer annotation:
+                AddAnnotationLayer(map, null, annotation);
+                break;
+
+            default:
+                // A layer type not in CimBaseLayer's [JsonDerivedType] list (e.g.
+                // CIMRasterLayer) deserializes down to the bare base type instead of null -
+                // warn instead of letting it silently vanish. (The concrete type name isn't
+                // recoverable here - CimBaseLayer can't carry its own "type" property without
+                // conflicting with System.Text.Json's discriminator handling for this exact
+                // hierarchy. The other route layers take, each stored as its own standalone
+                // JSON file - ArcGIS Pro 3.x - *does* report the type name, in
+                // AprxReader.WarnUnsupportedLayer.)
+                _warn?.Invoke($"Layer '{cimLayer.Name ?? "?"}': unsupported layer type - not included in the converted map.");
+                break;
         }
     }
 
@@ -191,6 +207,8 @@ internal class AprxMapConverter
             MinimumLabelScale = cimGroup.MaxScale,
             MaximumLabelScale = cimGroup.MinScale
         };
+
+        groupLayer.ID = cimGroup.ServiceLayerId;
 
         // Add the group to the map first so its TOC entry exists
         // before child layers are added (child AddLayer needs the parent TOC element).
@@ -226,6 +244,8 @@ internal class AprxMapConverter
                         MaximumLabelScale = cimGroup.MinScale
                     };
 
+                    childGroup.ID = cimGroup.ServiceLayerId;
+
                     parentGroupLayer.Add(childGroup);
                     map.AddLayer(childGroup);
 
@@ -250,6 +270,10 @@ internal class AprxMapConverter
 
                     break;
                 }
+
+            case CimAnnotationLayer cimAnnotation:
+                AddAnnotationLayer(map, parentGroupLayer, cimAnnotation);
+                break;
         }
     }
 
@@ -282,6 +306,8 @@ internal class AprxMapConverter
             MinimumLabelScale = cimGroup.MaxScale,
             MaximumLabelScale = cimGroup.MinScale
         };
+
+        groupLayer.ID = cimGroup.ServiceLayerId;
 
         if (cimGroup.LayerDefinitions != null)
         {
@@ -372,6 +398,156 @@ internal class AprxMapConverter
         }
 
         return layer;
+    }
+
+    /// <summary>
+    /// ArcGIS Pro/Server publish an annotation layer not as one flat layer but as a group
+    /// named after the layer itself, containing one child layer per annotation class
+    /// ("Standard" unless the author defined more) - e.g. "FW-Text" containing "Standard".
+    /// <paramref name="parentGroupLayer"/> is the group this annotation layer itself is nested
+    /// under in the aprx, if any (null for a top-level layer).
+    /// </summary>
+    private void AddAnnotationLayer(Map map, GroupLayer? parentGroupLayer, CimAnnotationLayer cimAnnotation)
+    {
+        var groupLayer = new GroupLayer(cimAnnotation.Name ?? string.Empty)
+        {
+            Visible = cimAnnotation.Visibility,
+            MinimumScale = cimAnnotation.MaxScale,
+            MaximumScale = cimAnnotation.MinScale,
+            MinimumLabelScale = cimAnnotation.MaxScale,
+            MaximumLabelScale = cimAnnotation.MinScale,
+        };
+
+        groupLayer.ID = cimAnnotation.ServiceLayerId;
+
+        parentGroupLayer?.Add(groupLayer);
+        // Add the group to the map before its children - AddLayer's child logic below needs
+        // the parent's TOC element to already exist.
+        map.AddLayer(groupLayer);
+        map.TOC.GetTOCElement(groupLayer)?.Name = cimAnnotation.Name;
+
+        var subLayers = cimAnnotation.SubLayers is { Count: > 0 }
+            ? cimAnnotation.SubLayers
+            // Defensive fallback for a CIM that (unexpectedly) has no sub-layers: still
+            // produce one usable layer instead of nothing, just without the ArcGIS Server
+            // group/"Standard" nesting or an AnnotationClassID filter.
+            : [new CimAnnotationSubLayer { Name = cimAnnotation.Name, ServiceLayerId = cimAnnotation.ServiceLayerId }];
+
+        foreach (var subLayer in subLayers)
+        {
+            var childLayer = CreateAnnotationSubLayer(cimAnnotation, subLayer);
+            groupLayer.Add(childLayer);
+            map.AddLayer(childLayer);
+            map.TOC.GetTOCElement(childLayer)?.Name = subLayer.Name;
+        }
+    }
+
+    /// <summary>
+    /// Builds the layer for one annotation class ("sub-layer"). ArcGIS Pro annotation layers
+    /// have no CIM renderer/labelClasses of their own - each feature stores its own rendered
+    /// text via plain attribute columns (the older, field-based annotation schema: TextString/
+    /// Angle/FontName/FontSize/...; not the newer per-feature binary graphic overrides some
+    /// annotation feature classes use instead, which this doesn't attempt to decode). Converts
+    /// to a regular <see cref="FeatureLayer"/> - with no feature renderer, so the (usually
+    /// invisible bounding) geometry itself never draws - plus a label renderer built from those
+    /// columns instead of a CIM label class.
+    /// </summary>
+    private FeatureLayer CreateAnnotationSubLayer(CimAnnotationLayer cimAnnotation, CimAnnotationSubLayer subLayer)
+    {
+        _currentLayerName = $"{cimAnnotation.Name}/{subLayer.Name}";
+
+        IFeatureClass featureClass;
+        if (_datasetOptions != null)
+        {
+            featureClass = CreateFeatureClassFromPlugin(
+                cimAnnotation.FeatureTable?.DataConnection?.Dataset ?? string.Empty);
+        }
+        else
+        {
+            featureClass = new UnknownFeatureClass(
+                new UnknownFeatureDataset()
+                {
+                    ConnectionString = cimAnnotation.FeatureTable?.DataConnection?.WorkspaceConnectionString ?? ""
+                },
+                cimAnnotation.FeatureTable?.DataConnection?.Dataset ?? string.Empty
+            );
+        }
+
+        var layer = new FeatureLayer(featureClass)
+        {
+            Visible = subLayer.Visibility,
+            Title = featureClass.Name,
+            MinimumScale = cimAnnotation.MaxScale,
+            MaximumScale = cimAnnotation.MinScale,
+            MinimumLabelScale = cimAnnotation.MaxScale,
+            MaximumLabelScale = cimAnnotation.MinScale,
+        };
+
+        layer.ID = subLayer.ServiceLayerId;
+
+        // Combine the layer-level definition query (if any) with a filter restricting this
+        // sub-layer to its own annotation class - otherwise, with more than one annotation
+        // class sharing the same feature class, every sub-layer would render every feature.
+        var whereClauses = new List<string>();
+        if (!string.IsNullOrWhiteSpace(cimAnnotation.FeatureTable?.DefinitionExpression))
+        {
+            whereClauses.Add(cimAnnotation.FeatureTable!.DefinitionExpression!);
+        }
+        if (int.TryParse(subLayer.SubLayerId, out var annotationClassId))
+        {
+            whereClauses.Add($"AnnotationClassID = {annotationClassId}");
+        }
+        if (whereClauses.Count > 0)
+        {
+            layer.FilterQuery = new QueryFilter
+            {
+                WhereClause = string.Join(" AND ", whereClauses)
+            };
+        }
+
+        foreach (var fieldDescription in cimAnnotation.FeatureTable?.FieldDescriptions ?? [])
+        {
+            var field = layer.Fields.FindField(fieldDescription.FieldName) as Field;
+            if (field is null) continue;
+
+            field.visible = fieldDescription.Visible;
+            field.aliasname = fieldDescription.Alias;
+        }
+
+        layer.LabelRenderer = BuildAnnotationLabelRenderer();
+
+        return layer;
+    }
+
+    /// <summary>
+    /// Builds the label renderer standing in for an annotation layer's per-feature text.
+    /// Text and rotation are field-driven (the "TextString"/"Angle" columns every field-based
+    /// annotation feature class has); font is a fixed default for the whole layer, since
+    /// gView's label renderer doesn't currently apply per-feature font overrides at draw time
+    /// even though it has FontField/SizeFieldName properties (they're only used to include
+    /// those columns in the query, not to vary the rendered font) - so per-row FontName/
+    /// FontSize/Bold/Italic/Underline/XOffset/YOffset from the CIM schema aren't reproduced.
+    /// LabelPriority is "Always" (no overlap-avoidance repositioning): annotation, unlike a
+    /// dynamic label, was deliberately placed exactly where it is by whoever authored it.
+    /// </summary>
+    private static SimpleLabelRenderer BuildAnnotationLabelRenderer()
+    {
+        return new SimpleLabelRenderer
+        {
+            FieldName = "TextString",
+            LabelPriority = RenderLabelPriority.Always,
+            TextSymbol = new SimpleTextSymbol
+            {
+                Font = gView.GraphicsEngine.Current.Engine.CreateFont("Arial", 10f),
+                Color = ArgbColor.Black
+            },
+            SymbolRotation = new SymbolRotation
+            {
+                RotationFieldName = "Angle",
+                RotationType = RotationType.ArithmeticMinus90,
+                RotationUnit = RotationUnit.deg
+            }
+        };
     }
 
     // -----------------------------------------------------------------------
@@ -590,15 +766,9 @@ internal class AprxMapConverter
         // "One label per name/feature/part" - names match 1:1 between CIM and gView.
         renderer.HowManyLabels = cimLabel.StandardLabelPlacementProperties?.NumLabelsOption switch
         {
-            "OneLabelPerName" =>
-                geometryKind switch
-                {
-                    RendererGeometryKind.Unknown => SimpleLabelRenderer.RenderHowManyLabels.OnPerFeature,
-                    RendererGeometryKind.Point => SimpleLabelRenderer.RenderHowManyLabels.OnPerFeature,
-                    _ => SimpleLabelRenderer.RenderHowManyLabels.OnPerName
-                },
-                "OneLabelPerFeature" or "OneLabelPerShape" => SimpleLabelRenderer.RenderHowManyLabels.OnPerFeature,
-                "OneLabelPerPart" => SimpleLabelRenderer.RenderHowManyLabels.OnPerPart,
+            "OneLabelPerName" => SimpleLabelRenderer.RenderHowManyLabels.OnPerName,
+            "OneLabelPerFeature" or "OneLabelPerShape" => SimpleLabelRenderer.RenderHowManyLabels.OnPerFeature,
+            "OneLabelPerPart" => SimpleLabelRenderer.RenderHowManyLabels.OnPerPart,
             _ => renderer.HowManyLabels
         };
 

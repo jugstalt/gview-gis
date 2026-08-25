@@ -306,7 +306,35 @@ public class AprxReaderTests
     }
 
     [Fact]
-    public async Task ReadMapsAsync_UnsupportedLayerType_IsSkippedWithoutWarning()
+    public async Task ReadMapsAsync_UnsupportedLayerType_IsSkippedWithWarning()
+    {
+        // e.g. CIMRasterLayer - not a type the converter handles at all, so it's dropped. It
+        // must not vanish *silently* though - that's confusing when the layer was actually
+        // there in ArcGIS Pro but simply missing from the mxl.
+        using var aprx = TempAprxFile.Create(
+            ("GISProject.json", """
+                { "projectItems": [ { "type": "CIMMapDocument", "URI": "Maps/Map.mapx" } ] }
+                """),
+            ("Maps/Map.mapx", """
+                {
+                  "type": "CIMMapDocument",
+                  "map": { "type": "CIMMap", "name": "M", "layers": [ "CIMPATH=Layers/Raster.json" ] }
+                }
+                """),
+            ("Layers/Raster.json", """
+                { "type": "CIMRasterLayer", "name": "Ortho" }
+                """));
+        var warnings = new List<string>();
+        var reader = new AprxReader(aprx.Path, warn: warnings.Add);
+
+        var results = await reader.ReadMapsAsync();
+
+        Assert.Empty(results[0].Layers);
+        Assert.Contains(warnings, w => w.Contains("Ortho") && w.Contains("CIMRasterLayer"));
+    }
+
+    [Fact]
+    public async Task ReadMapsAsync_AnnotationLayer_IsResolved()
     {
         using var aprx = TempAprxFile.Create(
             ("GISProject.json", """
@@ -319,14 +347,15 @@ public class AprxReaderTests
                 }
                 """),
             ("Layers/Anno.json", """
-                { "type": "CIMAnnotationLayer", "name": "Anno" }
+                { "type": "CIMAnnotationLayer", "name": "FW-Text" }
                 """));
         var warnings = new List<string>();
         var reader = new AprxReader(aprx.Path, warn: warnings.Add);
 
         var results = await reader.ReadMapsAsync();
 
-        Assert.Empty(results[0].Layers);
+        var layer = Assert.IsType<CimAnnotationLayer>(Assert.Single(results[0].Layers));
+        Assert.Equal("FW-Text", layer.Name);
         Assert.Empty(warnings);
     }
 

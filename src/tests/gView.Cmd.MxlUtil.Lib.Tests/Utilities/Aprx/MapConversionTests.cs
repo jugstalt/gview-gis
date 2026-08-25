@@ -1,6 +1,7 @@
 using gView.Cmd.MxlUtil.Lib.Utilities.Aprx;
 using gView.Cmd.MxlUtil.Lib.Utilities.Aprx.Models;
 using gView.Framework.Cartography;
+using gView.Framework.Cartography.Rendering;
 using gView.Framework.Core.Carto;
 using gView.Framework.Data;
 
@@ -338,6 +339,35 @@ public class MapConversionTests
     }
 
     [Fact]
+    public void Convert_GroupLayer_ServiceLayerIdBecomesLayerId()
+    {
+        var converter = NewConverter(out _, out _);
+        var group = Cim.GroupLayer(name: "Strom", serviceLayerId: 12, children: [Cim.FeatureLayer(featureTable: Cim.FeatureTable())]);
+        var result = new AprxMapResult(Cim.Map(), [group]);
+
+        var map = converter.Convert(result);
+
+        var groupLayer = Assert.IsType<GroupLayer>(map.MapElements[0]);
+        Assert.Equal(12, groupLayer.ID);
+    }
+
+    [Fact]
+    public void Convert_NestedGroupLayer_ServiceLayerIdBecomesLayerId()
+    {
+        var converter = NewConverter(out _, out _);
+        var inner = Cim.GroupLayer(name: "Inner", serviceLayerId: 34, children: [Cim.FeatureLayer(featureTable: Cim.FeatureTable())]);
+        var outer = Cim.GroupLayer(name: "Outer", serviceLayerId: 12, children: [inner]);
+        var result = new AprxMapResult(Cim.Map(), [outer]);
+
+        var map = converter.Convert(result);
+
+        var outerLayer = Assert.IsType<GroupLayer>(map.MapElements[0]);
+        Assert.Equal(12, outerLayer.ID);
+        var innerLayer = Assert.IsType<GroupLayer>(outerLayer.ChildLayers[0]);
+        Assert.Equal(34, innerLayer.ID);
+    }
+
+    [Fact]
     public void Convert_NestedGroupLayers_AreFlattenedIntoMapElementsButKeepHierarchy()
     {
         var converter = NewConverter(out _, out _);
@@ -372,5 +402,168 @@ public class MapConversionTests
 
         Assert.Equal("First", map.TOC.GetTOCElement((FeatureLayer)map.MapElements[0])?.Name);
         Assert.Equal("Second", map.TOC.GetTOCElement((FeatureLayer)map.MapElements[1])?.Name);
+    }
+
+    [Fact]
+    public void Convert_UnsupportedLayerType_IsSkippedWithWarning()
+    {
+        // A layer type not in CimBaseLayer's [JsonDerivedType] list (e.g. CIMRasterLayer)
+        // deserializes down to the bare base type - AddLayer's switch doesn't have a case for
+        // it and must not just drop it silently.
+        var converter = NewConverter(out var warnings, out _);
+        var result = new AprxMapResult(Cim.Map(), [
+            new CimBaseLayer { Name = "Ortho" },
+            Cim.FeatureLayer(name: "Kept", featureTable: Cim.FeatureTable()),
+        ]);
+
+        var map = converter.Convert(result);
+
+        var layer = Assert.Single(map.MapElements);
+        Assert.Equal("Kept", map.TOC.GetTOCElement((FeatureLayer)layer)?.Name);
+        Assert.Contains(warnings, w => w.Contains("Ortho"));
+    }
+
+    // -----------------------------------------------------------------------
+    // Annotation layers
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public void Convert_AnnotationLayer_BecomesGroupWithOneSubLayerPerAnnotationClass()
+    {
+        // ArcGIS Pro/Server publish an annotation layer as a group named after the layer
+        // itself, with the actual rendering happening in a child layer per annotation class
+        // (e.g. "FW-Text" > "Standard") - not as one flat layer.
+        var converter = NewConverter(out var warnings, out _);
+        var cimLayer = new CimAnnotationLayer
+        {
+            Name = "FW-Text",
+            Visibility = true,
+            ServiceLayerId = 57,
+            FeatureTable = Cim.FeatureTable(dataset: "FW_A_ZUTEXT"),
+            SubLayers = [new CimAnnotationSubLayer { Name = "Standard", SubLayerId = "0", ServiceLayerId = 56 }]
+        };
+        var result = new AprxMapResult(Cim.Map(), [cimLayer]);
+
+        var map = converter.Convert(result);
+
+        var groupLayer = Assert.IsType<GroupLayer>(Assert.Single(map.MapElements, e => e is GroupLayer));
+        Assert.Equal("FW-Text", map.TOC.GetTOCElement(groupLayer)?.Name);
+        Assert.Equal(57, groupLayer.ID); // must match ArcGIS Server's published group layer ID, not just its child's
+
+        var layer = Assert.IsType<FeatureLayer>(Assert.Single(groupLayer.ChildLayers));
+        Assert.Equal("Standard", map.TOC.GetTOCElement(layer)?.Name);
+        Assert.Equal(56, layer.ID);
+        Assert.Null(layer.FeatureRenderer); // the (usually invisible) annotation geometry itself is never drawn
+        Assert.Equal("AnnotationClassID = 0", layer.FilterQuery?.WhereClause);
+
+        var renderer = Assert.IsType<SimpleLabelRenderer>(layer.LabelRenderer);
+        Assert.Equal("TextString", renderer.FieldName);
+        Assert.False(renderer.UseExpression);
+        Assert.Equal(RenderLabelPriority.Always, renderer.LabelPriority);
+        Assert.Equal("Angle", renderer.SymbolRotation.RotationFieldName);
+        Assert.NotNull(renderer.TextSymbol);
+        Assert.Empty(warnings);
+    }
+
+    [Fact]
+    public void Convert_AnnotationLayer_MultipleSubLayers_EachGetsOwnFilteredChildLayer()
+    {
+        var converter = NewConverter(out _, out _);
+        var cimLayer = new CimAnnotationLayer
+        {
+            Name = "FW-Text",
+            SubLayers =
+            [
+                new CimAnnotationSubLayer { Name = "Standard", SubLayerId = "0", ServiceLayerId = 56 },
+                new CimAnnotationSubLayer { Name = "Klein", SubLayerId = "1", ServiceLayerId = 58 },
+            ]
+        };
+        var result = new AprxMapResult(Cim.Map(), [cimLayer]);
+
+        var map = converter.Convert(result);
+
+        var groupLayer = Assert.IsType<GroupLayer>(Assert.Single(map.MapElements, e => e is GroupLayer));
+        Assert.Equal(2, groupLayer.ChildLayers.Count);
+
+        var standard = Assert.IsType<FeatureLayer>(groupLayer.ChildLayers[0]);
+        Assert.Equal("AnnotationClassID = 0", standard.FilterQuery?.WhereClause);
+
+        var klein = Assert.IsType<FeatureLayer>(groupLayer.ChildLayers[1]);
+        Assert.Equal("AnnotationClassID = 1", klein.FilterQuery?.WhereClause);
+    }
+
+    [Fact]
+    public void Convert_AnnotationLayer_DefinitionExpression_CombinedWithAnnotationClassFilter()
+    {
+        var converter = NewConverter(out _, out _);
+        var cimLayer = new CimAnnotationLayer
+        {
+            Name = "FW-Text",
+            FeatureTable = Cim.FeatureTable(definitionExpression: "Status = 1"),
+            SubLayers = [new CimAnnotationSubLayer { Name = "Standard", SubLayerId = "0", ServiceLayerId = 56 }]
+        };
+        var result = new AprxMapResult(Cim.Map(), [cimLayer]);
+
+        var map = converter.Convert(result);
+
+        var groupLayer = Assert.IsType<GroupLayer>(Assert.Single(map.MapElements, e => e is GroupLayer));
+        var layer = Assert.IsType<FeatureLayer>(Assert.Single(groupLayer.ChildLayers));
+        Assert.Equal("Status = 1 AND AnnotationClassID = 0", layer.FilterQuery?.WhereClause);
+    }
+
+    [Fact]
+    public void Convert_AnnotationLayer_NoSubLayers_FallsBackToSingleChildLayerNoFilter()
+    {
+        var converter = NewConverter(out _, out _);
+        var cimLayer = new CimAnnotationLayer { Name = "FW-Text", SubLayers = null };
+        var result = new AprxMapResult(Cim.Map(), [cimLayer]);
+
+        var map = converter.Convert(result);
+
+        var groupLayer = Assert.IsType<GroupLayer>(Assert.Single(map.MapElements, e => e is GroupLayer));
+        var layer = Assert.IsType<FeatureLayer>(Assert.Single(groupLayer.ChildLayers));
+        Assert.Equal("FW-Text", map.TOC.GetTOCElement(layer)?.Name);
+        Assert.Null(layer.FilterQuery);
+    }
+
+    [Fact]
+    public void Convert_AnnotationLayer_SubLayerVisibilityIsCopied()
+    {
+        var converter = NewConverter(out _, out _);
+        var cimLayer = new CimAnnotationLayer
+        {
+            Name = "FW-Text",
+            SubLayers = [new CimAnnotationSubLayer { Name = "Standard", SubLayerId = "0", Visibility = false }]
+        };
+        var result = new AprxMapResult(Cim.Map(), [cimLayer]);
+
+        var map = converter.Convert(result);
+
+        var groupLayer = Assert.IsType<GroupLayer>(Assert.Single(map.MapElements, e => e is GroupLayer));
+        var layer = Assert.IsType<FeatureLayer>(Assert.Single(groupLayer.ChildLayers));
+        Assert.False(layer.Visible);
+    }
+
+    [Fact]
+    public void Convert_AnnotationLayer_InsideGroupLayer_NestsAnnotationGroupInsideParentGroup()
+    {
+        var converter = NewConverter(out _, out _);
+        var group = Cim.GroupLayer(name: "Beschriftung", children: [
+            new CimAnnotationLayer
+            {
+                Name = "FW-Text",
+                SubLayers = [new CimAnnotationSubLayer { Name = "Standard", SubLayerId = "0" }]
+            }
+        ]);
+        var result = new AprxMapResult(Cim.Map(), [group]);
+
+        var map = converter.Convert(result);
+
+        var parentGroup = Assert.IsType<GroupLayer>(map.MapElements[0]);
+        var annotationGroup = Assert.IsType<GroupLayer>(Assert.Single(parentGroup.ChildLayers));
+        Assert.Equal("FW-Text", map.TOC.GetTOCElement(annotationGroup)?.Name);
+
+        var child = Assert.IsType<FeatureLayer>(Assert.Single(annotationGroup.ChildLayers));
+        Assert.Equal("Standard", map.TOC.GetTOCElement(child)?.Name);
     }
 }
