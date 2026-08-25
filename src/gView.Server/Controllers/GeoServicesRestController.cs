@@ -699,7 +699,9 @@ public class GeoServicesRestController : BaseController
                             GeometryType = e.Class is IFeatureClass ?
                                 Interoperability.GeoServices.Rest.DTOs.JsonLayerDTO.ToGeometryType(geometryType).ToString() :
                                 null,
-                            LayerType = fc != null ? "Feature Layer" : "Group Layer"
+                            LayerType = fc != null
+                                ? (e is IFeatureLayer { GroupLayer.MapServerStyle: MapServerGrouplayerStyle.EsriAnnotationLayer } ? "Annotation SubLayer" : "Feature Layer")
+                                : (e is GroupLayer { MapServerStyle: MapServerGrouplayerStyle.EsriAnnotationLayer } ? "Annotation Layer" : "Group Layer")
                         };
                     }
 
@@ -1091,6 +1093,10 @@ public class GeoServicesRestController : BaseController
                 type = "Feature Layer";
                 childLayers = null;
             }
+            else if (groupLayer.MapServerStyle == MapServerGrouplayerStyle.EsriAnnotationLayer)
+            {
+                type = "Annotation Layer";
+            }
 
             var jsonGroupLayer = new JsonLayerDTO()
             {
@@ -1206,6 +1212,13 @@ public class GeoServicesRestController : BaseController
                 !(datasetElement.Class is IRasterCatalogClass)) // RasterCatalogClass is like a Featureclass (Features a rendert as Image, but you can query/filter them as Polygons with attributes...)
             {
                 type = "Raster Layer";
+            }
+            else if (datasetElement is ILayer annotationChildLayer &&
+                     annotationChildLayer.GroupLayer?.MapServerStyle == MapServerGrouplayerStyle.EsriAnnotationLayer)
+            {
+                // A child of a converted CIMAnnotationLayer group (see AprxMapConverter) -
+                // match ArcGIS Server's "Annotation SubLayer" instead of "Feature Layer".
+                type = "Annotation SubLayer";
             }
 
             JsonDrawingInfoDTO drawingInfo = null;
