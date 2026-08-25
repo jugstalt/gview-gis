@@ -211,8 +211,10 @@ internal class AprxReader
                         => await ReadJsonEntryAsync<CimGroupLayer>(archive, entryPath),
                     string t when t.Contains("CIMFeatureLayer", StringComparison.OrdinalIgnoreCase)
                         => await ReadJsonEntryAsync<CimFeatureLayer>(archive, entryPath),
+                    string t when t.Contains("CIMAnnotationLayer", StringComparison.OrdinalIgnoreCase)
+                        => await ReadJsonEntryAsync<CimAnnotationLayer>(archive, entryPath),
                     string t when !string.IsNullOrEmpty(t)
-                        => null,  // unsupported layer type (e.g. CIMAnnotationLayer) — skip silently
+                        => WarnUnsupportedLayer(layerDoc!.Name, t),  // e.g. CIMAnnotationLayer, CIMRasterLayer
                     _ => await ReadJsonEntryAsync<CimBaseLayer>(archive, entryPath)
                 };
                 if (directLayer != null)
@@ -247,6 +249,17 @@ internal class AprxReader
         }
 
         group.LayerDefinitions = await ResolveLayersAsync(archive, group.Layers, null);
+    }
+
+    /// <summary>
+    /// Reports a layer type the converter doesn't handle (e.g. CIMAnnotationLayer,
+    /// CIMRasterLayer) so it doesn't just silently vanish from the converted map, then returns
+    /// null so the caller skips it as before.
+    /// </summary>
+    private CimBaseLayer? WarnUnsupportedLayer(string? name, string type)
+    {
+        _warn?.Invoke($"Layer '{name ?? "?"}': unsupported layer type '{type}' - not included in the converted map.");
+        return null;
     }
 
     /// <summary>

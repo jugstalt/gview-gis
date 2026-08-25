@@ -11,6 +11,7 @@ namespace gView.Cmd.MxlUtil.Lib.Utilities.Aprx.Models;
     UnknownDerivedTypeHandling = JsonUnknownDerivedTypeHandling.FallBackToBaseType)]
 [JsonDerivedType(typeof(CimFeatureLayer), "CIMFeatureLayer")]
 [JsonDerivedType(typeof(CimGroupLayer), "CIMGroupLayer")]
+[JsonDerivedType(typeof(CimAnnotationLayer), "CIMAnnotationLayer")]
 internal class CimBaseLayer
 {
     [JsonPropertyName("name")]

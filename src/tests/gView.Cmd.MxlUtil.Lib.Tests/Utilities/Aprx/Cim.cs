@@ -89,12 +89,14 @@ internal static class Cim
         bool visibility = true,
         double minScale = 0,
         double maxScale = 0,
+        int serviceLayerId = 0,
         List<CimBaseLayer>? children = null) => new()
     {
         Name = name,
         Visibility = visibility,
         MinScale = minScale,
         MaxScale = maxScale,
+        ServiceLayerId = serviceLayerId,
         LayerDefinitions = children
     };
 

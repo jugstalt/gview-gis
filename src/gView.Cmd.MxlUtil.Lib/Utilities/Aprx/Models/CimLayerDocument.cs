@@ -11,6 +11,14 @@ internal class CimLayerDocument
     [JsonPropertyName("type")]
     public string? Type { get; set; }
 
+    /// <summary>
+    /// Only meaningful for the ArcGIS Pro 3.x layout, where each layer is stored as its own
+    /// standalone JSON file and this document *is* that layer (as opposed to the legacy
+    /// CIMLayerDocument wrapper, where the name lives on each entry in <see cref="LayerDefinitions"/>).
+    /// </summary>
+    [JsonPropertyName("name")]
+    public string? Name { get; set; }
+
     [JsonPropertyName("version")]
     public string? Version { get; set; }
 
