@@ -31,6 +31,9 @@ internal class AprxMapConverter
     // CimLabelClass carries placement properties for both engines regardless of which one is
     // actually active, so ConvertLabelRenderer needs to know which block to read.
     private bool _useMaplexLabelEngine = true;
+    // Counts down from -1 to hand out a distinct placeholder ID for every layer whose CIM
+    // serviceLayerID is unresolved (-1) - see ResolveServiceLayerId.
+    private int _nextPlaceholderLayerId = -1;
 
     /// <param name="warn">Optional callback invoked for non-fatal conversion warnings.</param>
     /// <param name="info">Optional callback invoked for informational conversion notices (e.g. a label expression that was successfully translated).</param>
@@ -160,7 +163,72 @@ internal class AprxMapConverter
             AddLayer(map, cimLayer);
         }
 
+        ResolveUnassignedLayerIds(map);
+
         return map;
+    }
+
+    /// <summary>
+    /// ArcGIS Pro sometimes never resolves a layer's service layer ID in the aprx itself
+    /// (serviceLayerID = -1) - observed for annotation sub-layers, whose real ID is assigned by
+    /// ArcGIS Server only at actual publish time and never written back into the project file.
+    /// Leaving -1 in the converted map would be wrong, so for every such layer: warn (the
+    /// number below is a best-effort guess, not a value that was actually in the aprx) and
+    /// assign the first free ID starting at its parent group's ID + 1 - matching how ArcGIS
+    /// Server lays a group's own children out immediately after it - while never reusing an ID
+    /// another layer (original or already-resolved-this-way) already has.
+    /// </summary>
+    /// <summary>
+    /// Returns <paramref name="cimServiceLayerId"/> unchanged when ArcGIS Pro actually resolved
+    /// it, otherwise a distinct placeholder (a unique negative number - never a real ID) that
+    /// <see cref="ResolveUnassignedLayerIds"/> replaces with a real one once every layer has
+    /// been added. Assigning the literal -1 to more than one layer must be avoided here: since
+    /// <see cref="Map.AddLayer(gView.Framework.Core.Data.ILayer)"/> already renumbers a layer
+    /// on the spot the moment its ID collides with one already in the map (Map.SetNewLayerID),
+    /// a second "-1" layer would immediately get silently reassigned via the framework's own
+    /// generic sequence *before* ResolveUnassignedLayerIds ever sees it - defeating the
+    /// parent-relative numbering below and making the outcome depend on unrelated add order.
+    /// </summary>
+    private int ResolveServiceLayerId(int cimServiceLayerId) =>
+        cimServiceLayerId >= 0 ? cimServiceLayerId : _nextPlaceholderLayerId--;
+
+    /// <summary>
+    /// ArcGIS Pro sometimes never resolves a layer's service layer ID in the aprx itself
+    /// (serviceLayerID = -1) - observed for annotation sub-layers, whose real ID is assigned by
+    /// ArcGIS Server only at actual publish time and never written back into the project file.
+    /// Leaving that in the converted map would be wrong, so for every such layer (recognizable
+    /// by the negative placeholder <see cref="ResolveServiceLayerId"/> gave it): warn (the
+    /// number below is a best-effort guess, not a value that was actually in the aprx) and
+    /// assign the first free ID starting at its parent group's ID + 1 - matching how ArcGIS
+    /// Server lays a group's own children out immediately after it - while never reusing an ID
+    /// another layer (original or already-resolved-this-way) already has.
+    /// </summary>
+    private void ResolveUnassignedLayerIds(Map map)
+    {
+        var usedIds = new HashSet<int>(map.MapElements.Where(e => e.ID >= 0).Select(e => e.ID));
+
+        foreach (var element in map.MapElements)
+        {
+            if (element.ID >= 0)
+            {
+                continue;
+            }
+
+            var layer = element as ILayer;
+            var parentId = layer?.GroupLayer?.ID ?? -1;
+            var candidate = parentId >= 0 ? parentId + 1 : 0;
+
+            while (usedIds.Contains(candidate))
+            {
+                candidate++;
+            }
+
+            var name = (layer != null ? map.TOC.GetTOCElement(layer)?.Name : null) ?? element.Title;
+            _warn?.Invoke($"Layer '{name}': the aprx never resolved a service layer ID for this layer (serviceLayerID = -1) - assigned {candidate} instead. Verify this against the actual published service.");
+
+            element.ID = candidate;
+            usedIds.Add(candidate);
+        }
     }
 
     // -----------------------------------------------------------------------
@@ -208,7 +276,7 @@ internal class AprxMapConverter
             MaximumLabelScale = cimGroup.MinScale
         };
 
-        groupLayer.ID = cimGroup.ServiceLayerId;
+        groupLayer.ID = ResolveServiceLayerId(cimGroup.ServiceLayerId);
 
         // Add the group to the map first so its TOC entry exists
         // before child layers are added (child AddLayer needs the parent TOC element).
@@ -244,7 +312,7 @@ internal class AprxMapConverter
                         MaximumLabelScale = cimGroup.MinScale
                     };
 
-                    childGroup.ID = cimGroup.ServiceLayerId;
+                    childGroup.ID = ResolveServiceLayerId(cimGroup.ServiceLayerId);
 
                     parentGroupLayer.Add(childGroup);
                     map.AddLayer(childGroup);
@@ -307,7 +375,7 @@ internal class AprxMapConverter
             MaximumLabelScale = cimGroup.MinScale
         };
 
-        groupLayer.ID = cimGroup.ServiceLayerId;
+        groupLayer.ID = ResolveServiceLayerId(cimGroup.ServiceLayerId);
 
         if (cimGroup.LayerDefinitions != null)
         {
@@ -355,7 +423,7 @@ internal class AprxMapConverter
             MaximumLabelScale = cimFeature.MinScale,
         };
 
-        layer.ID = cimFeature.ServiceLayerId;
+        layer.ID = ResolveServiceLayerId(cimFeature.ServiceLayerId);
 
         if (cimFeature.FeatureTable is not null)
         {
@@ -416,9 +484,14 @@ internal class AprxMapConverter
             MaximumScale = cimAnnotation.MinScale,
             MinimumLabelScale = cimAnnotation.MaxScale,
             MaximumLabelScale = cimAnnotation.MinScale,
+            // So the GeoServices REST interface reports this group's "type" as "Annotation
+            // Layer" (matching ArcGIS Server) instead of the default "Group Layer" - clients
+            // that specifically key off that string need it to keep working the same as
+            // against the original ArcGIS Server service. See GeoServicesRestController.JsonLayer.
+            MapServerStyle = MapServerGrouplayerStyle.EsriAnnotationLayer
         };
 
-        groupLayer.ID = cimAnnotation.ServiceLayerId;
+        groupLayer.ID = ResolveServiceLayerId(cimAnnotation.ServiceLayerId);
 
         parentGroupLayer?.Add(groupLayer);
         // Add the group to the map before its children - AddLayer's child logic below needs
@@ -483,7 +556,7 @@ internal class AprxMapConverter
             MaximumLabelScale = cimAnnotation.MinScale,
         };
 
-        layer.ID = subLayer.ServiceLayerId;
+        layer.ID = ResolveServiceLayerId(subLayer.ServiceLayerId);
 
         // Combine the layer-level definition query (if any) with a filter restricting this
         // sub-layer to its own annotation class - otherwise, with more than one annotation

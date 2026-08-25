@@ -53,7 +53,16 @@ namespace gView.Framework.Core.Data
     public enum MapServerGrouplayerStyle
     {
         Dropdownable = 0,
-        Checkbox = 1
+        Checkbox = 1,
+        /// <summary>
+        /// ArcGIS Server publishes an annotation layer as a group named after the layer, with
+        /// one child layer per annotation class (e.g. "FW-Text" > "Standard") - the group
+        /// itself reports as type "Annotation Layer" over the GeoServices REST interface, not
+        /// "Group Layer". Used by AprxMapConverter's CIMAnnotationLayer conversion so clients
+        /// that specifically expect that type string (e.g. external WebGIS integrations) keep
+        /// working the same as against the original ArcGIS Server service.
+        /// </summary>
+        EsriAnnotationLayer = 2
     }
 
     public enum InterpolationMethod

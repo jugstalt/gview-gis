@@ -3,6 +3,7 @@ using gView.Cmd.MxlUtil.Lib.Utilities.Aprx.Models;
 using gView.Framework.Cartography;
 using gView.Framework.Cartography.Rendering;
 using gView.Framework.Core.Carto;
+using gView.Framework.Core.Data;
 using gView.Framework.Data;
 
 namespace gView.Cmd.MxlUtil.Lib.Tests.Utilities.Aprx;
@@ -449,6 +450,9 @@ public class MapConversionTests
         var groupLayer = Assert.IsType<GroupLayer>(Assert.Single(map.MapElements, e => e is GroupLayer));
         Assert.Equal("FW-Text", map.TOC.GetTOCElement(groupLayer)?.Name);
         Assert.Equal(57, groupLayer.ID); // must match ArcGIS Server's published group layer ID, not just its child's
+        // GeoServicesRestController.JsonLayer reports this group's "type" as "Annotation Layer"
+        // (matching ArcGIS Server) instead of "Group Layer" based on this flag.
+        Assert.Equal(MapServerGrouplayerStyle.EsriAnnotationLayer, groupLayer.MapServerStyle);
 
         var layer = Assert.IsType<FeatureLayer>(Assert.Single(groupLayer.ChildLayers));
         Assert.Equal("Standard", map.TOC.GetTOCElement(layer)?.Name);
@@ -542,6 +546,91 @@ public class MapConversionTests
         var groupLayer = Assert.IsType<GroupLayer>(Assert.Single(map.MapElements, e => e is GroupLayer));
         var layer = Assert.IsType<FeatureLayer>(Assert.Single(groupLayer.ChildLayers));
         Assert.False(layer.Visible);
+    }
+
+    // -----------------------------------------------------------------------
+    // Unassigned service layer IDs (aprx serviceLayerID = -1)
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public void Convert_AnnotationSubLayer_UnassignedServiceLayerId_ResolvesToParentIdPlusOne()
+    {
+        // Real-world case: ArcGIS Pro never resolved "Standard"'s serviceLayerID in the aprx
+        // (left at -1) - the actual published service assigns it group.ID + 1.
+        var converter = NewConverter(out var warnings, out _);
+        var cimLayer = new CimAnnotationLayer
+        {
+            Name = "FG-Text",
+            ServiceLayerId = 0,
+            SubLayers = [new CimAnnotationSubLayer { Name = "Standard", SubLayerId = "0", ServiceLayerId = -1 }]
+        };
+        var result = new AprxMapResult(Cim.Map(), [cimLayer]);
+
+        var map = converter.Convert(result);
+
+        var groupLayer = Assert.IsType<GroupLayer>(Assert.Single(map.MapElements, e => e is GroupLayer));
+        Assert.Equal(0, groupLayer.ID);
+        var layer = Assert.IsType<FeatureLayer>(Assert.Single(groupLayer.ChildLayers));
+        Assert.Equal(1, layer.ID);
+        Assert.Contains(warnings, w => w.Contains("Standard") && w.Contains("-1"));
+    }
+
+    [Fact]
+    public void Convert_UnassignedServiceLayerId_SkipsIdAlreadyUsedByAnotherLayer()
+    {
+        // group.ID + 1 (1) is already taken by an unrelated layer elsewhere in the map, so the
+        // unassigned sub-layer must skip ahead to the next free one (2), not collide with it.
+        var converter = NewConverter(out _, out _);
+        var cimLayer = new CimAnnotationLayer
+        {
+            Name = "FG-Text",
+            ServiceLayerId = 0,
+            SubLayers = [new CimAnnotationSubLayer { Name = "Standard", SubLayerId = "0", ServiceLayerId = -1 }]
+        };
+        var otherLayer = Cim.FeatureLayer(name: "Other", serviceLayerId: 1, featureTable: Cim.FeatureTable());
+        var result = new AprxMapResult(Cim.Map(), [cimLayer, otherLayer]);
+
+        var map = converter.Convert(result);
+
+        var groupLayer = Assert.IsType<GroupLayer>(Assert.Single(map.MapElements, e => e is GroupLayer));
+        var layer = Assert.IsType<FeatureLayer>(Assert.Single(groupLayer.ChildLayers));
+        Assert.Equal(2, layer.ID);
+    }
+
+    [Fact]
+    public void Convert_MultipleUnassignedServiceLayerIds_DoNotCollideWithEachOther()
+    {
+        var converter = NewConverter(out _, out _);
+        var cimLayer = new CimAnnotationLayer
+        {
+            Name = "FG-Text",
+            ServiceLayerId = 0,
+            SubLayers =
+            [
+                new CimAnnotationSubLayer { Name = "Standard", SubLayerId = "0", ServiceLayerId = -1 },
+                new CimAnnotationSubLayer { Name = "Klein", SubLayerId = "1", ServiceLayerId = -1 },
+            ]
+        };
+        var result = new AprxMapResult(Cim.Map(), [cimLayer]);
+
+        var map = converter.Convert(result);
+
+        var groupLayer = Assert.IsType<GroupLayer>(Assert.Single(map.MapElements, e => e is GroupLayer));
+        Assert.Equal(2, groupLayer.ChildLayers.Count);
+        var ids = groupLayer.ChildLayers.Select(l => l.ID).ToArray();
+        Assert.Equal([1, 2], ids);
+    }
+
+    [Fact]
+    public void Convert_NoUnassignedServiceLayerIds_NoWarningEmitted()
+    {
+        var converter = NewConverter(out var warnings, out _);
+        var cimLayer = Cim.FeatureLayer(name: "Strommast", serviceLayerId: 5, featureTable: Cim.FeatureTable());
+        var result = new AprxMapResult(Cim.Map(), [cimLayer]);
+
+        converter.Convert(result);
+
+        Assert.Empty(warnings);
     }
 
     [Fact]
