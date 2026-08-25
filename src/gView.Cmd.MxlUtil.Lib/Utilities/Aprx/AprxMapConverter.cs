@@ -45,24 +45,37 @@ internal class AprxMapConverter
         _datasetOptions = datasetPlugin;
     }
 
-    private IFeatureClass CreateFeatureClassFromPlugin(string rawFcName)
+    private IFeatureClass CreateFeatureClassFromPlugin(string rawFcName, string? workspaceConnectionString)
     {
         // --- 0. Parse "dbname.schema.tablename" ---
         // SDE names can be: tablename | schema.tablename | dbname.schema.tablename
         // gView does not use the dbname part in element names.
         var parts = rawFcName.Split('.');
-        string dbName = parts.Length >= 3 ? parts[0] : string.Empty;
+        string dbNameFromFcName = parts.Length >= 3 ? parts[0] : string.Empty;
         // gView name: strip the leading dbname if present
         string gviewName = parts.Length >= 3
             ? string.Join(".", parts.Skip(1))   // schema.tablename
             : rawFcName;
 
-        // --- Build effective connection string (substitute {dbname} if present) ---
-        string effectiveCs = _datasetOptions!.ConnectionString;
-        if (!string.IsNullOrEmpty(dbName) && effectiveCs.Contains("{dbname}", StringComparison.OrdinalIgnoreCase))
+        // --- Build effective connection string ---
+        // Placeholders in --connection-string are resolved from this *layer's own* aprx
+        // workspace connection properties (SERVER, INSTANCE, DATABASE, DBCLIENT, USER, ...) -
+        // not every layer in an aprx necessarily comes from the same database/server, so this
+        // is done per layer rather than once globally. "{dbname}" is a legacy alias: it prefers
+        // the database name embedded in the qualified feature class name
+        // ("dbname.schema.table" - historically the only source of it) but falls back to the
+        // connection string's own DATABASE property, since not every aprx qualifies names that
+        // way.
+        var connectionProperties = ParseWorkspaceConnectionProperties(workspaceConnectionString);
+        var dbName = !string.IsNullOrEmpty(dbNameFromFcName)
+            ? dbNameFromFcName
+            : connectionProperties.GetValueOrDefault("DATABASE", string.Empty);
+        if (!string.IsNullOrEmpty(dbName))
         {
-            effectiveCs = effectiveCs.Replace("{dbname}", dbName, StringComparison.OrdinalIgnoreCase);
+            connectionProperties["dbname"] = dbName;
         }
+
+        string effectiveCs = ApplyConnectionStringPlaceholders(_datasetOptions!.ConnectionString, connectionProperties);
 
         // --- 1. Get or create a dataset for this effective connection string ---
         if (!_datasetPool.TryGetValue(effectiveCs, out var dataset))
@@ -103,6 +116,70 @@ internal class AprxMapConverter
         }
 
         return new UnknownFeatureClass(dataset, gviewName);
+    }
+
+    private static readonly System.Text.RegularExpressions.Regex _connectionStringPlaceholderPattern =
+        new(@"\{([A-Za-z0-9_]+)\}", System.Text.RegularExpressions.RegexOptions.Compiled);
+
+    // Placeholder names already warned about (so a typo in --connection-string, e.g. "{passwrd}",
+    // produces one warning total instead of one per layer that hits it).
+    private readonly HashSet<string> _warnedUnresolvedConnectionPlaceholders = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Parses an ArcGIS workspace connection string (e.g. "SERVER=host;DATABASE=db;USER=me;...")
+    /// into a case-insensitive key/value lookup. Returns an empty (but mutable) dictionary for
+    /// null/empty input.
+    /// </summary>
+    internal static Dictionary<string, string> ParseWorkspaceConnectionProperties(string? workspaceConnectionString)
+    {
+        var properties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        if (string.IsNullOrEmpty(workspaceConnectionString))
+        {
+            return properties;
+        }
+
+        foreach (var part in workspaceConnectionString.Split(';', StringSplitOptions.RemoveEmptyEntries))
+        {
+            var eq = part.IndexOf('=');
+            if (eq <= 0)
+            {
+                continue;
+            }
+
+            var key = part[..eq].Trim();
+            var value = part[(eq + 1)..].Trim();
+            if (key.Length > 0)
+            {
+                properties[key] = value;
+            }
+        }
+
+        return properties;
+    }
+
+    /// <summary>
+    /// Replaces every "{key}" placeholder in <paramref name="template"/> (--connection-string)
+    /// with the matching value from <paramref name="properties"/> - matched case-insensitively,
+    /// so "{server}"/"{Server}"/"{SERVER}" all resolve the same way. A placeholder with no
+    /// matching property (e.g. a typo, or a property this particular layer's aprx connection
+    /// simply doesn't have) is left as literal text and warned about once.
+    /// </summary>
+    internal string ApplyConnectionStringPlaceholders(string template, Dictionary<string, string> properties)
+    {
+        return _connectionStringPlaceholderPattern.Replace(template, m =>
+        {
+            var key = m.Groups[1].Value;
+            if (properties.TryGetValue(key, out var value))
+            {
+                return value;
+            }
+
+            if (_warnedUnresolvedConnectionPlaceholders.Add(key))
+            {
+                _warn?.Invoke($"--connection-string placeholder '{{{key}}}' has no matching value in the aprx's workspace connection - left as-is.");
+            }
+            return m.Value;
+        });
     }
 
     /// <summary>
@@ -400,7 +477,8 @@ internal class AprxMapConverter
         if (_datasetOptions != null)
         {
             featureClass = CreateFeatureClassFromPlugin(
-                cimFeature.FeatureTable?.DataConnection?.Dataset ?? string.Empty);
+                cimFeature.FeatureTable?.DataConnection?.Dataset ?? string.Empty,
+                cimFeature.FeatureTable?.DataConnection?.WorkspaceConnectionString);
         }
         else
         {
@@ -533,7 +611,8 @@ internal class AprxMapConverter
         if (_datasetOptions != null)
         {
             featureClass = CreateFeatureClassFromPlugin(
-                cimAnnotation.FeatureTable?.DataConnection?.Dataset ?? string.Empty);
+                cimAnnotation.FeatureTable?.DataConnection?.Dataset ?? string.Empty,
+                cimAnnotation.FeatureTable?.DataConnection?.WorkspaceConnectionString);
         }
         else
         {

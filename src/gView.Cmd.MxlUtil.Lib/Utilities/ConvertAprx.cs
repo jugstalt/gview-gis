@@ -34,7 +34,16 @@ internal class ConvertAprx : IMxlUtility
             -silent <If true, only the input file, errors, and the final result are printed (default: false)>
             
             -dataset <Plugin GUID of the dataset to use for all imported feature classes (optional). When omitted, an UnknownFeatureDataset is used.>
-            -dataset-connectionstring <Connection string for the dataset plugin specified by 'dataset' (optional).>
+            -dataset-connectionstring <Connection string for the dataset plugin specified by 'dataset' (optional).
+                May contain "{key}" placeholders (case-insensitive) resolved per layer from that
+                layer's own workspace connection string in the aprx - e.g. "{server}", "{instance}",
+                "{database}", "{dbclient}", "{user}", "{version}", "{authentication_mode}" for a
+                typical SDE connection. "{dbname}" is a legacy alias for the database name (from
+                the qualified feature class name "dbname.schema.table" when present, otherwise the
+                connection string's own DATABASE value). Useful since not every layer in an aprx
+                necessarily comes from the same database/server - each gets its own resolved
+                connection string.
+                Example: "SERVER={server};DATABASE={database};USER=svc;PASSWORD=secret">
             """;
     }
 
