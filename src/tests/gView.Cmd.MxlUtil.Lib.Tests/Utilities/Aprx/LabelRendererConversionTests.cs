@@ -460,6 +460,65 @@ public class LabelRendererConversionTests
         Assert.Null(renderer.TextSymbol!.SecondaryTextSymbolAlignments);
     }
 
+    [Fact]
+    public void PointPlacement_RotationField_SetsSymbolRotationOnRenderer()
+    {
+        // Real-world case (NS-Leitung-Text): point features pre-placed along a line network,
+        // each carrying its own label angle in a "ROTATION" field, instead of ArcGIS Pro trying
+        // fixed placement zones. Without this, every converted label rendered flat/horizontal.
+        var (layer, _, _) = ConvertLabeledLayer(
+            Cim.LabelClass(
+                expression: "[NAME]",
+                standardLabelPlacementProperties: Cim.StandardLabelPlacementProperties(
+                    pointPlacementMethod: "RotationField",
+                    rotationField: "ROTATION",
+                    rotationType: "Arithmetic")),
+            renderer: PointRenderer(),
+            map: Cim.Map(generalPlacementProperties: Cim.GeneralPlacementProperties(maplex: false)));
+
+        var renderer = Assert.IsType<SimpleLabelRenderer>(layer.LabelRenderer);
+        Assert.Equal("ROTATION", renderer.SymbolRotation.RotationFieldName);
+        Assert.Equal(RotationType.ArithmeticMinus90, renderer.SymbolRotation.RotationType);
+        // No zone-based alignment - RotationField replaces it, doesn't combine with it.
+        Assert.Equal(TextSymbolAlignment.Center, renderer.TextSymbol!.TextSymbolAlignment);
+        Assert.Null(renderer.TextSymbol!.SecondaryTextSymbolAlignments);
+    }
+
+    [Fact]
+    public void PointPlacement_RotationField_GeographicType_MapsToGeographicPlus90()
+    {
+        var (layer, _, _) = ConvertLabeledLayer(
+            Cim.LabelClass(
+                expression: "[NAME]",
+                standardLabelPlacementProperties: Cim.StandardLabelPlacementProperties(
+                    pointPlacementMethod: "RotationField",
+                    rotationField: "ROTATION",
+                    rotationType: "Geographic")),
+            renderer: PointRenderer(),
+            map: Cim.Map(generalPlacementProperties: Cim.GeneralPlacementProperties(maplex: false)));
+
+        var renderer = Assert.IsType<SimpleLabelRenderer>(layer.LabelRenderer);
+        Assert.Equal(RotationType.GeographicPlus90, renderer.SymbolRotation.RotationType);
+    }
+
+    [Fact]
+    public void PointPlacement_RotationField_MapUsesMaplex_IsIgnored()
+    {
+        // Standard engine only (see ApplyLineLabelPlacement for the same scoping on line
+        // labels) - Maplex has no equivalent modelled here.
+        var (layer, _, _) = ConvertLabeledLayer(
+            Cim.LabelClass(
+                expression: "[NAME]",
+                standardLabelPlacementProperties: Cim.StandardLabelPlacementProperties(
+                    pointPlacementMethod: "RotationField",
+                    rotationField: "ROTATION")),
+            renderer: PointRenderer(),
+            map: Cim.Map(generalPlacementProperties: Cim.GeneralPlacementProperties(maplex: true)));
+
+        var renderer = Assert.IsType<SimpleLabelRenderer>(layer.LabelRenderer);
+        Assert.Equal("", renderer.SymbolRotation.RotationFieldName);
+    }
+
     // -----------------------------------------------------------------------
     // Line label placement (above/on/below the line -> TextSymbolAlignment Over/Center/Under)
     // -----------------------------------------------------------------------

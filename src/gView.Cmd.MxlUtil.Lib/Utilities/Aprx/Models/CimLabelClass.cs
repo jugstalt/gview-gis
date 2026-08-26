@@ -75,6 +75,16 @@ internal class CimStandardLabelPlacementProperties
     [JsonPropertyName("pointPlacementPriorities")]
     public CimPointZonePriorities? PointPlacementPriorities { get; set; }
 
+    /// <summary>Field carrying each feature's own rotation angle. Only meaningful when
+    /// <see cref="PointPlacementMethod"/> is "RotationField".</summary>
+    [JsonPropertyName("rotationField")]
+    public string? RotationField { get; set; }
+
+    /// <summary>Angle convention of <see cref="RotationField"/>'s values - "Arithmetic" or
+    /// "Geographic".</summary>
+    [JsonPropertyName("rotationType")]
+    public string? RotationType { get; set; }
+
     /// <summary>Which side(s) of a line a label may be placed on.</summary>
     [JsonPropertyName("lineLabelPosition")]
     public CimStandardLineLabelPosition? LineLabelPosition { get; set; }

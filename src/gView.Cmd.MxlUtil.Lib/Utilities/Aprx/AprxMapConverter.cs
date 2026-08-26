@@ -920,20 +920,26 @@ internal class AprxMapConverter
 
         var fieldName = match.Groups[1].Value;
 
-        var rotType = rotVar.RotationTypeZ switch
-        {
-            "Arithmetic" => RotationType.ArithmeticMinus90,
-            "Geographic" => RotationType.GeographicPlus90,
-            _ => RotationType.ArithmeticMinus90   // default / unknown
-        };
-
         renderer.SymbolRotation = new SymbolRotation
         {
             RotationFieldName = fieldName,
-            RotationType = rotType,
+            RotationType = MapCimRotationType(rotVar.RotationTypeZ),
             RotationUnit = RotationUnit.deg
         };
     }
+
+    /// <summary>
+    /// Maps a CIM rotation-angle convention ("Arithmetic" or "Geographic") to gView's
+    /// <see cref="RotationType"/>, shared by every place a CIM rotation field feeds a
+    /// <see cref="SymbolRotation"/> (renderer rotation visual variables, label point-placement
+    /// rotation fields, ...).
+    /// </summary>
+    private static RotationType MapCimRotationType(string? cimRotationType) => cimRotationType switch
+    {
+        "Arithmetic" => RotationType.ArithmeticMinus90,
+        "Geographic" => RotationType.GeographicPlus90,
+        _ => RotationType.ArithmeticMinus90   // default / unknown
+    };
 
     // -----------------------------------------------------------------------
     // Label renderer conversion
@@ -1044,6 +1050,21 @@ internal class AprxMapConverter
                         renderer.TextSymbol.TextSymbolAlignment = alignments[0];
                         renderer.TextSymbol.SecondaryTextSymbolAlignments = alignments;
                     }
+                }
+                // "RotationField": each feature carries its own label angle in a field, instead
+                // of ArcGIS Pro trying fixed placement zones - e.g. point features pre-placed
+                // along a line network to stand in for a rotated line label. Standard engine
+                // only: Maplex has no equivalent modelled here (see ApplyLineLabelPlacement).
+                else if (!_useMaplexLabelEngine &&
+                    string.Equals(placementMethod, "RotationField", StringComparison.OrdinalIgnoreCase) &&
+                    !string.IsNullOrWhiteSpace(cimLabel.StandardLabelPlacementProperties?.RotationField))
+                {
+                    renderer.SymbolRotation = new SymbolRotation
+                    {
+                        RotationFieldName = cimLabel.StandardLabelPlacementProperties.RotationField,
+                        RotationType = MapCimRotationType(cimLabel.StandardLabelPlacementProperties.RotationType),
+                        RotationUnit = RotationUnit.deg
+                    };
                 }
 
                 break;

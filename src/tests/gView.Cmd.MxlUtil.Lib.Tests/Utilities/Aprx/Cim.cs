@@ -142,12 +142,16 @@ internal static class Cim
         string? numLabelsOption = null,
         string? pointPlacementMethod = "AroundPoint",
         CimPointZonePriorities? pointPlacementPriorities = null,
-        CimStandardLineLabelPosition? lineLabelPosition = null) => new()
+        CimStandardLineLabelPosition? lineLabelPosition = null,
+        string? rotationField = null,
+        string? rotationType = null) => new()
     {
         NumLabelsOption = numLabelsOption,
         PointPlacementMethod = pointPlacementMethod,
         PointPlacementPriorities = pointPlacementPriorities,
-        LineLabelPosition = lineLabelPosition
+        LineLabelPosition = lineLabelPosition,
+        RotationField = rotationField,
+        RotationType = rotationType
     };
 
     public static CimStandardLineLabelPosition LineLabelPosition(
