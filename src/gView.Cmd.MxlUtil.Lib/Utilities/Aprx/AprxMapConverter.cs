@@ -505,6 +505,13 @@ internal class AprxMapConverter
             MaximumScale = cimFeature.MinScale,
             MinimumLabelScale = cimFeature.MaxScale,
             MaximumLabelScale = cimFeature.MinScale,
+            // ArcGIS Pro's "Scale symbols when a reference scale is set" checkbox - whether
+            // this layer's symbol/label sizes track the map's reference scale as it's zoomed,
+            // or always render at a constant screen size. gView's FeatureLayer defaults both
+            // of these to true regardless of the aprx, so without this every layer would scale
+            // with the reference scale even where ArcGIS Pro has that turned off.
+            ApplyRefScale = cimFeature.ScaleSymbols,
+            ApplyLabelRefScale = cimFeature.ScaleSymbols,
         };
 
         layer.ID = ResolveServiceLayerId(cimFeature.ServiceLayerId);
@@ -640,6 +647,10 @@ internal class AprxMapConverter
             MaximumScale = cimAnnotation.MinScale,
             MinimumLabelScale = cimAnnotation.MaxScale,
             MaximumLabelScale = cimAnnotation.MinScale,
+            // See CreateFeatureLayer - same "scale symbols/labels with reference scale" flag,
+            // just read from the annotation layer since sub-layers don't carry their own copy.
+            ApplyRefScale = cimAnnotation.ScaleSymbols,
+            ApplyLabelRefScale = cimAnnotation.ScaleSymbols,
         };
 
         layer.ID = ResolveServiceLayerId(subLayer.ServiceLayerId);

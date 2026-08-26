@@ -43,4 +43,14 @@ internal class CimFeatureLayer : CimBaseLayer
     /// </summary>
     [JsonPropertyName("transparency")]
     public double Transparency { get; set; }
+
+    /// <summary>
+    /// Whether this layer's symbols and labels scale with the map's reference scale - ArcGIS
+    /// Pro's Layer Properties -> General -> "Scale symbols when a reference scale is set"
+    /// checkbox. True (the CIM default) - symbols/labels keep a constant real-world size as the
+    /// map is zoomed relative to the reference scale (classic cartographic behaviour). False -
+    /// symbols/labels always render at a constant screen size, ignoring the reference scale.
+    /// </summary>
+    [JsonPropertyName("scaleSymbols")]
+    public bool ScaleSymbols { get; set; } = true;
 }

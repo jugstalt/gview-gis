@@ -56,7 +56,8 @@ internal static class Cim
         CimRenderer? renderer = null,
         bool labelVisibility = false,
         List<CimLabelClass>? labelClasses = null,
-        double transparency = 0) => new()
+        double transparency = 0,
+        bool scaleSymbols = true) => new()
     {
         Name = name,
         Visibility = visibility,
@@ -68,7 +69,8 @@ internal static class Cim
         Renderer = renderer,
         LabelVisibility = labelVisibility,
         LabelClasses = labelClasses,
-        Transparency = transparency
+        Transparency = transparency,
+        ScaleSymbols = scaleSymbols
     };
 
     public static CimFeatureTable FeatureTable(

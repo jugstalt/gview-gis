@@ -32,6 +32,14 @@ internal class CimAnnotationLayer : CimBaseLayer
     public double Transparency { get; set; }
 
     /// <summary>
+    /// Whether this layer's labels scale with the map's reference scale - ArcGIS Pro's Layer
+    /// Properties -> General -> "Scale symbols when a reference scale is set" checkbox. See
+    /// <see cref="CimFeatureLayer.ScaleSymbols"/> for the full explanation.
+    /// </summary>
+    [JsonPropertyName("scaleSymbols")]
+    public bool ScaleSymbols { get; set; } = true;
+
+    /// <summary>
     /// One entry per annotation class ("Standard" unless the author defined more in ArcGIS
     /// Pro). ArcGIS Server/Pro publish each of these as its own child layer nested under a
     /// group named after the annotation layer itself - not as one flat layer - so the

@@ -245,6 +245,27 @@ public class MapConversionTests
         Assert.Equal(42, layer.ID);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Convert_FeatureLayer_ScaleSymbolsBecomesApplyRefScale(bool scaleSymbols)
+    {
+        // ArcGIS Pro's per-layer "Scale symbols when a reference scale is set" checkbox
+        // (scaleSymbols in the CIM) must carry over 1:1 - gView's FeatureLayer otherwise
+        // defaults ApplyRefScale/ApplyLabelRefScale to true regardless of the aprx, which would
+        // make every converted layer scale with the reference scale even where ArcGIS Pro has
+        // that switched off for some layers and on for others.
+        var converter = NewConverter(out _, out _);
+        var cimLayer = Cim.FeatureLayer(featureTable: Cim.FeatureTable(), scaleSymbols: scaleSymbols);
+        var result = new AprxMapResult(Cim.Map(), [cimLayer]);
+
+        var map = converter.Convert(result);
+
+        var layer = (FeatureLayer)map.MapElements[0];
+        Assert.Equal(scaleSymbols, layer.ApplyRefScale);
+        Assert.Equal(scaleSymbols, layer.ApplyLabelRefScale);
+    }
+
     [Fact]
     public void Convert_FeatureLayer_TitleComesFromDataConnectionDataset()
     {
