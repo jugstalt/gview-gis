@@ -44,7 +44,8 @@ public class UnknownFeatureDataset : IFeatureDataset
 
     public Task<List<IDatasetElement>> Elements()
     {
-        throw new NotImplementedException();
+        //throw new NotImplementedException();
+        return Task.FromResult<List<IDatasetElement>>([]);
     }
 
     public Task<IEnvelope> Envelope()
