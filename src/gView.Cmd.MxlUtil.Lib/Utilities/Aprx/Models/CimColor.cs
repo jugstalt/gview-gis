@@ -100,29 +100,75 @@ internal sealed class CimColorConverter : JsonConverter<CimColor>
     private static CimCmykColor ReadCmyk(JsonElement root)
     {
         var color = new CimCmykColor();
-        if (root.TryGetProperty("c", out var c)) color.C = c.GetDouble();
-        if (root.TryGetProperty("m", out var m)) color.M = m.GetDouble();
-        if (root.TryGetProperty("y", out var y)) color.Y = y.GetDouble();
-        if (root.TryGetProperty("k", out var k)) color.K = k.GetDouble();
-        ReadAlpha(root, color);
+
+        // ArcGIS Pro stores CMYK as a "values" array too: [C, M, Y, K, Alpha] - same convention
+        // as RGB, just one more component. Real-world aprx exports use this far more often than
+        // the named-property form below.
+        if (root.TryGetProperty("values", out var arr) && arr.ValueKind == JsonValueKind.Array)
+        {
+            var vals = arr.EnumerateArray().Select(v => v.GetDouble()).ToArray();
+            if (vals.Length >= 1) color.C = vals[0];
+            if (vals.Length >= 2) color.M = vals[1];
+            if (vals.Length >= 3) color.Y = vals[2];
+            if (vals.Length >= 4) color.K = vals[3];
+            if (vals.Length >= 5) color.Alpha = vals[4];
+        }
+        else
+        {
+            if (root.TryGetProperty("c", out var c)) color.C = c.GetDouble();
+            if (root.TryGetProperty("m", out var m)) color.M = m.GetDouble();
+            if (root.TryGetProperty("y", out var y)) color.Y = y.GetDouble();
+            if (root.TryGetProperty("k", out var k)) color.K = k.GetDouble();
+            ReadAlpha(root, color);
+        }
+
         return color;
     }
 
     private static CimGrayColor ReadGray(JsonElement root)
     {
         var color = new CimGrayColor();
-        if (root.TryGetProperty("level", out var l)) color.Level = l.GetDouble();
-        ReadAlpha(root, color);
+
+        // ArcGIS Pro stores Gray as a "values" array too: [Level, Alpha].
+        if (root.TryGetProperty("values", out var arr) && arr.ValueKind == JsonValueKind.Array)
+        {
+            var vals = arr.EnumerateArray().Select(v => v.GetDouble()).ToArray();
+            if (vals.Length >= 1) color.Level = vals[0];
+            if (vals.Length >= 2) color.Alpha = vals[1];
+        }
+        else
+        {
+            if (root.TryGetProperty("level", out var l)) color.Level = l.GetDouble();
+            ReadAlpha(root, color);
+        }
+
         return color;
     }
 
     private static CimHsvColor ReadHsv(JsonElement root)
     {
         var color = new CimHsvColor();
-        if (root.TryGetProperty("h", out var h)) color.H = h.GetDouble();
-        if (root.TryGetProperty("s", out var s)) color.S = s.GetDouble();
-        if (root.TryGetProperty("v", out var v)) color.V = v.GetDouble();
-        ReadAlpha(root, color);
+
+        // ArcGIS Pro stores HSV as a "values" array: [H, S, V, Alpha] - this is actually the
+        // form real aprx exports use (confirmed against a live project); the named-property
+        // form below was, until now, the *only* one this converter understood, so every HSV
+        // color silently came out as H=S=V=0 (black).
+        if (root.TryGetProperty("values", out var arr) && arr.ValueKind == JsonValueKind.Array)
+        {
+            var vals = arr.EnumerateArray().Select(v => v.GetDouble()).ToArray();
+            if (vals.Length >= 1) color.H = vals[0];
+            if (vals.Length >= 2) color.S = vals[1];
+            if (vals.Length >= 3) color.V = vals[2];
+            if (vals.Length >= 4) color.Alpha = vals[3];
+        }
+        else
+        {
+            if (root.TryGetProperty("h", out var h)) color.H = h.GetDouble();
+            if (root.TryGetProperty("s", out var s)) color.S = s.GetDouble();
+            if (root.TryGetProperty("v", out var v)) color.V = v.GetDouble();
+            ReadAlpha(root, color);
+        }
+
         return color;
     }
 
