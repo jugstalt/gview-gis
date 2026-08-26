@@ -205,6 +205,8 @@ public class Startup
                     {
                         config.Port = int.Parse(Configuration.Value("port"));
                     }
+
+                    config.PreloadServices = Configuration.Section("preload-services").Get<string[]>() ?? Array.Empty<string>();
                 }
                 else
                 {
@@ -242,6 +244,7 @@ public class Startup
 
         services.AddHostedService<TaskQueueDequeueService>();
         services.AddHostedService<TimedHostedBackgroundService>();
+        services.AddHostedService<PreloadServicesHostedService>();
 
         #endregion
 

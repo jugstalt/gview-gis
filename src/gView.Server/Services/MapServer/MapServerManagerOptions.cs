@@ -35,5 +35,9 @@ namespace gView.Server.Services.MapServer
 
         public ErrorMessageLevel CriticalErrorLevel { get; set; }
 
+        // Service names (with wildcards, e.g. "folder/*") that should be loaded into memory
+        // right after server startup, instead of waiting for the first request.
+        public string[] PreloadServices { get; set; }
+
     }
 }

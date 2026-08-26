@@ -30,7 +30,13 @@ Der gView Server kann über die Datei `_config/mapserver.json` konfiguriert werd
         // Whether clients are allowed to log in through the web interface
         "allowFormsLogin": true,
         // It can be assumed that all calls are made over HTTPS
-        "force-https":  false
+        "force-https":  false,
+
+        // Dienstnamen (Wildcards "*"/"?" erlaubt), die direkt nach dem Serverstart in den
+        // Speicher geladen werden sollen, statt erst beim ersten eingehenden Request.
+        // Das Laden erfolgt im Hintergrund und verzögert den Serverstart nicht.
+        // Beispiele: "*" (alle Dienste), "myfolder/*" (alle Dienste in einem Ordner), "myfolder/myservice"
+        "preload-services": [ "myfolder/*" ]
 ```
 
 [Weiter..](inst/installation.md)
