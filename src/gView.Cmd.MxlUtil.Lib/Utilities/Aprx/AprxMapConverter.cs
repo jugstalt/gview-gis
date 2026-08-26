@@ -550,6 +550,16 @@ internal class AprxMapConverter
             }
         }
 
+        // Selection highlight symbol - same CimSymbolReference shape as a simple renderer's
+        // own symbol, so it's wrapped in a SimpleRenderer the same way ConvertSimpleRenderer
+        // does. Without this, gView falls back to its own default selection color/symbol
+        // instead of the one authored in ArcGIS Pro.
+        var selectionSymbol = ConvertSymbolReference(cimFeature.SelectionSymbol);
+        if (selectionSymbol != null)
+        {
+            layer.SelectionRenderer = new SimpleRenderer { Symbol = selectionSymbol };
+        }
+
         // Label renderer
         if (cimFeature.LabelVisibility && cimFeature.LabelClasses?.Count > 0)
         {

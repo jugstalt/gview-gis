@@ -19,6 +19,13 @@ internal class CimFeatureLayer : CimBaseLayer
     [JsonPropertyName("renderer")]
     public CimRenderer? Renderer { get; set; }
 
+    /// <summary>
+    /// Symbol used to highlight selected features - a normal CIMSymbolReference, same shape as
+    /// e.g. a CIMSimpleRenderer's "symbol".
+    /// </summary>
+    [JsonPropertyName("selectionSymbol")]
+    public CimSymbolReference? SelectionSymbol { get; set; }
+
     [JsonPropertyName("labelClasses")]
     public List<CimLabelClass>? LabelClasses { get; set; }
 

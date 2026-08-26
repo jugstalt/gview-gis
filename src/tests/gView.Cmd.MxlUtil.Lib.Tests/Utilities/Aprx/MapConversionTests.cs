@@ -5,6 +5,7 @@ using gView.Framework.Cartography.Rendering;
 using gView.Framework.Core.Carto;
 using gView.Framework.Core.Data;
 using gView.Framework.Data;
+using gView.Framework.Symbology;
 
 namespace gView.Cmd.MxlUtil.Lib.Tests.Utilities.Aprx;
 
@@ -264,6 +265,40 @@ public class MapConversionTests
         var layer = (FeatureLayer)map.MapElements[0];
         Assert.Equal(scaleSymbols, layer.ApplyRefScale);
         Assert.Equal(scaleSymbols, layer.ApplyLabelRefScale);
+    }
+
+    [Fact]
+    public void Convert_FeatureLayer_SelectionSymbol_BecomesSelectionRenderer()
+    {
+        // Without this, gView falls back to its own default selection highlight instead of the
+        // one authored in ArcGIS Pro's Layer Properties -> Display -> "Selection color".
+        var converter = NewConverter(out _, out _);
+        var cimLayer = Cim.FeatureLayer(
+            featureTable: Cim.FeatureTable(),
+            selectionSymbol: Cim.SymbolRef(Cim.LineSymbol(Cim.SolidStroke(Cim.Rgb(0, 255, 255), width: 2))));
+        var result = new AprxMapResult(Cim.Map(), [cimLayer]);
+
+        var map = converter.Convert(result);
+
+        var layer = (FeatureLayer)map.MapElements[0];
+        var selectionRenderer = Assert.IsType<SimpleRenderer>(layer.SelectionRenderer);
+        var symbol = Assert.IsType<SimpleLineSymbol>(selectionRenderer.Symbol);
+        Assert.Equal(0, symbol.PenColor.R);
+        Assert.Equal(255, symbol.PenColor.G);
+        Assert.Equal(255, symbol.PenColor.B);
+    }
+
+    [Fact]
+    public void Convert_FeatureLayer_NoSelectionSymbol_LeavesSelectionRendererNull()
+    {
+        var converter = NewConverter(out _, out _);
+        var cimLayer = Cim.FeatureLayer(featureTable: Cim.FeatureTable());
+        var result = new AprxMapResult(Cim.Map(), [cimLayer]);
+
+        var map = converter.Convert(result);
+
+        var layer = (FeatureLayer)map.MapElements[0];
+        Assert.Null(layer.SelectionRenderer);
     }
 
     [Fact]

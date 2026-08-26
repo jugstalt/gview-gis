@@ -57,7 +57,8 @@ internal static class Cim
         bool labelVisibility = false,
         List<CimLabelClass>? labelClasses = null,
         double transparency = 0,
-        bool scaleSymbols = true) => new()
+        bool scaleSymbols = true,
+        CimSymbolReference? selectionSymbol = null) => new()
     {
         Name = name,
         Visibility = visibility,
@@ -70,7 +71,8 @@ internal static class Cim
         LabelVisibility = labelVisibility,
         LabelClasses = labelClasses,
         Transparency = transparency,
-        ScaleSymbols = scaleSymbols
+        ScaleSymbols = scaleSymbols,
+        SelectionSymbol = selectionSymbol
     };
 
     public static CimFeatureTable FeatureTable(
