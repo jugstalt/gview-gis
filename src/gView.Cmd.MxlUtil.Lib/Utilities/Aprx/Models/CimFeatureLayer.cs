@@ -35,4 +35,12 @@ internal class CimFeatureLayer : CimBaseLayer
 
     [JsonPropertyName("serviceLayerID")]
     public int ServiceLayerId { get; set; }
+
+    /// <summary>
+    /// Layer transparency, 0 (opaque, the default) - 100 (fully invisible). Set via ArcGIS
+    /// Pro's Layer Properties -> Display -> Transparency slider - independent of, and
+    /// multiplicative with, any transparency already baked into the layer's own symbol colors.
+    /// </summary>
+    [JsonPropertyName("transparency")]
+    public double Transparency { get; set; }
 }

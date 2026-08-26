@@ -190,7 +190,9 @@ public class LabelRendererConversionTests
         var renderer = Assert.IsType<SimpleLabelRenderer>(layer.LabelRenderer);
         var glow = Assert.IsType<GlowingTextSymbol>(renderer.TextSymbol);
         Assert.Equal(255, glow.GlowingColor.R);
-        Assert.Equal(2, glow.GlowingWidth); // Math.Round(1.5) -> 2 (banker's rounding to even)
+        // haloSize is in points; converted to pixels @96dpi (×96/72) before rounding:
+        // 1.5 * 96/72 = 2.0 -> 2.
+        Assert.Equal(2, glow.GlowingWidth);
     }
 
     [Fact]
@@ -199,7 +201,7 @@ public class LabelRendererConversionTests
         var (layer, _, _) = ConvertLabeledLayer(Cim.LabelClass(
             expression: "[NAME]",
             textSymbol: Cim.SymbolRef(Cim.TextSymbol(
-                textFillSymbol: Cim.SymbolRef(Cim.PolygonSymbol(Cim.SolidFill(Cim.Rgb(10, 20, 30))))))));
+                textFillSymbol: Cim.PolygonSymbol(Cim.SolidFill(Cim.Rgb(10, 20, 30)))))));
 
         var renderer = Assert.IsType<SimpleLabelRenderer>(layer.LabelRenderer);
         var simple = Assert.IsType<SimpleTextSymbol>(renderer.TextSymbol);

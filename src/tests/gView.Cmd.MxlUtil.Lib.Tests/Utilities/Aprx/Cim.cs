@@ -55,7 +55,8 @@ internal static class Cim
         CimFeatureTable? featureTable = null,
         CimRenderer? renderer = null,
         bool labelVisibility = false,
-        List<CimLabelClass>? labelClasses = null) => new()
+        List<CimLabelClass>? labelClasses = null,
+        double transparency = 0) => new()
     {
         Name = name,
         Visibility = visibility,
@@ -66,7 +67,8 @@ internal static class Cim
         FeatureTable = featureTable,
         Renderer = renderer,
         LabelVisibility = labelVisibility,
-        LabelClasses = labelClasses
+        LabelClasses = labelClasses,
+        Transparency = transparency
     };
 
     public static CimFeatureTable FeatureTable(
@@ -228,7 +230,7 @@ internal static class Cim
         double height = 10,
         string? fontFamilyName = null,
         string? fontStyleName = null,
-        CimSymbolReference? textFillSymbol = null,
+        CimSymbol? textFillSymbol = null,
         CimSymbol? haloSymbol = null,
         double haloSize = 0) => new()
     {

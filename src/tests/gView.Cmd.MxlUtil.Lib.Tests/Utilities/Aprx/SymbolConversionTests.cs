@@ -15,14 +15,15 @@ namespace gView.Cmd.MxlUtil.Lib.Tests.Utilities.Aprx;
 /// </summary>
 public class SymbolConversionTests
 {
-    private static ISymbol ConvertSimpleSymbol(CimSymbol symbol, out List<string> warnings)
+    private static ISymbol ConvertSimpleSymbol(CimSymbol symbol, out List<string> warnings, double transparency = 0)
     {
         var w = new List<string>();
         warnings = w;
         var converter = new AprxMapConverter(warn: w.Add);
         var cimLayer = Cim.FeatureLayer(
             featureTable: Cim.FeatureTable(),
-            renderer: Cim.SimpleRenderer(symbol));
+            renderer: Cim.SimpleRenderer(symbol),
+            transparency: transparency);
         var result = new AprxMapResult(Cim.Map(), [cimLayer]);
 
         var map = converter.Convert(result);
@@ -72,7 +73,7 @@ public class SymbolConversionTests
 
         var point = Assert.IsType<SimplePointSymbol>(symbol);
         Assert.Equal(255, point.FillColor.R);
-        Assert.Equal(2f, point.PenWidth);
+        Assert.Equal(2f * 96f / 72f, point.PenWidth); // aprx width is in points, gView PenWidth in pixels @96dpi
     }
 
     [Fact]
@@ -203,7 +204,7 @@ public class SymbolConversionTests
         var line = Assert.IsType<SimpleLineSymbol>(symbol);
         Assert.Equal(255, line.PenColor.R);
         Assert.Equal(128, line.PenColor.G);
-        Assert.Equal(3f, line.PenWidth);
+        Assert.Equal(3f * 96f / 72f, line.PenWidth); // aprx width is in points, gView PenWidth in pixels @96dpi
     }
 
     [Fact]
@@ -236,7 +237,21 @@ public class SymbolConversionTests
         var collection = Assert.IsType<SymbolCollection>(symbol);
         Assert.Equal(2, collection.Symbols.Count);
         var first = Assert.IsType<SimpleLineSymbol>(collection.Symbols[0].Symbol);
-        Assert.Equal(2f, first.PenWidth); // second CIM layer drawn last -> first after reversing
+        Assert.Equal(2f * 96f / 72f, first.PenWidth); // second CIM layer drawn last -> first after reversing
+    }
+
+    [Fact]
+    public void LineSymbol_Width_IsConvertedFromPointsToPixelsAt96Dpi()
+    {
+        // ArcGIS Pro expresses stroke widths in points (1/72"); gView's PenWidth is plain
+        // pixels with an implicit 96dpi baseline. A "1pt" line must come out ~1.33px, not 1px -
+        // otherwise every converted line renders visibly thinner than in ArcGIS/AGS.
+        var symbol = ConvertSimpleSymbol(
+            Cim.LineSymbol(Cim.SolidStroke(Cim.Rgb(0, 0, 0), width: 1)),
+            out _);
+
+        var line = Assert.IsType<SimpleLineSymbol>(symbol);
+        Assert.Equal(96f / 72f, line.PenWidth, precision: 4);
     }
 
     [Theory]
@@ -421,5 +436,75 @@ public class SymbolConversionTests
         Assert.Equal(r, fill.FillColor.R);
         Assert.Equal(g, fill.FillColor.G);
         Assert.Equal(b, fill.FillColor.B);
+    }
+
+    // -----------------------------------------------------------------------
+    // Layer transparency (ArcGIS Pro's Layer Properties -> Display -> Transparency slider,
+    // separate from and multiplicative with each symbol's own color alpha)
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public void LayerTransparency_ScalesDownAnOtherwiseOpaqueColor()
+    {
+        // 50% layer transparency on a fully opaque (alpha=100) fill -> alpha ~50% of 255.
+        var symbol = ConvertSimpleSymbol(
+            Cim.PolygonSymbol(Cim.SolidFill(Cim.Rgb(255, 0, 0, alpha: 100))),
+            out _,
+            transparency: 50);
+
+        var fill = Assert.IsType<SimpleFillSymbol>(symbol);
+        Assert.Equal(128, fill.FillColor.A); // 255 * 0.5, rounded
+    }
+
+    [Fact]
+    public void LayerTransparency_MultipliesWithTheSymbolsOwnAlpha_RatherThanReplacingIt()
+    {
+        // Symbol itself is already 50% transparent (alpha=50 on Esri's 0-100 scale -> 127/255);
+        // 50% layer transparency must multiply on top of that, not override it.
+        var symbol = ConvertSimpleSymbol(
+            Cim.PolygonSymbol(Cim.SolidFill(Cim.Rgb(255, 0, 0, alpha: 50))),
+            out _,
+            transparency: 50);
+
+        var fill = Assert.IsType<SimpleFillSymbol>(symbol);
+        Assert.Equal(64, fill.FillColor.A); // 127 (esri 50%) * 0.5, rounded
+    }
+
+    [Fact]
+    public void LayerTransparency_Zero_LeavesColorAlphaUnchanged()
+    {
+        var symbol = ConvertSimpleSymbol(
+            Cim.PolygonSymbol(Cim.SolidFill(Cim.Rgb(255, 0, 0, alpha: 100))),
+            out _,
+            transparency: 0);
+
+        var fill = Assert.IsType<SimpleFillSymbol>(symbol);
+        Assert.Equal(255, fill.FillColor.A);
+    }
+
+    [Fact]
+    public void LayerTransparency_FullyTransparent_ProducesFullyTransparentColor()
+    {
+        var symbol = ConvertSimpleSymbol(
+            Cim.PolygonSymbol(Cim.SolidFill(Cim.Rgb(255, 0, 0, alpha: 100))),
+            out _,
+            transparency: 100);
+
+        var fill = Assert.IsType<SimpleFillSymbol>(symbol);
+        Assert.Equal(0, fill.FillColor.A);
+    }
+
+    [Fact]
+    public void LayerTransparency_DoesNotAffectRgbComponents()
+    {
+        var symbol = ConvertSimpleSymbol(
+            Cim.PolygonSymbol(Cim.SolidFill(Cim.Rgb(10, 20, 30))),
+            out _,
+            transparency: 50);
+
+        var fill = Assert.IsType<SimpleFillSymbol>(symbol);
+        Assert.Equal(10, fill.FillColor.R);
+        Assert.Equal(20, fill.FillColor.G);
+        Assert.Equal(30, fill.FillColor.B);
     }
 }

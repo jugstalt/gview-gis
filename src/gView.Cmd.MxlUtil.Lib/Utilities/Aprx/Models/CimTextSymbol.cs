@@ -26,9 +26,14 @@ internal class CimTextSymbol : CimSymbol
     [JsonPropertyName("fontEncoding")]
     public string? FontEncoding { get; set; }
 
-    /// <summary>Text fill colour (foreground / font colour).</summary>
+    /// <summary>
+    /// Text fill colour (foreground / font colour). Unlike most other CIM symbol references,
+    /// this is the symbol (typically CIMPolygonSymbol) directly - not wrapped in a
+    /// CIMSymbolReference "type"/"symbol" envelope, the same shape <see cref="HaloSymbol"/>
+    /// already uses.
+    /// </summary>
     [JsonPropertyName("symbol")]
-    public CimSymbolReference? TextFillSymbol { get; set; }
+    public CimSymbol? TextFillSymbol { get; set; }
 
     [JsonPropertyName("haloSymbol")]
     public CimSymbol? HaloSymbol { get; set; }

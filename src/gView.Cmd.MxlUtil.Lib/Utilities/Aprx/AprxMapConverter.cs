@@ -34,6 +34,11 @@ internal class AprxMapConverter
     // Counts down from -1 to hand out a distinct placeholder ID for every layer whose CIM
     // serviceLayerID is unresolved (-1) - see ResolveServiceLayerId.
     private int _nextPlaceholderLayerId = -1;
+    // The current layer's own "transparency" (0 = opaque .. 100 = fully invisible, ArcGIS
+    // Pro's Layer Properties -> Display slider) - set once per layer before converting its
+    // renderer/labels, then applied to every color ToArgbColor produces for that layer. This
+    // is separate from, and multiplies with, whatever alpha a symbol's own color already has.
+    private double _currentLayerTransparency;
 
     /// <param name="warn">Optional callback invoked for non-fatal conversion warnings.</param>
     /// <param name="info">Optional callback invoked for informational conversion notices (e.g. a label expression that was successfully translated).</param>
@@ -472,6 +477,7 @@ internal class AprxMapConverter
     private FeatureLayer CreateFeatureLayer(CimFeatureLayer cimFeature)
     {
         _currentLayerName = cimFeature.Name ?? string.Empty;
+        _currentLayerTransparency = cimFeature.Transparency;
 
         IFeatureClass featureClass;
         if (_datasetOptions != null)
@@ -606,6 +612,7 @@ internal class AprxMapConverter
     private FeatureLayer CreateAnnotationSubLayer(CimAnnotationLayer cimAnnotation, CimAnnotationSubLayer subLayer)
     {
         _currentLayerName = $"{cimAnnotation.Name}/{subLayer.Name}";
+        _currentLayerTransparency = cimAnnotation.Transparency;
 
         IFeatureClass featureClass;
         if (_datasetOptions != null)
@@ -682,7 +689,7 @@ internal class AprxMapConverter
     /// LabelPriority is "Always" (no overlap-avoidance repositioning): annotation, unlike a
     /// dynamic label, was deliberately placed exactly where it is by whoever authored it.
     /// </summary>
-    private static SimpleLabelRenderer BuildAnnotationLabelRenderer()
+    private SimpleLabelRenderer BuildAnnotationLabelRenderer()
     {
         return new SimpleLabelRenderer
         {
@@ -691,7 +698,7 @@ internal class AprxMapConverter
             TextSymbol = new SimpleTextSymbol
             {
                 Font = gView.GraphicsEngine.Current.Engine.CreateFont("Arial", 10f),
-                Color = ArgbColor.Black
+                Color = ApplyLayerTransparency(ArgbColor.Black)
             },
             SymbolRotation = new SymbolRotation
             {
@@ -1150,8 +1157,8 @@ internal class AprxMapConverter
         var font = gView.GraphicsEngine.Current.Engine.CreateFont(fontFamily, fontSize, fontStyle);
 
         // Resolve text (foreground) color from the nested TextFillSymbol
-        var textColor = ArgbColor.Black;
-        if (cimText.TextFillSymbol?.Symbol is CimPolygonSymbol fillPoly)
+        var textColor = ApplyLayerTransparency(ArgbColor.Black);
+        if (cimText.TextFillSymbol is CimPolygonSymbol fillPoly)
         {
             var solidFill = fillPoly.SymbolLayers?.OfType<CimSolidFill>().FirstOrDefault();
             if (solidFill?.Color != null)
@@ -1162,13 +1169,13 @@ internal class AprxMapConverter
         if (cimText.HaloSize > 0 && cimText.HaloSymbol is CimPolygonSymbol haloPoly)
         {
             var haloFill = haloPoly.SymbolLayers?.OfType<CimSolidFill>().FirstOrDefault();
-            var haloColor = haloFill?.Color != null ? ToArgbColor(haloFill.Color) : ArgbColor.White;
+            var haloColor = haloFill?.Color != null ? ToArgbColor(haloFill.Color) : ApplyLayerTransparency(ArgbColor.White);
 
             var glow = new GlowingTextSymbol();
             glow.Font = font;
             glow.Color = textColor;
             glow.GlowingColor = haloColor;
-            glow.GlowingWidth = (int)Math.Round(cimText.HaloSize);
+            glow.GlowingWidth = (int)Math.Round(PointsToPixels(cimText.HaloSize));
             glow.GlowingSmoothingmode = SymbolSmoothing.AntiAlias;
             return glow;
         }
@@ -1247,7 +1254,7 @@ internal class AprxMapConverter
         if (stroke?.Color != null)
         {
             ((IPenColor)symbol).PenColor = ToArgbColor(stroke.Color);
-            ((IPenWidth)symbol).PenWidth = (float)stroke.Width;
+            ((IPenWidth)symbol).PenWidth = PointsToPixels(stroke.Width);
         }
         return symbol;
     }
@@ -1441,7 +1448,7 @@ internal class AprxMapConverter
         }
         if (stroke.Width > 0)
         {
-            ((IPenWidth)line).PenWidth = (float)stroke.Width;
+            ((IPenWidth)line).PenWidth = PointsToPixels(stroke.Width);
         }
         if (stroke.Effects != null)
         {
@@ -1608,9 +1615,9 @@ internal class AprxMapConverter
     // Color conversion
     // -----------------------------------------------------------------------
 
-    private static ArgbColor ToArgbColor(CimColor cimColor)
+    private ArgbColor ToArgbColor(CimColor cimColor)
     {
-        byte a = cimColor.AlphaByte;
+        byte a = ApplyLayerTransparency(cimColor.AlphaByte);
 
         return cimColor switch
         {
@@ -1618,9 +1625,46 @@ internal class AprxMapConverter
             CimGrayColor gray => ArgbColor.FromArgb(a, Clamp(gray.Level), Clamp(gray.Level), Clamp(gray.Level)),
             CimCmykColor cmyk => CmykToArgb(a, cmyk.C, cmyk.M, cmyk.Y, cmyk.K),
             CimHsvColor hsv => HsvToArgb(a, hsv.H, hsv.S, hsv.V),
-            _ => ArgbColor.Gray
+            _ => ArgbColor.FromArgb(a, ArgbColor.Gray.R, ArgbColor.Gray.G, ArgbColor.Gray.B)
         };
     }
+
+    /// <summary>
+    /// Scales <paramref name="alpha"/> (a symbol's own opacity) down by the current layer's
+    /// "transparency" (see <see cref="_currentLayerTransparency"/>) - multiplicative, not a
+    /// replacement, so a symbol that already has its own partial transparency ends up even more
+    /// transparent, matching how ArcGIS Pro composites the two.
+    /// </summary>
+    private byte ApplyLayerTransparency(byte alpha)
+    {
+        if (_currentLayerTransparency <= 0)
+        {
+            return alpha;
+        }
+
+        var opacityFactor = Math.Clamp(1.0 - _currentLayerTransparency / 100.0, 0.0, 1.0);
+        return (byte)Math.Round(alpha * opacityFactor);
+    }
+
+    /// <summary>Overload for colors built directly (not via <see cref="ToArgbColor"/>) - e.g. the fixed default black text/white halo used when the CIM doesn't specify one.</summary>
+    private ArgbColor ApplyLayerTransparency(ArgbColor color) =>
+        ArgbColor.FromArgb(ApplyLayerTransparency(color.A), color.R, color.G, color.B);
+
+    /// <summary>
+    /// Converts a CIM size given in points (1/72 inch - the unit ArcGIS Pro uses for line/outline
+    /// widths and text halo sizes) into gView's pixel-based symbol units, using the graphics
+    /// engine's configured screen DPI. gView's <c>IPenWidth</c>/<c>GlowingWidth</c> values are
+    /// plain pixels with an implicit 96 DPI baseline (see <c>ReferenceScaleHelper</c> /
+    /// <c>CloneOptions.DpiFactor</c>, which only scales away from 96 DPI) - the same baseline
+    /// ArcGIS assumes when rendering a map/feature service - so at the default 96 DPI this is a
+    /// straight ×(96/72) ≈ ×1.33 factor. Without it, a value copied straight from the aprx (e.g.
+    /// a "1 pt" line) renders about 25% too thin compared to ArcGIS/AGS.
+    /// Font sizes and character-marker sizes don't need this: they're created via
+    /// <c>IGraphicsEngine.CreateFont(..., GraphicsUnit.Point)</c>, which already applies the same
+    /// conversion internally.
+    /// </summary>
+    private static float PointsToPixels(double points)
+        => (float)(points * gView.GraphicsEngine.Current.Engine.ScreenDpi / 72.0);
 
     private static byte Clamp(double value) => (byte)Math.Clamp(Math.Round(value), 0, 255);
 

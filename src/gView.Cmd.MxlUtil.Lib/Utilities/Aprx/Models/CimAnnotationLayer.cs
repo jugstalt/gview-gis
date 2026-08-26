@@ -27,6 +27,10 @@ internal class CimAnnotationLayer : CimBaseLayer
     [JsonPropertyName("serviceLayerID")]
     public int ServiceLayerId { get; set; }
 
+    /// <summary>Layer transparency, 0 (opaque, the default) - 100 (fully invisible).</summary>
+    [JsonPropertyName("transparency")]
+    public double Transparency { get; set; }
+
     /// <summary>
     /// One entry per annotation class ("Standard" unless the author defined more in ArcGIS
     /// Pro). ArcGIS Server/Pro publish each of these as its own child layer nested under a
