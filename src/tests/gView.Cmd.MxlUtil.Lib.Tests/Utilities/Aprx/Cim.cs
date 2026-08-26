@@ -236,14 +236,22 @@ internal static class Cim
         string? fontStyleName = null,
         CimSymbol? textFillSymbol = null,
         CimSymbol? haloSymbol = null,
-        double haloSize = 0) => new()
+        double haloSize = 0,
+        CimCallout? callout = null) => new()
     {
         Height = height,
         FontFamilyName = fontFamilyName,
         FontStyleName = fontStyleName,
         TextFillSymbol = textFillSymbol,
         HaloSymbol = haloSymbol,
-        HaloSize = haloSize
+        HaloSize = haloSize,
+        Callout = callout
+    };
+
+    public static CimCallout BalloonCallout(CimSymbol? backgroundSymbol) => new()
+    {
+        Type = "CIMBalloonCallout",
+        BackgroundSymbol = backgroundSymbol
     };
 
     // --- Renderers ---

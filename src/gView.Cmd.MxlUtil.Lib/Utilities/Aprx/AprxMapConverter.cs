@@ -1186,6 +1186,32 @@ internal class AprxMapConverter
                 textColor = ToArgbColor(solidFill.Color);
         }
 
+        // --- Callout background ("mask" box behind the text) → BlockoutTextSymbol ---
+        // Checked before the halo: a background box is the more deliberate authoring choice,
+        // and ArcGIS Pro rarely combines both on the same label class (this converter can only
+        // produce one or the other - BlockoutTextSymbol and GlowingTextSymbol are both
+        // SimpleTextSymbol subclasses, not composable).
+        if (cimText.Callout != null)
+        {
+            if (cimText.Callout.Type == "CIMBalloonCallout" && cimText.Callout.BackgroundSymbol is CimPolygonSymbol backgroundPoly)
+            {
+                var backgroundFill = backgroundPoly.SymbolLayers?.OfType<CimSolidFill>().FirstOrDefault();
+                var backgroundColor = backgroundFill?.Color != null
+                    ? ToArgbColor(backgroundFill.Color)
+                    : ApplyLayerTransparency(ArgbColor.White);
+
+                var blockout = new BlockoutTextSymbol();
+                blockout.Font = font;
+                blockout.Color = textColor;
+                blockout.ColorOutline = backgroundColor; // despite the name, this is the box's fill color
+                return blockout;
+            }
+
+            _warn?.Invoke(cimText.Callout.Type == "CIMBalloonCallout"
+                ? $"Layer '{_currentLayerName}': text callout has no usable backgroundSymbol and was ignored."
+                : $"Layer '{_currentLayerName}': text callout of type '{cimText.Callout.Type}' is not supported and was ignored.");
+        }
+
         // --- Halo → GlowingTextSymbol ---
         if (cimText.HaloSize > 0 && cimText.HaloSymbol is CimPolygonSymbol haloPoly)
         {

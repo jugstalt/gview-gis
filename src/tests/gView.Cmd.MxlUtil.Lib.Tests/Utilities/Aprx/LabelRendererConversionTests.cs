@@ -196,6 +196,56 @@ public class LabelRendererConversionTests
     }
 
     [Fact]
+    public void TextSymbol_WithBalloonCallout_ProducesBlockoutTextSymbol()
+    {
+        // ArcGIS Pro's Text Symbol -> Callout ("mask"/background box behind the label, e.g. a
+        // white box for readability over busy geometry) has no wrapper - the CIM directly
+        // carries a CIMBalloonCallout with a backgroundSymbol.
+        var (layer, warnings, _) = ConvertLabeledLayer(Cim.LabelClass(
+            expression: "[NAME]",
+            textSymbol: Cim.SymbolRef(Cim.TextSymbol(
+                height: 10,
+                callout: Cim.BalloonCallout(Cim.PolygonSymbol(Cim.SolidFill(Cim.Rgb(240, 240, 240))))))));
+
+        var renderer = Assert.IsType<SimpleLabelRenderer>(layer.LabelRenderer);
+        var blockout = Assert.IsType<BlockoutTextSymbol>(renderer.TextSymbol);
+        Assert.Equal(240, blockout.ColorOutline.R);
+        Assert.Equal(240, blockout.ColorOutline.G);
+        Assert.Equal(240, blockout.ColorOutline.B);
+        Assert.Empty(warnings);
+    }
+
+    [Fact]
+    public void TextSymbol_WithBalloonCallout_TakesPriorityOverHalo()
+    {
+        // A label class can carry both haloSize>0 and a callout at once - gView can't combine
+        // BlockoutTextSymbol and GlowingTextSymbol (both are mutually exclusive SimpleTextSymbol
+        // subclasses), so the (more deliberately authored) background box wins.
+        var (layer, _, _) = ConvertLabeledLayer(Cim.LabelClass(
+            expression: "[NAME]",
+            textSymbol: Cim.SymbolRef(Cim.TextSymbol(
+                haloSize: 1.5,
+                haloSymbol: Cim.PolygonSymbol(Cim.SolidFill(Cim.Rgb(255, 255, 255))),
+                callout: Cim.BalloonCallout(Cim.PolygonSymbol(Cim.SolidFill(Cim.Rgb(240, 240, 240))))))));
+
+        var renderer = Assert.IsType<SimpleLabelRenderer>(layer.LabelRenderer);
+        Assert.IsType<BlockoutTextSymbol>(renderer.TextSymbol);
+    }
+
+    [Fact]
+    public void TextSymbol_UnsupportedCalloutType_WarnsAndFallsBackToPlainText()
+    {
+        var (layer, warnings, _) = ConvertLabeledLayer(Cim.LabelClass(
+            expression: "[NAME]",
+            textSymbol: Cim.SymbolRef(Cim.TextSymbol(
+                callout: new CimCallout { Type = "CIMLeaderCallout" }))));
+
+        var renderer = Assert.IsType<SimpleLabelRenderer>(layer.LabelRenderer);
+        Assert.IsType<SimpleTextSymbol>(renderer.TextSymbol);
+        Assert.Contains(warnings, w => w.Contains("CIMLeaderCallout"));
+    }
+
+    [Fact]
     public void TextSymbol_FontColor_ComesFromTextFillSymbol()
     {
         var (layer, _, _) = ConvertLabeledLayer(Cim.LabelClass(

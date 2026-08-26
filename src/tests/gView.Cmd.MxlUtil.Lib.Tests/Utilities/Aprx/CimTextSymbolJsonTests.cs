@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Text.Json;
 using gView.Cmd.MxlUtil.Lib.Utilities.Aprx.Models;
 
@@ -75,5 +76,52 @@ public class CimTextSymbolJsonTests
         Assert.Equal(255, color.R);
         Assert.Equal(170, color.G);
         Assert.Equal(0, color.B);
+    }
+
+    // Trimmed down from a real aprx's label class textSymbol (a "mask" background box behind
+    // the label, ArcGIS Pro's Text Symbol -> Callout).
+    private const string RealWorldCalloutJson = """
+        {
+          "type": "CIMTextSymbol",
+          "fontFamilyName": "Arial",
+          "height": 8,
+          "callout": {
+            "type": "CIMBalloonCallout",
+            "leaderTolerance": 15,
+            "balloonStyle": "RoundedRectangle",
+            "backgroundSymbol": {
+              "type": "CIMPolygonSymbol",
+              "symbolLayers": [
+                {
+                  "type": "CIMSolidStroke",
+                  "enable": true,
+                  "width": 1,
+                  "color": { "type": "CIMRGBColor", "values": [110, 110, 110, 100] }
+                },
+                {
+                  "type": "CIMSolidFill",
+                  "enable": true,
+                  "color": { "type": "CIMRGBColor", "values": [240, 240, 240, 100] }
+                }
+              ]
+            },
+            "margin": { "type": "CIMTextMargin", "left": 2, "right": 2, "top": 2, "bottom": 2 }
+          }
+        }
+        """;
+
+    [Fact]
+    public void Callout_RealWorldShape_DeserializesBackgroundSymbol()
+    {
+        var textSymbol = JsonSerializer.Deserialize<CimSymbol>(RealWorldCalloutJson);
+
+        var cimText = Assert.IsType<CimTextSymbol>(textSymbol);
+        Assert.Equal("CIMBalloonCallout", cimText.Callout?.Type);
+        var backgroundPoly = Assert.IsType<CimPolygonSymbol>(cimText.Callout!.BackgroundSymbol);
+        var fill = Assert.IsType<CimSolidFill>(backgroundPoly.SymbolLayers!.OfType<CimSolidFill>().Single());
+        var color = Assert.IsType<CimRgbColor>(fill.Color);
+        Assert.Equal(240, color.R);
+        Assert.Equal(240, color.G);
+        Assert.Equal(240, color.B);
     }
 }
