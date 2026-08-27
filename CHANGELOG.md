@@ -28,6 +28,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   resource and filters the list to the extensions relevant for the property being edited (new
   `PropertyDescriptionAttribute.FileExtensions`), instead of listing every map resource
   regardless of type.
+- gView.DataExplorer: new `MxlUtil` entry under `Tools` - runs `gView.Cmd.exe --command MxlUtil`
+  in-process. A dialog lets you pick one of the available mxl utilities (`MxlDatasets`,
+  `MxlToFdb`, `PublishService`, `ConvertAprx`) and fill in that utility's specific parameters;
+  the equivalent command line is shown before execution.
 
 ## Fixed
 

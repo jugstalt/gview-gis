@@ -11,20 +11,28 @@ using Microsoft.SqlServer.Management.SqlParser.SqlCodeDom;
 using System.Xml;
 
 namespace gView.Cmd.MxlUtil.Lib;
-internal class MxlUtilCommand : ICommand
+public class MxlUtilCommand : ICommand
 {
     private readonly IEnumerable<IMxlUtility> _mxlUtilities;
 
     public MxlUtilCommand()
     {
-        _mxlUtilities =
-            [
-                new MxlDatasets(),
-                new MxlToFdb(),
-                new PublishService(),
-                new ConvertAprx()
-            ];
+        _mxlUtilities = CreateUtilities();
     }
+
+    /// <summary>
+    /// All available mxl utilities. Used by hosts (eg. gView.DataExplorer) to
+    /// present a selectable list of utilities with their utility specific parameters.
+    /// </summary>
+    public static IEnumerable<IMxlUtility> CreateUtilities() =>
+        [
+            new MxlDatasets(),
+            new MxlToFdb(),
+            new PublishService(),
+            new ConvertAprx()
+        ];
+
+    public IEnumerable<IMxlUtility> MxlUtilities => _mxlUtilities;
 
     public string Name => "MxlUtil";
 

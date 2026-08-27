@@ -1,0 +1,170 @@
+@using gView.Cmd.MxlUtil.Lib
+@using gView.Cmd.MxlUtil.Lib.Abstraction
+@inherits ModalDialogFormBase<MxlUtilToolModel>
+
+<ModalDialogFormBase T="MxlUtilToolModel"
+                     OnDialogClose="base.OnDialogClose"
+                     Model="base.Model">
+    <DialogBody>
+        <GvCard Title="Utility">
+            <GvCardContent>
+                <MudSelect T="string"
+                           Label="Utility"
+                           @bind-Value="Model.Utility">
+                    @foreach (var utility in _utilities)
+                    {
+                        <MudSelectItem Value="@utility.Name">@utility.Name</MudSelectItem>
+                    }
+                </MudSelect>
+
+                @if (_selectedUtility is not null)
+                {
+                    <MudText Typo="Typo.body2" Class="mt-2" Style="white-space:pre-wrap">@_selectedUtility.Description().Trim()</MudText>
+                }
+            </GvCardContent>
+        </GvCard>
+
+        @if (Model.Utility == "MxlDatasets")
+        {
+            <GvCard Title="MxlDatasets - manage dataset connections in a mxl file">
+                <GvCardContent>
+                    <SelectFileControl Filter="*.mxl" @bind-File="Model.MxlDatasets_Mxl" Label="Mxl file" />
+
+                    <MudSelect T="string" Label="Command" @bind-Value="Model.MxlDatasets_Command">
+                        <MudSelectItem Value="@("info")">info - show all dataset connections</MudSelectItem>
+                        <MudSelectItem Value="@("modify-cs")">modify-cs - change connection string parameter(s)</MudSelectItem>
+                    </MudSelect>
+
+                    @if (Model.MxlDatasets_Command == "modify-cs")
+                    {
+                        <SelectFileControl Filter="*.mxl" NewFile="true" @bind-File="Model.MxlDatasets_OutMxl" Label="Output mxl file" />
+
+                        <MudNumericField T="int" Min="-1"
+                                         Label="Dataset index"
+                                         HelperText="Index of the dataset to change. Use -1 for all datasets"
+                                         @bind-Value="Model.MxlDatasets_DatasetIndex" />
+
+                        <MudTextField Label="Parameter name"
+                                      HelperText="Name of the connection string parameter to change"
+                                      @bind-Value="Model.MxlDatasets_ParameterName" />
+                        <MudTextField Label="New value"
+                                      HelperText="New value for the parameter"
+                                      @bind-Value="Model.MxlDatasets_NewValue" />
+                    }
+                </GvCardContent>
+            </GvCard>
+        }
+
+        @if (Model.Utility == "MxlToFdb")
+        {
+            <GvCard Title="MxlToFdb - copy all vector data of a mxl into a FeatureDatabase">
+                <GvCardContent>
+                    <SelectFileControl Filter="*.mxl" @bind-File="Model.MxlToFdb_Mxl" Label="Mxl file" />
+
+                    <MudTextField Label="Target connection string"
+                                  HelperText="Connection string of the target fdb, eg. Data Source=C:\data\my.fdb;dsname=MyDs"
+                                  @bind-Value="Model.MxlToFdb_TargetConnectionString" />
+
+                    <MudSelect T="string" Label="Target database" @bind-Value="Model.MxlToFdb_TargetGuid">
+                        <MudSelectItem Value="@("sqlite")">sqlite</MudSelectItem>
+                        <MudSelectItem Value="@("postgres")">postgres</MudSelectItem>
+                        <MudSelectItem Value="@("sqlserver")">sqlserver</MudSelectItem>
+                    </MudSelect>
+
+                    <SelectFileControl Filter="*.mxl" NewFile="true" @bind-File="Model.MxlToFdb_OutMxl"
+                                       Label="Output mxl file (optional)" />
+
+                    <MudTextField Label="Don't copy features from (optional)"
+                                  HelperText="Comma separated list of layer names where only an empty table schema is created"
+                                  @bind-Value="Model.MxlToFdb_DontCopyFeaturesFrom" />
+                </GvCardContent>
+            </GvCard>
+        }
+
+        @if (Model.Utility == "PublishService")
+        {
+            <GvCard Title="PublishService - publish a mxl as gView map service">
+                <GvCardContent>
+                    <SelectFileControl Filter="*.mxl" @bind-File="Model.PublishService_Mxl" Label="Mxl file" />
+
+                    <MudTextField Label="Server url"
+                                  HelperText="eg. https://localhost:44331"
+                                  @bind-Value="Model.PublishService_Server" />
+                    <MudTextField Label="Service"
+                                  HelperText="Service name incl. folder ... folder/servicename"
+                                  @bind-Value="Model.PublishService_Service" />
+                    <MudTextField Label="Client (optional)"
+                                  @bind-Value="Model.PublishService_Client" />
+                    <MudTextField Label="Secret (optional)" InputType="InputType.Password"
+                                  @bind-Value="Model.PublishService_Secret" />
+                </GvCardContent>
+            </GvCard>
+        }
+
+        @if (Model.Utility == "ConvertAprx")
+        {
+            <GvCard Title="ConvertAprx - convert ESRI aprx files to mxl (experimental)">
+                <GvCardContent>
+                    <MudRadioGroup @bind-Value="Model.ConvertAprx_InputIsFolder" T="bool">
+                        <MudRadio Value="false">Input: single .aprx file</MudRadio>
+                        <MudRadio Value="true">Input: folder with .aprx files</MudRadio>
+                    </MudRadioGroup>
+                    @if (Model.ConvertAprx_InputIsFolder)
+                    {
+                        <SelectFolderControl @bind-Folder="Model.ConvertAprx_Input"
+                                             Label="Input folder (with *.aprx files)" />
+                    }
+                    else
+                    {
+                        <SelectFileControl Filter="*.aprx" @bind-File="Model.ConvertAprx_Input"
+                                           Label="Input .aprx file" />
+                    }
+
+                    <MudRadioGroup @bind-Value="Model.ConvertAprx_OutputIsFolder" T="bool">
+                        <MudRadio Value="false">Output: .mxl file (optional)</MudRadio>
+                        <MudRadio Value="true">Output: folder (optional)</MudRadio>
+                    </MudRadioGroup>
+                    @if (Model.ConvertAprx_OutputIsFolder)
+                    {
+                        <SelectFolderControl @bind-Folder="Model.ConvertAprx_Output"
+                                             Label="Output folder (where MXL files will be saved)" />
+                    }
+                    else
+                    {
+                        <SelectFileControl Filter="*.mxl" NewFile="true" @bind-File="Model.ConvertAprx_Output"
+                                           Label="Output .mxl file (default: next to input)" />
+                    }
+                    <MudCheckBox Label="Silent (only print input file, errors and final result)"
+                                 @bind-Value="Model.ConvertAprx_Silent" />
+
+                    <MudTextField Label="Dataset plugin guid (optional)"
+                                  HelperText="Plugin GUID of the dataset to use for all imported feature classes"
+                                  @bind-Value="Model.ConvertAprx_Dataset" />
+                    <MudTextField Label="Dataset connection string (optional)"
+                                  HelperText="Connection string for the dataset plugin. May contain {key} placeholders resolved per layer"
+                                  @bind-Value="Model.ConvertAprx_DatasetConnectionString" />
+
+                    <MudSelect T="string" Label="Allow overlapping labels priority (optional)"
+                               @bind-Value="Model.ConvertAprx_AllowOverlappingLabelsPriority">
+                        <MudSelectItem Value="@("")">(default: Always)</MudSelectItem>
+                        <MudSelectItem Value="@("Always")">Always</MudSelectItem>
+                        <MudSelectItem Value="@("High")">High</MudSelectItem>
+                        <MudSelectItem Value="@("Normal")">Normal</MudSelectItem>
+                        <MudSelectItem Value="@("Low")">Low</MudSelectItem>
+                    </MudSelect>
+
+                    <MudTextField Label="Composition mode copy layers (optional)"
+                                  HelperText="Comma separated list of layer-name wildcard patterns (*/?), eg. *streifen*,*Kabeltrasse*"
+                                  @bind-Value="Model.ConvertAprx_CompositionModeCopyLayers" />
+                </GvCardContent>
+            </GvCard>
+        }
+    </DialogBody>
+</ModalDialogFormBase>
+
+@code {
+    private readonly IMxlUtility[] _utilities = MxlUtilCommand.CreateUtilities().ToArray();
+
+    private IMxlUtility? _selectedUtility
+        => _utilities.FirstOrDefault(u => u.Name.Equals(Model.Utility, StringComparison.OrdinalIgnoreCase));
+}
