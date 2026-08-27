@@ -65,4 +65,30 @@ internal class CimCallout
     /// <summary>Symbol (typically a CIMPolygonSymbol) drawn behind the text.</summary>
     [JsonPropertyName("backgroundSymbol")]
     public CimSymbol? BackgroundSymbol { get; set; }
+
+    /// <summary>
+    /// Padding (in points) between the text and the background box's edge - what makes
+    /// ArcGIS Pro's balloon box noticeably larger than the bare text, unlike gView's
+    /// pixel-tight <see cref="BlockoutTextSymbol"/> box before this was read. Real exports
+    /// carry a "type": "CIMTextMargin" alongside left/right/top/bottom - not read here, this
+    /// isn't polymorphic (there's nothing else to distinguish it from).
+    /// </summary>
+    [JsonPropertyName("margin")]
+    public CimMargin? Margin { get; set; }
+}
+
+/// <summary>Padding around a callout's text - see <see cref="CimCallout.Margin"/>.</summary>
+internal class CimMargin
+{
+    [JsonPropertyName("left")]
+    public double Left { get; set; }
+
+    [JsonPropertyName("right")]
+    public double Right { get; set; }
+
+    [JsonPropertyName("top")]
+    public double Top { get; set; }
+
+    [JsonPropertyName("bottom")]
+    public double Bottom { get; set; }
 }

@@ -97,4 +97,32 @@ public class SimpleTextSymbolMarginTests
         Assert.True(blockoutRect.Height > plainRect.Height, "blockout's collision box must be taller than the bare text");
         Assert.Equal(plainRect.Center.X, blockoutRect.Center.X, precision: 3);
     }
+
+    [Fact]
+    public void BlockoutTextSymbol_InflatesCollisionBoxByPaddingAndHalfBorderWidthOnEverySide()
+    {
+        var display = NewDisplay();
+        var point = new Point(100, 100);
+
+        var plain = new BlockoutTextSymbol { Text = "Hello", Font = Current.Engine.CreateFont("Arial", 12f) };
+        var padded = new BlockoutTextSymbol
+        {
+            Text = "Hello",
+            Font = Current.Engine.CreateFont("Arial", 12f),
+            Padding = 6f,
+            // A transparent (the default) border colour draws nothing, so it must not count
+            // towards Margin either - only a genuinely visible border does.
+            BorderColor = ArgbColor.Black,
+            BorderWidth = 4f // a stroke straddles its path - only half extends beyond the fill rect
+        };
+
+        var plainRect = EnvelopeOf(plain, display, point);
+        var paddedRect = EnvelopeOf(padded, display, point);
+
+        // Grown symmetrically by Padding(6) + BorderWidth/2(2) = 8 on every side.
+        Assert.Equal(plainRect.Left - 8f, paddedRect.Left, precision: 3);
+        Assert.Equal(plainRect.Top - 8f, paddedRect.Top, precision: 3);
+        Assert.Equal(plainRect.Width + 16f, paddedRect.Width, precision: 3);
+        Assert.Equal(plainRect.Height + 16f, paddedRect.Height, precision: 3);
+    }
 }

@@ -460,12 +460,12 @@ namespace gView.Framework.Symbology
                         display.World2Image(ref x, ref y);
 
                         var annotationPolygon = AnnotationPolygon(display, (float)x, (float)y, symbolAlignment);
-                        // BUG: this used to rotate by Angle alone, silently discarding the just-computed
+                        // Note: this used to rotate by Angle alone, silently discarding the just-computed
                         // segment `angle` - the collision box stayed axis-aligned regardless of how
                         // steeply the line ran, while Draw() (below) correctly rotates the drawn text by
                         // angle + _angle + _rotation. A diagonal line label's real (rotated) footprint was
-                        // therefore never checked, letting it overlap neighbouring labels undetected. Now
-                        // matches Draw()'s rotation exactly, and the sibling "text on path" branch above
+                        // therefore never checked, letting it overlap neighbouring labels undetected. Fixed:
+                        // now matches Draw()'s rotation exactly, and the sibling "text on path" branch above
                         // (which already does `Angle + angle` correctly).
                         annotationPolygon.Rotate((float)x, (float)y, Angle + angle + Rotation);
 

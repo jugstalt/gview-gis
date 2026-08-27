@@ -216,6 +216,34 @@ public class LabelRendererConversionTests
     }
 
     [Fact]
+    public void TextSymbol_WithBalloonCalloutMarginAndBorder_SetsPaddingAndBorder()
+    {
+        // ArcGIS Pro pads its balloon box out from the text (margin) and can draw a border
+        // around it via the background CIMPolygonSymbol's own CIMSolidStroke layer - both used
+        // to be silently dropped, leaving gView's box pixel-tight with no border.
+        var (layer, warnings, _) = ConvertLabeledLayer(Cim.LabelClass(
+            expression: "[NAME]",
+            textSymbol: Cim.SymbolRef(Cim.TextSymbol(
+                height: 10,
+                callout: Cim.BalloonCallout(
+                    Cim.PolygonSymbol(
+                        Cim.SolidFill(Cim.Rgb(240, 240, 240)),
+                        Cim.SolidStroke(Cim.Rgb(80, 80, 80), width: 0.75)),
+                    margin: Cim.Margin(left: 1, right: 1.5, top: 2, bottom: 3))))));
+
+        var renderer = Assert.IsType<SimpleLabelRenderer>(layer.LabelRenderer);
+        var blockout = Assert.IsType<BlockoutTextSymbol>(renderer.TextSymbol);
+
+        // margin/width are in points; converted to pixels @96dpi (×96/72) like GlowingWidth
+        // above - takes the largest of the four margin sides: max(1, 1.5, 2, 3) * 96/72 = 4.0.
+        Assert.Equal(4f, blockout.Padding, precision: 3);
+        Assert.Equal(80, blockout.BorderColor.R);
+        // 0.75 * 96/72 = 1.0
+        Assert.Equal(1f, blockout.BorderWidth, precision: 3);
+        Assert.Empty(warnings);
+    }
+
+    [Fact]
     public void TextSymbol_WithBalloonCallout_TakesPriorityOverHalo()
     {
         // A label class can carry both haloSize>0 and a callout at once - gView can't combine

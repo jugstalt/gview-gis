@@ -1239,10 +1239,33 @@ internal class AprxMapConverter
                     ? ToArgbColor(backgroundFill.Color)
                     : ApplyLayerTransparency(ArgbColor.White);
 
+                // The background CIMPolygonSymbol can carry its own CIMSolidStroke layer for the
+                // box's border - ArcGIS Pro renders it (visible e.g. as a thin frame around the
+                // white readability box), gView used to just ignore it.
+                var backgroundStroke = backgroundPoly.SymbolLayers?.OfType<CimSolidStroke>().FirstOrDefault();
+
                 var blockout = new BlockoutTextSymbol();
                 blockout.Font = font;
                 blockout.Color = textColor;
                 blockout.ColorOutline = backgroundColor; // despite the name, this is the box's fill color
+
+                // CIMBalloonCallout.margin pads the box out from the text - ArcGIS Pro's box is
+                // noticeably bigger than the pixel-tight rectangle gView used to draw. Its four
+                // sides can differ; BlockoutTextSymbol only has a single, symmetric Padding (same
+                // simplification this method already makes for its own Margin/AddPadding fallback
+                // above), so take the largest of the four.
+                var margin = cimText.Callout.Margin;
+                if (margin != null)
+                {
+                    blockout.Padding = PointsToPixels(Math.Max(Math.Max(margin.Left, margin.Right), Math.Max(margin.Top, margin.Bottom)));
+                }
+
+                if (backgroundStroke?.Color != null && backgroundStroke.Width > 0)
+                {
+                    blockout.BorderColor = ToArgbColor(backgroundStroke.Color);
+                    blockout.BorderWidth = PointsToPixels(backgroundStroke.Width);
+                }
+
                 return blockout;
             }
 

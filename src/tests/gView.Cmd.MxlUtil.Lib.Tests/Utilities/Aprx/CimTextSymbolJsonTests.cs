@@ -123,5 +123,18 @@ public class CimTextSymbolJsonTests
         Assert.Equal(240, color.R);
         Assert.Equal(240, color.G);
         Assert.Equal(240, color.B);
+
+        // The same backgroundSymbol also carries a CIMSolidStroke layer (the box's border) and
+        // the callout has its own "margin" (padding) - both previously went unread entirely.
+        var stroke = Assert.IsType<CimSolidStroke>(backgroundPoly.SymbolLayers!.OfType<CimSolidStroke>().Single());
+        var strokeColor = Assert.IsType<CimRgbColor>(stroke.Color);
+        Assert.Equal(110, strokeColor.R);
+        Assert.Equal(1, stroke.Width);
+
+        Assert.NotNull(cimText.Callout.Margin);
+        Assert.Equal(2, cimText.Callout.Margin!.Left);
+        Assert.Equal(2, cimText.Callout.Margin!.Right);
+        Assert.Equal(2, cimText.Callout.Margin!.Top);
+        Assert.Equal(2, cimText.Callout.Margin!.Bottom);
     }
 }

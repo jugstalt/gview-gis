@@ -252,11 +252,15 @@ internal static class Cim
         Callout = callout
     };
 
-    public static CimCallout BalloonCallout(CimSymbol? backgroundSymbol) => new()
+    public static CimCallout BalloonCallout(CimSymbol? backgroundSymbol, CimMargin? margin = null) => new()
     {
         Type = "CIMBalloonCallout",
-        BackgroundSymbol = backgroundSymbol
+        BackgroundSymbol = backgroundSymbol,
+        Margin = margin
     };
+
+    public static CimMargin Margin(double left, double right, double top, double bottom) => new()
+    { Left = left, Right = right, Top = top, Bottom = bottom };
 
     // --- Renderers ---
 
