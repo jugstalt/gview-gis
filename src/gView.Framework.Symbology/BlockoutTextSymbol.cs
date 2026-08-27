@@ -45,6 +45,28 @@ namespace gView.Framework.Symbology
             set { _outlinebrush.Color = value; }
         }
 
+        /// <summary>
+        /// DrawAtPoint's box is <c>MeasureText(...).AddPadding(_font)</c> - larger than the bare
+        /// measured text on engines that measure pixel-exact (Skia). Reuses that exact padding
+        /// (rather than re-deriving the DPI/point-size math here) and takes the larger of its two
+        /// axes (width padding &gt; height's) as a single, slightly-generous per-side margin - 0
+        /// on engines where AddPadding is already a no-op (e.g. GDI+, which measures with padding
+        /// built in).
+        /// </summary>
+        protected override float Margin
+        {
+            get
+            {
+                if (_font == null)
+                {
+                    return 0f;
+                }
+
+                var padding = new CanvasSizeF(0f, 0f).AddPadding(_font);
+                return Math.Max(padding.Width, padding.Height) / 2f;
+            }
+        }
+
         #region ISymbol Members
 
         override public void Release()

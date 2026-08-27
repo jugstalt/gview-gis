@@ -62,6 +62,25 @@ namespace gView.Framework.Symbology
             set { _outlineWidth = value; }
         }
 
+        /// <summary>
+        /// The glow is drawn by re-stamping the text at every offset in
+        /// [-GlowingWidth, GlowingWidth] on both axes (see <see cref="DrawAtPoint"/>), so its
+        /// real footprint extends GlowingWidth pixels beyond the plain text on every side -
+        /// mirrors that method's own "0 means auto" fallback exactly.
+        /// </summary>
+        protected override float Margin
+        {
+            get
+            {
+                var outlineWidth = _outlineWidth;
+                if (outlineWidth == 0 && Font != null)
+                {
+                    outlineWidth = (int)Math.Max(1f, Font.Size / 10f);
+                }
+                return outlineWidth;
+            }
+        }
+
         #region ISymbol Members
 
         override public void Release()

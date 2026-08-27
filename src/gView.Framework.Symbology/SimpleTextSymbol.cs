@@ -231,7 +231,11 @@ namespace gView.Framework.Symbology
                 display.World2Image(ref x, ref y);
 
                 var annotationPolygon = AnnotationPolygon(display, (float)x, (float)y, symbolAlignment);
-                annotationPolygon.Rotate((float)x, (float)y, Angle);
+                // Must match the rotation DrawAtPoint actually draws with (angle-param(0) + Angle +
+                // Rotation) - Rotation (ISymbolRotation, e.g. a per-feature rotation field) was
+                // missing here, so a rotated label's collision box stayed un-rotated while the
+                // drawn text itself was correctly rotated, letting it silently overlap neighbours.
+                annotationPolygon.Rotate((float)x, (float)y, Angle + Rotation);
 
                 polygons.Add(annotationPolygon);
 
@@ -249,7 +253,8 @@ namespace gView.Framework.Symbology
                     display.World2Image(ref x, ref y);
 
                     var annotationPolygon = AnnotationPolygon(display, (float)x, (float)y, symbolAlignment);
-                    annotationPolygon.Rotate((float)x, (float)y, Angle);
+                    // See the IPoint case above - must include Rotation to match DrawAtPoint.
+                    annotationPolygon.Rotate((float)x, (float)y, Angle + Rotation);
 
                     polygons.Add(annotationPolygon);
                 }
@@ -455,7 +460,14 @@ namespace gView.Framework.Symbology
                         display.World2Image(ref x, ref y);
 
                         var annotationPolygon = AnnotationPolygon(display, (float)x, (float)y, symbolAlignment);
-                        annotationPolygon.Rotate((float)x, (float)y, Angle);
+                        // BUG: this used to rotate by Angle alone, silently discarding the just-computed
+                        // segment `angle` - the collision box stayed axis-aligned regardless of how
+                        // steeply the line ran, while Draw() (below) correctly rotates the drawn text by
+                        // angle + _angle + _rotation. A diagonal line label's real (rotated) footprint was
+                        // therefore never checked, letting it overlap neighbouring labels undetected. Now
+                        // matches Draw()'s rotation exactly, and the sibling "text on path" branch above
+                        // (which already does `Angle + angle` correctly).
+                        annotationPolygon.Rotate((float)x, (float)y, Angle + angle + Rotation);
 
                         polygons.Add(annotationPolygon);
                         p1 = p2;
@@ -467,6 +479,17 @@ namespace gView.Framework.Symbology
             return polygons.Count > 0 ? polygons : null;
         }
         #endregion
+
+        /// <summary>
+        /// Extra pixels this symbol's actual visual footprint extends beyond its plain measured
+        /// text on every side - 0 here (plain text has none). Engines that measure text
+        /// pixel-exact (Skia; see <c>IGraphicsEngine.MeasuresTextWithPadding</c>) otherwise leave
+        /// the label engine's overlap-check box exactly matching the bare glyphs, so anything a
+        /// subclass draws beyond them - a halo/glow, a background box - is invisible to collision
+        /// detection and can silently sit on top of a neighbouring label. Overridden by
+        /// <see cref="GlowingTextSymbol"/> and <see cref="BlockoutTextSymbol"/>.
+        /// </summary>
+        protected virtual float Margin => 0f;
 
         private AnnotationPolygon AnnotationPolygon(IDisplay display, float x, float y, TextSymbolAlignment symbolAlignment)
         {
@@ -554,7 +577,11 @@ namespace gView.Framework.Symbology
                     break;
             }
 
-            return new AnnotationPolygon(x1, y1, size.Width, size.Height);
+            // Grow the box symmetrically around the alignment-computed position rather than
+            // inflating `size` before the switch above - a margin must extend evenly on every
+            // side regardless of which edge/corner the alignment anchors to the feature.
+            var margin = Margin;
+            return new AnnotationPolygon(x1 - margin, y1 - margin, size.Width + 2f * margin, size.Height + 2f * margin);
         }
 
         #region ITextSymbol

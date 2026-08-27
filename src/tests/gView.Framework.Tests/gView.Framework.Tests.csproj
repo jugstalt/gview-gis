@@ -20,6 +20,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\gView.Framework\gView.Framework.csproj" />
+    <ProjectReference Include="..\..\gView.Framework.Cartography\gView.Framework.Cartography.csproj" />
+    <ProjectReference Include="..\..\gView.Framework.Geometry\gView.Framework.Geometry.csproj" />
+    <ProjectReference Include="..\..\gView.Framework.Symbology\gView.Framework.Symbology.csproj" />
   </ItemGroup>
 
 </Project>
