@@ -478,14 +478,19 @@ public class LabelRendererConversionTests
 
         var renderer = Assert.IsType<SimpleLabelRenderer>(layer.LabelRenderer);
         Assert.Equal("ROTATION", renderer.SymbolRotation.RotationFieldName);
-        Assert.Equal(RotationType.ArithmeticMinus90, renderer.SymbolRotation.RotationType);
+        // Plain Arithmetic, NOT ArithmeticMinus90 - unlike a marker glyph (which is usually
+        // authored pointing "up" at its own zero rotation, needing that extra 90° frame shift),
+        // plain text already reads left-to-right along the same "east" axis a mathematical angle
+        // is measured from. Using ArithmeticMinus90 here rotated every label a constant 90° off
+        // from ArcGIS Pro - reported after the fact against a real converted service.
+        Assert.Equal(RotationType.Arithmetic, renderer.SymbolRotation.RotationType);
         // No zone-based alignment - RotationField replaces it, doesn't combine with it.
         Assert.Equal(TextSymbolAlignment.Center, renderer.TextSymbol!.TextSymbolAlignment);
         Assert.Null(renderer.TextSymbol!.SecondaryTextSymbolAlignments);
     }
 
     [Fact]
-    public void PointPlacement_RotationField_GeographicType_MapsToGeographicPlus90()
+    public void PointPlacement_RotationField_GeographicType_MapsToGeographic()
     {
         var (layer, _, _) = ConvertLabeledLayer(
             Cim.LabelClass(
@@ -498,7 +503,7 @@ public class LabelRendererConversionTests
             map: Cim.Map(generalPlacementProperties: Cim.GeneralPlacementProperties(maplex: false)));
 
         var renderer = Assert.IsType<SimpleLabelRenderer>(layer.LabelRenderer);
-        Assert.Equal(RotationType.GeographicPlus90, renderer.SymbolRotation.RotationType);
+        Assert.Equal(RotationType.Geographic, renderer.SymbolRotation.RotationType);
     }
 
     [Fact]

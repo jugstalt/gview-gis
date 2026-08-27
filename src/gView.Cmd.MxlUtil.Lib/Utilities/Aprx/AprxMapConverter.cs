@@ -923,22 +923,40 @@ internal class AprxMapConverter
         renderer.SymbolRotation = new SymbolRotation
         {
             RotationFieldName = fieldName,
-            RotationType = MapCimRotationType(rotVar.RotationTypeZ),
+            RotationType = MapCimRotationTypeForMarker(rotVar.RotationTypeZ),
             RotationUnit = RotationUnit.deg
         };
     }
 
     /// <summary>
     /// Maps a CIM rotation-angle convention ("Arithmetic" or "Geographic") to gView's
-    /// <see cref="RotationType"/>, shared by every place a CIM rotation field feeds a
-    /// <see cref="SymbolRotation"/> (renderer rotation visual variables, label point-placement
-    /// rotation fields, ...).
+    /// <see cref="RotationType"/> for rotating a <b>marker/point symbol</b> (e.g.
+    /// TrueTypeMarkerSymbol via a renderer's rotation visual variable). Many point marker glyphs
+    /// are authored pointing "up" (north) at their own zero rotation rather than "right" (east),
+    /// so aligning them to a field angle measured the usual mathematical way (0°=east, CCW+)
+    /// needs the extra 90° frame shift the "...Plus90"/"...Minus90" variants apply - unlike plain
+    /// text, see <see cref="MapCimRotationTypeForLabel"/>.
     /// </summary>
-    private static RotationType MapCimRotationType(string? cimRotationType) => cimRotationType switch
+    private static RotationType MapCimRotationTypeForMarker(string? cimRotationType) => cimRotationType switch
     {
         "Arithmetic" => RotationType.ArithmeticMinus90,
         "Geographic" => RotationType.GeographicPlus90,
         _ => RotationType.ArithmeticMinus90   // default / unknown
+    };
+
+    /// <summary>
+    /// Maps a CIM rotation-angle convention ("Arithmetic" or "Geographic") to gView's
+    /// <see cref="RotationType"/> for rotating <b>label text</b> (a point label's "RotationField"
+    /// placement method). Plain text's own zero rotation already reads left-to-right along the
+    /// same "east" axis a mathematical angle is measured from, so - unlike a marker glyph (see
+    /// <see cref="MapCimRotationTypeForMarker"/>) - no extra 90° frame shift is needed: using the
+    /// "Plus90"/"Minus90" variants here rotated every label a constant 90° off from ArcGIS Pro.
+    /// </summary>
+    private static RotationType MapCimRotationTypeForLabel(string? cimRotationType) => cimRotationType switch
+    {
+        "Arithmetic" => RotationType.Arithmetic,
+        "Geographic" => RotationType.Geographic,
+        _ => RotationType.Arithmetic   // default / unknown
     };
 
     // -----------------------------------------------------------------------
@@ -1062,7 +1080,7 @@ internal class AprxMapConverter
                     renderer.SymbolRotation = new SymbolRotation
                     {
                         RotationFieldName = cimLabel.StandardLabelPlacementProperties.RotationField,
-                        RotationType = MapCimRotationType(cimLabel.StandardLabelPlacementProperties.RotationType),
+                        RotationType = MapCimRotationTypeForLabel(cimLabel.StandardLabelPlacementProperties.RotationType),
                         RotationUnit = RotationUnit.deg
                     };
                 }
