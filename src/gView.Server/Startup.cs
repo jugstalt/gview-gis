@@ -74,6 +74,15 @@ public class Startup
 
         #endregion
 
+        #region Fonts
+
+        // Make fonts from configured directories usable for rendering without
+        // installing them in the OS - see src/docs/design/font-provisioning.md.
+        // Must run before the first render / font lookup.
+        ServerFonts.Register(Configuration, Environment.ContentRootPath);
+
+        #endregion
+
         #region Proj Engine
 
         switch (Configuration.Value("proj-engine:engine")?.ToString()?.ToLower())

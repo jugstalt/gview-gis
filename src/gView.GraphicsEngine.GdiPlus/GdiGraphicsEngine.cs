@@ -3,6 +3,7 @@ using gView.GraphicsEngine.Threading;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Text;
 using System.IO;
 using System.Linq;
 
@@ -101,11 +102,92 @@ namespace gView.GraphicsEngine.GdiPlus
         {
             if(_installedFontNames is null)
             {
-                _installedFontNames = System.Drawing.FontFamily.Families.Select(f => f.Name).ToArray();
+                _installedFontNames = System.Drawing.FontFamily.Families.Select(f => f.Name)
+                    .Concat(CustomFontFamilyNames())
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToArray();
             }
 
             return _installedFontNames ?? Array.Empty<string>();
         }
+
+        #region Font Provisioning
+
+        // System.Drawing does not resolve PrivateFontCollection families through
+        // "new Font(name, ...)" - a FontFamily from the collection has to be used
+        // explicitly (see GdiFont). The collection is kept alive for the process
+        // lifetime; its FontFamily instances must not be disposed while in use.
+        private static readonly PrivateFontCollection _privateFonts = new PrivateFontCollection();
+        private static readonly HashSet<string> _loadedFontFiles
+            = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        private static readonly object _customFontsLock = new object();
+
+        public void RegisterFontDirectory(string path)
+        {
+            var files = FontProvisioning.EnumerateFontFiles(path).ToArray();
+            if (files.Length == 0)
+            {
+                return;
+            }
+
+            int loaded = 0;
+            lock (_customFontsLock)
+            {
+                foreach (var file in files)
+                {
+                    if (!_loadedFontFiles.Add(file))
+                    {
+                        continue;
+                    }
+
+                    try
+                    {
+                        _privateFonts.AddFontFile(file);
+                        loaded++;
+
+                        Console.WriteLine($"[fonts] {EngineDisplayName}: registered '{file}'");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[fonts] {EngineDisplayName}: error loading '{file}': {ex.Message}");
+                    }
+                }
+
+                // installed-font cache must be rebuilt so the new families show up
+                _installedFontNames = null;
+            }
+
+            Console.WriteLine($"[fonts] {EngineDisplayName}: {loaded} font file(s) registered from '{path}', " +
+                              $"{_privateFonts.Families.Length} custom family/families total");
+        }
+
+        private static IEnumerable<string> CustomFontFamilyNames()
+        {
+            lock (_customFontsLock)
+            {
+                return _privateFonts.Families.Select(f => f.Name).ToArray();
+            }
+        }
+
+        /// <summary>
+        /// Returns the registered (directory-provided) <see cref="FontFamily"/> for
+        /// <paramref name="familyName"/>, or <c>null</c> when no such family was registered.
+        /// </summary>
+        internal static FontFamily TryGetPrivateFontFamily(string familyName)
+        {
+            if (String.IsNullOrEmpty(familyName))
+            {
+                return null;
+            }
+
+            lock (_customFontsLock)
+            {
+                return _privateFonts.Families
+                    .FirstOrDefault(f => f.Name.Equals(familyName, StringComparison.OrdinalIgnoreCase));
+            }
+        }
+
+        #endregion
 
         private static string _defaultFontName = null;
         public string GetDefaultFontName()

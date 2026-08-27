@@ -18,6 +18,14 @@
     "encoding": "skia"
   },
 
+  // Font files (*.ttf, *.otf, *.ttc) in these directories are made available for
+  // rendering at server start - no OS font installation required (Windows + Linux).
+  "fonts": {
+    "directories": [ "{repository-path}/fonts" ],
+    // optional: additionally copy the fonts into the per-user OS font store
+    "install-to-system": false
+  },
+
   "proj-engine": {
     "engine": "ManageProj4Parallel" // ManagedProj4, NativeProj4
   },

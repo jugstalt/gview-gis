@@ -32,6 +32,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   in-process. A dialog lets you pick one of the available mxl utilities (`MxlDatasets`,
   `MxlToFdb`, `PublishService`, `ConvertAprx`) and fill in that utility's specific parameters;
   the equivalent command line is shown before execution.
+- Font provisioning for gView Server: a new `fonts` section in `_config/mapserver.json`
+  (`"fonts": { "directories": [ ... ], "install-to-system": false }`) points the server at one
+  or more directories of font files (`*.ttf`, `*.otf`, `*.ttc`). At startup those fonts are
+  loaded straight into the graphics engine and resolved by family name during rendering - no
+  OS font installation, no elevated rights, identical behaviour on Windows and Linux and in
+  containers. New `IGraphicsEngine.RegisterFontDirectory` (implemented for Skia2x/Skia3x via an
+  own `SKTypeface` registry with weight/slant matching, and for GDI+ via `PrivateFontCollection`);
+  the registered families also show up in `GetInstalledFontNames()`. Optional
+  `install-to-system` additionally copies the files into the per-user OS font store
+  (`~/.local/share/fonts` + `fc-cache` on Linux, per-user `Fonts` + `HKCU` on Windows) on a
+  best-effort basis. New font files require a server restart. See
+  `src/docs/design/font-provisioning.md`.
 
 ## Fixed
 

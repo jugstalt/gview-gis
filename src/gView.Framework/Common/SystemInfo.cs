@@ -11,7 +11,7 @@ namespace gView.Framework.Common
 {
     public class SystemInfo
     {
-        public static Version Version = new Version(8, 26, 3507);
+        public static Version Version = new Version(8, 26, 3515);
 
         #region -> Private Variables
 
@@ -73,6 +73,40 @@ namespace gView.Framework.Common
             }
 
             (GraphicsEngine.Current.Engine = new SkiaGraphicsEngine(dpi)).RegisterGraphcisEngine();
+        }
+
+        /// <summary>
+        /// Registers one or more font directories with the currently active graphics engine
+        /// (<see cref="GraphicsEngine.Current"/>), so map rendering can resolve fonts placed
+        /// in those directories without the fonts being installed in the operating system.
+        /// Call after the engine has been selected (i.e. after
+        /// <see cref="RegisterDefaultGraphicEngines"/> and any config-driven override).
+        /// </summary>
+        static public void RegisterFontDirectories(params string[] paths)
+        {
+            var engine = GraphicsEngine.Current.Engine;
+            if (paths is null || engine is null)
+            {
+                return;
+            }
+
+            foreach (var path in paths)
+            {
+                if (String.IsNullOrWhiteSpace(path))
+                {
+                    continue;
+                }
+
+                try
+                {
+                    engine.RegisterFontDirectory(path);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[fonts] could not register font directory '{path}' " +
+                                      $"for engine {engine.EngineName}: {ex.Message}");
+                }
+            }
         }
 
         #region HelperClasses

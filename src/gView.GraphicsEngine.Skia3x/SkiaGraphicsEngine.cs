@@ -1,8 +1,10 @@
 ﻿using gView.GraphicsEngine.Abstraction;
+using gView.GraphicsEngine.Skia.Extensions;
 using gView.GraphicsEngine.Threading;
 using SkiaSharp;
 using Svg.Skia;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -124,12 +126,116 @@ namespace gView.GraphicsEngine.Skia
             {
                 using (var fontManager = SKFontManager.Default)
                 {
-                    _installedFontNames = fontManager.FontFamilies?.ToArray() ?? Array.Empty<string>();
+                    var systemFonts = fontManager.FontFamilies?.ToArray() ?? Array.Empty<string>();
+
+                    _installedFontNames = systemFonts
+                        .Concat(_customTypefaces.Keys)
+                        .Distinct(StringComparer.OrdinalIgnoreCase)
+                        .ToArray();
                 }
             }
 
             return _installedFontNames;
         }
+
+        #region Font Provisioning
+
+        private static readonly ConcurrentDictionary<string, List<SKTypeface>> _customTypefaces
+            = new ConcurrentDictionary<string, List<SKTypeface>>(StringComparer.OrdinalIgnoreCase);
+        private static readonly HashSet<string> _loadedFontFiles
+            = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        private static readonly object _customFontsLock = new object();
+
+        public void RegisterFontDirectory(string path)
+        {
+            var files = FontProvisioning.EnumerateFontFiles(path).ToArray();
+            if (files.Length == 0)
+            {
+                return;
+            }
+
+            int loaded = 0;
+            lock (_customFontsLock)
+            {
+                foreach (var file in files)
+                {
+                    if (!_loadedFontFiles.Add(file))
+                    {
+                        continue;
+                    }
+
+                    try
+                    {
+                        var typeface = SKTypeface.FromFile(file);
+                        if (typeface is null)
+                        {
+                            Console.WriteLine($"[fonts] {EngineDisplayName}: could not load '{file}'");
+                            continue;
+                        }
+
+                        _customTypefaces
+                            .GetOrAdd(typeface.FamilyName, _ => new List<SKTypeface>())
+                            .Add(typeface);
+                        loaded++;
+
+                        Console.WriteLine($"[fonts] {EngineDisplayName}: registered '{typeface.FamilyName}' " +
+                                          $"(weight {typeface.FontStyle.Weight}, slant {typeface.FontStyle.Slant}) " +
+                                          $"from {Path.GetFileName(file)}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[fonts] {EngineDisplayName}: error loading '{file}': {ex.Message}");
+                    }
+                }
+
+                // installed-font caches must be rebuilt so the new families show up
+                _installedFontNames = null;
+                _defaultFontName = null;
+            }
+
+            Console.WriteLine($"[fonts] {EngineDisplayName}: {loaded} font file(s) registered from '{path}', " +
+                              $"{_customTypefaces.Count} custom family/families total");
+        }
+
+        /// <summary>
+        /// Returns the registered (directory-provided) typeface that best matches the
+        /// requested family name and style, or <c>null</c> when no such family was registered.
+        /// </summary>
+        internal static SKTypeface TryResolveCustomTypeface(string familyName, FontStyle fontStyle)
+        {
+            if (String.IsNullOrEmpty(familyName) ||
+                !_customTypefaces.TryGetValue(familyName, out var candidates) ||
+                candidates.Count == 0)
+            {
+                return null;
+            }
+
+            var want = fontStyle.ToSKFontStyle();
+
+            SKTypeface best = null;
+            int bestScore = int.MaxValue;
+
+            lock (_customFontsLock)
+            {
+                foreach (var typeface in candidates)
+                {
+                    var have = typeface.FontStyle;
+                    int score = Math.Abs(have.Weight - want.Weight)
+                              + Math.Abs(have.Width - want.Width) * 10
+                              + (have.Slant == want.Slant ? 0 : 1000);
+
+                    if (score < bestScore)
+                    {
+                        bestScore = score;
+                        best = typeface;
+                    }
+                }
+            }
+
+            return best;
+        }
+
+        #endregion
 
         private static readonly string[] CommonFonts = new string[]
         {

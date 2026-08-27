@@ -36,6 +36,14 @@ namespace gView.GraphicsEngine.Abstraction
         IEnumerable<string> GetInstalledFontNames();
         string GetDefaultFontName();
 
+        /// <summary>
+        /// Registers all font files (*.ttf, *.otf, *.ttc) found under <paramref name="path"/>
+        /// (recursively) with this engine, so map rendering can resolve their family names
+        /// even when the font is not installed in the operating system. Idempotent; a
+        /// null/empty or non-existent path is a no-op.
+        /// </summary>
+        void RegisterFontDirectory(string path);
+
         IDrawTextFormat CreateDrawTextFormat();
 
         IGraphicsPath CreateGraphicsPath();

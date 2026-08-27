@@ -33,6 +33,17 @@ The gView Server can be configured from the _config/mapserver.json file:
         // It can be assumed that all calls are made over HTTPS
         "force-https":  false,
 
+        // Font files (*.ttf, *.otf, *.ttc) placed in these directories are made
+        // available for map rendering when the server starts - the fonts do NOT
+        // need to be installed in the operating system. Works the same on Windows
+        // and Linux. A server restart is required to pick up new font files.
+        "fonts": {
+            "directories": [ "C:\\gView5\\Server\\Fonts" ],
+            // optional, default false: additionally copy the fonts into the
+            // per-user OS font store (best effort, for other tools on the host)
+            "install-to-system": false
+        },
+
         // Service names (wildcards "*"/"?" allowed) that should be loaded into memory
         // right after server startup, instead of on the first incoming request.
         // Loading happens in the background and does not delay the server startup.

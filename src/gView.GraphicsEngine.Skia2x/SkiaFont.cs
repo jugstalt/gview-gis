@@ -28,7 +28,8 @@ namespace gView.GraphicsEngine.Skia
 
             var fontTypeFace =
                 _threadLocker.GetInterLocked(() =>
-                    SKTypeface.FromFamilyName(name, fontStyle.ToSKFontStyle())
+                    SkiaGraphicsEngine.TryResolveCustomTypeface(name, fontStyle)
+                    ?? SKTypeface.FromFamilyName(name, fontStyle.ToSKFontStyle())
                 );
 
             var skFont = new SKFont(fontTypeFace, size: pixelSize);
