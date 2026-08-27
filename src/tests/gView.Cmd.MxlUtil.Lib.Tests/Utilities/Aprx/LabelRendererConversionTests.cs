@@ -199,6 +199,56 @@ public class LabelRendererConversionTests
         Assert.Equal(2, glow.GlowingWidth);
     }
 
+    [Theory]
+    [InlineData(240, 240, 240, 0, 0, 0)]   // light halo -> falls back to black
+    [InlineData(20, 20, 20, 255, 255, 255)]  // dark halo -> falls back to white
+    public void TextSymbol_TextColorEqualsHaloColor_FallsBackToContrastingColor(
+        int haloR, int haloG, int haloB, int expectedR, int expectedG, int expectedB)
+    {
+        // Real-world case (Gasleitungen-Beschriftung): ArcGIS Pro's per-feature "<CLR ...>"
+        // label-expression color tags aren't evaluated here, so the label class's own static
+        // text color - which ArcGIS Pro never actually shows - is left as an unused placeholder,
+        // commonly set identical to the halo color. Converting it verbatim made the text
+        // invisible (halo == text color exactly).
+        var (layer, warnings, _) = ConvertLabeledLayer(Cim.LabelClass(
+            expression: "[NAME]",
+            textSymbol: Cim.SymbolRef(Cim.TextSymbol(
+                height: 10,
+                haloSize: 1,
+                textFillSymbol: Cim.PolygonSymbol(Cim.SolidFill(Cim.Rgb(haloR, haloG, haloB))),
+                haloSymbol: Cim.PolygonSymbol(Cim.SolidFill(Cim.Rgb(haloR, haloG, haloB)))))));
+
+        var renderer = Assert.IsType<SimpleLabelRenderer>(layer.LabelRenderer);
+        var glow = Assert.IsType<GlowingTextSymbol>(renderer.TextSymbol);
+        Assert.Equal(expectedR, glow.Color.R);
+        Assert.Equal(expectedG, glow.Color.G);
+        Assert.Equal(expectedB, glow.Color.B);
+        // The halo itself is untouched - only the text color was indistinguishable.
+        Assert.Equal(haloR, glow.GlowingColor.R);
+        // The fallback is a guess (real color likely comes from a per-feature label expression),
+        // so it must be surfaced, not applied silently.
+        Assert.Single(warnings, w => w.Contains("halo") && w.Contains("Layer 'L'"));
+    }
+
+    [Fact]
+    public void TextSymbol_TextColorDiffersFromHaloColor_IsLeftUnchangedAndNoWarning()
+    {
+        var (layer, warnings, _) = ConvertLabeledLayer(Cim.LabelClass(
+            expression: "[NAME]",
+            textSymbol: Cim.SymbolRef(Cim.TextSymbol(
+                height: 10,
+                haloSize: 1,
+                textFillSymbol: Cim.PolygonSymbol(Cim.SolidFill(Cim.Rgb(0, 77, 168))),
+                haloSymbol: Cim.PolygonSymbol(Cim.SolidFill(Cim.Rgb(255, 255, 255)))))));
+
+        var renderer = Assert.IsType<SimpleLabelRenderer>(layer.LabelRenderer);
+        var glow = Assert.IsType<GlowingTextSymbol>(renderer.TextSymbol);
+        Assert.Equal(0, glow.Color.R);
+        Assert.Equal(77, glow.Color.G);
+        Assert.Equal(168, glow.Color.B);
+        Assert.Empty(warnings);
+    }
+
     [Fact]
     public void TextSymbol_WithBalloonCallout_ProducesBlockoutTextSymbol()
     {
@@ -245,6 +295,26 @@ public class LabelRendererConversionTests
         // 0.75 * 96/72 = 1.0
         Assert.Equal(1f, blockout.BorderWidth, precision: 3);
         Assert.Empty(warnings);
+    }
+
+    [Fact]
+    public void TextSymbol_WithBalloonCallout_TextColorEqualsBackgroundColor_FallsBackToContrastingColor()
+    {
+        var (layer, warnings, _) = ConvertLabeledLayer(Cim.LabelClass(
+            expression: "[NAME]",
+            textSymbol: Cim.SymbolRef(Cim.TextSymbol(
+                height: 10,
+                textFillSymbol: Cim.PolygonSymbol(Cim.SolidFill(Cim.Rgb(240, 240, 240))),
+                callout: Cim.BalloonCallout(Cim.PolygonSymbol(Cim.SolidFill(Cim.Rgb(240, 240, 240))))))));
+
+        var renderer = Assert.IsType<SimpleLabelRenderer>(layer.LabelRenderer);
+        var blockout = Assert.IsType<BlockoutTextSymbol>(renderer.TextSymbol);
+        Assert.Equal(0, blockout.Color.R);
+        Assert.Equal(0, blockout.Color.G);
+        Assert.Equal(0, blockout.Color.B);
+        // The background box itself is untouched - only the text color was indistinguishable.
+        Assert.Equal(240, blockout.ColorOutline.R);
+        Assert.Single(warnings, w => w.Contains("background box"));
     }
 
     [Fact]

@@ -1334,7 +1334,7 @@ internal class AprxMapConverter
 
                 var blockout = new BlockoutTextSymbol();
                 blockout.Font = font;
-                blockout.Color = textColor;
+                blockout.Color = EnsureContrastingTextColor(textColor, backgroundColor, "background box");
                 blockout.ColorOutline = backgroundColor; // despite the name, this is the box's fill color
 
                 // CIMBalloonCallout.margin pads the box out from the text - ArcGIS Pro's box is
@@ -1370,7 +1370,7 @@ internal class AprxMapConverter
 
             var glow = new GlowingTextSymbol();
             glow.Font = font;
-            glow.Color = textColor;
+            glow.Color = EnsureContrastingTextColor(textColor, haloColor, "halo");
             glow.GlowingColor = haloColor;
             glow.GlowingWidth = (int)Math.Round(PointsToPixels(cimText.HaloSize));
             glow.GlowingSmoothingmode = SymbolSmoothing.AntiAlias;
@@ -1382,6 +1382,47 @@ internal class AprxMapConverter
         sym.Font = font;
         sym.Color = textColor;
         return sym;
+    }
+
+    /// <summary>
+    /// Falls back to a contrasting color when <paramref name="textColor"/> and
+    /// <paramref name="haloOrBackgroundColor"/> resolve to the exact same RGB - text drawn in
+    /// that combination is invisible regardless of why the colors matched. The recurring
+    /// real-world cause: ArcGIS Pro's per-feature "&lt;CLR red=.. green=.. blue=..&gt;" label
+    /// expression tags (a VBScript/Arcade label function whose *returned string* carries the
+    /// real color) aren't evaluated here - this converter only ever sees the label class's own
+    /// static text color, which authors commonly leave equal to the halo/background color
+    /// precisely because ArcGIS Pro never actually displays it. Doesn't attempt to reproduce the
+    /// tag-driven color itself (a bigger feature - see the label class's Expression for the
+    /// real per-feature logic if that's needed); this only prevents the "invisible text" case
+    /// by picking whichever of black/white contrasts more with the halo/background - and warns,
+    /// since that's a guess, not a faithful reproduction of whatever ArcGIS Pro actually shows.
+    /// </summary>
+    private ArgbColor EnsureContrastingTextColor(ArgbColor textColor, ArgbColor haloOrBackgroundColor, string kind)
+    {
+        if (textColor.R != haloOrBackgroundColor.R ||
+            textColor.G != haloOrBackgroundColor.G ||
+            textColor.B != haloOrBackgroundColor.B)
+        {
+            return textColor;
+        }
+
+        // Perceived luminance (ITU-R BT.601) of the halo/background - pick whichever of
+        // black/white stands out more against it. Alpha is kept from the original text color
+        // (already layer-transparency-adjusted) since only the RGB was indistinguishable.
+        var luminance = (0.299 * haloOrBackgroundColor.R + 0.587 * haloOrBackgroundColor.G + 0.114 * haloOrBackgroundColor.B) / 255.0;
+        var fallback = luminance > 0.5
+            ? ArgbColor.FromArgb(textColor.A, 0, 0, 0)
+            : ArgbColor.FromArgb(textColor.A, 255, 255, 255);
+
+        _warn?.Invoke(
+            $"Layer '{_currentLayerName}': label text color was identical to its {kind} color " +
+            $"(both RGB {textColor.R},{textColor.G},{textColor.B}) and would have been invisible - " +
+            $"falling back to {(luminance > 0.5 ? "black" : "white")}. This usually means the real " +
+            "text color is set dynamically per feature via a label expression (e.g. ArcGIS Pro's " +
+            "\"<CLR red=.. green=.. blue=..>\" tags), which this converter does not evaluate.");
+
+        return fallback;
     }
 
     // -----------------------------------------------------------------------
