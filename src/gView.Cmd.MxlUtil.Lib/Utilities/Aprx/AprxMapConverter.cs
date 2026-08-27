@@ -38,7 +38,20 @@ internal class AprxMapConverter
     // Pro's Layer Properties -> Display slider) - set once per layer before converting its
     // renderer/labels, then applied to every color ToArgbColor produces for that layer. This
     // is separate from, and multiplies with, whatever alpha a symbol's own color already has.
+    // Left at 0 for a layer using CompositionMode.Copy instead (see ShouldUseCompositionModeCopy) -
+    // there the *colors* stay fully opaque and the transparency is applied once, to the whole
+    // rendered layer, instead.
     private double _currentLayerTransparency;
+    // Layer-name wildcard patterns (see Wildcard.WildcardEx - "*"/"?", case-insensitive) opting
+    // a transparent layer into CompositionMode.Copy instead of baking its transparency into every
+    // symbol color. Baking it into colors is wrong whenever the layer's own features can overlap
+    // themselves (e.g. many crossing semi-transparent line/polygon symbols at the same
+    // transparency): each overlap gets drawn/blended twice, producing a visibly darker seam that
+    // doesn't exist in ArcGIS Pro (which always composites a layer once, then applies its
+    // transparency to the whole result - exactly what CompositionMode.Copy does). Not applied by
+    // default because rendering to an extra full-size bitmap first costs real memory/CPU per
+    // matched layer - opt in by layer name for the ones that actually show the artifact.
+    private readonly List<WildcardEx> _compositionModeCopyLayerPatterns = [];
     // Target LabelPriority for a label class that has ArcGIS Pro's "Allow overlapping labels"
     // checked - see the comment at its one use site in ConvertLabelRenderer for why this isn't
     // just hard-coded to RenderLabelPriority.Always.
@@ -56,16 +69,51 @@ internal class AprxMapConverter
     /// come out visibly noisier than in ArcGIS Pro. Pass e.g. <see cref="RenderLabelPriority.High"/>
     /// for a gentler equivalent (checked, but preferred over Normal/Low priority labels).
     /// </param>
+    /// <param name="compositionModeCopyLayerPatterns">
+    /// Layer-name wildcard patterns ("*"/"?", case-insensitive) opting a transparent layer into
+    /// <see cref="FeatureLayerCompositionMode.Copy"/> instead of the default (baking the layer's
+    /// "transparency" into every symbol color, which produces a visibly darker seam wherever the
+    /// layer's own features overlap themselves - not present in ArcGIS Pro). Only layers whose
+    /// name matches, and that have a non-zero aprx "transparency", are affected; everything else
+    /// keeps the previous behaviour unchanged.
+    /// </param>
     public AprxMapConverter(
         Action<string>? warn = null,
         Action<string>? info = null,
         DatasetPluginOptions? datasetPlugin = null,
-        RenderLabelPriority allowOverlappingLabelsPriority = RenderLabelPriority.Always)
+        RenderLabelPriority allowOverlappingLabelsPriority = RenderLabelPriority.Always,
+        IEnumerable<string>? compositionModeCopyLayerPatterns = null)
     {
         _warn = warn;
         _info = info;
         _datasetOptions = datasetPlugin;
         _allowOverlappingLabelsPriority = allowOverlappingLabelsPriority;
+
+        if (compositionModeCopyLayerPatterns != null)
+        {
+            foreach (var pattern in compositionModeCopyLayerPatterns)
+            {
+                if (!string.IsNullOrWhiteSpace(pattern))
+                {
+                    _compositionModeCopyLayerPatterns.Add(new WildcardEx(pattern.Trim(), System.Text.RegularExpressions.RegexOptions.IgnoreCase));
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// True when <paramref name="layerName"/> matches one of <see cref="_compositionModeCopyLayerPatterns"/>
+    /// and <paramref name="transparency"/> is actually non-zero (a matching pattern is a no-op
+    /// for an already-opaque layer).
+    /// </summary>
+    private bool ShouldUseCompositionModeCopy(string? layerName, double transparency)
+    {
+        if (transparency <= 0 || string.IsNullOrEmpty(layerName) || _compositionModeCopyLayerPatterns.Count == 0)
+        {
+            return false;
+        }
+
+        return _compositionModeCopyLayerPatterns.Any(p => p.IsMatch(layerName));
     }
 
     private IFeatureClass CreateFeatureClassFromPlugin(string rawFcName, string? workspaceConnectionString)
@@ -495,7 +543,11 @@ internal class AprxMapConverter
     private FeatureLayer CreateFeatureLayer(CimFeatureLayer cimFeature)
     {
         _currentLayerName = cimFeature.Name ?? string.Empty;
-        _currentLayerTransparency = cimFeature.Transparency;
+
+        var useCompositionModeCopy = ShouldUseCompositionModeCopy(cimFeature.Name, cimFeature.Transparency);
+        // Colors stay fully opaque here (0) when using CompositionMode.Copy - the transparency
+        // is applied once below, to the whole rendered layer, instead of baked into every color.
+        _currentLayerTransparency = useCompositionModeCopy ? 0 : cimFeature.Transparency;
 
         IFeatureClass featureClass;
         if (_datasetOptions != null)
@@ -531,6 +583,12 @@ internal class AprxMapConverter
             ApplyRefScale = cimFeature.ScaleSymbols,
             ApplyLabelRefScale = cimFeature.ScaleSymbols,
         };
+
+        if (useCompositionModeCopy)
+        {
+            layer.CompositionMode = FeatureLayerCompositionMode.Copy;
+            layer.CompositionModeCopyTransparency = (float)cimFeature.Transparency;
+        }
 
         layer.ID = ResolveServiceLayerId(cimFeature.ServiceLayerId);
 

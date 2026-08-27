@@ -54,13 +54,27 @@ internal class ConvertAprx : IMxlUtility
                 tries a normal placement first and only allows overlap as a fallback, so a busy
                 layer can come out visibly noisier than in ArcGIS Pro. Pass e.g. "High" for a
                 gentler equivalent that's still checked, just preferred over Normal/Low labels.>
+
+            -composition-mode-copy-layers <Comma-separated list of layer-name wildcard patterns
+                ("*"/"?", case-insensitive - e.g. "*streifen*,*Kabeltrasse*") opting a transparent
+                layer (aprx "transparency" > 0) into gView's CompositionMode.Copy instead of the
+                default of baking that transparency into every symbol color. Baking it into colors
+                is wrong whenever the layer's own features can overlap themselves - e.g. many
+                crossing semi-transparent line/polygon symbols at the same transparency, common for
+                corridor/buffer-strip style layers: each overlap gets drawn/blended twice, producing
+                a visibly darker seam that doesn't exist in ArcGIS Pro (which always composites a
+                layer once, then applies its transparency to the whole result). Not applied to any
+                layer by default, since rendering to an extra full-size bitmap first costs real
+                memory/CPU per matched layer at render time - only opt in the specific layers that
+                actually show the artifact.
+                Example: "*streifen*">
             """;
     }
 
     async public Task<bool> Run(string[] args, ICancelTracker? cancelTracker = null, ICommandLogger? logger = null)
     {
 
-        string input = "", output = "", datasetGuidStr = "", datasetCs = "", allowOverlappingLabelsPriorityStr = "";
+        string input = "", output = "", datasetGuidStr = "", datasetCs = "", allowOverlappingLabelsPriorityStr = "", compositionModeCopyLayersStr = "";
         bool silent = false;
 
         for (int i = 0; i < args.Length - 1; i++)
@@ -87,6 +101,10 @@ internal class ConvertAprx : IMxlUtility
                 case "-allow-overlapping-labels-priority":
                 case "-aolp":
                     allowOverlappingLabelsPriorityStr = args[++i];
+                    break;
+                case "-composition-mode-copy-layers":
+                case "-cmcl":
+                    compositionModeCopyLayersStr = args[++i];
                     break;
             }
         }
@@ -120,6 +138,9 @@ internal class ConvertAprx : IMxlUtility
                 }
             }
 
+            var compositionModeCopyLayerPatterns = compositionModeCopyLayersStr
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
             var log = new AprxLogger(logger, silent);
 
             // Ensure graphics engine is available (required for symbol creation)
@@ -144,7 +165,7 @@ internal class ConvertAprx : IMxlUtility
                         ? Path.ChangeExtension(aprxFile, ".mxl")
                         : Path.Combine(output, Path.ChangeExtension(Path.GetFileName(aprxFile), ".mxl"));
 
-                    var success = await ConvertAprxAsync(aprxFile, mxlFile, log, datasetOptions, allowOverlappingLabelsPriority, cancelTracker);
+                    var success = await ConvertAprxAsync(aprxFile, mxlFile, log, datasetOptions, allowOverlappingLabelsPriority, compositionModeCopyLayerPatterns, cancelTracker);
                     if (!success) allSucceeded = false;
                 }
 
@@ -154,7 +175,7 @@ internal class ConvertAprx : IMxlUtility
             else
             {
                 var mxlFile = output ?? Path.ChangeExtension(input, ".mxl");
-                var result = await ConvertAprxAsync(input, mxlFile, log, datasetOptions, allowOverlappingLabelsPriority, cancelTracker);
+                var result = await ConvertAprxAsync(input, mxlFile, log, datasetOptions, allowOverlappingLabelsPriority, compositionModeCopyLayerPatterns, cancelTracker);
                 log.PrintSummary();
                 return result;
             }
@@ -173,6 +194,7 @@ internal class ConvertAprx : IMxlUtility
             AprxLogger log,
             DatasetPluginOptions? datasetOptions,
             RenderLabelPriority allowOverlappingLabelsPriority,
+            IEnumerable<string> compositionModeCopyLayerPatterns,
             ICancelTracker? cancelTracker = null)
     {
         try
@@ -195,7 +217,8 @@ internal class ConvertAprx : IMxlUtility
                 warn: log.Warning,
                 info: msg => log.Info(msg, alwaysPrint: true),
                 datasetPlugin: datasetOptions,
-                allowOverlappingLabelsPriority: allowOverlappingLabelsPriority);
+                allowOverlappingLabelsPriority: allowOverlappingLabelsPriority,
+                compositionModeCopyLayerPatterns: compositionModeCopyLayerPatterns);
 
             var mapResult = mapResults[0];
             log.Info($"Converting map: '{mapResult.Map.Name}' ({mapResult.Layers.Count} layer(s))");
