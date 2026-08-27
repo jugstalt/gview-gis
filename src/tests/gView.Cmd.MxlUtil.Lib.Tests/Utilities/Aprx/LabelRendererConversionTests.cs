@@ -1,6 +1,7 @@
 using gView.Cmd.MxlUtil.Lib.Utilities.Aprx;
 using gView.Cmd.MxlUtil.Lib.Utilities.Aprx.Models;
 using gView.Framework.Cartography.Rendering;
+using gView.Framework.Core.Carto;
 using gView.Framework.Core.Symbology;
 using gView.Framework.Data;
 using gView.Framework.Symbology;
@@ -18,11 +19,14 @@ namespace gView.Cmd.MxlUtil.Lib.Tests.Utilities.Aprx;
 public class LabelRendererConversionTests
 {
     private static (FeatureLayer Layer, List<string> Warnings, List<string> Infos) ConvertLabeledLayer(
-        CimLabelClass labelClass, CimRenderer? renderer = null, CimMap? map = null)
+        CimLabelClass labelClass,
+        CimRenderer? renderer = null,
+        CimMap? map = null,
+        RenderLabelPriority allowOverlappingLabelsPriority = RenderLabelPriority.Always)
     {
         var warnings = new List<string>();
         var infos = new List<string>();
-        var converter = new AprxMapConverter(warn: warnings.Add, info: infos.Add);
+        var converter = new AprxMapConverter(warn: warnings.Add, info: infos.Add, allowOverlappingLabelsPriority: allowOverlappingLabelsPriority);
         var cimLayer = Cim.FeatureLayer(
             name: "L",
             featureTable: Cim.FeatureTable(),
@@ -550,6 +554,69 @@ public class LabelRendererConversionTests
 
         var renderer = Assert.IsType<SimpleLabelRenderer>(layer.LabelRenderer);
         Assert.Equal("", renderer.SymbolRotation.RotationFieldName);
+    }
+
+    // -----------------------------------------------------------------------
+    // "Allow overlapping labels" (Standard engine) -> LabelPriority
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public void AllowOverlappingLabels_DefaultsToAlways()
+    {
+        var (layer, _, _) = ConvertLabeledLayer(
+            Cim.LabelClass(
+                expression: "[NAME]",
+                standardLabelPlacementProperties: Cim.StandardLabelPlacementProperties(allowOverlappingLabels: true)),
+            map: Cim.Map(generalPlacementProperties: Cim.GeneralPlacementProperties(maplex: false)));
+
+        var renderer = Assert.IsType<SimpleLabelRenderer>(layer.LabelRenderer);
+        Assert.Equal(RenderLabelPriority.Always, renderer.LabelPriority);
+    }
+
+    [Fact]
+    public void AllowOverlappingLabels_ConverterOverride_UsesThatPriorityInstead()
+    {
+        // The caller (e.g. the CLI's -allow-overlapping-labels-priority) can pick a gentler
+        // priority than Always, since gView's Always skips the overlap check entirely and always
+        // places at the first candidate position - noisier than ArcGIS Pro's actual behaviour,
+        // which still tries a normal placement first and only allows overlap as a fallback.
+        var (layer, _, _) = ConvertLabeledLayer(
+            Cim.LabelClass(
+                expression: "[NAME]",
+                standardLabelPlacementProperties: Cim.StandardLabelPlacementProperties(allowOverlappingLabels: true)),
+            map: Cim.Map(generalPlacementProperties: Cim.GeneralPlacementProperties(maplex: false)),
+            allowOverlappingLabelsPriority: RenderLabelPriority.High);
+
+        var renderer = Assert.IsType<SimpleLabelRenderer>(layer.LabelRenderer);
+        Assert.Equal(RenderLabelPriority.High, renderer.LabelPriority);
+    }
+
+    [Fact]
+    public void AllowOverlappingLabelsFalse_LeavesDefaultPriorityUntouched()
+    {
+        var (layer, _, _) = ConvertLabeledLayer(
+            Cim.LabelClass(
+                expression: "[NAME]",
+                standardLabelPlacementProperties: Cim.StandardLabelPlacementProperties(allowOverlappingLabels: false)),
+            map: Cim.Map(generalPlacementProperties: Cim.GeneralPlacementProperties(maplex: false)));
+
+        var renderer = Assert.IsType<SimpleLabelRenderer>(layer.LabelRenderer);
+        Assert.Equal(RenderLabelPriority.Normal, renderer.LabelPriority);
+    }
+
+    [Fact]
+    public void AllowOverlappingLabels_MapUsesMaplex_IsIgnored()
+    {
+        // Standard engine only - the property lives under standardLabelPlacementProperties and
+        // has no Maplex equivalent modelled here (same scoping as RotationField/line placement).
+        var (layer, _, _) = ConvertLabeledLayer(
+            Cim.LabelClass(
+                expression: "[NAME]",
+                standardLabelPlacementProperties: Cim.StandardLabelPlacementProperties(allowOverlappingLabels: true)),
+            map: Cim.Map(generalPlacementProperties: Cim.GeneralPlacementProperties(maplex: true)));
+
+        var renderer = Assert.IsType<SimpleLabelRenderer>(layer.LabelRenderer);
+        Assert.Equal(RenderLabelPriority.Normal, renderer.LabelPriority);
     }
 
     // -----------------------------------------------------------------------

@@ -144,14 +144,16 @@ internal static class Cim
         CimPointZonePriorities? pointPlacementPriorities = null,
         CimStandardLineLabelPosition? lineLabelPosition = null,
         string? rotationField = null,
-        string? rotationType = null) => new()
+        string? rotationType = null,
+        bool allowOverlappingLabels = false) => new()
     {
         NumLabelsOption = numLabelsOption,
         PointPlacementMethod = pointPlacementMethod,
         PointPlacementPriorities = pointPlacementPriorities,
         LineLabelPosition = lineLabelPosition,
         RotationField = rotationField,
-        RotationType = rotationType
+        RotationType = rotationType,
+        AllowOverlappingLabels = allowOverlappingLabels
     };
 
     public static CimStandardLineLabelPosition LineLabelPosition(

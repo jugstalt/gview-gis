@@ -39,15 +39,33 @@ internal class AprxMapConverter
     // renderer/labels, then applied to every color ToArgbColor produces for that layer. This
     // is separate from, and multiplies with, whatever alpha a symbol's own color already has.
     private double _currentLayerTransparency;
+    // Target LabelPriority for a label class that has ArcGIS Pro's "Allow overlapping labels"
+    // checked - see the comment at its one use site in ConvertLabelRenderer for why this isn't
+    // just hard-coded to RenderLabelPriority.Always.
+    private readonly RenderLabelPriority _allowOverlappingLabelsPriority;
 
     /// <param name="warn">Optional callback invoked for non-fatal conversion warnings.</param>
     /// <param name="info">Optional callback invoked for informational conversion notices (e.g. a label expression that was successfully translated).</param>
     /// <param name="datasetPlugin">When supplied, all imported feature classes are bound to this dataset instead of <see cref="UnknownFeatureDataset"/>.</param>
-    public AprxMapConverter(Action<string>? warn = null, Action<string>? info = null, DatasetPluginOptions? datasetPlugin = null)
+    /// <param name="allowOverlappingLabelsPriority">
+    /// gView <see cref="RenderLabelPriority"/> to assign a label class that has ArcGIS Pro's
+    /// "Allow overlapping labels" checked (Standard engine). Defaults to
+    /// <see cref="RenderLabelPriority.Always"/> (matches the ArcGIS Pro checkbox's own name most
+    /// closely), but that skips gView's overlap check entirely - unlike ArcGIS Pro, which still
+    /// tries a normal placement first and only allows overlap as a fallback - so a busy layer can
+    /// come out visibly noisier than in ArcGIS Pro. Pass e.g. <see cref="RenderLabelPriority.High"/>
+    /// for a gentler equivalent (checked, but preferred over Normal/Low priority labels).
+    /// </param>
+    public AprxMapConverter(
+        Action<string>? warn = null,
+        Action<string>? info = null,
+        DatasetPluginOptions? datasetPlugin = null,
+        RenderLabelPriority allowOverlappingLabelsPriority = RenderLabelPriority.Always)
     {
         _warn = warn;
         _info = info;
         _datasetOptions = datasetPlugin;
+        _allowOverlappingLabelsPriority = allowOverlappingLabelsPriority;
     }
 
     private IFeatureClass CreateFeatureClassFromPlugin(string rawFcName, string? workspaceConnectionString)
@@ -975,6 +993,18 @@ internal class AprxMapConverter
             "OneLabelPerPart" => SimpleLabelRenderer.RenderHowManyLabels.OnPerPart,
             _ => renderer.HowManyLabels
         };
+
+        // ArcGIS Pro's per-label-class "Allow overlapping labels" checkbox (Standard engine
+        // only - Maplex has no equivalent modelled here, same scoping as ApplyLineLabelPlacement/
+        // the RotationField point placement). gView has no direct equivalent of "place normally,
+        // but permit overlap as a last resort" - its RenderLabelPriority.Always skips the overlap
+        // check entirely and always places at the very first candidate position, which can be far
+        // noisier than what ArcGIS Pro actually produces. _allowOverlappingLabelsPriority lets the
+        // caller pick a gentler target tier (e.g. High) instead of Always; defaults to Always.
+        if (!_useMaplexLabelEngine && cimLabel.StandardLabelPlacementProperties?.AllowOverlappingLabels == true)
+        {
+            renderer.LabelPriority = _allowOverlappingLabelsPriority;
+        }
 
         // --- Determine whether the expression is a simple field reference ---
         // FieldNames entries are plain field names (no brackets, never an expression), so the

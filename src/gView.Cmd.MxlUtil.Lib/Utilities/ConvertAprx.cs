@@ -3,6 +3,7 @@ using gView.Cmd.MxlUtil.Lib.Abstraction;
 using gView.Cmd.MxlUtil.Lib.Exceptions;
 using gView.Cmd.MxlUtil.Lib.Utilities.Aprx;
 using gView.Framework.Common;
+using gView.Framework.Core.Carto;
 using gView.Framework.Core.Common;
 using gView.Framework.IO;
 using gView.GraphicsEngine;
@@ -44,13 +45,22 @@ internal class ConvertAprx : IMxlUtility
                 necessarily comes from the same database/server - each gets its own resolved
                 connection string.
                 Example: "SERVER={server};DATABASE={database};USER=svc;PASSWORD=secret">
+
+            -allow-overlapping-labels-priority <gView label priority a label class with ArcGIS
+                Pro's "Allow overlapping labels" checked (Standard engine) is converted to - one
+                of Always, High, Normal, Low (case-insensitive; default: Always). Always most
+                closely matches the checkbox's own name, but skips gView's overlap check entirely
+                and always places at the first candidate position - unlike ArcGIS Pro, which still
+                tries a normal placement first and only allows overlap as a fallback, so a busy
+                layer can come out visibly noisier than in ArcGIS Pro. Pass e.g. "High" for a
+                gentler equivalent that's still checked, just preferred over Normal/Low labels.>
             """;
     }
 
     async public Task<bool> Run(string[] args, ICancelTracker? cancelTracker = null, ICommandLogger? logger = null)
     {
 
-        string input = "", output = "", datasetGuidStr = "", datasetCs = "";
+        string input = "", output = "", datasetGuidStr = "", datasetCs = "", allowOverlappingLabelsPriorityStr = "";
         bool silent = false;
 
         for (int i = 0; i < args.Length - 1; i++)
@@ -74,6 +84,10 @@ internal class ConvertAprx : IMxlUtility
                 case "-ds-cs":
                     datasetCs = args[++i];
                     break;
+                case "-allow-overlapping-labels-priority":
+                case "-aolp":
+                    allowOverlappingLabelsPriorityStr = args[++i];
+                    break;
             }
         }
 
@@ -94,6 +108,16 @@ internal class ConvertAprx : IMxlUtility
                     return false;
                 }
                 datasetOptions = new DatasetPluginOptions(datasetGuid, datasetCs ?? string.Empty);
+            }
+
+            var allowOverlappingLabelsPriority = RenderLabelPriority.Always;
+            if (!string.IsNullOrWhiteSpace(allowOverlappingLabelsPriorityStr))
+            {
+                if (!Enum.TryParse(allowOverlappingLabelsPriorityStr, ignoreCase: true, out allowOverlappingLabelsPriority))
+                {
+                    logger?.LogLine($"[ERROR] 'allow-overlapping-labels-priority' is not a valid value: {allowOverlappingLabelsPriorityStr} (expected Always, High, Normal, or Low)");
+                    return false;
+                }
             }
 
             var log = new AprxLogger(logger, silent);
@@ -120,7 +144,7 @@ internal class ConvertAprx : IMxlUtility
                         ? Path.ChangeExtension(aprxFile, ".mxl")
                         : Path.Combine(output, Path.ChangeExtension(Path.GetFileName(aprxFile), ".mxl"));
 
-                    var success = await ConvertAprxAsync(aprxFile, mxlFile, log, datasetOptions, cancelTracker);
+                    var success = await ConvertAprxAsync(aprxFile, mxlFile, log, datasetOptions, allowOverlappingLabelsPriority, cancelTracker);
                     if (!success) allSucceeded = false;
                 }
 
@@ -130,7 +154,7 @@ internal class ConvertAprx : IMxlUtility
             else
             {
                 var mxlFile = output ?? Path.ChangeExtension(input, ".mxl");
-                var result = await ConvertAprxAsync(input, mxlFile, log, datasetOptions, cancelTracker);
+                var result = await ConvertAprxAsync(input, mxlFile, log, datasetOptions, allowOverlappingLabelsPriority, cancelTracker);
                 log.PrintSummary();
                 return result;
             }
@@ -148,6 +172,7 @@ internal class ConvertAprx : IMxlUtility
             string mxlFile,
             AprxLogger log,
             DatasetPluginOptions? datasetOptions,
+            RenderLabelPriority allowOverlappingLabelsPriority,
             ICancelTracker? cancelTracker = null)
     {
         try
@@ -166,7 +191,11 @@ internal class ConvertAprx : IMxlUtility
 
             log.Info($"Found {mapResults.Count} map(s) in APRX.");
 
-            var converter = new AprxMapConverter(warn: log.Warning, info: msg => log.Info(msg, alwaysPrint: true), datasetPlugin: datasetOptions);
+            var converter = new AprxMapConverter(
+                warn: log.Warning,
+                info: msg => log.Info(msg, alwaysPrint: true),
+                datasetPlugin: datasetOptions,
+                allowOverlappingLabelsPriority: allowOverlappingLabelsPriority);
 
             var mapResult = mapResults[0];
             log.Info($"Converting map: '{mapResult.Map.Name}' ({mapResult.Layers.Count} layer(s))");

@@ -88,6 +88,14 @@ internal class CimStandardLabelPlacementProperties
     /// <summary>Which side(s) of a line a label may be placed on.</summary>
     [JsonPropertyName("lineLabelPosition")]
     public CimStandardLineLabelPosition? LineLabelPosition { get; set; }
+
+    /// <summary>
+    /// ArcGIS Pro's per-label-class "Allow overlapping labels" checkbox - this label class is
+    /// exempt from the overlap check entirely instead of being dropped when it would collide
+    /// with another already-placed label.
+    /// </summary>
+    [JsonPropertyName("allowOverlappingLabels")]
+    public bool AllowOverlappingLabels { get; set; }
 }
 
 /// <summary>
