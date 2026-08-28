@@ -145,7 +145,8 @@ internal static class Cim
         CimStandardLineLabelPosition? lineLabelPosition = null,
         string? rotationField = null,
         string? rotationType = null,
-        bool allowOverlappingLabels = false) => new()
+        bool allowOverlappingLabels = false,
+        string? featureWeight = null) => new()
     {
         NumLabelsOption = numLabelsOption,
         PointPlacementMethod = pointPlacementMethod,
@@ -153,7 +154,8 @@ internal static class Cim
         LineLabelPosition = lineLabelPosition,
         RotationField = rotationField,
         RotationType = rotationType,
-        AllowOverlappingLabels = allowOverlappingLabels
+        AllowOverlappingLabels = allowOverlappingLabels,
+        FeatureWeight = featureWeight
     };
 
     public static CimStandardLineLabelPosition LineLabelPosition(
@@ -167,10 +169,16 @@ internal static class Cim
 
     public static CimMaplexLabelPlacementProperties MaplexLabelPlacementProperties(
         string? pointPlacementMethod = "AroundPoint",
-        CimPointZonePriorities? pointExternalZonePriorities = null) => new()
+        CimPointZonePriorities? pointExternalZonePriorities = null,
+        double? featureWeight = null,
+        bool enableFeatureWeight = false,
+        double? polygonBoundaryWeight = null) => new()
     {
         PointPlacementMethod = pointPlacementMethod,
-        PointExternalZonePriorities = pointExternalZonePriorities
+        PointExternalZonePriorities = pointExternalZonePriorities,
+        FeatureWeight = featureWeight,
+        EnableFeatureWeight = enableFeatureWeight,
+        PolygonBoundaryWeight = polygonBoundaryWeight
     };
 
     public static CimSymbolReference SymbolRef(CimSymbol symbol) => new() { Symbol = symbol };

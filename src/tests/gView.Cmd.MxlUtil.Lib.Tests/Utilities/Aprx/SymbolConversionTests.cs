@@ -381,7 +381,6 @@ public class SymbolConversionTests
 
     [Theory]
     [InlineData(100, 255)]
-    [InlineData(0, 0)]
     [InlineData(50, 127)] // 50/100 * 255 = 127.5 -> truncated to 127 (byte cast)
     public void Color_EsriAlpha_ConvertsFromZeroToHundredScale(double esriAlpha, byte expectedByte)
     {
@@ -389,6 +388,26 @@ public class SymbolConversionTests
 
         var fill = Assert.IsType<SimpleFillSymbol>(symbol);
         Assert.Equal(expectedByte, fill.FillColor.A);
+    }
+
+    [Fact]
+    public void PolygonSymbol_FullyTransparentFill_ProducesNoFeatureRendererAtAll()
+    {
+        // esriAlpha=0 used to be covered by the [Theory] above (asserting FillColor.A == 0), but
+        // a symbol whose every color is fully transparent is exactly RendererIsFullyTransparent's
+        // "invisible anchor" case - the layer now gets no FeatureRenderer at all (same as gView's
+        // own "Render features for this layer" checkbox being off) instead of a renderer that
+        // always draws an alpha-0 fill.
+        var converter = new AprxMapConverter();
+        var cimLayer = Cim.FeatureLayer(
+            featureTable: Cim.FeatureTable(),
+            renderer: Cim.SimpleRenderer(Cim.PolygonSymbol(Cim.SolidFill(Cim.Rgb(255, 0, 0, 0)))));
+        var result = new AprxMapResult(Cim.Map(), [cimLayer]);
+
+        var map = converter.Convert(result);
+
+        var layer = (FeatureLayer)map.MapElements[0];
+        Assert.Null(layer.FeatureRenderer);
     }
 
     [Fact]

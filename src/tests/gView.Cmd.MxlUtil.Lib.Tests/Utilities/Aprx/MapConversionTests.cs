@@ -268,6 +268,118 @@ public class MapConversionTests
     }
 
     [Fact]
+    public void Convert_FeatureLayer_StandardFeatureWeight_NeverBecomesFeatureLabelPriority()
+    {
+        // Unlike LabelPriority (a label's own priority, see LabelRendererConversionTests),
+        // FeatureLabelPriority ("does this layer's own geometry block other labels?") is only
+        // converted from Maplex's featureWeight/enableFeatureWeight (below) - the Standard
+        // engine has no confirmed equivalent gate for this specific concept, so its featureWeight
+        // is never used for FeatureLabelPriority, even at "High".
+        var converter = NewConverter(out _, out _);
+        var cimLayer = Cim.FeatureLayer(
+            featureTable: Cim.FeatureTable(),
+            labelVisibility: false,
+            labelClasses: [Cim.LabelClass(standardLabelPlacementProperties: Cim.StandardLabelPlacementProperties(featureWeight: "High"))]);
+        var result = new AprxMapResult(
+            Cim.Map(generalPlacementProperties: Cim.GeneralPlacementProperties(maplex: false)),
+            [cimLayer]);
+
+        var map = converter.Convert(result);
+
+        var layer = (FeatureLayer)map.MapElements[0];
+        Assert.Null(layer.FeatureLabelPriority);
+    }
+
+    [Fact]
+    public void Convert_FeatureLayer_FeatureWeight_MapUsesMaplex_StandardFeatureWeightIsIgnored()
+    {
+        // Maplex is active, so the label class's *standardLabelPlacementProperties.featureWeight*
+        // (the Standard engine's None/Low/Medium/High enum) must be ignored - only the Maplex
+        // engine's own 0-1000 numeric scale (maplexLabelPlacementProperties.featureWeight, see
+        // below) applies while Maplex is the active engine.
+        var converter = NewConverter(out _, out _);
+        var cimLayer = Cim.FeatureLayer(
+            featureTable: Cim.FeatureTable(),
+            labelClasses: [Cim.LabelClass(standardLabelPlacementProperties: Cim.StandardLabelPlacementProperties(featureWeight: "High"))]);
+        var result = new AprxMapResult(
+            Cim.Map(generalPlacementProperties: Cim.GeneralPlacementProperties(maplex: true)),
+            [cimLayer]);
+
+        var map = converter.Convert(result);
+
+        var layer = (FeatureLayer)map.MapElements[0];
+        Assert.Null(layer.FeatureLabelPriority);
+    }
+
+    [Theory]
+    [InlineData(100, RenderLabelPriority.Low)]
+    [InlineData(333, RenderLabelPriority.Low)]
+    [InlineData(500, RenderLabelPriority.Normal)]
+    [InlineData(666, RenderLabelPriority.Normal)]
+    [InlineData(667, RenderLabelPriority.High)]
+    [InlineData(1000, RenderLabelPriority.High)]
+    public void Convert_FeatureLayer_MaplexFeatureWeight_EnabledBecomesFeatureLabelPriority(double featureWeight, RenderLabelPriority expected)
+    {
+        // Maplex's "Feature weight" is a continuous 0-1000 scale rather than Standard's
+        // None/Low/Medium/High enum (real-world values seen in enetze_ole_sdep.aprx: 100 and
+        // 500) - bucketed into equal thirds for gView's tiers. ArcGIS Pro only applies it once
+        // enableFeatureWeight is explicitly true (see the *WithoutEnableFeatureWeight test below
+        // for the no-op case, which is what every real aprx checked so far actually contains).
+        var converter = NewConverter(out _, out _);
+        var cimLayer = Cim.FeatureLayer(
+            featureTable: Cim.FeatureTable(),
+            labelVisibility: false,
+            labelClasses: [Cim.LabelClass(maplexLabelPlacementProperties: Cim.MaplexLabelPlacementProperties(featureWeight: featureWeight, enableFeatureWeight: true))]);
+        var result = new AprxMapResult(
+            Cim.Map(generalPlacementProperties: Cim.GeneralPlacementProperties(maplex: true)),
+            [cimLayer]);
+
+        var map = converter.Convert(result);
+
+        var layer = (FeatureLayer)map.MapElements[0];
+        Assert.Equal(expected, layer.FeatureLabelPriority);
+    }
+
+    [Fact]
+    public void Convert_FeatureLayer_MaplexFeatureWeight_WithoutEnableFeatureWeight_LeavesFeatureLabelPriorityNull()
+    {
+        // The gate ArcGIS Pro actually requires (enableFeatureWeight=true) is absent from every
+        // real aprx checked so far - it defaults to false, so a populated featureWeight alone
+        // must NOT be enough to set FeatureLabelPriority.
+        var converter = NewConverter(out _, out _);
+        var cimLayer = Cim.FeatureLayer(
+            featureTable: Cim.FeatureTable(),
+            labelClasses: [Cim.LabelClass(maplexLabelPlacementProperties: Cim.MaplexLabelPlacementProperties(featureWeight: 500, enableFeatureWeight: false))]);
+        var result = new AprxMapResult(
+            Cim.Map(generalPlacementProperties: Cim.GeneralPlacementProperties(maplex: true)),
+            [cimLayer]);
+
+        var map = converter.Convert(result);
+
+        var layer = (FeatureLayer)map.MapElements[0];
+        Assert.Null(layer.FeatureLabelPriority);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData(0.0)]
+    public void Convert_FeatureLayer_MaplexFeatureWeightZeroOrAbsent_LeavesFeatureLabelPriorityNull(double? featureWeight)
+    {
+        var converter = NewConverter(out _, out _);
+        var cimLayer = Cim.FeatureLayer(
+            featureTable: Cim.FeatureTable(),
+            labelClasses: [Cim.LabelClass(maplexLabelPlacementProperties: Cim.MaplexLabelPlacementProperties(featureWeight: featureWeight, enableFeatureWeight: true))]);
+        var result = new AprxMapResult(
+            Cim.Map(generalPlacementProperties: Cim.GeneralPlacementProperties(maplex: true)),
+            [cimLayer]);
+
+        var map = converter.Convert(result);
+
+        var layer = (FeatureLayer)map.MapElements[0];
+        Assert.Null(layer.FeatureLabelPriority);
+    }
+
+    [Fact]
     public void Convert_FeatureLayer_SelectionSymbol_BecomesSelectionRenderer()
     {
         // Without this, gView falls back to its own default selection highlight instead of the

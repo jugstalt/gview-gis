@@ -96,6 +96,15 @@ internal class CimStandardLabelPlacementProperties
     /// </summary>
     [JsonPropertyName("allowOverlappingLabels")]
     public bool AllowOverlappingLabels { get; set; }
+
+    /// <summary>
+    /// ArcGIS Pro's per-label-class "Feature weight" (Label Priority Ranking dialog / Placement
+    /// Properties tab) - how strongly this layer's own feature geometry blocks *other* labels
+    /// (from any layer) from being placed on top of it. "None" (the default) means features
+    /// don't block labels at all; otherwise "Low", "Medium", or "High".
+    /// </summary>
+    [JsonPropertyName("featureWeight")]
+    public string? FeatureWeight { get; set; }
 }
 
 /// <summary>
@@ -128,6 +137,32 @@ internal class CimMaplexLabelPlacementProperties
     /// <summary>Same shape/semantics as <see cref="CimStandardLabelPlacementProperties.PointPlacementPriorities"/>.</summary>
     [JsonPropertyName("pointExternalZonePriorities")]
     public CimPointZonePriorities? PointExternalZonePriorities { get; set; }
+
+    /// <summary>
+    /// Maplex's "Feature weight" - unlike Standard's None/Low/Medium/High enum (see
+    /// <see cref="CimStandardLabelPlacementProperties.FeatureWeight"/>), this is a continuous
+    /// 0-1000 scale (0 = not weighted, matching Standard's "None"). Same purpose: how strongly
+    /// this layer's own feature geometry blocks *other* labels from being placed on top of it.
+    /// Only takes effect when <see cref="EnableFeatureWeight"/> is true.
+    /// </summary>
+    [JsonPropertyName("featureWeight")]
+    public double? FeatureWeight { get; set; }
+
+    /// <summary>
+    /// Gates <see cref="FeatureWeight"/> - ArcGIS Pro only applies the feature weight when this
+    /// is explicitly true. Not observed set to true in any real aprx checked so far (absent
+    /// entirely, in fact - see the FeatureLabelPriority conversion for the resulting caveat).
+    /// </summary>
+    [JsonPropertyName("enableFeatureWeight")]
+    public bool EnableFeatureWeight { get; set; }
+
+    /// <summary>
+    /// Maplex's separate 0-1000 weight for a *polygon's boundary* specifically (as opposed to
+    /// its interior, covered by <see cref="FeatureWeight"/>). Not currently converted - always
+    /// 0 (unset) in every real aprx seen so far, so there's no real-world signal to convert yet.
+    /// </summary>
+    [JsonPropertyName("polygonBoundaryWeight")]
+    public double? PolygonBoundaryWeight { get; set; }
 }
 
 /// <summary>

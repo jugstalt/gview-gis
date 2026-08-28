@@ -690,6 +690,79 @@ public class LabelRendererConversionTests
     }
 
     // -----------------------------------------------------------------------
+    // "Feature weight" also drives the label's own priority, not just FeatureLabelPriority
+    // -----------------------------------------------------------------------
+
+    [Theory]
+    [InlineData("Low", RenderLabelPriority.Low)]
+    [InlineData("Medium", RenderLabelPriority.Normal)]
+    [InlineData("High", RenderLabelPriority.High)]
+    public void FeatureWeight_BecomesTheLabelsOwnPriorityToo(string featureWeight, RenderLabelPriority expected)
+    {
+        // ArcGIS Pro's Label Priority Ranking "feature weight" isn't just about this layer's
+        // geometry blocking *other* labels (FeatureLabelPriority) - it's meant to reflect how
+        // important this layer's own labels are too, so reuse it here instead of always leaving
+        // LabelPriority at gView's flat default (Normal) regardless of what ArcGIS Pro says.
+        var (layer, _, _) = ConvertLabeledLayer(
+            Cim.LabelClass(
+                expression: "[NAME]",
+                standardLabelPlacementProperties: Cim.StandardLabelPlacementProperties(featureWeight: featureWeight)),
+            map: Cim.Map(generalPlacementProperties: Cim.GeneralPlacementProperties(maplex: false)));
+
+        var renderer = Assert.IsType<SimpleLabelRenderer>(layer.LabelRenderer);
+        Assert.Equal(expected, renderer.LabelPriority);
+    }
+
+    [Fact]
+    public void AllowOverlappingLabels_TakesPriorityOverFeatureWeight()
+    {
+        // A label class can have both "Allow overlapping labels" checked and a "High" feature
+        // weight at once - the explicit "always show this label" choice must win over the
+        // weight-derived priority, not the other way around.
+        var (layer, _, _) = ConvertLabeledLayer(
+            Cim.LabelClass(
+                expression: "[NAME]",
+                standardLabelPlacementProperties: Cim.StandardLabelPlacementProperties(
+                    allowOverlappingLabels: true,
+                    featureWeight: "Low")),
+            map: Cim.Map(generalPlacementProperties: Cim.GeneralPlacementProperties(maplex: false)));
+
+        var renderer = Assert.IsType<SimpleLabelRenderer>(layer.LabelRenderer);
+        Assert.Equal(RenderLabelPriority.Always, renderer.LabelPriority);
+    }
+
+    [Theory]
+    [InlineData(100, RenderLabelPriority.Low)]
+    [InlineData(500, RenderLabelPriority.Normal)]
+    [InlineData(1000, RenderLabelPriority.High)]
+    public void MaplexFeatureWeight_BecomesTheLabelsOwnPriorityToo(double featureWeight, RenderLabelPriority expected)
+    {
+        // Same idea as FeatureWeight_BecomesTheLabelsOwnPriorityToo above, but for the Maplex
+        // engine's continuous 0-1000 "Feature weight" scale instead of Standard's enum.
+        var (layer, _, _) = ConvertLabeledLayer(
+            Cim.LabelClass(
+                expression: "[NAME]",
+                maplexLabelPlacementProperties: Cim.MaplexLabelPlacementProperties(featureWeight: featureWeight)),
+            map: Cim.Map(generalPlacementProperties: Cim.GeneralPlacementProperties(maplex: true)));
+
+        var renderer = Assert.IsType<SimpleLabelRenderer>(layer.LabelRenderer);
+        Assert.Equal(expected, renderer.LabelPriority);
+    }
+
+    [Fact]
+    public void MaplexFeatureWeightZeroOrAbsent_LeavesDefaultPriorityUntouched()
+    {
+        var (layer, _, _) = ConvertLabeledLayer(
+            Cim.LabelClass(
+                expression: "[NAME]",
+                maplexLabelPlacementProperties: Cim.MaplexLabelPlacementProperties(featureWeight: 0)),
+            map: Cim.Map(generalPlacementProperties: Cim.GeneralPlacementProperties(maplex: true)));
+
+        var renderer = Assert.IsType<SimpleLabelRenderer>(layer.LabelRenderer);
+        Assert.Equal(RenderLabelPriority.Normal, renderer.LabelPriority);
+    }
+
+    // -----------------------------------------------------------------------
     // Line label placement (above/on/below the line -> TextSymbolAlignment Over/Center/Under)
     // -----------------------------------------------------------------------
 

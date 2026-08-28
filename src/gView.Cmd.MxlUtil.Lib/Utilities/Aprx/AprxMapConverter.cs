@@ -619,10 +619,27 @@ internal class AprxMapConverter
         // Feature renderer
         if (cimFeature.Renderer != null)
         {
-            layer.FeatureRenderer = ConvertRenderer(cimFeature.Renderer);
-            if (layer.FeatureRenderer is null)
+            if (RendererIsFullyTransparent(cimFeature.Renderer))
             {
-                _warn?.Invoke($"Layer '{cimFeature.Name}': renderer type '{cimFeature.Renderer.GetType().Name}' could not be converted and was skipped.");
+                // Deliberately invisible "anchor" symbol (every color alpha 0) - a common
+                // real-world pattern for label-only layers (a point feature that exists purely
+                // to carry a label, e.g. NS-Kasten-Beschriftung; see BuildTextSymbol's contrast
+                // fallback for another symptom of the same authoring style). Rendering it would
+                // cost real time for zero visible output, so this leaves FeatureRenderer unset -
+                // same as gView's own "Render features for this layer" checkbox being off -
+                // rather than assigning a renderer that always draws nothing. Deliberately left
+                // as-is rather than "fixed": RenderFeatureLayer only calls AddBlockingGeometry
+                // when FeatureRenderer is set, so an invisible feature also correctly stops
+                // blocking other labels, matching what an invisible feature should do.
+                _info?.Invoke($"Layer '{cimFeature.Name}': renderer symbol is fully transparent (alpha 0) - feature rendering left off for this layer (its labels, if any, are unaffected).");
+            }
+            else
+            {
+                layer.FeatureRenderer = ConvertRenderer(cimFeature.Renderer);
+                if (layer.FeatureRenderer is null)
+                {
+                    _warn?.Invoke($"Layer '{cimFeature.Name}': renderer type '{cimFeature.Renderer.GetType().Name}' could not be converted and was skipped.");
+                }
             }
         }
 
@@ -641,6 +658,26 @@ internal class AprxMapConverter
         {
             layer.LabelRenderer = ConvertLabelRenderer(cimFeature.LabelClasses[0], DetermineRendererGeometryKind(cimFeature.Renderer));
         }
+
+        // ArcGIS Pro's per-label-class "Feature weight" (Label Priority Ranking / Placement
+        // Properties) - how strongly this layer's own feature geometry blocks *other* labels
+        // (from any layer) from being placed on top of it, e.g. so a symbol never gets covered
+        // by a neighbouring label. Read independently of LabelVisibility above: ArcGIS Pro keeps
+        // this setting per label class regardless of whether the layer's own labels are shown.
+        //
+        // Maplex only: gated by EnableFeatureWeight, which ArcGIS Pro must set to true for the
+        // weight to actually apply. No real aprx seen so far sets it (it's absent from the JSON
+        // entirely, defaulting to false) - so this is currently null for every real file
+        // available, matching Esri's own documented default (off) rather than inferring a signal
+        // ArcGIS Pro isn't actually emitting. Standard has no confirmed equivalent "does this
+        // feature's geometry block other labels" concept, so it isn't used for
+        // FeatureLabelPriority here (contrast with LabelPriority below, which reuses the same
+        // featureWeight value for both engines, ungated, for the label's own priority tier).
+        var firstLabelClass = cimFeature.LabelClasses?.FirstOrDefault();
+        layer.FeatureLabelPriority = _useMaplexLabelEngine
+            && firstLabelClass?.MaplexLabelPlacementProperties?.EnableFeatureWeight == true
+                ? MapMaplexFeatureWeight(firstLabelClass?.MaplexLabelPlacementProperties?.FeatureWeight)
+                : null;
 
         return layer;
     }
@@ -1035,6 +1072,35 @@ internal class AprxMapConverter
         _ => RotationType.Arithmetic   // default / unknown
     };
 
+    /// <summary>
+    /// Maps Maplex's continuous 0-1000 "Feature weight" scale (see
+    /// <see cref="CimMaplexLabelPlacementProperties.FeatureWeight"/>) onto gView's
+    /// <see cref="RenderLabelPriority"/> tiers, used both for <see cref="IFeatureLayer.FeatureLabelPriority"/>
+    /// and (as a fallback) a label class's own <see cref="SimpleLabelRenderer.LabelPriority"/>. 0 or unset
+    /// matches Standard's "None" (no signal - leave the existing default alone). There is no Esri-documented
+    /// mapping from this numeric scale onto discrete tiers; splitting the 1-1000 range into equal thirds is
+    /// a judgement call, not confirmed against Esri's own preset semantics.
+    /// </summary>
+    private static RenderLabelPriority? MapMaplexFeatureWeight(double? featureWeight)
+    {
+        if (featureWeight is null || featureWeight <= 0)
+        {
+            return null;
+        }
+
+        if (featureWeight <= 333)
+        {
+            return RenderLabelPriority.Low;
+        }
+
+        if (featureWeight <= 666)
+        {
+            return RenderLabelPriority.Normal;
+        }
+
+        return RenderLabelPriority.High;
+    }
+
     // -----------------------------------------------------------------------
     // Label renderer conversion
     // -----------------------------------------------------------------------
@@ -1052,16 +1118,41 @@ internal class AprxMapConverter
             _ => renderer.HowManyLabels
         };
 
-        // ArcGIS Pro's per-label-class "Allow overlapping labels" checkbox (Standard engine
-        // only - Maplex has no equivalent modelled here, same scoping as ApplyLineLabelPlacement/
-        // the RotationField point placement). gView has no direct equivalent of "place normally,
-        // but permit overlap as a last resort" - its RenderLabelPriority.Always skips the overlap
-        // check entirely and always places at the very first candidate position, which can be far
-        // noisier than what ArcGIS Pro actually produces. _allowOverlappingLabelsPriority lets the
-        // caller pick a gentler target tier (e.g. High) instead of Always; defaults to Always.
-        if (!_useMaplexLabelEngine && cimLabel.StandardLabelPlacementProperties?.AllowOverlappingLabels == true)
+        if (_useMaplexLabelEngine)
         {
+            // Maplex has no equivalent modelled here of Standard's "Allow overlapping labels"
+            // checkbox (below) - just "Feature weight", on its own continuous 0-1000 scale (see
+            // MapMaplexFeatureWeight) rather than Standard's None/Low/Medium/High enum. 0/unset
+            // keeps gView's flat default (Normal) untouched.
+            var mapped = MapMaplexFeatureWeight(cimLabel.MaplexLabelPlacementProperties?.FeatureWeight);
+            if (mapped.HasValue)
+            {
+                renderer.LabelPriority = mapped.Value;
+            }
+        }
+        else if (cimLabel.StandardLabelPlacementProperties?.AllowOverlappingLabels == true)
+        {
+            // ArcGIS Pro's per-label-class "Allow overlapping labels" checkbox. gView has no
+            // direct equivalent of "place normally, but permit overlap as a last resort" - its
+            // RenderLabelPriority.Always skips the overlap check entirely and always places at
+            // the very first candidate position, which can be far noisier than what ArcGIS Pro
+            // actually produces. _allowOverlappingLabelsPriority lets the caller pick a gentler
+            // target tier (e.g. High) instead of Always; defaults to Always.
             renderer.LabelPriority = _allowOverlappingLabelsPriority;
+        }
+        else
+        {
+            // Otherwise reuse "Feature weight" (see FeatureLabelPriority below - same source
+            // property) for the label's *own* priority too, instead of always leaving it at
+            // gView's flat default (Normal) regardless of what ArcGIS Pro's Label Priority
+            // Ranking actually says. "None"/unset keeps today's default untouched.
+            renderer.LabelPriority = cimLabel.StandardLabelPlacementProperties?.FeatureWeight switch
+            {
+                "Low" => RenderLabelPriority.Low,
+                "Medium" => RenderLabelPriority.Normal,
+                "High" => RenderLabelPriority.High,
+                _ => renderer.LabelPriority
+            };
         }
 
         // --- Determine whether the expression is a simple field reference ---
@@ -1285,6 +1376,79 @@ internal class AprxMapConverter
                 cb.Breaks?.Any(b => b.Symbol?.Symbol is T) == true,
             _ => false
         };
+    }
+
+    /// <summary>
+    /// True when every color reachable from <paramref name="renderer"/>'s symbols is fully
+    /// transparent (alpha 0) - see the comment at this method's one call site in
+    /// CreateFeatureLayer. Symbol types this can't see a color for (picture markers/fills,
+    /// referenced by URL rather than a color) make it return false, so a genuinely visible
+    /// image-based layer is never mistaken for an invisible one.
+    /// </summary>
+    private static bool RendererIsFullyTransparent(CimRenderer? renderer)
+    {
+        var colors = new List<CimColor>();
+        var sawPictureSymbol = false;
+        CollectColors(renderer, colors, ref sawPictureSymbol);
+
+        return !sawPictureSymbol && colors.Count > 0 && colors.All(c => c.AlphaByte == 0);
+    }
+
+    private static void CollectColors(CimRenderer? renderer, List<CimColor> colors, ref bool sawPictureSymbol)
+    {
+        switch (renderer)
+        {
+            case CimSimpleRenderer simple:
+                CollectColors(simple.Symbol?.Symbol, colors, ref sawPictureSymbol);
+                break;
+            case CimUniqueValueRenderer uv:
+                CollectColors(uv.DefaultSymbol?.Symbol, colors, ref sawPictureSymbol);
+                foreach (var cls in uv.Groups?.SelectMany(g => g.Classes ?? []) ?? [])
+                {
+                    CollectColors(cls.Symbol?.Symbol, colors, ref sawPictureSymbol);
+                }
+                break;
+            case CimClassBreaksRenderer cb:
+                CollectColors(cb.DefaultSymbol?.Symbol, colors, ref sawPictureSymbol);
+                foreach (var brk in cb.Breaks ?? [])
+                {
+                    CollectColors(brk.Symbol?.Symbol, colors, ref sawPictureSymbol);
+                }
+                break;
+        }
+    }
+
+    private static void CollectColors(CimSymbol? symbol, List<CimColor> colors, ref bool sawPictureSymbol)
+    {
+        foreach (var layer in symbol?.SymbolLayers?.Where(l => l.Enable) ?? [])
+        {
+            switch (layer)
+            {
+                case CimSolidFill fill:
+                    if (fill.Color != null) colors.Add(fill.Color);
+                    break;
+                case CimSolidStroke stroke:
+                    if (stroke.Color != null) colors.Add(stroke.Color);
+                    break;
+                case CimCharacterMarker marker:
+                    if (marker.Color != null) colors.Add(marker.Color);
+                    CollectColors(marker.Symbol, colors, ref sawPictureSymbol);
+                    break;
+                case CimHatchFill hatch:
+                    CollectColors(hatch.LineSymbol, colors, ref sawPictureSymbol);
+                    break;
+                case CimVectorMarker vectorMarker:
+                    foreach (var graphic in vectorMarker.MarkerGraphics ?? [])
+                    {
+                        CollectColors(graphic.Symbol, colors, ref sawPictureSymbol);
+                    }
+                    break;
+                case CimPictureMarker:
+                case CimPictureFill:
+                    sawPictureSymbol = true;
+                    break;
+            }
+        }
     }
 
     private ITextSymbol BuildTextSymbol(CimTextSymbol cimText)
