@@ -140,11 +140,31 @@ namespace gView.GraphicsEngine.Skia
 
         #region Font Provisioning
 
-        private static readonly ConcurrentDictionary<string, List<SKTypeface>> _customTypefaces
-            = new ConcurrentDictionary<string, List<SKTypeface>>(StringComparer.OrdinalIgnoreCase);
+        // Directory-provided fonts. Registration happens once at startup (before any
+        // request is served); the per-family CustomFace[] arrays are immutable
+        // afterwards, so TryResolveCustomTypeface needs no lock on the render hot path.
+        private sealed class CustomFace
+        {
+            public CustomFace(SKTypeface typeface)
+            {
+                Typeface = typeface;
+                var style = typeface.FontStyle;
+                Weight = style.Weight;
+                Width = style.Width;
+                Slant = style.Slant;
+            }
+
+            public SKTypeface Typeface { get; }
+            public int Weight { get; }
+            public int Width { get; }
+            public SKFontStyleSlant Slant { get; }
+        }
+
+        private static readonly ConcurrentDictionary<string, CustomFace[]> _customTypefaces
+            = new ConcurrentDictionary<string, CustomFace[]>(StringComparer.OrdinalIgnoreCase);
         private static readonly HashSet<string> _loadedFontFiles
             = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        private static readonly object _customFontsLock = new object();
+        private static readonly object _registrationLock = new object();
 
         public void RegisterFontDirectory(string path)
         {
@@ -155,7 +175,7 @@ namespace gView.GraphicsEngine.Skia
             }
 
             int loaded = 0;
-            lock (_customFontsLock)
+            lock (_registrationLock)   // startup only - never contended by request threads
             {
                 foreach (var file in files)
                 {
@@ -173,14 +193,21 @@ namespace gView.GraphicsEngine.Skia
                             continue;
                         }
 
-                        _customTypefaces
-                            .GetOrAdd(typeface.FamilyName, _ => new List<SKTypeface>())
-                            .Add(typeface);
+                        var face = new CustomFace(typeface);
+                        _customTypefaces.AddOrUpdate(
+                            typeface.FamilyName,
+                            _ => new[] { face },
+                            (_, existing) =>
+                            {
+                                var next = new CustomFace[existing.Length + 1];
+                                Array.Copy(existing, next, existing.Length);
+                                next[existing.Length] = face;
+                                return next;
+                            });
                         loaded++;
 
                         Console.WriteLine($"[fonts] {EngineDisplayName}: registered '{typeface.FamilyName}' " +
-                                          $"(weight {typeface.FontStyle.Weight}, slant {typeface.FontStyle.Slant}) " +
-                                          $"from {Path.GetFileName(file)}");
+                                          $"(weight {face.Weight}, slant {face.Slant}) from {Path.GetFileName(file)}");
                     }
                     catch (Exception ex)
                     {
@@ -200,12 +227,13 @@ namespace gView.GraphicsEngine.Skia
         /// <summary>
         /// Returns the registered (directory-provided) typeface that best matches the
         /// requested family name and style, or <c>null</c> when no such family was registered.
+        /// Lock-free: the per-family arrays are immutable after startup.
         /// </summary>
         internal static SKTypeface TryResolveCustomTypeface(string familyName, FontStyle fontStyle)
         {
             if (String.IsNullOrEmpty(familyName) ||
                 !_customTypefaces.TryGetValue(familyName, out var candidates) ||
-                candidates.Count == 0)
+                candidates.Length == 0)
             {
                 return null;
             }
@@ -215,20 +243,16 @@ namespace gView.GraphicsEngine.Skia
             SKTypeface best = null;
             int bestScore = int.MaxValue;
 
-            lock (_customFontsLock)
+            foreach (var face in candidates)
             {
-                foreach (var typeface in candidates)
-                {
-                    var have = typeface.FontStyle;
-                    int score = Math.Abs(have.Weight - want.Weight)
-                              + Math.Abs(have.Width - want.Width) * 10
-                              + (have.Slant == want.Slant ? 0 : 1000);
+                int score = Math.Abs(face.Weight - want.Weight)
+                          + Math.Abs(face.Width - want.Width) * 10
+                          + (face.Slant == want.Slant ? 0 : 1000);
 
-                    if (score < bestScore)
-                    {
-                        bestScore = score;
-                        best = typeface;
-                    }
+                if (score < bestScore)
+                {
+                    bestScore = score;
+                    best = face.Typeface;
                 }
             }
 

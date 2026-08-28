@@ -69,7 +69,11 @@ Notes that shape the design:
   fields on first call. Any font registration must happen **before** the first call,
   or must invalidate those caches.
 * `SKTypeface` is not thread-safe; the Skia engine already guards each typeface with a
-  per-`Handle` `ThreadLocker` (`_threadLockers` in `SkiaFont`).
+  per-`Handle` `ThreadLocker` (`_threadLockers` in `SkiaFont`), and every `SkiaFont`
+  construction is serialized through one static `_threadLocker`.
+* The server serves hundreds of concurrent requests. Font *resolution* (this feature)
+  must not add locking on the render hot path — registration is startup-only, so the
+  lookup structures are treated as immutable afterwards and read lock-free.
 
 ## Considered approaches
 
@@ -140,14 +144,18 @@ void RegisterFontDirectory(string path);
 
 `SkiaGraphicsEngine`:
 
-* Static registry, e.g.
-  `ConcurrentDictionary<string, List<SKTypeface>>` keyed by family name
-  (`StringComparer.OrdinalIgnoreCase`).
+* Static registry `ConcurrentDictionary<string, CustomFace[]>` keyed by family name
+  (`StringComparer.OrdinalIgnoreCase`). `CustomFace` caches the `SKTypeface` plus its
+  `Weight` / `Width` / `Slant` as plain ints so the resolve path never touches
+  `SKTypeface` members.
 * `RegisterFontDirectory` enumerates the directory, loads each file via
-  `SKTypeface.FromFile(path)`, and indexes it under `typeface.FamilyName`. Log every
-  loaded `FamilyName` + style (see [Diagnostics](#6-diagnostics)).
-* After loading, **merge the new family names into `_installedFontNames`** (or reset the
-  cache) so they show up in `GetInstalledFontNames()` (font pickers, `GetDefaultFontName()`).
+  `SKTypeface.FromFile(path)`, and appends a `CustomFace` under `typeface.FamilyName`
+  (`AddOrUpdate` with a fresh array — the per-family array stays immutable). Runs under
+  `_registrationLock`, which is a **startup-only** lock (registration happens in
+  `Startup`'s constructor, before Kestrel listens) and is therefore never contended by
+  request threads. Log every loaded `FamilyName` + style (see [Diagnostics](#6-diagnostics)).
+* After loading, reset `_installedFontNames` / `_defaultFontName` so the new families
+  show up in `GetInstalledFontNames()` (font pickers, `GetDefaultFontName()`).
 * The default `SKFontManager` cannot be extended with an extra directory at runtime,
   which is why we keep our own registry.
 
@@ -155,29 +163,36 @@ void RegisterFontDirectory(string path);
 
 ```csharp
 var fontTypeFace = _threadLocker.GetInterLocked(() =>
-    SkiaGraphicsEngine.TryResolveRegisteredTypeface(name, fontStyle)   // NEW: registry first
+    SkiaGraphicsEngine.TryResolveCustomTypeface(name, fontStyle)        // NEW: registry first
     ?? SKTypeface.FromFamilyName(name, fontStyle.ToSKFontStyle()));     // unchanged fallback
 ```
 
-`TryResolveRegisteredTypeface` picks the best style match from the registered list
-(exact `SKFontStyle`, then nearest weight/slant). Thread-safety is unchanged: the
-resolved `SKTypeface` still gets a per-`Handle` `ThreadLocker` via the existing
-`_threadLockers` logic.
+`TryResolveCustomTypeface` picks the nearest style match (weight + width + slant
+scoring) from the family's `CustomFace[]`. It is **lock-free**: the array is immutable
+after startup, and `ConcurrentDictionary.TryGetValue` needs no lock. It also runs inside
+`SkiaFont`'s existing static `_threadLocker` (which already serializes every
+`SKTypeface.FromFamilyName` call, since `SKTypeface` is not thread-safe), so the feature
+adds **zero** additional locking on the render path. Thread-safety of the resolved
+`SKTypeface` for drawing is unchanged: it still gets a per-`Handle` `ThreadLocker` via
+the existing `_threadLockers` logic.
 
 ### 4. GDI+ implementation (Windows only)
 
 `GdiGraphicsEngine`:
 
 * Static `PrivateFontCollection`; `RegisterFontDirectory` calls `AddFontFile(path)` per
-  file.
-* Merge the new families into the cached `_installedFontNames`
-  (`FontFamily.Families` snapshot).
+  file (under the startup-only `_registrationLock`), then rebuilds a
+  `ConcurrentDictionary<string, FontFamily> _familiesByName` read index.
+* Merge the new families into the cached `_installedFontNames`.
 
 `GdiFont` constructor:
 
-* `new Font("Name", ...)` does **not** see `PrivateFontCollection` families. Try
-  `new FontFamily(name, privateCollection)` → `new Font(family, size, style)` first,
-  fall back to the current `new Font(name, size, style)` on `ArgumentException`.
+* `new Font("Name", ...)` does **not** see `PrivateFontCollection` families.
+  `TryGetPrivateFontFamily` does a **lock-free** `_familiesByName.TryGetValue`; on a hit,
+  `new Font(family, size, style)` (with an `IsStyleAvailable` fallback to an available
+  style), otherwise the unchanged `new Font(name, size, style)`. Unlike the Skia path,
+  GDI font construction has no outer serializing lock, so the lock-free lookup matters
+  here for concurrent renders.
 
 ### 5. Startup wiring &nbsp;— ordering matters
 

@@ -1,6 +1,7 @@
 ﻿using gView.GraphicsEngine.Abstraction;
 using gView.GraphicsEngine.Threading;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Text;
@@ -117,10 +118,16 @@ namespace gView.GraphicsEngine.GdiPlus
         // "new Font(name, ...)" - a FontFamily from the collection has to be used
         // explicitly (see GdiFont). The collection is kept alive for the process
         // lifetime; its FontFamily instances must not be disposed while in use.
+        //
+        // Registration happens once at startup (before any request is served).
+        // _familiesByName is the read index for the render hot path and is only
+        // written under _registrationLock at startup, so lookups need no lock.
         private static readonly PrivateFontCollection _privateFonts = new PrivateFontCollection();
+        private static readonly ConcurrentDictionary<string, FontFamily> _familiesByName
+            = new ConcurrentDictionary<string, FontFamily>(StringComparer.OrdinalIgnoreCase);
         private static readonly HashSet<string> _loadedFontFiles
             = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        private static readonly object _customFontsLock = new object();
+        private static readonly object _registrationLock = new object();
 
         public void RegisterFontDirectory(string path)
         {
@@ -131,7 +138,7 @@ namespace gView.GraphicsEngine.GdiPlus
             }
 
             int loaded = 0;
-            lock (_customFontsLock)
+            lock (_registrationLock)   // startup only - never contended by request threads
             {
                 foreach (var file in files)
                 {
@@ -153,39 +160,30 @@ namespace gView.GraphicsEngine.GdiPlus
                     }
                 }
 
+                foreach (var family in _privateFonts.Families)
+                {
+                    _familiesByName[family.Name] = family;
+                }
+
                 // installed-font cache must be rebuilt so the new families show up
                 _installedFontNames = null;
             }
 
             Console.WriteLine($"[fonts] {EngineDisplayName}: {loaded} font file(s) registered from '{path}', " +
-                              $"{_privateFonts.Families.Length} custom family/families total");
+                              $"{_familiesByName.Count} custom family/families total");
         }
 
-        private static IEnumerable<string> CustomFontFamilyNames()
-        {
-            lock (_customFontsLock)
-            {
-                return _privateFonts.Families.Select(f => f.Name).ToArray();
-            }
-        }
+        private static IEnumerable<string> CustomFontFamilyNames() => _familiesByName.Keys;
 
         /// <summary>
         /// Returns the registered (directory-provided) <see cref="FontFamily"/> for
         /// <paramref name="familyName"/>, or <c>null</c> when no such family was registered.
+        /// Lock-free: <see cref="_familiesByName"/> is only written at startup.
         /// </summary>
         internal static FontFamily TryGetPrivateFontFamily(string familyName)
-        {
-            if (String.IsNullOrEmpty(familyName))
-            {
-                return null;
-            }
-
-            lock (_customFontsLock)
-            {
-                return _privateFonts.Families
-                    .FirstOrDefault(f => f.Name.Equals(familyName, StringComparison.OrdinalIgnoreCase));
-            }
-        }
+            => !String.IsNullOrEmpty(familyName) && _familiesByName.TryGetValue(familyName, out var family)
+                ? family
+                : null;
 
         #endregion
 
