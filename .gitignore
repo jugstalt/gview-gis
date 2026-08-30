@@ -266,3 +266,4 @@ __pycache__/
 
 _config/gview-web.config
 /src/Blazor/gView.Web/_config/gview-web.config
+/src/gView.Server/_config/mapserver.json
