@@ -29,6 +29,25 @@ namespace gView.Cmd.MxlUtil.Lib.Utilities.Aprx;
 /// <c>repr</c> - all no-ops for our purposes), <c>round(...)</c> calls, and <c>vbNewLine</c>/
 /// <c>vbCrLf</c>/<c>vbTab</c> (also tolerating the common misspelling <c>vbNewNLine</c>), e.g.
 /// <c>"lt. SAP: " &amp; [LABEL_SAP]</c> or <c>[SCHIEBERTYP] +[STATNR]</c></item>
+/// <item>Arcade's geometry accessors <c>Length($feature)</c>/<c>$feature.Length</c> (line length,
+/// or polygon perimeter) and <c>Area($feature)</c>/<c>$feature.Area</c> (polygon area), bare or
+/// wrapped in <c>round(...)</c> - only a bare <c>$feature</c> argument is understood, nothing else
+/// is guessed at (e.g. <c>Length($feature.SubField)</c> is rejected). These map onto the reserved
+/// pseudo-field placeholders <c>[$feature.length]</c>/<c>[$feature.area]</c> (see
+/// <see cref="GeometryLengthFieldName"/>/<see cref="GeometryAreaFieldName"/>), resolved at
+/// label-render time from the feature's actual geometry - see
+/// <see cref="gView.Framework.Cartography.Rendering.SimpleLabelRenderer"/> and
+/// <see cref="gView.Framework.Core.Geometry.Extensions.GeometryExtensions.GetLength"/>/
+/// <see cref="gView.Framework.Core.Geometry.Extensions.GeometryExtensions.GetArea"/> - rather than
+/// from an attribute field, unlike every other placeholder this parser produces. The computed
+/// value is planar (Euclidean, in the feature's own native/unprojected coordinate units), not
+/// geodesic like ArcGIS Pro's own <c>Length</c>/<c>Area</c> typically are - numbers can differ from
+/// the original ArcGIS Pro label, especially under a geographic coordinate system or for very
+/// long/large features. "Length"/"Area" are always assumed to mean this geometry accessor, never a
+/// same-named real attribute field (which would be indistinguishable from source text alone) -
+/// <see cref="gView.Cmd.MxlUtil.Lib.Utilities.ConvertAprx"/> surfaces an informational note
+/// whenever this assumption is made, so a conversion can be spot-checked if the source schema
+/// genuinely has such a field.</item>
 /// <item>a <c>Function ... End Function</c> wrapper around a single such assignment</item>
 /// <item>a <c>Function ... End Function</c> wrapper with an <c>If/ElseIf/[Else]/End If</c> chain,
 /// where every branch condition is built from <c>[Field] &lt;&gt; ""</c> / <c>[Field] = ""</c> /
@@ -1835,7 +1854,24 @@ internal static class AprxLabelExpressionParser
                     return false; // "$feature." not followed by a field name
                 }
                 FlushLiteral();
-                list.Add(new FieldTerm(expr[start..end]));
+                var accessed = expr[start..end];
+                // "$feature.Length"/"$feature.Area" are Arcade's geometry accessors, not a real
+                // attribute field - map onto the same reserved pseudo-field gView's runtime
+                // computes from the feature's geometry (see GeometryLengthFieldName/
+                // GeometryAreaFieldName). Without this special case, "$feature.Length" would
+                // silently become FieldTerm("Length"), as if a real field named "Length" existed.
+                if (accessed.Equals("Length", StringComparison.OrdinalIgnoreCase))
+                {
+                    list.Add(new FieldTerm(GeometryLengthFieldName));
+                }
+                else if (accessed.Equals("Area", StringComparison.OrdinalIgnoreCase))
+                {
+                    list.Add(new FieldTerm(GeometryAreaFieldName));
+                }
+                else
+                {
+                    list.Add(new FieldTerm(accessed));
+                }
                 i = end;
                 continue;
             }
@@ -1901,6 +1937,18 @@ internal static class AprxLabelExpressionParser
                         }
                         FlushLiteral();
                         list.Add(castedField);
+                        break;
+                    case "length":
+                    case "area":
+                        // Arcade's "Length($feature)"/"Area($feature)" - the geometry-derived
+                        // counterpart to "$feature.Length"/"$feature.Area" above. See
+                        // GeometryLengthFieldName/GeometryAreaFieldName.
+                        if (!TryParseFeatureGeometryCall(expr, ref i))
+                        {
+                            return false;
+                        }
+                        FlushLiteral();
+                        list.Add(new FieldTerm(word.ToLowerInvariant() == "length" ? GeometryLengthFieldName : GeometryAreaFieldName));
                         break;
                     default:
                         return false; // unknown identifier / function call - unsupported
@@ -2018,6 +2066,27 @@ internal static class AprxLabelExpressionParser
     /// </summary>
     private const string NumericCastNames = "float|cdbl|cdec|csng|val|cint|clng|int|str|repr";
 
+    /// <summary>
+    /// Reserved pseudo-field names for ArcGIS Pro's <c>Length($feature)</c>/<c>$feature.Length</c>
+    /// and <c>Area($feature)</c>/<c>$feature.Area</c> - resolved at label-render time from the
+    /// feature's actual geometry (see <see cref="gView.Framework.Cartography.Rendering.SimpleLabelRenderer"/>),
+    /// not from an attribute field. Deliberately spelled to echo the Arcade syntax that produces
+    /// it (<c>[$feature.length]</c> reads like "$feature.Length" applied to the feature) rather
+    /// than gView's usual "[Field]" look. The leading "$" (and the "." - never valid in a real
+    /// column/field name either) makes this impossible to collide with a real attribute field:
+    /// virtually no database/shapefile backend allows either character in a column name, so -
+    /// unlike reusing gView's existing "Shape_Length"/"Shape_Area" auto-field convention, which
+    /// real schemas can and do have as genuine, independently-populated columns - there's no need
+    /// to prefer a same-named real field over the computed value; the computed value is always
+    /// unambiguously what's meant. Only "." is used, never ":", since gView's own placeholder
+    /// syntax already gives ":" a reserved meaning (the "[Field:Format]" format separator - see
+    /// <see cref="gView.Framework.Cartography.Rendering.Exntensions.ExpressionExtensions.EvaluateExpression"/>);
+    /// a "$feature:length" spelling would be misparsed as field name "$feature" with format
+    /// string "length".
+    /// </summary>
+    private const string GeometryLengthFieldName = "$feature.length";
+    private const string GeometryAreaFieldName = "$feature.area";
+
     /// <summary>Extracts the field name from <c>[Field]</c> or a cast wrapping it, e.g. <c>float([Field])</c>/<c>str([Field])</c>.</summary>
     private static string? ExtractFieldFromNumericValue(string text)
     {
@@ -2028,7 +2097,61 @@ internal static class AprxLabelExpressionParser
         }
 
         m = Regex.Match(text, $@"^(?:{NumericCastNames})\s*\(\s*\[(?<field>[^\]]+)\]\s*\)$", RegexOptions.IgnoreCase);
-        return m.Success ? m.Groups["field"].Value.Trim() : null;
+        if (m.Success)
+        {
+            return m.Groups["field"].Value.Trim();
+        }
+
+        // "Length($feature)"/"$feature.Length" and "Area($feature)"/"$feature.Area" - the same
+        // geometry accessors handled in the main tokenizer loop above, but reachable here too when
+        // they appear directly inside round(...), e.g. "Round(Length($feature),1)".
+        if (Regex.IsMatch(text, @"^length\s*\(\s*\$feature\s*\)$", RegexOptions.IgnoreCase) ||
+            Regex.IsMatch(text, @"^\$feature\.length$", RegexOptions.IgnoreCase))
+        {
+            return GeometryLengthFieldName;
+        }
+        if (Regex.IsMatch(text, @"^area\s*\(\s*\$feature\s*\)$", RegexOptions.IgnoreCase) ||
+            Regex.IsMatch(text, @"^\$feature\.area$", RegexOptions.IgnoreCase))
+        {
+            return GeometryAreaFieldName;
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Parses a <c>(...)</c> right after the already-consumed <c>Length</c>/<c>Area</c> keyword
+    /// (<paramref name="i"/> points just past it), requiring the parenthesized content to be
+    /// exactly <c>$feature</c> (Arcade's geometry function-call form, e.g. <c>Length($feature)</c>)
+    /// - anything else inside the parens is rejected rather than guessed at.
+    /// </summary>
+    private static bool TryParseFeatureGeometryCall(string expr, ref int i)
+    {
+        int n = expr.Length;
+        int j = i;
+        while (j < n && char.IsWhiteSpace(expr[j]))
+        {
+            j++;
+        }
+        if (j >= n || expr[j] != '(')
+        {
+            return false;
+        }
+
+        int closeParen = expr.IndexOf(')', j + 1);
+        if (closeParen < 0)
+        {
+            return false; // unbalanced parens
+        }
+
+        var inner = expr[(j + 1)..closeParen].Trim();
+        if (!inner.Equals("$feature", StringComparison.OrdinalIgnoreCase))
+        {
+            return false; // only a bare "$feature" argument is supported, not e.g. Length($feature.SubField) or Length([Field])
+        }
+
+        i = closeParen + 1;
+        return true;
     }
 
     /// <summary>

@@ -5,6 +5,7 @@ using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Data.Filters;
 using gView.Framework.Core.Geometry;
+using gView.Framework.Core.Geometry.Extensions;
 using gView.Framework.Core.IO;
 using gView.Framework.Core.Symbology;
 using gView.Framework.Core.UI;
@@ -256,6 +257,22 @@ namespace gView.Framework.Cartography.Rendering
             }
             if (_useExpression)
             {
+                // "[$feature.length]"/"[$feature.area]" are reserved pseudo-fields for ArcGIS
+                // Pro's "Length($feature)"/"Area($feature)" geometry accessors, converted by
+                // AprxLabelExpressionParser - resolved here from the feature's actual geometry,
+                // not from an attribute field. The leading "$" (and the ".", never valid in a real
+                // column/field name either) makes these impossible to collide with a real
+                // attribute field name, so - unlike a real field - there's no precedence question
+                // to resolve against the loop above.
+                if (expr.Contains("[$feature.length", StringComparison.OrdinalIgnoreCase))
+                {
+                    expr = expr.EvaluateExpression(new FieldValue("$feature.length", feature.Shape.GetLength()));
+                }
+                if (expr.Contains("[$feature.area", StringComparison.OrdinalIgnoreCase))
+                {
+                    expr = expr.EvaluateExpression(new FieldValue("$feature.area", feature.Shape.GetArea()));
+                }
+
                 if (SimpleScriptInterpreter.IsSimpleScript(expr))
                 {
                     expr = new SimpleScriptInterpreter(expr).Interpret();

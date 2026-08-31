@@ -1197,6 +1197,25 @@ internal class AprxMapConverter
                     {conversion.Expression}
                     ------------------------------------------------------------------
                     """);
+
+                if (conversion.Expression.Contains("[$feature.length", StringComparison.OrdinalIgnoreCase) ||
+                    conversion.Expression.Contains("[$feature.area", StringComparison.OrdinalIgnoreCase))
+                {
+                    // See AprxLabelExpressionParser's <remarks> for the full rationale: "Length"/
+                    // "Area" are always assumed to be ArcGIS Pro's geometry accessors, never a
+                    // same-named real attribute field (indistinguishable from source text alone),
+                    // and the computed value is planar, not geodesic like ArcGIS Pro's own.
+                    _info?.Invoke($"""
+                        Layer '{_currentLayerName}': the converted expression above computes a
+                        geometry length/area at render time ("[$feature.length]"/"[$feature.area]").
+                        This is always assumed to mean ArcGIS Pro's "Length($feature)"/"Area($feature)"
+                        - if this layer's schema actually has a real field literally named "Length"/
+                        "Area", verify this conversion is correct. The computed value is planar
+                        (native/unprojected coordinate units), not geodesic like ArcGIS Pro's own -
+                        numbers can differ from the original label, especially under a geographic
+                        coordinate system or for very long/large features.
+                        """);
+                }
             }
             else
             {
