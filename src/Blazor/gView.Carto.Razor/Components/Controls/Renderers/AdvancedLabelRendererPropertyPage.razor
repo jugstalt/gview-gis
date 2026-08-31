@@ -27,12 +27,25 @@
                 </GvGridItem>
             </GvGrid>
             <MudAlert Severity="Severity.Info" Variant="Variant.Text" Dense NoIcon>
-                A gView expression that resolves to a color per feature - a plain
-                <code>[Field]</code> reference, or a full <code>@@start / @@if ... / @@end</code>
-                conditional script (same syntax as the label expression). The resolved value must be
-                a recognized color such as <code>rgb(255,0,0)</code> or <code>#ff0000</code>.
-                Leave empty (or let it resolve to something that is not a color) to use the text
-                symbol's own color.
+                <p>
+                    A gView expression, evaluated per feature - a plain <code>[Field]</code> reference,
+                    or a full <code>@_scriptTokens</code> conditional script (same syntax as
+                    the label expression).
+                </p>
+                <p>
+                    Its result is passed to <code>ArgbColor.TryFromString()</code> and must resolve to a
+                    colour. Accepted formats (spaces are ignored):
+                    <code>#rgb</code> / <code>#rgba</code> / <code>#rrggbb</code> / <code>#aarrggbb</code>,
+                    <code>r,g,b</code> or <code>r,g,b,a</code> (0-255),
+                    <code>rgb(r,g,b)</code>, <code>rgba(r,g,b,a)</code> (a = 0..1),
+                    <code>hsl(h,s%,l%)</code>, <code>hsla(h,s%,l%,a)</code>,
+                    <code>cmyk(c,m,y,k)</code> (0-100), or a colour name
+                    (<code>red</code>, <code>blue</code>, <code>gold</code>, ...).
+                </p>
+                <p>
+                    An empty value - or anything that does not resolve to a colour - uses the text
+                    symbol's own colour for that feature.
+                </p>
             </MudAlert>
         </GvCardContent>
     </GvCard>
@@ -43,6 +56,9 @@
 
     private IFeatureLayer? _layer;
     private AdvancedLabelRenderer? _renderer;
+
+    // Kept as a field so the literal "@@" tokens don't need Razor "@@"-escaping in the markup.
+    private readonly string _scriptTokens = "@@start / @@if ... / @@end";
 
     protected override void OnParametersSet()
     {
@@ -80,7 +96,13 @@
             new LabelExpressionModel()
             {
                 TableClass = _layer?.FeatureClass,
-                Expression = _renderer.ColorExpression
+                Expression = _renderer.ColorExpression,
+                IsColorExpression = true
+            },
+            new ModalDialogOptions()
+            {
+                Width = ModalDialogWidth.ExtraExtraLarge,
+                FullWidth = false
             });
 
         if (model is not null)

@@ -5,6 +5,42 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 8.26.3601
+
+## Added
+
+- New `AdvancedLabelRenderer` (`gView.Framework.Cartography.Rendering`): a `SimpleLabelRenderer`
+  subclass with an opt-in `ColorExpression` that resolves a per-feature font colour at render
+  time, using the same conditional-script (`@@start` / `@@if` / `@@endif` / `@@end`) machinery
+  already used for the label text. An empty expression - or one that doesn't resolve to a
+  colour for a given feature - falls back to the text symbol's own colour. Adds the (empty by
+  default) `SimpleLabelRenderer.HandleAdditionalLabelRendererBehavior` extension point,
+  mirroring `ModifyEvaluatedLabel`; the common `SimpleLabelRenderer` path stays unchanged, with
+  no per-`Draw()` colour work when a renderer doesn't use it. Shows up as "Advanced Text
+  Renderer" in the label-renderer list.
+- `ArgbColor.FromString` / `TryFromString`: new colour notations - bare `R,G,B` and `R,G,B,A`
+  (0-255 per channel), `rgb:R,G,B`, and `cmyk(C,M,Y,K)` (0-100 per channel).
+- MxlUtil ConvertAprx: recovers per-branch text colour from ArcGIS Pro's rich-text
+  `<CLR red=.. green=.. blue=..>` tags. When each If/ElseIf/Else branch (VB or Python) or an
+  unconditional expression cleanly wraps its output in a `<CLR>` tag, a parallel colour script
+  is built alongside the text script and the layer gets an `AdvancedLabelRenderer` instead of a
+  `SimpleLabelRenderer`. Replace/append chains still strip `<CLR>` to plain text as before. The
+  "does not evaluate `<CLR>` tags" warning no longer fires when the colour is actually
+  recovered.
+- Blazor Carto: `AdvancedLabelRenderer` property page - `ColorExpression` is editable wherever
+  label renderers are configured (embeds the existing `SimpleLabelRenderer` page and adds a
+  colour-expression card).
+- Blazor Carto: reworked the label-expression editor dialog (`LabelExpressionDialog`, used for
+  both the label expression and the new colour expression).
+  - Large monospace, resizable editor instead of a 5-line field; Tab inserts spaces.
+  - Field buttons and `@@start` / `@@if( )` / `@@endif` / `@@end` / `@@replace( )` snippet
+    buttons insert at the cursor; the field list is filterable.
+  - Live "Script mode" detection with a structure check for `@@start` on its own first line, a
+    missing `@@end`, and unbalanced `@@if(...)` / `@@endif`.
+  - Always-visible "Syntax reference" column (no expander to open); for colour expressions an
+    extra column lists every format `ArgbColor.TryFromString()` accepts.
+  - Dialog widened to the full content width.
+
 ## 8.26.3402
 
 ## Added

@@ -80,5 +80,51 @@ window.cartoInterops = {
             this.setDataFrameSize(minSize);
             this.refreshMapFrame();
         }
+    },
+
+    // --- Expression editor helpers (LabelExpressionDialog) ---
+
+    // Insert text at the caret of a <textarea> (replacing any selection), keep the caret
+    // after the inserted text and raise 'input' so Blazor's @oninput binding picks it up.
+    expressionEditorInsert: function (el, text) {
+        if (!el) {
+            return;
+        }
+
+        var start = typeof el.selectionStart === 'number' ? el.selectionStart : el.value.length;
+        var end = typeof el.selectionEnd === 'number' ? el.selectionEnd : el.value.length;
+
+        el.value = el.value.substring(0, start) + text + el.value.substring(end);
+
+        var caret = start + text.length;
+        el.selectionStart = el.selectionEnd = caret;
+        el.focus();
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+    },
+
+    // Make the Tab key insert two spaces instead of moving focus out of the editor.
+    expressionEditorEnableTab: function (el) {
+        if (!el || el._gvTabHandler) {
+            return;
+        }
+        el._gvTabHandler = true;
+
+        el.addEventListener('keydown', function (e) {
+            if (e.key !== 'Tab') {
+                return;
+            }
+            e.preventDefault();
+
+            var start = el.selectionStart, end = el.selectionEnd;
+            el.value = el.value.substring(0, start) + '  ' + el.value.substring(end);
+            el.selectionStart = el.selectionEnd = start + 2;
+            el.dispatchEvent(new Event('input', { bubbles: true }));
+        });
+    },
+
+    expressionEditorFocus: function (el) {
+        if (el) {
+            el.focus();
+        }
     }
 };

@@ -1,0 +1,54 @@
+/* Core textarea sizing/typography is set inline on the element so it does not depend
+   on the scoped-css bundle being regenerated in the host app. This only adds the
+   focus affordance and the surrounding layout. */
+
+.expression-editor textarea:focus {
+    border-color: var(--mud-palette-primary) !important;
+    box-shadow: 0 0 0 1px var(--mud-palette-primary);
+}
+
+.field-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+::deep .field-btn {
+    justify-content: space-between;
+    text-transform: none;
+}
+
+::deep .field-btn .field-name {
+    font-family: 'Consolas', 'Menlo', monospace;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+::deep .field-btn .field-type {
+    margin-left: 8px;
+    font-size: 0.7rem;
+    opacity: 0.5;
+}
+
+.snippet-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.editor-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    font-size: 0.8rem;
+    opacity: 0.75;
+}
+
+.syntax-help pre {
+    margin: 0;
+    white-space: pre-wrap;
+    font-family: 'Consolas', 'Menlo', monospace;
+    font-size: 0.8rem;
+    line-height: 1.45;
+}

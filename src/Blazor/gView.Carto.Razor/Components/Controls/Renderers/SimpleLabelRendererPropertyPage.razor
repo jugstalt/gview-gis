@@ -375,6 +375,11 @@
             {
                 TableClass = _layer?.FeatureClass,
                     Expression = _renderer.LabelExpression
+            },
+            new ModalDialogOptions()
+            {
+                Width = ModalDialogWidth.ExtraExtraLarge,
+                FullWidth = false
             });
 
         if (model is not null)
