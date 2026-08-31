@@ -1107,7 +1107,35 @@ internal class AprxMapConverter
 
     private SimpleLabelRenderer ConvertLabelRenderer(CimLabelClass cimLabel, RendererGeometryKind geometryKind)
     {
-        var renderer = new SimpleLabelRenderer();
+        // --- Determine whether the expression is a simple field reference, and (if not) try to
+        // convert it - done up front, before constructing the renderer, so the right concrete type
+        // can be picked in one go: an AdvancedLabelRenderer only when a per-branch "<CLR>" tag
+        // actually produced a ColorExpression (see AprxLabelExpressionParser's <remarks>), a plain
+        // SimpleLabelRenderer otherwise - which is everything else, unchanged from before this
+        // feature existed. FieldNames entries are plain field names (no brackets, never an
+        // expression), so the fallback needs to be bracketed here - otherwise the "is this just
+        // [Field]?" check below never matches, and a plain field name gets misrouted into
+        // AprxLabelExpressionParser (which rejects it, since it isn't valid VB) and ends up
+        // flagged as a "complex" expression.
+        var fieldNameFallback = cimLabel.FieldNames?.FirstOrDefault();
+        var bracketedFallback = fieldNameFallback is not null
+            ? (fieldNameFallback.StartsWith('[') && fieldNameFallback.EndsWith(']')
+                ? fieldNameFallback           // already bracketed - don't double-wrap it
+                : $"[{fieldNameFallback}]")
+            : null;
+        var expression = cimLabel.Expression ?? bracketedFallback ?? string.Empty;
+        var fieldMatch = System.Text.RegularExpressions.Regex.Match(expression, @"^\[([^\]]+)\]$");
+
+        AprxLabelExpressionParser.ConversionResult? conversion = null;
+        bool converted = false;
+        if (!fieldMatch.Success && !string.IsNullOrEmpty(expression))
+        {
+            converted = AprxLabelExpressionParser.TryConvert(expression, out conversion) && conversion is not null;
+        }
+
+        SimpleLabelRenderer renderer = conversion?.ColorExpression != null
+            ? new AdvancedLabelRenderer()
+            : new SimpleLabelRenderer();
 
         // "One label per name/feature/part" - names match 1:1 between CIM and gView.
         renderer.HowManyLabels = cimLabel.StandardLabelPlacementProperties?.NumLabelsOption switch
@@ -1155,26 +1183,14 @@ internal class AprxMapConverter
             };
         }
 
-        // --- Determine whether the expression is a simple field reference ---
-        // FieldNames entries are plain field names (no brackets, never an expression), so the
-        // fallback needs to be bracketed here - otherwise the "is this just [Field]?" check below
-        // never matches, and a plain field name gets misrouted into AprxLabelExpressionParser
-        // (which rejects it, since it isn't valid VB) and ends up flagged as a "complex" expression.
-        var fieldNameFallback = cimLabel.FieldNames?.FirstOrDefault();
-        var bracketedFallback = fieldNameFallback is not null
-            ? (fieldNameFallback.StartsWith('[') && fieldNameFallback.EndsWith(']')
-                ? fieldNameFallback           // already bracketed - don't double-wrap it
-                : $"[{fieldNameFallback}]")
-            : null;
-        var expression = cimLabel.Expression ?? bracketedFallback ?? string.Empty;
-        var fieldMatch = System.Text.RegularExpressions.Regex.Match(expression, @"^\[([^\]]+)\]$");
+        // --- Apply the expression/conversion already determined above ---
         if (fieldMatch.Success)
         {
             renderer.FieldName = fieldMatch.Groups[1].Value;
         }
         else if (!string.IsNullOrEmpty(expression))
         {
-            if (AprxLabelExpressionParser.TryConvert(expression, out var conversion) && conversion is not null)
+            if (converted && conversion is not null)
             {
                 // Successfully reduced the (VBScript-like) ArcGIS Pro expression to a gView
                 // expression: plain text with [Field] placeholders, optionally wrapped in
@@ -1216,6 +1232,23 @@ internal class AprxMapConverter
                         coordinate system or for very long/large features.
                         """);
                 }
+
+                if (conversion.ColorExpression is not null && renderer is AdvancedLabelRenderer advancedRenderer)
+                {
+                    advancedRenderer.ColorExpression = conversion.ColorExpression;
+
+                    _info?.Invoke($"""
+                        Layer '{_currentLayerName}': the original expression wrapped its output in
+                        ArcGIS Pro's "<CLR red=.. green=.. blue=..>" per-branch color tag - converted
+                        to a color expression instead of just stripping the tag:
+                        ------------------------------------------------------------------
+                        {conversion.ColorExpression}
+                        ------------------------------------------------------------------
+                        Applied dynamically at render time via AdvancedLabelRenderer (not
+                        SimpleLabelRenderer) - the tag is always assumed to be ArcGIS Pro's own
+                        color markup, never text from a same-named real field.
+                        """);
+                }
             }
             else
             {
@@ -1235,7 +1268,7 @@ internal class AprxMapConverter
 
         if (cimLabel.TextSymbol?.Symbol is CimTextSymbol textSym)
         {
-            renderer.TextSymbol = BuildTextSymbol(textSym);
+            renderer.TextSymbol = BuildTextSymbol(textSym, colorWillBeOverridden: conversion?.ColorExpression != null);
         }
 
         switch (geometryKind)
@@ -1470,7 +1503,7 @@ internal class AprxMapConverter
         }
     }
 
-    private ITextSymbol BuildTextSymbol(CimTextSymbol cimText)
+    private ITextSymbol BuildTextSymbol(CimTextSymbol cimText, bool colorWillBeOverridden = false)
     {
         float fontSize = cimText.Height > 0 ? (float)cimText.Height : 10f;
         string fontFamily = string.IsNullOrWhiteSpace(cimText.FontFamilyName) ? "Arial" : cimText.FontFamilyName;
@@ -1517,7 +1550,7 @@ internal class AprxMapConverter
 
                 var blockout = new BlockoutTextSymbol();
                 blockout.Font = font;
-                blockout.Color = EnsureContrastingTextColor(textColor, backgroundColor, "background box");
+                blockout.Color = EnsureContrastingTextColor(textColor, backgroundColor, "background box", colorWillBeOverridden);
                 blockout.ColorOutline = backgroundColor; // despite the name, this is the box's fill color
 
                 // CIMBalloonCallout.margin pads the box out from the text - ArcGIS Pro's box is
@@ -1553,7 +1586,7 @@ internal class AprxMapConverter
 
             var glow = new GlowingTextSymbol();
             glow.Font = font;
-            glow.Color = EnsureContrastingTextColor(textColor, haloColor, "halo");
+            glow.Color = EnsureContrastingTextColor(textColor, haloColor, "halo", colorWillBeOverridden);
             glow.GlowingColor = haloColor;
             glow.GlowingWidth = (int)Math.Round(PointsToPixels(cimText.HaloSize));
             glow.GlowingSmoothingmode = SymbolSmoothing.AntiAlias;
@@ -1572,16 +1605,20 @@ internal class AprxMapConverter
     /// <paramref name="haloOrBackgroundColor"/> resolve to the exact same RGB - text drawn in
     /// that combination is invisible regardless of why the colors matched. The recurring
     /// real-world cause: ArcGIS Pro's per-feature "&lt;CLR red=.. green=.. blue=..&gt;" label
-    /// expression tags (a VBScript/Arcade label function whose *returned string* carries the
-    /// real color) aren't evaluated here - this converter only ever sees the label class's own
-    /// static text color, which authors commonly leave equal to the halo/background color
-    /// precisely because ArcGIS Pro never actually displays it. Doesn't attempt to reproduce the
-    /// tag-driven color itself (a bigger feature - see the label class's Expression for the
-    /// real per-feature logic if that's needed); this only prevents the "invisible text" case
-    /// by picking whichever of black/white contrasts more with the halo/background - and warns,
-    /// since that's a guess, not a faithful reproduction of whatever ArcGIS Pro actually shows.
+    /// expression tags. When <paramref name="colorWillBeOverridden"/> is <see langword="false"/>
+    /// (this converter couldn't turn those tags into a <c>ColorExpression</c> - see
+    /// <see cref="AprxLabelExpressionParser"/>'s per-branch <c>&lt;CLR&gt;</c> support and its
+    /// <c>&lt;remarks&gt;</c>), this only ever sees the label class's own static text color, which
+    /// authors commonly leave equal to the halo/background color precisely because ArcGIS Pro
+    /// never actually displays it - so it also warns, since the black/white pick is a guess, not
+    /// a faithful reproduction of whatever ArcGIS Pro actually shows. When
+    /// <paramref name="colorWillBeOverridden"/> is <see langword="true"/>, the fallback color is
+    /// still computed and applied the same way (it's still needed for whichever features don't
+    /// match any color branch, and might fall through to this same static color) but the warning
+    /// is skipped - that case is now correctly handled dynamically, so warning about it would be
+    /// stale/misleading.
     /// </summary>
-    private ArgbColor EnsureContrastingTextColor(ArgbColor textColor, ArgbColor haloOrBackgroundColor, string kind)
+    private ArgbColor EnsureContrastingTextColor(ArgbColor textColor, ArgbColor haloOrBackgroundColor, string kind, bool colorWillBeOverridden = false)
     {
         if (textColor.R != haloOrBackgroundColor.R ||
             textColor.G != haloOrBackgroundColor.G ||
@@ -1598,12 +1635,15 @@ internal class AprxMapConverter
             ? ArgbColor.FromArgb(textColor.A, 0, 0, 0)
             : ArgbColor.FromArgb(textColor.A, 255, 255, 255);
 
-        _warn?.Invoke(
-            $"Layer '{_currentLayerName}': label text color was identical to its {kind} color " +
-            $"(both RGB {textColor.R},{textColor.G},{textColor.B}) and would have been invisible - " +
-            $"falling back to {(luminance > 0.5 ? "black" : "white")}. This usually means the real " +
-            "text color is set dynamically per feature via a label expression (e.g. ArcGIS Pro's " +
-            "\"<CLR red=.. green=.. blue=..>\" tags), which this converter does not evaluate.");
+        if (!colorWillBeOverridden)
+        {
+            _warn?.Invoke(
+                $"Layer '{_currentLayerName}': label text color was identical to its {kind} color " +
+                $"(both RGB {textColor.R},{textColor.G},{textColor.B}) and would have been invisible - " +
+                $"falling back to {(luminance > 0.5 ? "black" : "white")}. This usually means the real " +
+                "text color is set dynamically per feature via a label expression (e.g. ArcGIS Pro's " +
+                "\"<CLR red=.. green=.. blue=..>\" tags), which this converter does not evaluate.");
+        }
 
         return fallback;
     }

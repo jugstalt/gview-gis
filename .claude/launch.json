@@ -1,0 +1,21 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "webapps",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": [
+        "run",
+        "--project",
+        "src/Blazor/gView.WebApps/gView.WebApps.csproj",
+        "--no-build",
+        "--",
+        "--urls",
+        "http://localhost:5099"
+      ],
+      "port": 5099,
+      "url": "http://localhost:5099",
+      "autoPort": false
+    }
+  ]
+}

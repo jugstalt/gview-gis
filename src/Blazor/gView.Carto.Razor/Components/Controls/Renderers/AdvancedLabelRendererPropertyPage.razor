@@ -1,0 +1,91 @@
+@inherits BaseHandler
+
+@inject IApplicationScopeFactory AppScopeFactory
+
+@if (_renderer is not null)
+{
+    <SimpleLabelRendererPropertyPage Instance="Instance" />
+
+    <GvCard Title="Advanced: Font Color Expression">
+        <GvCardContent>
+            <GvGrid ColumnCount="2">
+                <GvGridItem>
+                    <MudTextField T="string"
+                                  Label="Color Expression"
+                                  Value="_renderer.ColorExpression"
+                                  ValueChanged="OnColorExpressionChanged"
+                                  Clearable="true" />
+                </GvGridItem>
+                <GvGridItem>
+                    <div style="padding:8px">
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   OnClick="EditColorExpression">
+                            Edit Expression
+                        </MudButton>
+                    </div>
+                </GvGridItem>
+            </GvGrid>
+            <MudAlert Severity="Severity.Info" Variant="Variant.Text" Dense NoIcon>
+                A gView expression that resolves to a color per feature - a plain
+                <code>[Field]</code> reference, or a full <code>@@start / @@if ... / @@end</code>
+                conditional script (same syntax as the label expression). The resolved value must be
+                a recognized color such as <code>rgb(255,0,0)</code> or <code>#ff0000</code>.
+                Leave empty (or let it resolve to something that is not a color) to use the text
+                symbol's own color.
+            </MudAlert>
+        </GvCardContent>
+    </GvCard>
+}
+
+@code {
+    [Parameter] public object? Instance { get; set; }
+
+    private IFeatureLayer? _layer;
+    private AdvancedLabelRenderer? _renderer;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        if (Instance is IFeatureLayer fLayer)
+        {
+            _layer = fLayer;
+            _renderer = fLayer.LabelRenderer as AdvancedLabelRenderer;
+        }
+        else
+        {
+            _renderer = Instance as AdvancedLabelRenderer;
+        }
+    }
+
+    private void OnColorExpressionChanged(string? value) => Handle(() =>
+    {
+        if (_renderer is not null)
+        {
+            _renderer.ColorExpression = value ?? string.Empty;
+        }
+    });
+
+    private Task EditColorExpression() => HandleAsync(async () =>
+    {
+        if (_renderer is null)
+        {
+            return;
+        }
+
+        var model = await AppScopeFactory.ShowModalDialog(
+            typeof(LabelExpressionDialog),
+            "Font Color Expression",
+            new LabelExpressionModel()
+            {
+                TableClass = _layer?.FeatureClass,
+                Expression = _renderer.ColorExpression
+            });
+
+        if (model is not null)
+        {
+            _renderer.ColorExpression = model.Expression;
+        }
+    });
+}

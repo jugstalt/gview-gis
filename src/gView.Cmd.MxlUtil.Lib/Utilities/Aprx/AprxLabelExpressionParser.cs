@@ -97,7 +97,16 @@ namespace gView.Cmd.MxlUtil.Lib.Utilities.Aprx;
 /// </remarks>
 internal static class AprxLabelExpressionParser
 {
-    public sealed record ConversionResult(string Expression, bool IsConditional);
+    /// <summary>
+    /// <paramref name="ColorExpression"/>, when set, is a gView expression (plain <c>[Field]</c>
+    /// substitution, or a full <c>@@start/@@if.../@@end</c> conditional script - resolved the same
+    /// way as <paramref name="Expression"/>) that resolves to a color string (see
+    /// <see cref="gView.GraphicsEngine.ArgbColor.TryFromString"/>) instead of label text - produced
+    /// when every branch of a conditional VB/Python label expression wraps its whole output in a
+    /// single ArcGIS Pro <c>&lt;CLR red=.. green=.. blue=..&gt;</c> tag. See
+    /// <see cref="gView.Framework.Cartography.Rendering.AdvancedLabelRenderer"/>.
+    /// </summary>
+    public sealed record ConversionResult(string Expression, bool IsConditional, string? ColorExpression = null);
 
     /// <summary>
     /// Tries to convert <paramref name="source"/> (an ArcGIS Pro label expression) into a gView
@@ -137,10 +146,15 @@ internal static class AprxLabelExpressionParser
         }
 
         // Plain expression: literal text and/or "&" concatenation, no function wrapper
-        if (TryTokenizeConcatExpression(text, out var terms) && terms.Count > 0)
+        if (TryTokenizeConcatExpression(text, out var rawTerms))
         {
-            result = new ConversionResult(RenderTerms(terms), IsConditional: false);
-            return true;
+            var (terms, color) = ExtractBranchColor(rawTerms);
+            if (terms.Count > 0 || color != null)
+            {
+                var colorExpression = color is { } c ? $"rgb({c.R},{c.G},{c.B})" : null;
+                result = new ConversionResult(RenderTerms(terms), IsConditional: false, colorExpression);
+                return true;
+            }
         }
 
         return false;
@@ -150,7 +164,13 @@ internal static class AprxLabelExpressionParser
     // Function / If-ElseIf-Else handling
     // -----------------------------------------------------------------------
 
-    private sealed record Branch(List<Predicate> Conditions, List<Term> Terms);
+    /// <summary>
+    /// <paramref name="Color"/>, when set, is the RGB color this branch's whole output was wrapped
+    /// in (a single ArcGIS Pro <c>&lt;CLR red=.. green=.. blue=..&gt;</c> tag around the entire
+    /// branch - see <see cref="ExtractBranchColor"/>). <see langword="null"/> for a branch with no
+    /// such wrapper.
+    /// </summary>
+    private sealed record Branch(List<Predicate> Conditions, List<Term> Terms, (int R, int G, int B)? Color = null);
 
     private static bool TryConvertFunction(string funcName, string body, out ConversionResult? result)
     {
@@ -178,11 +198,11 @@ internal static class AprxLabelExpressionParser
             // A single "If ... Then ... End If" with no "Else" still needs the conditional
             // path below - without an Else, VB returns an empty string when the condition is
             // false, which TryBuildConditionalScript's guard reconstructs correctly.
-            result = new ConversionResult(RenderTerms(branches[0].Terms), IsConditional: false);
+            result = BuildUnconditionalResult(branches[0]);
             return true;
         }
 
-        return TryBuildConditionalScript(branches, out result);
+        return TryBuildConditionalScriptWithColor(branches, out result);
     }
 
     // -----------------------------------------------------------------------
@@ -213,11 +233,11 @@ internal static class AprxLabelExpressionParser
 
         if (branches.Count == 1 && branches[0].Conditions.Count == 0)
         {
-            result = new ConversionResult(RenderTerms(branches[0].Terms), IsConditional: false);
+            result = BuildUnconditionalResult(branches[0]);
             return true;
         }
 
-        return TryBuildConditionalScript(branches, out result);
+        return TryBuildConditionalScriptWithColor(branches, out result);
     }
 
     /// <summary>Splits a Python function body into (indentColumns, trimmedText) for non-blank, non-comment lines.</summary>
@@ -258,12 +278,13 @@ internal static class AprxLabelExpressionParser
         if (bareReturn.Success)
         {
             var exprText = bareReturn.Groups["expr"].Success ? bareReturn.Groups["expr"].Value.Trim() : "";
-            if (!TryTokenizeConcatExpression(exprText, out var terms, pythonEscapes: true))
+            if (!TryTokenizeConcatExpression(exprText, out var rawTerms, pythonEscapes: true))
             {
                 return null;
             }
+            var (terms, color) = ExtractBranchColor(rawTerms);
             consumed = start + 1;
-            return [new Branch([], terms)];
+            return [new Branch([], terms, color)];
         }
 
         var blockIndent = lines[start].Indent;
@@ -307,10 +328,11 @@ internal static class AprxLabelExpressionParser
             }
 
             var bodyExprText = bodyReturn.Groups["expr"].Success ? bodyReturn.Groups["expr"].Value.Trim() : "";
-            if (!TryTokenizeConcatExpression(bodyExprText, out var branchTerms, pythonEscapes: true))
+            if (!TryTokenizeConcatExpression(bodyExprText, out var rawBranchTerms, pythonEscapes: true))
             {
                 return null;
             }
+            var (branchTerms, branchColor) = ExtractBranchColor(rawBranchTerms);
             idx++;
 
             if (idx < end && lines[idx].Indent > blockIndent)
@@ -320,7 +342,7 @@ internal static class AprxLabelExpressionParser
 
             foreach (var conditions in conditionCombinations)
             {
-                branches.Add(new Branch(conditions, branchTerms));
+                branches.Add(new Branch(conditions, branchTerms, branchColor));
             }
 
             if (isElse || idx >= end || lines[idx].Indent != blockIndent)
@@ -418,10 +440,14 @@ internal static class AprxLabelExpressionParser
             {
                 // The first call's source is the seed value (usually just "[Field]") - anything
                 // our normal literal/"&"/[Field] tokenizer accepts.
-                if (!TryTokenizeConcatExpression(source, out baseTerms))
+                if (!TryTokenizeConcatExpression(source, out var rawBaseTerms))
                 {
                     return false;
                 }
+                // Not wired up for per-branch color (this shape has no branches to attach a color
+                // to) - just discard any clean "<CLR>" marker exactly like the plain-strip behavior
+                // this reproduces, so it can never leak an unrendered marker into the output below.
+                (baseTerms, _) = ExtractBranchColor(rawBaseTerms);
             }
             else if (!string.Equals(source, localVar, StringComparison.OrdinalIgnoreCase))
             {
@@ -485,10 +511,13 @@ internal static class AprxLabelExpressionParser
         }
 
         var baseMatch = Regex.Match(lines[0], $@"^{Regex.Escape(funcName)}\s*=\s*(?<expr>.+)$", RegexOptions.IgnoreCase);
-        if (!baseMatch.Success || !TryTokenizeConcatExpression(baseMatch.Groups["expr"].Value, out var baseTerms))
+        if (!baseMatch.Success || !TryTokenizeConcatExpression(baseMatch.Groups["expr"].Value, out var rawBaseTerms))
         {
             return false;
         }
+        // Not wired up for per-branch color here - discard any clean "<CLR>" marker (see the
+        // matching comment in TryParseReplaceChain) so it can't leak into the rendered output.
+        var (baseTerms, _) = ExtractBranchColor(rawBaseTerms);
 
         var assignRegex = new Regex(
             $@"^{Regex.Escape(funcName)}\s*=\s*{Regex.Escape(funcName)}\s*(?:&|\+|%)\s*(?<expr>.+)$",
@@ -511,10 +540,11 @@ internal static class AprxLabelExpressionParser
             }
 
             var assignMatch = assignRegex.Match(lines[i + 1]);
-            if (!assignMatch.Success || !TryTokenizeConcatExpression(assignMatch.Groups["expr"].Value, out var appendTerms))
+            if (!assignMatch.Success || !TryTokenizeConcatExpression(assignMatch.Groups["expr"].Value, out var rawAppendTerms))
             {
                 return false;
             }
+            var (appendTerms, _) = ExtractBranchColor(rawAppendTerms);
 
             if (!Regex.IsMatch(lines[i + 2], @"^end\s*if$", RegexOptions.IgnoreCase))
             {
@@ -658,12 +688,12 @@ internal static class AprxLabelExpressionParser
 
         if (!hasIf)
         {
-            if (rawLines.Count != 1 || !TryParseAssignment(funcName, rawLines[0], out var terms))
+            if (rawLines.Count != 1 || !TryParseAssignment(funcName, rawLines[0], out var terms, out var color))
             {
                 return null;
             }
 
-            return [new Branch([], terms)];
+            return [new Branch([], terms, color)];
         }
 
         var branches = new List<Branch>();
@@ -686,17 +716,18 @@ internal static class AprxLabelExpressionParser
             idx++;
 
             List<Term>? branchTerms;
+            (int R, int G, int B)? branchColor;
             var inlineRest = ifMatch.Groups["rest"].Value.Trim();
             if (inlineRest.Length > 0)
             {
-                if (!TryParseAssignment(funcName, inlineRest, out branchTerms))
+                if (!TryParseAssignment(funcName, inlineRest, out branchTerms, out branchColor))
                 {
                     return null;
                 }
             }
             else
             {
-                if (idx >= rawLines.Count || !TryParseAssignment(funcName, rawLines[idx], out branchTerms))
+                if (idx >= rawLines.Count || !TryParseAssignment(funcName, rawLines[idx], out branchTerms, out branchColor))
                 {
                     return null;
                 }
@@ -707,7 +738,7 @@ internal static class AprxLabelExpressionParser
             // all sharing this same VB clause's text, inserted here in place of the one clause.
             foreach (var conditions in conditionCombinations)
             {
-                branches.Add(new Branch(conditions, branchTerms));
+                branches.Add(new Branch(conditions, branchTerms, branchColor));
             }
 
             if (idx >= rawLines.Count)
@@ -727,13 +758,13 @@ internal static class AprxLabelExpressionParser
             if (Regex.IsMatch(next, @"^else\s*$", RegexOptions.IgnoreCase))
             {
                 idx++;
-                if (idx >= rawLines.Count || !TryParseAssignment(funcName, rawLines[idx], out var elseTerms))
+                if (idx >= rawLines.Count || !TryParseAssignment(funcName, rawLines[idx], out var elseTerms, out var elseColor))
                 {
                     return null;
                 }
                 idx++;
 
-                branches.Add(new Branch([], elseTerms));
+                branches.Add(new Branch([], elseTerms, elseColor));
 
                 if (idx >= rawLines.Count || !Regex.IsMatch(rawLines[idx], @"^end\s*if$", RegexOptions.IgnoreCase))
                 {
@@ -755,9 +786,10 @@ internal static class AprxLabelExpressionParser
         return idx == rawLines.Count ? branches : null; // trailing garbage after "End If"
     }
 
-    private static bool TryParseAssignment(string funcName, string line, out List<Term> terms)
+    private static bool TryParseAssignment(string funcName, string line, out List<Term> terms, out (int R, int G, int B)? color)
     {
         terms = [];
+        color = null;
 
         var m = Regex.Match(line, $@"^{Regex.Escape(funcName)}\s*=\s*(?<expr>.+)$", RegexOptions.IgnoreCase);
         if (!m.Success)
@@ -765,7 +797,13 @@ internal static class AprxLabelExpressionParser
             return false;
         }
 
-        return TryTokenizeConcatExpression(m.Groups["expr"].Value, out terms);
+        if (!TryTokenizeConcatExpression(m.Groups["expr"].Value, out var rawTerms))
+        {
+            return false;
+        }
+
+        (terms, color) = ExtractBranchColor(rawTerms);
+        return true;
     }
 
     /// <summary>What a single condition atom checks about one field's value.</summary>
@@ -1330,6 +1368,56 @@ internal static class AprxLabelExpressionParser
         }
     }
 
+    /// <summary>
+    /// Builds the "no If/ElseIf at all" <see cref="ConversionResult"/> for a single, unconditional
+    /// branch - shared by the VB and Python paths. If the branch's whole output was wrapped in a
+    /// single <c>&lt;CLR ...&gt;</c> tag, that becomes <see cref="ConversionResult.ColorExpression"/>
+    /// directly as plain <c>"rgb(R,G,B)"</c> text - a single, always-true branch needs no
+    /// conditional script for its color any more than it does for its text.
+    /// </summary>
+    private static ConversionResult BuildUnconditionalResult(Branch branch)
+    {
+        var colorExpression = branch.Color is { } c ? $"rgb({c.R},{c.G},{c.B})" : null;
+        return new ConversionResult(RenderTerms(branch.Terms), IsConditional: false, colorExpression);
+    }
+
+    /// <summary>
+    /// Wraps <see cref="TryBuildConditionalScript"/>: builds the text script exactly as it already
+    /// does, then - only if at least one branch carries a <see cref="Branch.Color"/> - builds a
+    /// second, parallel conditional script and attaches it as
+    /// <see cref="ConversionResult.ColorExpression"/>. The color pass reuses every branch's
+    /// <see cref="Branch.Conditions"/> unchanged (never just the colored branches - that would
+    /// change the exclude-guard computation, which depends only on Conditions), with
+    /// <c>Terms = ["rgb(R,G,B)"]</c> for a colored branch or <c>Terms = []</c> (renders as an
+    /// empty line, i.e. "no color override for this feature") for one without. Since
+    /// <see cref="TryBuildConditionalScript"/>'s exclude-guard computation and exhaustive
+    /// verification are provably a function of <see cref="Branch.Conditions"/> alone (never
+    /// <see cref="Branch.Terms"/>'s content), the color pass is exactly as safe as the text pass
+    /// that already succeeded - it is expected to always succeed too, but a failure still falls
+    /// back safely to a text-only result rather than failing the whole conversion.
+    /// </summary>
+    private static bool TryBuildConditionalScriptWithColor(List<Branch> branches, out ConversionResult? result)
+    {
+        if (!TryBuildConditionalScript(branches, out result) || result == null)
+        {
+            return false;
+        }
+
+        if (branches.Any(b => b.Color != null))
+        {
+            var colorBranches = branches
+                .Select(b => b with { Terms = b.Color is { } c ? [new LiteralTerm($"rgb({c.R},{c.G},{c.B})")] : [] })
+                .ToList();
+
+            if (TryBuildConditionalScript(colorBranches, out var colorResult) && colorResult != null)
+            {
+                result = result with { ColorExpression = colorResult.Expression };
+            }
+        }
+
+        return true;
+    }
+
     private static bool TryBuildConditionalScript(List<Branch> branches, out ConversionResult? result)
     {
         result = null;
@@ -1702,6 +1790,18 @@ internal static class AprxLabelExpressionParser
     private sealed record NewlineTerm : Term;
 
     /// <summary>
+    /// A clean, standalone <c>&lt;CLR red='R' green='G' blue='B'&gt;</c> / <c>&lt;/CLR&gt;</c> tag,
+    /// found on its own (not mixed with other text) while tokenizing - see <see cref="ExtractBranchColor"/>.
+    /// Purely transient: never survives into a <see cref="Branch"/>'s rendered output. If one of
+    /// these ever does leak through unconsumed (e.g. a shape <see cref="ExtractBranchColor"/>
+    /// doesn't recognize), <see cref="RenderTerms"/>/<see cref="RenderTermsForComparison"/>'s
+    /// <c>switch</c> statements have no case for it, so it silently renders as nothing - never
+    /// garbage text, never a crash.
+    /// </summary>
+    private sealed record ColorOpenTerm(int R, int G, int B) : Term;
+    private sealed record ColorCloseTerm : Term;
+
+    /// <summary>
     /// ArcGIS Pro / ArcMap "text formatting tags" for rich text in labels and annotations, e.g.
     /// <c>&lt;CLR red='255' green='0' blue='0'&gt;...&lt;/CLR&gt;</c> for per-run color, or
     /// <c>&lt;BOL&gt;...&lt;/BOL&gt;</c> for bold. gView's label text symbols have no per-run
@@ -1711,6 +1811,64 @@ internal static class AprxLabelExpressionParser
     private static readonly Regex RichTextTag = new(
         @"</?(?:AND|ACP|BOL|CHR|CHRIDX|CLR|CPS|FNT|ITA|SUB|SUP|UND|VER|VOF)\b[^<>]*>",
         RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+    private static readonly Regex ClrOpenTag = new(@"^<CLR\b(?<attrs>[^<>]*)>$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+    private static readonly Regex ClrCloseTag = new(@"^</CLR>$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+    /// <summary>
+    /// True if <paramref name="text"/> is exactly one <c>&lt;CLR ...&gt;</c> tag (nothing else),
+    /// with its <c>red</c>/<c>green</c>/<c>blue</c> attributes extracted (matched by name, not
+    /// position - tolerant of missing/reordered/extra attributes, e.g. an alpha ArcGIS Pro doesn't
+    /// always emit). A missing attribute defaults to 0 - real-world label expressions sometimes
+    /// only set one channel, e.g. <c>&lt;CLR blue='255'&gt;</c>.
+    /// </summary>
+    private static bool TryParseCleanClrOpenTag(string text, out int r, out int g, out int b)
+    {
+        r = g = b = 0;
+        var m = ClrOpenTag.Match(text);
+        if (!m.Success)
+        {
+            return false;
+        }
+
+        var attrs = m.Groups["attrs"].Value;
+        r = ExtractClrColorAttribute(attrs, "red");
+        g = ExtractClrColorAttribute(attrs, "green");
+        b = ExtractClrColorAttribute(attrs, "blue");
+        return true;
+    }
+
+    private static bool IsCleanClrCloseTag(string text) => ClrCloseTag.IsMatch(text);
+
+    private static int ExtractClrColorAttribute(string attrs, string name)
+    {
+        var m = Regex.Match(attrs, $@"\b{name}\s*=\s*[""'](?<value>\d{{1,3}})[""']", RegexOptions.IgnoreCase);
+        return m.Success ? Math.Clamp(int.Parse(m.Groups["value"].Value), 0, 255) : 0;
+    }
+
+    /// <summary>
+    /// Recognizes a single <c>&lt;CLR&gt;</c>-wrapped whole branch: exactly one
+    /// <see cref="ColorOpenTerm"/> as the first term and a matching <see cref="ColorCloseTerm"/> as
+    /// the last, with no other color markers in between (two separate colored segments
+    /// concatenated in the same branch, for instance, don't count - "reject rather than guess").
+    /// Returns the color and the terms with the markers stripped out either way: when a color IS
+    /// recognized, the brackets themselves are removed (only the content in between remains); when
+    /// it's NOT, any leftover markers are simply dropped rather than passed through - reproducing
+    /// exactly what today's plain tag-stripping already does for a clean, standalone tag (nothing).
+    /// </summary>
+    private static (List<Term> Terms, (int R, int G, int B)? Color) ExtractBranchColor(List<Term> terms)
+    {
+        if (terms.Count >= 2 &&
+            terms[0] is ColorOpenTerm open &&
+            terms[^1] is ColorCloseTerm &&
+            !terms.Skip(1).Take(terms.Count - 2).Any(t => t is ColorOpenTerm or ColorCloseTerm))
+        {
+            return (terms[1..^1], (open.R, open.G, open.B));
+        }
+
+        var filtered = terms.Where(t => t is not (ColorOpenTerm or ColorCloseTerm)).ToList();
+        return (filtered, null);
+    }
 
     /// <summary>
     /// Tokenizes a VB (or Python, when <paramref name="pythonEscapes"/> is set) concatenation
@@ -1744,11 +1902,32 @@ internal static class AprxLabelExpressionParser
         {
             if (pendingLiteral.Length > 0)
             {
+                var raw = pendingLiteral.ToString();
+                var trimmed = raw.Trim();
+
+                // A literal that's cleanly ONE standalone "<CLR ...>"/"</CLR>" tag (nothing else in
+                // it) is kept as a marker instead of being stripped outright - see
+                // ExtractBranchColor, which later decides whether it actually brackets a whole
+                // branch's output (a usable color) or not (in which case it's dropped exactly like
+                // today, contributing nothing - see RenderTerms/RenderTermsForComparison).
+                if (TryParseCleanClrOpenTag(trimmed, out var r, out var g, out var b))
+                {
+                    list.Add(new ColorOpenTerm(r, g, b));
+                    pendingLiteral.Clear();
+                    return;
+                }
+                if (IsCleanClrCloseTag(trimmed))
+                {
+                    list.Add(new ColorCloseTerm());
+                    pendingLiteral.Clear();
+                    return;
+                }
+
                 // Strip ArcGIS Pro's rich-text formatting tags (e.g. "<CLR red='255' .../>...</CLR>"
                 // for per-run colored text) - gView's label text symbols render plain text only,
                 // so these tags would otherwise show up literally in the label. Only their content
                 // is kept; nothing about the surrounding text or field placeholders is touched.
-                var text = RichTextTag.Replace(pendingLiteral.ToString(), "");
+                var text = RichTextTag.Replace(raw, "");
                 if (text.Length > 0)
                 {
                     list.Add(new LiteralTerm(text));

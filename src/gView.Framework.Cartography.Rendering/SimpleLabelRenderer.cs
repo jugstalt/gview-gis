@@ -44,7 +44,7 @@ namespace gView.Framework.Cartography.Rendering
         }
 
         private string _fieldname, _sizeField, _fontField, _expression;
-        private bool _useExpression = false; 
+        private bool _useExpression = false;
         private ITextSymbol _symbol;
 
         private RenderHowManyLabels _howManyLabels = RenderHowManyLabels.OnPerFeature;
@@ -156,6 +156,21 @@ namespace gView.Framework.Cartography.Rendering
         virtual protected bool BeforeRenderFeature(IDisplay display, IFeature feature) => true;
         virtual protected string ModifyEvaluatedLabel(IDisplay display, IFeature feature, string label) => label;
 
+        /// <summary>
+        /// Extension point for subclasses that need to do something extra per feature once the
+        /// label text is resolved (e.g. <c>AdvancedLabelRenderer</c> resolving a per-feature color
+        /// override from a color expression) - called once per <see cref="Draw"/>, right after
+        /// <see cref="ModifyEvaluatedLabel"/>. The base implementation is empty: a plain
+        /// <see cref="SimpleLabelRenderer"/> (the overwhelming majority of renderers, including
+        /// every one gView.Server draws under load) pays only the cost of one virtual call with an
+        /// empty body - no field, no <c>IFontColor</c> check, no property write - exactly as
+        /// untouched by "advanced" behaviour as <see cref="BeforeRenderFeature"/>/
+        /// <see cref="ModifyEvaluatedLabel"/> already are. Any state an override needs (e.g. the
+        /// symbol's own base color, so it can be restored for a feature that doesn't override it)
+        /// belongs entirely in that subclass, not here.
+        /// </summary>
+        virtual protected void HandleAdditionalLabelRendererBehavior(IDisplay display, IFeature feature) { }
+
         #region ILabelRenderer Members
 
         virtual public void PrepareQueryFilter(IDisplay display, IFeatureLayer layer, IQueryFilter filter)
@@ -213,7 +228,7 @@ namespace gView.Framework.Cartography.Rendering
             return true;
         }
 
-        public string Name
+        virtual public string Name
         {
             get { return "Simple Text Renderer"; }
         }
@@ -280,6 +295,12 @@ namespace gView.Framework.Cartography.Rendering
 
                 _symbol.Text = ModifyEvaluatedLabel(display, feature, expr);
             }
+
+            // Called unconditionally, before anything below can return early - a subclass hooking
+            // in here (e.g. AdvancedLabelRenderer, resolving a per-feature color override) needs
+            // every Draw() call to reach it regardless of which path it takes from here. The base
+            // implementation does nothing - see HandleAdditionalLabelRendererBehavior's remarks.
+            HandleAdditionalLabelRendererBehavior(display, feature);
 
             if (string.IsNullOrWhiteSpace(_symbol.Text))
             {
@@ -709,7 +730,7 @@ namespace gView.Framework.Cartography.Rendering
 
         #region IPersistable Members
 
-        public void Load(IPersistStream stream)
+        virtual public void Load(IPersistStream stream)
         {
             _fieldname = (string)stream.Load("Fieldname");
             _sizeField = (string)stream.Load("Sizefield");
@@ -726,7 +747,7 @@ namespace gView.Framework.Cartography.Rendering
             _symbolRotation = (SymbolRotation)stream.Load("SymbolRotation", _symbolRotation, _symbolRotation);
         }
 
-        public void Save(IPersistStream stream)
+        virtual public void Save(IPersistStream stream)
         {
             stream.Save("Fieldname", _fieldname);
             stream.Save("Sizefield", _sizeField);
@@ -755,7 +776,7 @@ namespace gView.Framework.Cartography.Rendering
                 (ITextSymbol)(_symbol is IClone2 ? _symbol.Clone(options) : null),
                 _fieldname);
 
-        public object Clone(CloneOptions options)
+        virtual public object Clone(CloneOptions options)
         {
             SimpleLabelRenderer renderer = CreateCloneInstance(options);
 

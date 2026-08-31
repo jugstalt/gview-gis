@@ -156,12 +156,59 @@ namespace gView.GraphicsEngine
 
                 colorString = colorString.Replace(" ", ""); // remove spaces
 
+                // Bare "R,G,B"/"R,G,B,A" (no "rgb(...)"/"rgba(...)" wrapper) and its "rgb:R,G,B"
+                // alias - all 4 components on a 0-255 scale (unlike rgba(...)'s 0-1 CSS alpha, kept
+                // as its own, unrelated notation below) so a missing alpha simply defaults to 255
+                // like the other bare-number forms. Anchored (unlike the loose matches below) since
+                // bare numbers are otherwise too easy to false-positive-match inside other text.
+                var plainRgbaMatch = Regex.Match(colorString, @"^(\d{1,3}),(\d{1,3}),(\d{1,3}),(\d{1,3})$");
+                var plainRgbMatch = Regex.Match(colorString, @"^(\d{1,3}),(\d{1,3}),(\d{1,3})$");
+                var rgbColonMatch = Regex.Match(colorString, @"^rgb:(\d{1,3}),(\d{1,3}),(\d{1,3})$");
+                // CMYK, 0-100% per channel - the same convention ArcGIS Pro's own CIM color model
+                // and AprxMapConverter.CmykToArgb already use.
+                var cmykMatch = Regex.Match(colorString, @"^cmyk\((\d{1,3}),(\d{1,3}),(\d{1,3}),(\d{1,3})\)$");
+
                 var rgbaMatch = Regex.Match(colorString, @"rgba\((\d+),(\d+),(\d+),(\d*\.?\d+)\)");
                 var rgbMatch = Regex.Match(colorString, @"rgb\((\d+),(\d+),(\d+)\)");
                 var hslaMatch = Regex.Match(colorString, @"hsla\((\d+),(\d*\.?\d+)%,(\d*\.?\d+)%,(\d*\.?\d+)\)");
                 var hslMatch = Regex.Match(colorString, @"hsl\((\d+),(\d*\.?\d+)%,(\d*\.?\d+)%\)");
 
-                if (rgbaMatch.Success)
+                if (plainRgbaMatch.Success)
+                {
+                    return ArgbColor.FromArgb(
+                        int.Parse(plainRgbaMatch.Groups[4].Value, CultureInfo.InvariantCulture),
+                        int.Parse(plainRgbaMatch.Groups[1].Value, CultureInfo.InvariantCulture),
+                        int.Parse(plainRgbaMatch.Groups[2].Value, CultureInfo.InvariantCulture),
+                        int.Parse(plainRgbaMatch.Groups[3].Value, CultureInfo.InvariantCulture)
+                    );
+                }
+                else if (plainRgbMatch.Success)
+                {
+                    return ArgbColor.FromArgb(
+                        255,
+                        int.Parse(plainRgbMatch.Groups[1].Value, CultureInfo.InvariantCulture),
+                        int.Parse(plainRgbMatch.Groups[2].Value, CultureInfo.InvariantCulture),
+                        int.Parse(plainRgbMatch.Groups[3].Value, CultureInfo.InvariantCulture)
+                    );
+                }
+                else if (rgbColonMatch.Success)
+                {
+                    return ArgbColor.FromArgb(
+                        255,
+                        int.Parse(rgbColonMatch.Groups[1].Value, CultureInfo.InvariantCulture),
+                        int.Parse(rgbColonMatch.Groups[2].Value, CultureInfo.InvariantCulture),
+                        int.Parse(rgbColonMatch.Groups[3].Value, CultureInfo.InvariantCulture)
+                    );
+                }
+                else if (cmykMatch.Success)
+                {
+                    double c = int.Parse(cmykMatch.Groups[1].Value, CultureInfo.InvariantCulture);
+                    double m = int.Parse(cmykMatch.Groups[2].Value, CultureInfo.InvariantCulture);
+                    double y = int.Parse(cmykMatch.Groups[3].Value, CultureInfo.InvariantCulture);
+                    double k = int.Parse(cmykMatch.Groups[4].Value, CultureInfo.InvariantCulture);
+                    return CmykToArgb(255, c, m, y, k);
+                }
+                else if (rgbaMatch.Success)
                 {
                     float a = float.Parse(rgbaMatch.Groups[4].Value, CultureInfo.InvariantCulture);
                     return ArgbColor.FromArgb(
@@ -240,6 +287,24 @@ namespace gView.GraphicsEngine
         }
 
         #region Helper
+
+        /// <summary>Standard CMYK-to-RGB conversion, C/M/Y/K each 0-100 - same formula/convention
+        /// as ArcGIS Pro's own CIM color model.</summary>
+        private static ArgbColor CmykToArgb(byte alpha, double c, double m, double y, double k)
+        {
+            double r = 255 * (1 - c / 100.0) * (1 - k / 100.0);
+            double g = 255 * (1 - m / 100.0) * (1 - k / 100.0);
+            double b = 255 * (1 - y / 100.0) * (1 - k / 100.0);
+            return ArgbColor.FromArgb(alpha, ClampByte(r), ClampByte(g), ClampByte(b));
+        }
+
+        private static int ClampByte(double value)
+        {
+            var rounded = Math.Round(value);
+            if (rounded < 0) return 0;
+            if (rounded > 255) return 255;
+            return (int)rounded;
+        }
 
         private static (int R, int G, int B) HslToRgb(float h, float s, float l)
         {
