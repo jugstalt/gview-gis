@@ -56,6 +56,22 @@ internal class AprxMapConverter
     // checked - see the comment at its one use site in ConvertLabelRenderer for why this isn't
     // just hard-coded to RenderLabelPriority.Always.
     private readonly RenderLabelPriority _allowOverlappingLabelsPriority;
+    // Manual, per (FontFamilyName, CharacterIndex) overrides for the automatic glyph-ink-centering
+    // correction (see GetGlyphCenteringCorrectionFraction) - font family names compared
+    // case-insensitively. Stored already normalized to "fraction of font size" (X/ReferenceSize,
+    // Y/ReferenceSize). Unlike the automatic measurement, a hit here *replaces* the whole
+    // -anchorX + offsetX (+ correction*Size) computation in ConvertCharacterMarker rather than
+    // being just another value for the same "correction" term added on top of a layer's own
+    // anchorPoint/offsetX/offsetY: the entry is meant to be read directly off gView.Carto's
+    // symbol editor (nudge the glyph until visually centered, at some test font size, and take
+    // its resulting HorizontalOffset/VerticalOffset as X/Y) - that observed "centered" state
+    // already reflects whatever the calibration instance needed, so re-adding a layer's own
+    // separate anchor/offset on top of it would double-count. The tradeoff: a layer that itself
+    // has a deliberate, unrelated anchorPoint (e.g. offsetting the marker from the feature point
+    // for cartographic reasons, not to work around font metrics) loses that offset wherever the
+    // same override applies - there's no way to tell the two apart from the override value alone,
+    // so only use one glyph-centering-correction entry across layers that are fine sharing it.
+    private readonly Dictionary<(string FontFamilyName, byte CharacterIndex), (float X, float Y)> _glyphCenteringCorrectionOverrides = new();
 
     /// <param name="warn">Optional callback invoked for non-fatal conversion warnings.</param>
     /// <param name="info">Optional callback invoked for informational conversion notices (e.g. a label expression that was successfully translated).</param>
@@ -77,12 +93,36 @@ internal class AprxMapConverter
     /// name matches, and that have a non-zero aprx "transparency", are affected; everything else
     /// keeps the previous behaviour unchanged.
     /// </param>
+    /// <param name="glyphCenteringCorrection">
+    /// Manual overrides for the automatic glyph-ink-centering correction (see
+    /// <see cref="GetGlyphCenteringCorrectionFraction"/>), as one string containing any number of
+    /// "FontFamilyName:CharacterIndex(ReferenceSize,X,Y)" entries (font name case-insensitive,
+    /// character index 0-255) - e.g. "STROM SSG:148(36,2.9616666,-6.7749996)" means "at font size
+    /// 36, this glyph is exactly centered with offset X=2.9616666, Y=-6.7749996" - read off
+    /// directly as gView's own HorizontalOffset/VerticalOffset by nudging the glyph to visually
+    /// centered in gView.Carto's symbol editor at that size. X/Y are then scaled by ReferenceSize
+    /// for whatever size a given marker actually uses, and *replace* that marker's own
+    /// anchorPoint/offsetX/offsetY entirely (rather than adding on top of them, like the automatic
+    /// correction does) - the observed "centered" state at calibration time already reflects
+    /// whatever anchor/offset that instance needed, so re-adding a different marker's own
+    /// separate anchor/offset on top would double-count it. A marker that itself has a deliberate,
+    /// unrelated anchorPoint (e.g. offsetting from the feature point for cartographic reasons, not
+    /// to work around font metrics) loses that wherever the same override applies - there's no way
+    /// to tell the two apart from the override value alone. For a font/dingbat character that
+    /// bakes in a dominant shape plus an unrelated, deliberately off-center attached label, the
+    /// automatic correction (which centers on *all* the glyph's ink) drags the shape off where it
+    /// should sit to compensate for the label sticking out - there's no reliable way to detect
+    /// this automatically without also breaking ordinary glyphs that legitimately need their
+    /// whole ink centered (e.g. "?"/"i"/"j" and their dot), so this takes an exact, user-supplied
+    /// replacement measurement instead of a heuristic.
+    /// </param>
     public AprxMapConverter(
         Action<string>? warn = null,
         Action<string>? info = null,
         DatasetPluginOptions? datasetPlugin = null,
         RenderLabelPriority allowOverlappingLabelsPriority = RenderLabelPriority.Always,
-        IEnumerable<string>? compositionModeCopyLayerPatterns = null)
+        IEnumerable<string>? compositionModeCopyLayerPatterns = null,
+        string? glyphCenteringCorrection = null)
     {
         _warn = warn;
         _info = info;
@@ -98,6 +138,49 @@ internal class AprxMapConverter
                     _compositionModeCopyLayerPatterns.Add(new WildcardEx(pattern.Trim(), System.Text.RegularExpressions.RegexOptions.IgnoreCase));
                 }
             }
+        }
+
+        ParseGlyphCenteringCorrectionOverrides(glyphCenteringCorrection);
+    }
+
+    // Matches one "FontFamilyName:CharacterIndex(ReferenceSize,X,Y)" entry - font name is
+    // anything up to the first ':', '(', or ',' (so it may contain spaces, e.g. "STROM SSG",
+    // but not those punctuation characters).
+    private static readonly System.Text.RegularExpressions.Regex GlyphCenteringCorrectionEntryPattern = new(
+        @"(?<font>[^:,()]+):(?<char>\d{1,3})\(\s*(?<size>-?[0-9]*\.?[0-9]+)\s*,\s*(?<x>-?[0-9]*\.?[0-9]+)\s*,\s*(?<y>-?[0-9]*\.?[0-9]+)\s*\)",
+        System.Text.RegularExpressions.RegexOptions.Compiled);
+
+    private void ParseGlyphCenteringCorrectionOverrides(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw))
+        {
+            return;
+        }
+
+        var matches = GlyphCenteringCorrectionEntryPattern.Matches(raw);
+        foreach (System.Text.RegularExpressions.Match match in matches)
+        {
+            var fontName = match.Groups["font"].Value.Trim();
+            var charIndex = int.Parse(match.Groups["char"].Value);
+            var size = float.Parse(match.Groups["size"].Value, System.Globalization.CultureInfo.InvariantCulture);
+            var x = float.Parse(match.Groups["x"].Value, System.Globalization.CultureInfo.InvariantCulture);
+            var y = float.Parse(match.Groups["y"].Value, System.Globalization.CultureInfo.InvariantCulture);
+
+            if (charIndex is < 0 or > 255 || size <= 0)
+            {
+                _warn?.Invoke($"'glyph-centering-correction' entry '{match.Value}' has an out-of-range character index or reference size and was ignored.");
+                continue;
+            }
+
+            _glyphCenteringCorrectionOverrides[(fontName.ToUpperInvariant(), (byte)charIndex)] = (x / size, y / size);
+        }
+
+        // Anything left over once every recognized entry is stripped out (aside from the ','
+        // separators between them) points at a malformed entry the pattern didn't match at all.
+        var leftover = GlyphCenteringCorrectionEntryPattern.Replace(raw, "").Replace(",", "").Trim();
+        if (leftover.Length > 0)
+        {
+            _warn?.Invoke($"'glyph-centering-correction' contains text that could not be parsed as a 'FontFamilyName:CharacterIndex(ReferenceSize,X,Y)' entry: '{leftover}'.");
         }
     }
 
@@ -1768,10 +1851,28 @@ internal class AprxMapConverter
         // metrics (StringAlignment.Center), so on such fonts the glyph can render well off the
         // feature point even when the CIM symbol has no anchorPoint/offset at all. Measure the
         // glyph's actual rendered ink and add a correction that re-centers on it instead.
-        var (glyphCorrectionX, glyphCorrectionY) = GetGlyphCenteringCorrectionFraction(marker.FontFamilyName, character);
+        var (glyphCorrectionX, glyphCorrectionY, isManualOverride) = GetGlyphCenteringCorrectionFraction(marker.FontFamilyName, character);
 
-        double hOffset = -anchorX + marker.OffsetX + glyphCorrectionX * marker.Size;
-        double vOffset = anchorY - marker.OffsetY + glyphCorrectionY * marker.Size;
+        double hOffset, vOffset;
+        if (isManualOverride)
+        {
+            // A manual glyph-centering-correction entry is read off directly as gView's own
+            // HorizontalOffset/VerticalOffset for some already-centered instance of this glyph
+            // (e.g. nudged in gView.Carto's symbol editor) - it *replaces* this layer's own
+            // anchorPoint/offsetX/offsetY rather than adding on top of them, since that observed
+            // "centered" state already reflects whatever offset that calibration instance needed.
+            // (A layer that itself has a deliberate, unrelated anchorPoint - e.g. offsetting the
+            // marker from the feature point for cartographic reasons - loses that when the same
+            // override is reused across every layer sharing this font+character; there's no way
+            // to tell the two apart from the override value alone.)
+            hOffset = glyphCorrectionX * marker.Size;
+            vOffset = glyphCorrectionY * marker.Size;
+        }
+        else
+        {
+            hOffset = -anchorX + marker.OffsetX + glyphCorrectionX * marker.Size;
+            vOffset = anchorY - marker.OffsetY + glyphCorrectionY * marker.Size;
+        }
 
         ttmSymbol.HorizontalOffset = (float)hOffset;
         ttmSymbol.VerticalOffset = (float)vOffset;
@@ -1797,15 +1898,25 @@ internal class AprxMapConverter
     /// StringAlignment.Center/Center anchor (which is based on the font's ascent/descent line
     /// metrics), by rendering the glyph offscreen through the current graphics engine and
     /// scanning it. Returns the correction needed to re-center on the visible glyph instead,
-    /// expressed as a *fraction of font size* so callers can scale it to any marker size.
-    /// Returns (0,0) if the glyph can't be rendered/measured (e.g. font not installed).
+    /// expressed as a *fraction of font size* so callers can scale it to any marker size, plus
+    /// whether that came from a manual <see cref="_glyphCenteringCorrectionOverrides"/> entry
+    /// rather than the automatic measurement (see that field's own doc comment for why the
+    /// caller treats the two differently - a manual entry *replaces* anchorPoint/offsetX/offsetY
+    /// entirely instead of adding on top of them).
+    /// Returns (0,0,false) if the glyph can't be rendered/measured (e.g. font not installed).
     /// </summary>
-    private (float X, float Y) GetGlyphCenteringCorrectionFraction(string fontFamilyName, char character)
+    private (float X, float Y, bool IsManualOverride) GetGlyphCenteringCorrectionFraction(string fontFamilyName, char character)
     {
+        if (_glyphCenteringCorrectionOverrides.TryGetValue((fontFamilyName.ToUpperInvariant(), (byte)character), out var manual))
+        {
+            _info?.Invoke($"Layer '{_currentLayerName}': using manual glyph centering correction for font '{fontFamilyName}' char {(byte)character} (glyph-centering-correction) instead of the automatic measurement.");
+            return (manual.X, manual.Y, true);
+        }
+
         var key = (fontFamilyName, character);
         if (_glyphCenteringCorrectionCache.TryGetValue(key, out var cached))
         {
-            return cached;
+            return (cached.X, cached.Y, false);
         }
 
         var correction = (X: 0f, Y: 0f);
@@ -1859,7 +1970,7 @@ internal class AprxMapConverter
         }
 
         _glyphCenteringCorrectionCache[key] = correction;
-        return correction;
+        return (correction.X, correction.Y, false);
     }
 
     /// <summary>

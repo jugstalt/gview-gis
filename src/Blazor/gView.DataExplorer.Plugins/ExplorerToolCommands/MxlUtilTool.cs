@@ -148,6 +148,10 @@ internal class MxlUtilTool : IExplorerToolCommand
                 {
                     parameters.Add("composition-mode-copy-layers", model.ConvertAprx_CompositionModeCopyLayers);
                 }
+                if (!String.IsNullOrWhiteSpace(model.ConvertAprx_GlyphCenteringCorrection))
+                {
+                    parameters.Add("glyph-centering-correction", model.ConvertAprx_GlyphCenteringCorrection);
+                }
                 break;
 
             default:

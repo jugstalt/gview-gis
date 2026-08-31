@@ -54,6 +54,7 @@ public class MxlUtilToolModel : IDialogResultItem
     public string ConvertAprx_DatasetConnectionString { get; set; } = "";
     public string ConvertAprx_AllowOverlappingLabelsPriority { get; set; } = "";
     public string ConvertAprx_CompositionModeCopyLayers { get; set; } = "";
+    public string ConvertAprx_GlyphCenteringCorrection { get; set; } = "";
 
     #endregion
 }

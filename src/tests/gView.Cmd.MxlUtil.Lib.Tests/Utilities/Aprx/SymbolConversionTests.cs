@@ -15,11 +15,15 @@ namespace gView.Cmd.MxlUtil.Lib.Tests.Utilities.Aprx;
 /// </summary>
 public class SymbolConversionTests
 {
-    private static ISymbol ConvertSimpleSymbol(CimSymbol symbol, out List<string> warnings, double transparency = 0)
+    private static ISymbol ConvertSimpleSymbol(
+        CimSymbol symbol,
+        out List<string> warnings,
+        double transparency = 0,
+        string? glyphCenteringCorrection = null)
     {
         var w = new List<string>();
         warnings = w;
-        var converter = new AprxMapConverter(warn: w.Add);
+        var converter = new AprxMapConverter(warn: w.Add, glyphCenteringCorrection: glyphCenteringCorrection);
         var cimLayer = Cim.FeatureLayer(
             featureTable: Cim.FeatureTable(),
             renderer: Cim.SimpleRenderer(symbol),
@@ -171,6 +175,141 @@ public class SymbolConversionTests
 
         Assert.Equal(4f, marker.HorizontalOffset - baseline.HorizontalOffset, 3);
         Assert.Equal(-5f, marker.VerticalOffset - baseline.VerticalOffset, 3);
+    }
+
+    // -----------------------------------------------------------------------
+    // glyph-centering-correction: a manual, per font+character override of the automatic
+    // ink-centering correction above - there's no reliable automatic way to tell a font glyph
+    // that legitimately needs its whole ink centered (e.g. "?"/"i"/"j" and their dot) apart from
+    // one that bakes in a dominant shape plus an unrelated, deliberately off-center attached
+    // label (some ArcGIS Pro dingbat fonts do this), and simply disabling the correction for such
+    // a glyph would leave it at gView's plain font-metrics centering - the very thing the
+    // automatic correction exists to fix - rather than actually centered. So this takes an exact,
+    // user-measured replacement (at a given reference font size) instead of a heuristic - read
+    // off directly as gView's own HorizontalOffset/VerticalOffset for some already-centered
+    // instance of the glyph (e.g. nudged in gView.Carto's symbol editor), which means it
+    // *replaces* a marker's own anchorPoint/offsetX/offsetY entirely rather than adding on top of
+    // them (unlike the automatic correction) - the observed "centered" state at calibration time
+    // already reflects whatever anchor/offset that instance needed.
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public void PointSymbol_CharacterMarkerCenteringOverride_ScalesToMarkerSize()
+    {
+        // "At font size 36, this glyph is centered with offset (18, -9)" -> at half that marker
+        // size (18), the override must scale down by the same factor (9, -4.5).
+        var symbol = ConvertSimpleSymbol(
+            Cim.PointSymbol(Cim.CharacterMarker(characterIndex: 65, fontFamilyName: "Arial", size: 18)),
+            out _,
+            glyphCenteringCorrection: "Arial:65(36,18,-9)");
+
+        var marker = Assert.IsType<TrueTypeMarkerSymbol>(symbol);
+        Assert.Equal(9f, marker.HorizontalOffset, 3);
+        Assert.Equal(-4.5f, marker.VerticalOffset, 3);
+    }
+
+    [Fact]
+    public void PointSymbol_CharacterMarkerCenteringOverride_ReplacesRatherThanAddsToAutomaticCorrection()
+    {
+        // At the override's own reference size, the resulting offset must be exactly the
+        // override's X/Y - not that plus whatever the automatic ink-scan would have measured for
+        // this font/char.
+        var symbol = ConvertSimpleSymbol(
+            Cim.PointSymbol(Cim.CharacterMarker(characterIndex: 65, fontFamilyName: "Arial", size: 36)),
+            out _,
+            glyphCenteringCorrection: "Arial:65(36,18,-9)");
+
+        var marker = Assert.IsType<TrueTypeMarkerSymbol>(symbol);
+        Assert.Equal(18f, marker.HorizontalOffset, 3);
+        Assert.Equal(-9f, marker.VerticalOffset, 3);
+    }
+
+    [Fact]
+    public void PointSymbol_CharacterMarkerCenteringOverride_ReplacesRatherThanAddsToOwnAnchorPoint()
+    {
+        // A marker with its own real anchorPoint (e.g. -1,-2 Absolute, matching the real
+        // "NS-Muffe" case this feature was built for) must have that anchor *replaced*, not added
+        // to, by the override - the override was calibrated by nudging a glyph to visually
+        // centered, which already includes whatever offset was needed, so re-adding this marker's
+        // own separate anchorPoint on top would double-count it.
+        var symbol = ConvertSimpleSymbol(
+            Cim.PointSymbol(Cim.CharacterMarker(
+                characterIndex: 65,
+                fontFamilyName: "Arial",
+                size: 36,
+                anchorPoint: Cim.Point2D(-1, -2),
+                anchorPointUnits: "Absolute",
+                offsetX: 5,
+                offsetY: 7)),
+            out _,
+            glyphCenteringCorrection: "Arial:65(36,18,-9)");
+
+        var marker = Assert.IsType<TrueTypeMarkerSymbol>(symbol);
+        Assert.Equal(18f, marker.HorizontalOffset, 3);
+        Assert.Equal(-9f, marker.VerticalOffset, 3);
+    }
+
+    [Fact]
+    public void PointSymbol_CharacterMarkerCenteringOverride_IsFontAndCharacterSpecific()
+    {
+        // An override for "Arial:65" ('A') must not affect a different character on the same font.
+        var baseline = ConvertSimpleSymbol(
+            Cim.PointSymbol(Cim.CharacterMarker(characterIndex: 66, fontFamilyName: "Arial")),
+            out _);
+        var withUnrelatedOverride = ConvertSimpleSymbol(
+            Cim.PointSymbol(Cim.CharacterMarker(characterIndex: 66, fontFamilyName: "Arial")),
+            out _,
+            glyphCenteringCorrection: "Arial:65(36,18,-9)");
+
+        var baselineMarker = Assert.IsType<TrueTypeMarkerSymbol>(baseline);
+        var withUnrelatedOverrideMarker = Assert.IsType<TrueTypeMarkerSymbol>(withUnrelatedOverride);
+        Assert.Equal(baselineMarker.HorizontalOffset, withUnrelatedOverrideMarker.HorizontalOffset);
+        Assert.Equal(baselineMarker.VerticalOffset, withUnrelatedOverrideMarker.VerticalOffset);
+    }
+
+    [Fact]
+    public void PointSymbol_CharacterMarkerCenteringOverride_FontNameIsCaseInsensitive()
+    {
+        var symbol = ConvertSimpleSymbol(
+            Cim.PointSymbol(Cim.CharacterMarker(characterIndex: 65, fontFamilyName: "Arial", size: 36)),
+            out _,
+            glyphCenteringCorrection: "aRiAl:65(36,18,-9)");
+
+        var marker = Assert.IsType<TrueTypeMarkerSymbol>(symbol);
+        Assert.Equal(18f, marker.HorizontalOffset, 3);
+        Assert.Equal(-9f, marker.VerticalOffset, 3);
+    }
+
+    [Fact]
+    public void PointSymbol_CharacterMarkerCenteringOverride_MultipleEntriesInOneString()
+    {
+        var first = ConvertSimpleSymbol(
+            Cim.PointSymbol(Cim.CharacterMarker(characterIndex: 65, fontFamilyName: "Arial", size: 36)),
+            out _,
+            glyphCenteringCorrection: "Arial:65(36,18,-9),Arial:66(36,4,5)");
+        var second = ConvertSimpleSymbol(
+            Cim.PointSymbol(Cim.CharacterMarker(characterIndex: 66, fontFamilyName: "Arial", size: 36)),
+            out _,
+            glyphCenteringCorrection: "Arial:65(36,18,-9),Arial:66(36,4,5)");
+
+        var firstMarker = Assert.IsType<TrueTypeMarkerSymbol>(first);
+        var secondMarker = Assert.IsType<TrueTypeMarkerSymbol>(second);
+        Assert.Equal(18f, firstMarker.HorizontalOffset, 3);
+        Assert.Equal(-9f, firstMarker.VerticalOffset, 3);
+        Assert.Equal(4f, secondMarker.HorizontalOffset, 3);
+        Assert.Equal(5f, secondMarker.VerticalOffset, 3);
+    }
+
+    [Fact]
+    public void PointSymbol_CharacterMarkerCenteringOverride_MalformedEntry_WarnsAndIsIgnored()
+    {
+        var symbol = ConvertSimpleSymbol(
+            Cim.PointSymbol(Cim.CharacterMarker(characterIndex: 65, fontFamilyName: "Arial")),
+            out var warnings,
+            glyphCenteringCorrection: "not-a-valid-entry");
+
+        Assert.IsType<TrueTypeMarkerSymbol>(symbol);
+        Assert.Contains(warnings, w => w.Contains("glyph-centering-correction"));
     }
 
     [Theory]

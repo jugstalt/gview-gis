@@ -68,13 +68,45 @@ internal class ConvertAprx : IMxlUtility
                 memory/CPU per matched layer at render time - only opt in the specific layers that
                 actually show the artifact.
                 Example: "*streifen*">
+
+            -glyph-centering-correction <Manual overrides for gView's automatic glyph-ink-centering
+                correction, as one or more "FontFamilyName:CharacterIndex(ReferenceSize,X,Y)"
+                entries (font name case-insensitive, character index 0-255), comma-separated for
+                more than one - e.g. "STROM SSG:148(36,2.9616666,-6.7749996)" means "at font size
+                36, this glyph is exactly centered at offset X=2.9616666, Y=-6.7749996", read off
+                directly as gView's own HorizontalOffset/VerticalOffset by nudging the glyph to
+                visually centered in gView.Carto's symbol editor at that size. X/Y are scaled by
+                ReferenceSize for whatever size a marker actually uses, and *replace* that marker's
+                own anchorPoint/offsetX/offsetY entirely - not add on top of them - since the
+                observed "centered" state at calibration time already reflects whatever
+                anchor/offset that instance needed; re-adding a different marker's own separate
+                anchor/offset on top would double-count it. A marker that itself has a deliberate,
+                unrelated anchorPoint (e.g. offsetting from the feature point for cartographic
+                reasons, not to work around font metrics) loses that wherever the same override
+                applies - there's no way to tell the two apart from the override value alone, so
+                only reuse one entry across markers that are fine sharing it, and calibrate against
+                an anchor-free test symbol (no anchorPoint/offsetX/offsetY set) if you want an
+                entry that's safe to reuse everywhere this font+character appears. The automatic
+                correction exists because some ArcGIS Pro dingbat/symbol fonts ship bogus
+                ascent/descent metadata, so gView measures the glyph's actually-rendered ink and
+                re-centers on it - but for a character that bakes in a dominant shape *plus* a
+                separate, deliberately off-center attached label (e.g. a circle with a short
+                abbreviation next to it, both part of the same glyph), that correction centers on
+                the combined ink and drags the shape away from where it should sit. There's no
+                reliable way to detect this automatically without also mis-centering ordinary
+                glyphs that legitimately need their whole ink included (e.g. "?"/"i"/"j" and their
+                dot), so override only the specific font+character combos you have actually seen
+                mis-centered, with an exact measurement rather than a heuristic - not every symbol
+                necessarily needs one.
+                Single entry:    "STROM SSG:148(36,2.9616666,-6.7749996)"
+                Multiple entries: "STROM SSG:148(36,2.9616666,-6.7749996),STROM SSG:66(20,1,2)">
             """;
     }
 
     async public Task<bool> Run(string[] args, ICancelTracker? cancelTracker = null, ICommandLogger? logger = null)
     {
 
-        string input = "", output = "", datasetGuidStr = "", datasetCs = "", allowOverlappingLabelsPriorityStr = "", compositionModeCopyLayersStr = "";
+        string input = "", output = "", datasetGuidStr = "", datasetCs = "", allowOverlappingLabelsPriorityStr = "", compositionModeCopyLayersStr = "", glyphCenteringCorrectionStr = "";
         bool silent = false;
 
         for (int i = 0; i < args.Length - 1; i++)
@@ -105,6 +137,10 @@ internal class ConvertAprx : IMxlUtility
                 case "-composition-mode-copy-layers":
                 case "-cmcl":
                     compositionModeCopyLayersStr = args[++i];
+                    break;
+                case "-glyph-centering-correction":
+                case "-gcc":
+                    glyphCenteringCorrectionStr = args[++i];
                     break;
             }
         }
@@ -165,7 +201,7 @@ internal class ConvertAprx : IMxlUtility
                         ? Path.ChangeExtension(aprxFile, ".mxl")
                         : Path.Combine(output, Path.ChangeExtension(Path.GetFileName(aprxFile), ".mxl"));
 
-                    var success = await ConvertAprxAsync(aprxFile, mxlFile, log, datasetOptions, allowOverlappingLabelsPriority, compositionModeCopyLayerPatterns, cancelTracker);
+                    var success = await ConvertAprxAsync(aprxFile, mxlFile, log, datasetOptions, allowOverlappingLabelsPriority, compositionModeCopyLayerPatterns, glyphCenteringCorrectionStr, cancelTracker);
                     if (!success) allSucceeded = false;
                 }
 
@@ -175,7 +211,7 @@ internal class ConvertAprx : IMxlUtility
             else
             {
                 var mxlFile = output ?? Path.ChangeExtension(input, ".mxl");
-                var result = await ConvertAprxAsync(input, mxlFile, log, datasetOptions, allowOverlappingLabelsPriority, compositionModeCopyLayerPatterns, cancelTracker);
+                var result = await ConvertAprxAsync(input, mxlFile, log, datasetOptions, allowOverlappingLabelsPriority, compositionModeCopyLayerPatterns, glyphCenteringCorrectionStr, cancelTracker);
                 log.PrintSummary();
                 return result;
             }
@@ -195,6 +231,7 @@ internal class ConvertAprx : IMxlUtility
             DatasetPluginOptions? datasetOptions,
             RenderLabelPriority allowOverlappingLabelsPriority,
             IEnumerable<string> compositionModeCopyLayerPatterns,
+            string glyphCenteringCorrection,
             ICancelTracker? cancelTracker = null)
     {
         try
@@ -218,7 +255,8 @@ internal class ConvertAprx : IMxlUtility
                 info: msg => log.Info(msg, alwaysPrint: true),
                 datasetPlugin: datasetOptions,
                 allowOverlappingLabelsPriority: allowOverlappingLabelsPriority,
-                compositionModeCopyLayerPatterns: compositionModeCopyLayerPatterns);
+                compositionModeCopyLayerPatterns: compositionModeCopyLayerPatterns,
+                glyphCenteringCorrection: glyphCenteringCorrection);
 
             var mapResult = mapResults[0];
             log.Info($"Converting map: '{mapResult.Map.Name}' ({mapResult.Layers.Count} layer(s))");

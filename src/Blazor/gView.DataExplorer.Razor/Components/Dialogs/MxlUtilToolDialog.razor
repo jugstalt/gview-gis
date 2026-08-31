@@ -156,6 +156,10 @@
                     <MudTextField Label="Composition mode copy layers (optional)"
                                   HelperText="Comma separated list of layer-name wildcard patterns (*/?), eg. *streifen*,*Kabeltrasse*"
                                   @bind-Value="Model.ConvertAprx_CompositionModeCopyLayers" />
+
+                    <MudTextField Label="Glyph centering correction (optional)"
+                                  HelperText="Comma separated 'FontFamilyName:CharacterIndex(ReferenceSize,X,Y)' entries replacing a marker's anchor/offset entirely - read off gView.Carto's HorizontalOffset/VerticalOffset at that font size, eg. STROM SSG:148(36,2.9616666,-6.7749996),STROM SSG:66(20,1,2)"
+                                  @bind-Value="Model.ConvertAprx_GlyphCenteringCorrection" />
                 </GvCardContent>
             </GvCard>
         }
