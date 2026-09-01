@@ -97,7 +97,7 @@ internal class AprxMapConverter
     /// Manual overrides for the automatic glyph-ink-centering correction (see
     /// <see cref="GetGlyphCenteringCorrectionFraction"/>), as one string containing any number of
     /// "FontFamilyName:CharacterIndex(ReferenceSize,X,Y)" entries (font name case-insensitive,
-    /// character index 0-255) - e.g. "STROM SSG:148(36,2.9616666,-6.7749996)" means "at font size
+    /// character index 0-255) - e.g. "STROM FONT:148(36,2.9616666,-6.7749996)" means "at font size
     /// 36, this glyph is exactly centered with offset X=2.9616666, Y=-6.7749996" - read off
     /// directly as gView's own HorizontalOffset/VerticalOffset by nudging the glyph to visually
     /// centered in gView.Carto's symbol editor at that size. X/Y are then scaled by ReferenceSize
@@ -144,7 +144,7 @@ internal class AprxMapConverter
     }
 
     // Matches one "FontFamilyName:CharacterIndex(ReferenceSize,X,Y)" entry - font name is
-    // anything up to the first ':', '(', or ',' (so it may contain spaces, e.g. "STROM SSG",
+    // anything up to the first ':', '(', or ',' (so it may contain spaces, e.g. "STROM FONT",
     // but not those punctuation characters).
     private static readonly System.Text.RegularExpressions.Regex GlyphCenteringCorrectionEntryPattern = new(
         @"(?<font>[^:,()]+):(?<char>\d{1,3})\(\s*(?<size>-?[0-9]*\.?[0-9]+)\s*,\s*(?<x>-?[0-9]*\.?[0-9]+)\s*,\s*(?<y>-?[0-9]*\.?[0-9]+)\s*\)",

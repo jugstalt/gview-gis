@@ -72,7 +72,7 @@ internal class ConvertAprx : IMxlUtility
             -glyph-centering-correction <Manual overrides for gView's automatic glyph-ink-centering
                 correction, as one or more "FontFamilyName:CharacterIndex(ReferenceSize,X,Y)"
                 entries (font name case-insensitive, character index 0-255), comma-separated for
-                more than one - e.g. "STROM SSG:148(36,2.9616666,-6.7749996)" means "at font size
+                more than one - e.g. "STROM FONT:148(36,2.9616666,-6.7749996)" means "at font size
                 36, this glyph is exactly centered at offset X=2.9616666, Y=-6.7749996", read off
                 directly as gView's own HorizontalOffset/VerticalOffset by nudging the glyph to
                 visually centered in gView.Carto's symbol editor at that size. X/Y are scaled by
@@ -98,8 +98,8 @@ internal class ConvertAprx : IMxlUtility
                 dot), so override only the specific font+character combos you have actually seen
                 mis-centered, with an exact measurement rather than a heuristic - not every symbol
                 necessarily needs one.
-                Single entry:    "STROM SSG:148(36,2.9616666,-6.7749996)"
-                Multiple entries: "STROM SSG:148(36,2.9616666,-6.7749996),STROM SSG:66(20,1,2)">
+                Single entry:    "STROM FONT:148(36,2.9616666,-6.7749996)"
+                Multiple entries: "STROM FONT:148(36,2.9616666,-6.7749996),STROM FONT:66(20,1,2)">
             """;
     }
 
