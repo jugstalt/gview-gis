@@ -28,7 +28,7 @@ public class MapServerInstance : IMapServer
     private Dictionary<string, object> _lockers = new Dictionary<string, object>();
     //private int _maxGDIServers = int.MaxValue;
     private int _maxServices = int.MaxValue;
-    private readonly MapServiceManager _mapServiceMananger;
+    private readonly MapServiceManager _mapServiceManager;
     private readonly MapServiceDeploymentManager _mapServiceDeploymentMananger;
     private readonly MapServiceAccessService _accessService;
     private readonly MapServicesEventLogger _logger;
@@ -41,16 +41,16 @@ public class MapServerInstance : IMapServer
         MapServicesEventLogger logger,
         int port)
     {
-        _mapServiceMananger = mapServiceMananger;
+        _mapServiceManager = mapServiceMananger;
         _mapServiceDeploymentMananger = mapServiceDeploymentMananger;
         _accessService = accessService;
         _logger = logger;
 
-        _log_requests = _mapServiceMananger.Options.LogServiceRequests;
-        _log_request_details = _mapServiceMananger.Options.LogServiceRequestDetails;
-        _log_errors = _mapServiceMananger.Options.LogServiceErrors;
+        _log_requests = _mapServiceManager.Options.LogServiceRequests;
+        _log_request_details = _mapServiceManager.Options.LogServiceRequestDetails;
+        _log_errors = _mapServiceManager.Options.LogServiceErrors;
 
-        _etcPath = $"{new DirectoryInfo(_mapServiceMananger.Options.ServicesPath).Parent.FullName}/etc";
+        _etcPath = $"{new DirectoryInfo(_mapServiceManager.Options.ServicesPath).Parent.FullName}/etc";
     }
 
     async private Task<IServiceMap> Map(string name, string folder, IServiceRequestContext context)
@@ -122,11 +122,11 @@ public class MapServerInstance : IMapServer
         {
             if (identity == null)
             {
-                return _mapServiceMananger.MapServices.ToArray();
+                return _mapServiceManager.MapServices.ToArray();
             }
 
             List<IMapService> services = new List<IMapService>();
-            foreach (var service in _mapServiceMananger.MapServices)
+            foreach (var service in _mapServiceManager.MapServices)
             {
                 if (await service.HasAnyAccess(identity))
                 {
@@ -268,7 +268,7 @@ public class MapServerInstance : IMapServer
     {
         get
         {
-            return _mapServiceMananger.Options.OutputUrl; ;
+            return _mapServiceManager.Options.OutputUrl; ;
         }
     }
 
@@ -276,7 +276,7 @@ public class MapServerInstance : IMapServer
     {
         get
         {
-            return _mapServiceMananger.Options.OutputPath;
+            return _mapServiceManager.Options.OutputPath;
         }
     }
 
@@ -292,7 +292,7 @@ public class MapServerInstance : IMapServer
     {
         get
         {
-            return _mapServiceMananger.Options.TileCachePath;
+            return _mapServiceManager.Options.TileCachePath;
         }
     }
 
@@ -403,7 +403,7 @@ public class MapServerInstance : IMapServer
                 }
 
                 bool found = false;
-                foreach (IMapService ms in _mapServiceMananger.MapServices)
+                foreach (IMapService ms in _mapServiceManager.MapServices)
                 {
                     if (ms != null &&
                         ms.Name == alias && ms.Type == MapServiceType.GDI)
@@ -415,7 +415,7 @@ public class MapServerInstance : IMapServer
 
                 if (!found)
                 {
-                    _mapServiceMananger.MapServices.Add(new MapService(_mapServiceMananger, _accessService, name, String.Empty, MapServiceType.GDI));
+                    _mapServiceManager.MapServices.Add(new MapService(_mapServiceManager, _accessService, name, String.Empty, MapServiceType.GDI));
                 }
 
                 return await ServiceMap.CreateAsync(newMap, this, null, context);
@@ -427,7 +427,7 @@ public class MapServerInstance : IMapServer
 
     public IMapService GetMapService(string name, string folder)
     {
-        foreach (IMapService ms in _mapServiceMananger.MapServices)
+        foreach (IMapService ms in _mapServiceManager.MapServices)
         {
             if (ms == null)
             {
@@ -441,7 +441,7 @@ public class MapServerInstance : IMapServer
             }
         }
 
-        return _mapServiceMananger.TryAddService(name, folder);
+        return _mapServiceManager.TryAddService(name, folder);
     }
 
     public bool IsLoaded(string name, string folder)
@@ -485,8 +485,6 @@ public class MapServerInstance : IMapServer
 
             if (map is null) return null;
 
-            SetMapDefaults(map);
-
             return map;
         }
     }
@@ -514,26 +512,5 @@ public class MapServerInstance : IMapServer
         }
 
         return name;
-    }
-
-    private void SetMapDefaults(IMap map)
-    {
-        if (map.MapServiceProperties is MapServiceProperties mapServiceProperties)
-        {
-            mapServiceProperties.MaxImageWidth =
-                mapServiceProperties.MaxImageWidth
-                .OrTake(_mapServiceMananger.Options.MapServerDefaults_MaxImageWidth)
-                .OrTake(4096);
-
-            mapServiceProperties.MaxImageHeight =
-                mapServiceProperties.MaxImageHeight
-                .OrTake(_mapServiceMananger.Options.MapServerDefaults_MaxImageHeight)
-                .OrTake(4096);
-
-            mapServiceProperties.MaxRecordCount =
-                mapServiceProperties.MaxRecordCount
-                .OrTake(_mapServiceMananger.Options.MapServerDefaults_MaxRecordCount)
-                .OrTake(1000);
-        }
     }
 }

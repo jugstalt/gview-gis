@@ -1,5 +1,6 @@
 ﻿using gView.Facilities.Abstraction;
 using gView.Framework.Cartography;
+using gView.Framework.Common.Extensions;
 using gView.Framework.Core.Carto;
 using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
@@ -183,6 +184,8 @@ public class MapServiceDeploymentManager
                         mapService.ServiceRefreshed();
                     }
 
+                    SetMapDefaults(map);
+
                     return map;
                 }
                 return null;
@@ -222,6 +225,27 @@ public class MapServiceDeploymentManager
     }
 
     #region Helper
+
+    private void SetMapDefaults(IMap map)
+    {
+        if (map.MapServiceProperties is MapServiceProperties mapServiceProperties)
+        {
+            mapServiceProperties.MaxImageWidth =
+                mapServiceProperties.MaxImageWidth
+                .OrTake(_mapServiceManager.Options.MapServerDefaults_MaxImageWidth)
+                .OrTake(4096);
+
+            mapServiceProperties.MaxImageHeight =
+                mapServiceProperties.MaxImageHeight
+                .OrTake(_mapServiceManager.Options.MapServerDefaults_MaxImageHeight)
+                .OrTake(4096);
+
+            mapServiceProperties.MaxRecordCount =
+                mapServiceProperties.MaxRecordCount
+                .OrTake(_mapServiceManager.Options.MapServerDefaults_MaxRecordCount)
+                .OrTake(1000);
+        }
+    }
 
     async private Task<string> GetMetadata(string mapName)
     {
