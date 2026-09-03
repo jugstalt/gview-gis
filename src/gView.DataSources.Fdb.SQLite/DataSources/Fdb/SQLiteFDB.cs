@@ -38,7 +38,8 @@ namespace gView.DataSources.Fdb.SQLite
                 }
 
                 using (SQLiteConnection connection = new SQLiteConnection())
-                using (StreamReader reader = new StreamReader(SystemVariables.StartupDirectory + @"/sql/SQLiteFDB/createdatabase.sql"))
+                using (StringReader reader = new StringReader(gView.DataSources.Fdb.FdbCreateScript.Load(
+                    typeof(SQLiteFDB).Assembly, SystemVariables.StartupDirectory + @"/sql/SQLiteFDB/createdatabase.sql")))
                 {
                     connection.ConnectionString = "Data Source=" + name;
                     connection.Open();

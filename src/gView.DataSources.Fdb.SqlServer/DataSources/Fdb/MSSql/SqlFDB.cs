@@ -99,7 +99,8 @@ namespace gView.DataSources.Fdb.MSSql
                 return false;
             }
 
-            StreamReader reader = new StreamReader(SystemVariables.StartupDirectory + @"/sql/sqlFDB/createdatabase.sql");
+            StringReader reader = new StringReader(gView.DataSources.Fdb.FdbCreateScript.Load(
+                typeof(SqlFDB).Assembly, SystemVariables.StartupDirectory + @"/sql/sqlFDB/createdatabase.sql"));
             string line = "";
             StringBuilder sql = new StringBuilder();
             while ((line = reader.ReadLine()) != null)
