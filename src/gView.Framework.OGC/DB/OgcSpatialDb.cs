@@ -777,7 +777,7 @@ namespace gView.Framework.OGC.DB
                                 command.Parameters.Add(parameter);
                             }
 
-                            command.CommandText = $"{sqlStatementHeader}INSERT INTO {fClass.Name} ({fields}) VALUES ({parameters});";
+                            command.CommandText = $"{sqlStatementHeader}INSERT INTO {DbTableName(fClass.Name)} ({fields}) VALUES ({parameters});";
                             await command.ExecuteNonQueryAsync();
                         }
 
@@ -927,7 +927,7 @@ namespace gView.Framework.OGC.DB
                                 command.Parameters.Add(parameter);
                             }
 
-                            command.CommandText = $"{sqlStatementHeader}UPDATE {fClass.Name} SET {fields} WHERE {fClass.IDFieldName}={feature.OID}";
+                            command.CommandText = $"{sqlStatementHeader}UPDATE {DbTableName(fClass.Name)} SET {fields} WHERE {DbColumnName(fClass.IDFieldName)}={feature.OID}";
                             await command.ExecuteNonQueryAsync();
                         }
 
@@ -984,7 +984,7 @@ namespace gView.Framework.OGC.DB
 
                     DbCommand command = this.ProviderFactory.CreateCommand();
                     command.Connection = connection;
-                    command.CommandText = "DELETE FROM " + fClass.Name + ((where != String.Empty) ? " WHERE " + where : "");
+                    command.CommandText = "DELETE FROM " + DbTableName(fClass.Name) + ((where != String.Empty) ? " WHERE " + where : "");
 
                     await command.ExecuteNonQueryAsync();
                     connection.Close();
@@ -1136,7 +1136,7 @@ namespace gView.Framework.OGC.DB
                 using (DbDataAdapter adapter = this.ProviderFactory.CreateDataAdapter()) //new NpgsqlDataAdapter("select extent(" + this.ShapeFieldName + ") from " + this.Name, conn))
                 {
                     adapter.SelectCommand = this.ProviderFactory.CreateCommand();
-                    adapter.SelectCommand.CommandText = "select ST_AsBinary(st_extent(" + fc.ShapeFieldName + ")) as extent from " + DbTableName(fc.Name);
+                    adapter.SelectCommand.CommandText = "select ST_AsBinary(st_extent(" + DbColumnName(fc.ShapeFieldName) + ")) as extent from " + DbTableName(fc.Name);
                     adapter.SelectCommand.Connection = conn;
 
                     try
@@ -1225,7 +1225,7 @@ namespace gView.Framework.OGC.DB
                 {
                     if (sFilter.SpatialRelation == spatialRelation.SpatialRelationMapEnvelopeIntersects /*|| sFilter.Geometry is IEnvelope*/)
                     {
-                        where.Append($"{fc.ShapeFieldName} && {OGC.Envelope2box2(sFilter.Geometry.Envelope, fc.SpatialReference)}");
+                        where.Append($"{DbColumnName(fc.ShapeFieldName)} && {OGC.Envelope2box2(sFilter.Geometry.Envelope, fc.SpatialReference)}");
                     }
                     else
                     {
@@ -1240,7 +1240,7 @@ namespace gView.Framework.OGC.DB
                         }
                         wkt.Append(WKT.WKT.ToWKT(sFilter.Geometry));
 
-                        where.Append($"ST_Intersects({fc.ShapeFieldName}, '{wkt}')");
+                        where.Append($"ST_Intersects({DbColumnName(fc.ShapeFieldName)}, '{wkt}')");
                     }
 
                     filter.AddField(fc.ShapeFieldName);
