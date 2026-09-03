@@ -87,25 +87,30 @@ public class FdbImport
             sIndexDef = new gViewSpatialIndexDef();
         }
 
-        bool msSpatial = false;
-        if (fdb is SqlFDB &&
+        bool msSpatial = fdb is SqlFDB &&
             (sIndexDef.GeometryType == GeometryFieldType.MsGeography ||
-             sIndexDef.GeometryType == GeometryFieldType.MsGeometry))
-        {
-            msSpatial = true;
-        }
-        else
+             sIndexDef.GeometryType == GeometryFieldType.MsGeometry);
+
+        // native DB geometry column + native spatial index -> the gView BinaryTree is not built.
+        bool nativeDbGeometry = msSpatial
+            || sIndexDef.StorageType == GeometryStorageType.PostGis;
+
+        if (!nativeDbGeometry)
         {
             int maxAllowedLevel = ((fdb is SqlFDB || fdb is pgFDB) ? 62 : 30);
             if (sIndexDef.Levels > maxAllowedLevel)
             {
                 ISpatialReference defSRef = sIndexDef.SpatialReference;
+                var storageType = sIndexDef.StorageType;
                 sIndexDef = new gViewSpatialIndexDef(
                     sIndexDef.SpatialIndexBounds,
                     Math.Min(sIndexDef.Levels, maxAllowedLevel),
                     sIndexDef.MaxPerNode,
-                    sIndexDef.SplitRatio);
-                ((gViewSpatialIndexDef)sIndexDef).SpatialReference = defSRef;
+                    sIndexDef.SplitRatio)
+                {
+                    SpatialReference = defSRef,
+                    StorageType = storageType,
+                };
             }
         }
 
@@ -224,6 +229,11 @@ public class FdbImport
                 ((SqlFDB)fdb).SetMSSpatialIndex((MSSpatialIndex)sIndexDef, destFC.Name);
                 await ((SqlFDB)fdb).SetFeatureclassExtent(destFC.Name, sIndexDef.SpatialIndexBounds);
             }
+            else if (sIndexDef.StorageType == GeometryStorageType.PostGis && fdb is pgFDB pgfdb)
+            {
+                pgfdb.SetPostGisSpatialIndex(destFC.Name, sIndexDef.SpatialIndexBounds);
+                await pgfdb.SetFeatureclassExtent(destFC.Name, sIndexDef.SpatialIndexBounds);
+            }
             else
             {
                 if (_treeVersion == TreeVersion.BinaryTree)
@@ -281,7 +291,7 @@ public class FdbImport
                 bool result = true;
                 if (!_schemaOnly)
                 {
-                    if (msSpatial)
+                    if (nativeDbGeometry)
                     {
                         result = await CopyFeatures(sourceFC, fdb, destFC, fieldTranslation, filters);
                     }

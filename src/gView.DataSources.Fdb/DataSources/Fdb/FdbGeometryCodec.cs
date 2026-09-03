@@ -40,6 +40,14 @@ namespace gView.DataSources.Fdb
         };
 
         /// <summary>
+        /// Serializes a geometry for a given storage type: the proprietary blob for
+        /// <see cref="GeometryStorageType.Default"/>, WKB for everything else (WKB blob column, or
+        /// WKB bytes to feed <c>ST_GeomFromWKB</c> / <c>geometry::STGeomFromWKB</c> for a native column).
+        /// </summary>
+        public static byte[] Encode(GeometryStorageType storageType, IGeometry shape, IGeometryDef geometryDef)
+            => (storageType == GeometryStorageType.Default ? Classic : Wkb).Encode(shape, geometryDef);
+
+        /// <summary>
         /// Blob codec for a feature class' <c>FDB_SHAPE</c> column, resolved from its dataset's
         /// <see cref="ISpatialIndexDef.StorageType"/>. Falls back to <see cref="Classic"/> for
         /// anything that is not a blob-stored FDB feature class.

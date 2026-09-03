@@ -1772,7 +1772,7 @@ namespace gView.DataSources.Fdb.MSAccess
                     else if (si == "msgeography")
                     {
                         MSSpatialIndex msIndex = new MSSpatialIndex();
-                        msIndex.GeometryType = GeometryFieldType.MsGeometry;
+                        msIndex.GeometryType = GeometryFieldType.MsGeography;
                         msIndex.SpatialIndexBounds = new Envelope();
                         msIndex.CellsPerObject = Convert.ToInt32(row["MaxPerNode"]);
                         msIndex.Levels = Convert.ToInt32(row["MaxLevels"]);

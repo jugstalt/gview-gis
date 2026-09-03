@@ -8,6 +8,7 @@ using gView.DataSources.Fdb.PostgreSql;
 using gView.DataSources.Fdb.SQLite;
 using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
+using gView.Framework.Core.FDB;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
@@ -47,6 +48,10 @@ public class CreateDatasetCommand : ICommand
         new RequiredCommandParameter<string>("ds_type")
         {
             Description="Dataset Type [FeatureDataset | ImageDataset]"
+        },
+        new CommandParameter<string>("geometry_storage")
+        {
+            Description="Geometry storage [Default | Wkb | PostGis | SqlServerGeometry | SqlServerGeography]. Default = gView proprietary blob."
         },
         new RequiredCommandParameter<IEnvelope>("si_bounds")
         {
@@ -108,7 +113,7 @@ public class CreateDatasetCommand : ICommand
 
             #region Spatial Index Def
 
-            gViewSpatialIndexDef? spatialIndexDef = null;
+            ISpatialIndexDef? spatialIndexDef = null;
             try
             {
                 var envelopeBuilder = new EnvelopeParameterBuilder("si_bounds");
@@ -116,7 +121,16 @@ public class CreateDatasetCommand : ICommand
 
                 var maxLevels = parameters.GetRequiredValue<int>("si_max_levels");
 
-                spatialIndexDef = new gViewSpatialIndexDef(bounds, maxLevels);
+                var storageString = parameters.GetValueOrDefault<string>("geometry_storage", "Default");
+                Enum.TryParse<GeometryStorageType>(storageString, ignoreCase: true, out var storageType);
+
+                spatialIndexDef = storageType switch
+                {
+                    GeometryStorageType.PostGis => new PostGisSpatialIndexDef(bounds, maxLevels),
+                    GeometryStorageType.SqlServerGeometry => new MSSpatialIndex { GeometryType = GeometryFieldType.MsGeometry, SpatialIndexBounds = bounds, Levels = maxLevels },
+                    GeometryStorageType.SqlServerGeography => new MSSpatialIndex { GeometryType = GeometryFieldType.MsGeography, SpatialIndexBounds = bounds, Levels = maxLevels },
+                    _ => new gViewSpatialIndexDef(bounds, maxLevels) { StorageType = storageType },
+                };
             }
             catch
             {

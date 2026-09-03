@@ -1,4 +1,5 @@
 ﻿using gView.Blazor.Models.Dialogs;
+using gView.Framework.Core.Data;
 using gView.Framework.Core.FDB;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Data;
@@ -35,6 +36,13 @@ public class NewFdbDatasetModel : IDialogResultItem
     public ISpatialReference? SpatialReference { get; set; }
 
     public BinaryTreeDef SpatialIndex { get; set; }
+
+    /// <summary>How geometry is stored: proprietary blob (Default) or an open / native format.</summary>
+    public GeometryStorageType GeometryStorage { get; set; } = GeometryStorageType.Default;
+
+    /// <summary>The storage options offered for the current FDB engine (set by the caller).</summary>
+    public IReadOnlyList<GeometryStorageType> AllowedGeometryStorages { get; set; } =
+        new[] { GeometryStorageType.Default };
 
     public Dictionary<IAutoField, bool> AutoFields { get; set; } = new Dictionary<IAutoField, bool>();
 }

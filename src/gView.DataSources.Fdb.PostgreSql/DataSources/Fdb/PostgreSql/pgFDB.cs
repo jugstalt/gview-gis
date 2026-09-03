@@ -452,6 +452,38 @@ namespace gView.DataSources.Fdb.PostgreSql
             }
         }
 
+        /// <summary>
+        /// Marks a feature class as PostGIS-stored (<c>FDB_FeatureClasses.SI='postgis'</c>) and
+        /// creates the GiST index on its <c>FDB_SHAPE</c> geometry column. Mirrors
+        /// <c>SqlFDB.SetMSSpatialIndex</c>.
+        /// </summary>
+        public bool SetPostGisSpatialIndex(string fcName, IEnvelope bounds)
+        {
+            try
+            {
+                var nfi = System.Globalization.CultureInfo.InvariantCulture;
+                bounds = bounds ?? new Envelope();
+
+                _conn.ExecuteNoneQuery("UPDATE " + TableName("FDB_FeatureClasses") + " SET "
+                    + DbColName("SI") + "='postgis'"
+                    + "," + DbColName("SIMinX") + "=" + bounds.MinX.ToString(nfi)
+                    + "," + DbColName("SIMinY") + "=" + bounds.MinY.ToString(nfi)
+                    + "," + DbColName("SIMaxX") + "=" + bounds.MaxX.ToString(nfi)
+                    + "," + DbColName("SIMaxY") + "=" + bounds.MaxY.ToString(nfi)
+                    + " WHERE " + DbColName("Name") + "='" + fcName + "'");
+
+                _conn.ExecuteNoneQuery("CREATE INDEX \"SI_" + fcName + "\" ON " + FcTableName(fcName)
+                    + " USING GIST (\"FDB_SHAPE\")");
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _errMsg = ex.Message;
+                return false;
+            }
+        }
+
         async protected override Task<bool> TableExists(string tableName)
         {
             if (_conn == null)
@@ -668,6 +700,12 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                 filter = SpatialFilter.Project(filter as ISpatialFilter, fc.SpatialReference);
             }
 
+            if (((IFDBDataset)fc.Dataset).SpatialIndexDef?.StorageType == GeometryStorageType.PostGis)
+            {
+                return await Cursors.PgNativeFeatureCursor.Create(
+                    _conn.ConnectionString, fc, filter, fc.SpatialReference?.EpsgCode ?? 0);
+            }
+
             string subfields = String.Empty;
             if (filter != null)
             {
@@ -739,6 +777,13 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
 
         async override public Task<IFeatureCursor> QueryIDs(IFeatureClass fc, string subFields, List<int> IDs, ISpatialReference toSRef, IDatumTransformations datumTransformations)
         {
+            if (fc.Dataset is IFDBDataset fdbDs && fdbDs.SpatialIndexDef?.StorageType == GeometryStorageType.PostGis)
+            {
+                var idFilter = new RowIDFilter(fc.IDFieldName, IDs) { SubFields = subFields };
+                return await Cursors.PgNativeFeatureCursor.Create(
+                    _conn.ConnectionString, fc, idFilter, fc.SpatialReference?.EpsgCode ?? 0);
+            }
+
             string tabName = ((fc is pgFeatureClass) ? ((pgFeatureClass)fc).DbTableName : "fc_" + fc.Name);
             string sql = "SELECT " + subFields + " FROM " + tabName;
             return await pgFeatureCursorIDs.Create(_conn.ConnectionString, sql, IDs, await this.GetGeometryDef(fc.Name), toSRef, datumTransformations);
@@ -956,6 +1001,10 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
 
                         int count = 0;
 
+                        GeometryStorageType storage = (fClass.Dataset as IFDBDataset)?.SpatialIndexDef?.StorageType ?? GeometryStorageType.Default;
+                        bool postGis = storage == GeometryStorageType.PostGis;
+                        int srid = fClass.SpatialReference?.EpsgCode ?? 0;
+
                         #region Fields
 
                         fields.Append(DbColName(fClass.ShapeFieldName));
@@ -965,7 +1014,8 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                         {
                             var field = fClass.Fields[i];
 
-                            if (field.type == FieldType.Shape || field.type == FieldType.ID || field.name.Equals("FDB_NID", StringComparison.InvariantCultureIgnoreCase))
+                            if (field.type == FieldType.Shape || field.type == FieldType.GEOMETRY || field.type == FieldType.GEOGRAPHY
+                                || field.type == FieldType.ID || field.name.Equals("FDB_NID", StringComparison.InvariantCultureIgnoreCase))
                             {
                                 continue;
                             }
@@ -976,7 +1026,10 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                         }
 
                         bool hasNID = features.Where(f => f.FindField("$FDB_NID") != null).FirstOrDefault() != null;
-                        fields.Append("," + DbColName("FDB_NID"));
+                        if (!postGis)
+                        {
+                            fields.Append("," + DbColName("FDB_NID"));
+                        }
 
                         #endregion
 
@@ -1000,7 +1053,9 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
 
                             DbParameter shapeParameter = factory.CreateParameter();
                             shapeParameter.ParameterName = "@fdb_shape" + count;
-                            parameters.Append(shapeParameter.ParameterName);
+                            parameters.Append(postGis
+                                ? "ST_SetSRID(ST_GeomFromWKB(" + shapeParameter.ParameterName + ")," + srid + ")"
+                                : shapeParameter.ParameterName);
                             command.Parameters.Add(shapeParameter);
 
                             if (feature.Shape != null)
@@ -1008,15 +1063,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                                 var shape = fClass.ConvertTo(feature.Shape);
                                 GeometryDef.VerifyGeometryType(shape, fClass);
 
-                                BinaryWriter writer = new BinaryWriter(new MemoryStream());
-                                shape.Serialize(writer, fClass);
-
-                                byte[] geometry = new byte[writer.BaseStream.Length];
-                                writer.BaseStream.Position = 0;
-                                writer.BaseStream.ReadExactly(geometry, 0, (int)writer.BaseStream.Length);
-                                writer.Close();
-
-                                shapeParameter.Value = geometry;
+                                shapeParameter.Value = gView.DataSources.Fdb.FdbGeometryCodec.Encode(storage, shape, fClass);
                             }
                             else
                             {
@@ -1061,29 +1108,32 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                                 }
                             }
 
-                            DbParameter fdbNidparameter = factory.CreateParameter();
-                            fdbNidparameter.ParameterName = "@fdb_nid" + count;
-                            if (parameters.Length != 0)
+                            if (!postGis)
                             {
-                                parameters.Append(",");
-                            }
-                            parameters.Append(fdbNidparameter.ParameterName);
-                            command.Parameters.Add(fdbNidparameter);
-
-                            var fdbNidField = feature.FindField("$FDB_NID");
-                            if (fdbNidField != null)
-                            {
-                                fdbNidparameter.Value = fdbNidField.Value;
-                            }
-                            if (!hasNID && isNetwork == false)
-                            {
-                                long NID = 0;
-                                if (tree != null && feature.Shape != null)
+                                DbParameter fdbNidparameter = factory.CreateParameter();
+                                fdbNidparameter.ParameterName = "@fdb_nid" + count;
+                                if (parameters.Length != 0)
                                 {
-                                    NID = tree.InsertSINode(feature.Shape.Envelope);
+                                    parameters.Append(",");
                                 }
+                                parameters.Append(fdbNidparameter.ParameterName);
+                                command.Parameters.Add(fdbNidparameter);
 
-                                fdbNidparameter.Value = NID;
+                                var fdbNidField = feature.FindField("$FDB_NID");
+                                if (fdbNidField != null)
+                                {
+                                    fdbNidparameter.Value = fdbNidField.Value;
+                                }
+                                if (!hasNID && isNetwork == false)
+                                {
+                                    long NID = 0;
+                                    if (tree != null && feature.Shape != null)
+                                    {
+                                        NID = tree.InsertSINode(feature.Shape.Envelope);
+                                    }
+
+                                    fdbNidparameter.Value = NID;
+                                }
                             }
 
                             if (count > 0)
@@ -1377,18 +1427,15 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                                 var shape = fClass.ConvertTo(feature.Shape);
                                 GeometryDef.VerifyGeometryType(shape, fClass);
 
-                                BinaryWriter writer = new BinaryWriter(new MemoryStream());
-                                shape.Serialize(writer, fClass);
-
-                                byte[] geometry = new byte[writer.BaseStream.Length];
-                                writer.BaseStream.Position = 0;
-                                writer.BaseStream.ReadExactly(geometry, (int)0, (int)writer.BaseStream.Length);
-                                writer.Close();
+                                GeometryStorageType storage = (fClass.Dataset as IFDBDataset)?.SpatialIndexDef?.StorageType ?? GeometryStorageType.Default;
+                                int srid = fClass.SpatialReference?.EpsgCode ?? 0;
 
                                 DbParameter parameter = _dbProviderFactory.CreateParameter();
                                 parameter.ParameterName = "@fdb_shape";
-                                parameter.Value = geometry;
-                                fields.Append(DbColName("FDB_SHAPE") + "=@fdb_shape");
+                                parameter.Value = gView.DataSources.Fdb.FdbGeometryCodec.Encode(storage, shape, fClass);
+                                fields.Append(DbColName("FDB_SHAPE") + "=" + (storage == GeometryStorageType.PostGis
+                                    ? "ST_SetSRID(ST_GeomFromWKB(@fdb_shape)," + srid + ")"
+                                    : "@fdb_shape"));
                                 command.Parameters.Add(parameter);
                             }
 

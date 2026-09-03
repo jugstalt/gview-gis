@@ -30,10 +30,18 @@ static internal class ApplicationScopeServiceExtensions
     
     async static public Task<IDataset?> CreateDataset(this IExplorerApplicationScopeService scopeService, IExplorerObject parentExObject)
     {
+        var allowedStorages = parentExObject switch
+        {
+            SqlFdbExplorerObject => new[] { GeometryStorageType.Default, GeometryStorageType.SqlServerGeometry, GeometryStorageType.SqlServerGeography },
+            PostgreSqlExplorerObject => new[] { GeometryStorageType.Default, GeometryStorageType.PostGis },
+            SqLiteFdbExplorerObject => new[] { GeometryStorageType.Default, GeometryStorageType.Wkb },
+            _ => new[] { GeometryStorageType.Default }
+        };
+
         var model = await scopeService
                                .ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.NewFdbDataset),
                                           "New Dataset",
-                                          new NewFdbDatasetModel() { Name = "ds1" });
+                                          new NewFdbDatasetModel() { Name = "ds1", AllowedGeometryStorages = allowedStorages });
         if (model == null)
         {
             return null;
@@ -70,7 +78,8 @@ static internal class ApplicationScopeServiceExtensions
             { "fdb", fdb.GetType().Name },
             { "connection_string", fdb.ConnectionString },
             { "ds_name", model.Name },
-            { "ds_type", model.DatasetType.ToString() }
+            { "ds_type", model.DatasetType.ToString() },
+            { "geometry_storage", model.GeometryStorage.ToString() }
         };
 
         if (model.SpatialReference != null)
@@ -137,7 +146,7 @@ static internal class ApplicationScopeServiceExtensions
         }
 
         var featureDataset = await parentExObject.GetInstanceAsync() as IFeatureDataset;
-        if (featureDataset is null || !(((IDataset)featureDataset).Database is SQLiteFDB))
+        if (featureDataset is null || !(((IDataset)featureDataset).Database is AccessFDB))
         {
             return null;
         }

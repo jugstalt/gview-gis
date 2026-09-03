@@ -38,6 +38,20 @@
                         
                         <MudTabPanel Text="Spatial Index">
                             <GvGrid ColumnCount="1">
+                                @if (Model.AllowedGeometryStorages != null && Model.AllowedGeometryStorages.Count > 1)
+                                {
+                                    <GvGridItem>
+                                        <MudSelect T="gView.Framework.Core.Data.GeometryStorageType"
+                                                   Label="Geometry storage"
+                                                   @bind-Value="Model.GeometryStorage"
+                                                   HelperText="Default = gView proprietary blob. The others store geometry in an open / database-native format.">
+                                            @foreach (var s in Model.AllowedGeometryStorages)
+                                            {
+                                                <MudSelectItem Value="s">@s.ToString()</MudSelectItem>
+                                            }
+                                        </MudSelect>
+                                    </GvGridItem>
+                                }
                                 <GvGridItem>
                                     <SpatialIndexDefControl BinaryTreeDef="Model.SpatialIndex" BinaryTreeDefChanged="SpatialIndexDefChanged" />
                                 </GvGridItem>
