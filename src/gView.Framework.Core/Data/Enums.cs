@@ -46,6 +46,29 @@ namespace gView.Framework.Core.Data
         MsGeography = FieldType.GEOGRAPHY
     }
 
+    /// <summary>
+    /// How an FDB feature class stores its geometry. Chosen per dataset at creation time and
+    /// denormalized onto every feature class of that dataset. <see cref="Default"/> is the legacy
+    /// gView-proprietary blob; the other values are open / database-native formats.
+    /// </summary>
+    public enum GeometryStorageType
+    {
+        /// <summary>gView proprietary binary blob + gView BinaryTree index (legacy, default).</summary>
+        Default = 0,
+
+        /// <summary>Standard OGC WKB in the blob column, gView BinaryTree index kept (SQLite).</summary>
+        Wkb = 1,
+
+        /// <summary>PostGIS <c>geometry</c> column + GiST index (PostgreSQL).</summary>
+        PostGis = 2,
+
+        /// <summary>SQL Server <c>geometry</c> column + GEOMETRY_GRID spatial index.</summary>
+        SqlServerGeometry = 3,
+
+        /// <summary>SQL Server <c>geography</c> column + GEOGRAPHY_GRID spatial index.</summary>
+        SqlServerGeography = 4,
+    }
+
     public enum DatasetState { unknown = 0, opened = 1 }
 
     public enum DatasetNameCase { ignore = 0, upper = 1, lower = 2, classNameUpper = 3, classNameLower = 4, fieldNamesUpper = 5, fieldNamesLower = 6 }

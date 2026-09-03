@@ -467,17 +467,7 @@ namespace gView.Framework.OGC
             }
             if (hasM)
             {
-                double M = 0D;
-                if (point is PointM)
-                {
-                    try
-                    {
-                        M = Convert.ToDouble(((PointM)point).M);
-                    }
-                    catch { }
-                }
-
-                WriteDouble(M, writer, byteOrder);
+                WriteDouble(point.M, writer, byteOrder);
             }
         }
 

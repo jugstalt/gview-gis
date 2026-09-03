@@ -14,6 +14,7 @@ namespace gView.Framework.Data
         private int _maxPerNode = 200;
         private int _levels = 30;
         private ISpatialReference _sRef = null;
+        private GeometryStorageType _storageType = GeometryStorageType.Default;
 
         public gViewSpatialIndexDef()
         {
@@ -46,6 +47,18 @@ namespace gView.Framework.Data
         public GeometryFieldType GeometryType
         {
             get { return GeometryFieldType.Default; }
+        }
+
+        /// <summary>
+        /// Geometry storage. <see cref="GeometryStorageType.Default"/> (proprietary blob) or
+        /// <see cref="GeometryStorageType.Wkb"/> (standard WKB in the blob column) - both keep the
+        /// gView BinaryTree index this def describes. <see cref="GeometryStorageType.PostGis"/> is
+        /// set via <see cref="PostGisSpatialIndexDef"/>.
+        /// </summary>
+        public virtual GeometryStorageType StorageType
+        {
+            get { return _storageType; }
+            set { _storageType = value; }
         }
 
         public IEnvelope SpatialIndexBounds
@@ -98,6 +111,24 @@ namespace gView.Framework.Data
         }
 
         #endregion
+    }
+
+    /// <summary>
+    /// A gView BinaryTree index whose feature class stores geometry as a PostGIS <c>geometry</c>
+    /// column. The BinaryTree parameters are irrelevant (PostGIS uses its own GiST index) but the
+    /// bounds / spatial reference are still carried for dataset metadata.
+    /// </summary>
+    public class PostGisSpatialIndexDef : gViewSpatialIndexDef
+    {
+        public PostGisSpatialIndexDef() { }
+
+        public PostGisSpatialIndexDef(IEnvelope bounds, int levels) : base(bounds, levels) { }
+
+        public override GeometryStorageType StorageType
+        {
+            get { return GeometryStorageType.PostGis; }
+            set { /* fixed */ }
+        }
     }
 
     public enum MSSpatialIndexLevelSize
@@ -201,6 +232,16 @@ namespace gView.Framework.Data
                 {
                     _fieldType = value;
                 }
+            }
+        }
+
+        public GeometryStorageType StorageType
+        {
+            get
+            {
+                return _fieldType == GeometryFieldType.MsGeography
+                    ? GeometryStorageType.SqlServerGeography
+                    : GeometryStorageType.SqlServerGeometry;
             }
         }
 
