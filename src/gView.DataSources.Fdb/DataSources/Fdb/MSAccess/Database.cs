@@ -783,6 +783,10 @@ namespace gView.DataSources.Fdb.MSAccess
                         this.InitSpatialIndex2(fcname);
                     }
                 }
+                if (nativeDbGeometry && geomDef.GeometryType != GeometryType.Network)
+                {
+                    await FinalizeNativeGeometryColumnAsync(fcname, geomDef, sIndexDef);
+                }
                 // Index f�r Netzwerk Graphen
                 if (geomDef.GeometryType == GeometryType.Network)
                 {
@@ -3951,6 +3955,15 @@ namespace gView.DataSources.Fdb.MSAccess
         /// </summary>
         protected virtual Task<bool> CreateNativeSpatialIndexAsync(string fcName, ISpatialIndexDef sIndexDef)
             => Task.FromResult(true);
+
+        /// <summary>
+        /// Provider hook: finalize the database-native geometry column of a freshly created feature
+        /// class (e.g. give a PostGIS <c>geometry</c> column its concrete type + SRID and make sure
+        /// <c>FDB_OID</c> is a real PRIMARY KEY) so the table is directly usable by the native
+        /// datasource, not only through the FDB catalog. No-op by default.
+        /// </summary>
+        protected virtual Task FinalizeNativeGeometryColumnAsync(string fcName, IGeometryDef geomDef, ISpatialIndexDef sIndexDef)
+            => Task.CompletedTask;
 
         /// <summary>Raises the stored FDB schema version if it is below <paramref name="version"/>.</summary>
         protected void EnsureFdbVersionAtLeast(Version version)

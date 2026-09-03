@@ -513,6 +513,77 @@ namespace gView.DataSources.Fdb.PostgreSql
             return Task.FromResult(true);
         }
 
+        protected override Task FinalizeNativeGeometryColumnAsync(string fcName, IGeometryDef geomDef, ISpatialIndexDef sIndexDef)
+        {
+            if (sIndexDef?.StorageType != GeometryStorageType.PostGis)
+            {
+                return Task.CompletedTask;
+            }
+
+            string fcTable = FcTableName(fcName);
+            int srid = sIndexDef.SpatialReference?.EpsgCode ?? 0;
+
+            // Give the FDB_SHAPE column its concrete PostGIS type + SRID so a direct PostGIS
+            // connection (bypassing the FDB catalog) reports the right SRID/geometry type in
+            // geometry_columns. Encoding always emits the multi-variant (see FdbWkbGeometryCodec).
+            if (srid > 0)
+            {
+                string pgType = PostGisColumnType(geomDef);
+                try
+                {
+                    _conn.ExecuteNoneQuery(
+                        "ALTER TABLE " + fcTable + " ALTER COLUMN \"FDB_SHAPE\" TYPE geometry("
+                        + pgType + "," + srid + ") USING ST_SetSRID(\"FDB_SHAPE\"," + srid + ")");
+                }
+                catch (Exception ex)
+                {
+                    _errMsg = ex.Message;
+                }
+            }
+
+            // FDB_OID is created as "serial primary key", but older tables / other code paths may
+            // lack the PK. gView's native PostGIS provider resolves the id column from the integer
+            // PRIMARY KEY, so make sure one exists.
+            try
+            {
+                _conn.ExecuteNoneQuery(
+                    "DO $$ BEGIN "
+                    + "IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conrelid = '" + fcTable + "'::regclass AND contype = 'p') THEN "
+                    + "ALTER TABLE " + fcTable + " ADD PRIMARY KEY (\"FDB_OID\"); "
+                    + "END IF; END $$;");
+            }
+            catch (Exception ex)
+            {
+                _errMsg = ex.Message;
+            }
+
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// PostGIS column type for a geometry def, matching what
+        /// <see cref="gView.DataSources.Fdb.FdbGeometryCodec"/> writes (always the multi variant for
+        /// line/polygon). Falls back to generic <c>Geometry</c> for Z/M so a wrong dimension can
+        /// never make an INSERT fail - the SRID is what matters for direct PostGIS use.
+        /// </summary>
+        private static string PostGisColumnType(IGeometryDef geomDef)
+        {
+            if (geomDef != null && (geomDef.HasZ || geomDef.HasM))
+            {
+                return "Geometry";
+            }
+
+            return geomDef?.GeometryType switch
+            {
+                GeometryType.Point => "Point",
+                GeometryType.Multipoint => "MultiPoint",
+                GeometryType.Polyline => "MultiLineString",
+                GeometryType.Polygon => "MultiPolygon",
+                GeometryType.Aggregate => "GeometryCollection",
+                _ => "Geometry",
+            };
+        }
+
         async protected override Task<bool> TableExists(string tableName)
         {
             if (_conn == null)
