@@ -377,11 +377,17 @@ namespace gView.DataSources.PostGIS
                 tableName = tableName.Substring(schema.Length + 1);
             }
 
+            // Quote the identifiers for the ::regclass lookup: an unquoted name is folded to
+            // lower case, so a mixed-case table (e.g. the FDB's "FC_<Name>" tables) would not
+            // be found and the primary key - and with it the id field - stays undetected.
+            schema = schema.Replace("\"", "");
+            tableName = tableName.Replace("\"", "");
+
             return $"""
                 SELECT a.attname
                 FROM pg_index i
                 JOIN pg_attribute a ON a.attrelid = i.indrelid AND a.attnum = ANY(i.indkey)
-                WHERE i.indrelid = '{schema}.{tableName}'::regclass
+                WHERE i.indrelid = '"{schema}"."{tableName}"'::regclass
                     AND i.indisprimary
                     AND (
                         format_type(a.atttypid, a.atttypmod) = 'oid'
