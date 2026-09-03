@@ -30,18 +30,24 @@ static internal class ApplicationScopeServiceExtensions
     
     async static public Task<IDataset?> CreateDataset(this IExplorerApplicationScopeService scopeService, IExplorerObject parentExObject)
     {
+        // recommended (open / native) format first, "Classic" (legacy proprietary blob) last
         var allowedStorages = parentExObject switch
         {
-            SqlFdbExplorerObject => new[] { GeometryStorageType.Default, GeometryStorageType.SqlServerGeometry, GeometryStorageType.SqlServerGeography },
-            PostgreSqlExplorerObject => new[] { GeometryStorageType.Default, GeometryStorageType.PostGis },
-            SqLiteFdbExplorerObject => new[] { GeometryStorageType.Default, GeometryStorageType.Wkb },
-            _ => new[] { GeometryStorageType.Default }
+            SqlFdbExplorerObject => new[] { GeometryStorageType.SqlServerGeometry, GeometryStorageType.SqlServerGeography, GeometryStorageType.Classic },
+            PostgreSqlExplorerObject => new[] { GeometryStorageType.PostGis, GeometryStorageType.Classic },
+            SqLiteFdbExplorerObject => new[] { GeometryStorageType.Wkb, GeometryStorageType.Classic },
+            _ => new[] { GeometryStorageType.Classic }
         };
 
         var model = await scopeService
                                .ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.NewFdbDataset),
                                           "New Dataset",
-                                          new NewFdbDatasetModel() { Name = "ds1", AllowedGeometryStorages = allowedStorages });
+                                          new NewFdbDatasetModel()
+                                          {
+                                              Name = "ds1",
+                                              AllowedGeometryStorages = allowedStorages,
+                                              GeometryStorage = allowedStorages[0],
+                                          });
         if (model == null)
         {
             return null;

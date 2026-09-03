@@ -43,7 +43,7 @@ public class SQLiteFdbNativeStorageTests : IDisposable
     private async Task<SQLiteFDB> CreateFdbAsync(GeometryStorageType storage)
     {
         var fdb = new SQLiteFDB();
-        Assert.True(fdb.Create(_dbPath), "FDB Create failed - is Resources/SQLiteFDB.createdatabase.sql copied to bin/sql/SQLiteFDB/ ?");
+        Assert.True(fdb.Create(_dbPath), "FDB Create failed: " + fdb.LastErrorMessage);
         Assert.True(await fdb.Open("Data Source=" + _dbPath));
 
         var bounds = new Envelope(0, 0, 1000, 1000);
@@ -92,7 +92,7 @@ public class SQLiteFdbNativeStorageTests : IDisposable
 
     [Theory]
     [InlineData(GeometryStorageType.Wkb)]
-    [InlineData(GeometryStorageType.Default)]
+    [InlineData(GeometryStorageType.Classic)]
     public async Task InsertAndQuery_RoundTripsGeometry(GeometryStorageType storage)
     {
         var fdb = await CreateFdbAsync(storage);
@@ -141,9 +141,9 @@ public class SQLiteFdbNativeStorageTests : IDisposable
     }
 
     [Fact]
-    public async Task DefaultDataset_DoesNotBumpFdbVersion()
+    public async Task ClassicDataset_DoesNotBumpFdbVersion()
     {
-        var fdb = await CreateFdbAsync(GeometryStorageType.Default);
+        var fdb = await CreateFdbAsync(GeometryStorageType.Classic);
         Assert.Equal(new Version(1, 2, 0), fdb.FdbVersion);
     }
 

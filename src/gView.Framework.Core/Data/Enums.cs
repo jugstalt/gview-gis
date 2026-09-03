@@ -48,13 +48,18 @@ namespace gView.Framework.Core.Data
 
     /// <summary>
     /// How an FDB feature class stores its geometry. Chosen per dataset at creation time and
-    /// denormalized onto every feature class of that dataset. <see cref="Default"/> is the legacy
-    /// gView-proprietary blob; the other values are open / database-native formats.
+    /// denormalized onto every feature class of that dataset. <see cref="Classic"/> is the legacy
+    /// gView-managed proprietary blob (value 0 so a missing catalog entry reads as legacy); the
+    /// other values are open / database-native formats and are the recommended choice for new
+    /// datasets.
     /// </summary>
     public enum GeometryStorageType
     {
-        /// <summary>gView proprietary binary blob + gView BinaryTree index (legacy, default).</summary>
-        Default = 0,
+        /// <summary>
+        /// Legacy: gView-managed proprietary binary blob + gView BinaryTree index. Kept for
+        /// backwards compatibility with existing FDBs and older gView versions.
+        /// </summary>
+        Classic = 0,
 
         /// <summary>Standard OGC WKB in the blob column, gView BinaryTree index kept (SQLite).</summary>
         Wkb = 1,

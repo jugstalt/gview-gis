@@ -38,7 +38,7 @@ internal class CreateFeatureClass
         }
 
         var storage = (await fdb.SpatialIndexDef(await fdb.DatasetID(featureDataset.DatasetName)))?.StorageType
-                      ?? gView.Framework.Core.Data.GeometryStorageType.Default;
+                      ?? gView.Framework.Core.Data.GeometryStorageType.Classic;
 
         bool indexOk = storage switch
         {

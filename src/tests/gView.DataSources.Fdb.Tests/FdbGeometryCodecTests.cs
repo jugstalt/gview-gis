@@ -13,7 +13,7 @@ public class FdbGeometryCodecTests
     [Fact]
     public void For_MapsStorageTypesToCodecs()
     {
-        Assert.Same(FdbGeometryCodec.Classic, FdbGeometryCodec.For(GeometryStorageType.Default));
+        Assert.Same(FdbGeometryCodec.Proprietary, FdbGeometryCodec.For(GeometryStorageType.Classic));
         Assert.Same(FdbGeometryCodec.Wkb, FdbGeometryCodec.For(GeometryStorageType.Wkb));
         Assert.Null(FdbGeometryCodec.For(GeometryStorageType.PostGis));
         Assert.Null(FdbGeometryCodec.For(GeometryStorageType.SqlServerGeometry));
@@ -34,7 +34,7 @@ public class FdbGeometryCodecTests
     // ---- round trips: both codecs must preserve the geometry ----------------
 
     public static IEnumerable<object[]> Codecs() =>
-        new[] { new object[] { FdbGeometryCodec.Classic }, new object[] { FdbGeometryCodec.Wkb } };
+        new[] { new object[] { FdbGeometryCodec.Proprietary }, new object[] { FdbGeometryCodec.Wkb } };
 
     [Theory]
     [MemberData(nameof(Codecs))]

@@ -363,7 +363,7 @@ namespace gView.DataSources.Fdb.MSAccess
                 #region DatasetGeometryType
                 if (sIndexDef != null && FdbVersion >= new Version(1, 2, 0))
                 {
-                    if (sIndexDef.StorageType != GeometryStorageType.Default)
+                    if (sIndexDef.StorageType != GeometryStorageType.Classic)
                     {
                         await EnsureGeometryStorageColumnsAsync();
                         EnsureFdbVersionAtLeast(new Version(8, 0, 0));
@@ -543,7 +543,7 @@ namespace gView.DataSources.Fdb.MSAccess
             bool msSpatial = _conn.dbType == DBType.sql
                 && (storage == GeometryStorageType.SqlServerGeometry || storage == GeometryStorageType.SqlServerGeography);
 
-            if (storage != GeometryStorageType.Default)
+            if (storage != GeometryStorageType.Classic)
             {
                 await EnsureGeometryStorageColumnsAsync();
                 EnsureFdbVersionAtLeast(new Version(8, 0, 0));
@@ -3923,7 +3923,7 @@ namespace gView.DataSources.Fdb.MSAccess
             }
             catch { }
 
-            return GeometryStorageType.Default;
+            return GeometryStorageType.Classic;
         }
 
         /// <summary>Raises the stored FDB schema version if it is below <paramref name="version"/>.</summary>

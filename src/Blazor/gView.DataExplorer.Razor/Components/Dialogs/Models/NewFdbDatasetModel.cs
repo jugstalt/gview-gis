@@ -37,12 +37,15 @@ public class NewFdbDatasetModel : IDialogResultItem
 
     public BinaryTreeDef SpatialIndex { get; set; }
 
-    /// <summary>How geometry is stored: proprietary blob (Default) or an open / native format.</summary>
-    public GeometryStorageType GeometryStorage { get; set; } = GeometryStorageType.Default;
+    /// <summary>
+    /// How geometry is stored: an open / database-native format (recommended) or the legacy
+    /// gView-managed proprietary blob (<see cref="GeometryStorageType.Classic"/>).
+    /// </summary>
+    public GeometryStorageType GeometryStorage { get; set; } = GeometryStorageType.Wkb;
 
-    /// <summary>The storage options offered for the current FDB engine (set by the caller).</summary>
+    /// <summary>The storage options offered for the current FDB engine, recommended one first (set by the caller).</summary>
     public IReadOnlyList<GeometryStorageType> AllowedGeometryStorages { get; set; } =
-        new[] { GeometryStorageType.Default };
+        new[] { GeometryStorageType.Wkb, GeometryStorageType.Classic };
 
     public Dictionary<IAutoField, bool> AutoFields { get; set; } = new Dictionary<IAutoField, bool>();
 }

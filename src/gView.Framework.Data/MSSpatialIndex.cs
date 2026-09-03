@@ -14,7 +14,7 @@ namespace gView.Framework.Data
         private int _maxPerNode = 200;
         private int _levels = 30;
         private ISpatialReference _sRef = null;
-        private GeometryStorageType _storageType = GeometryStorageType.Default;
+        private GeometryStorageType _storageType = GeometryStorageType.Classic;
 
         public gViewSpatialIndexDef()
         {
@@ -50,7 +50,7 @@ namespace gView.Framework.Data
         }
 
         /// <summary>
-        /// Geometry storage. <see cref="GeometryStorageType.Default"/> (proprietary blob) or
+        /// Geometry storage. <see cref="GeometryStorageType.Classic"/> (proprietary blob) or
         /// <see cref="GeometryStorageType.Wkb"/> (standard WKB in the blob column) - both keep the
         /// gView BinaryTree index this def describes. <see cref="GeometryStorageType.PostGis"/> is
         /// set via <see cref="PostGisSpatialIndexDef"/>.

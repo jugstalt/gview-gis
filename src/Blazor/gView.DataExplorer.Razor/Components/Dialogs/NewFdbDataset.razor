@@ -44,10 +44,10 @@
                                         <MudSelect T="gView.Framework.Core.Data.GeometryStorageType"
                                                    Label="Geometry storage"
                                                    @bind-Value="Model.GeometryStorage"
-                                                   HelperText="Default = gView proprietary blob. The others store geometry in an open / database-native format.">
+                                                   HelperText="An open / database-native format is recommended. 'gView Classic' keeps the legacy proprietary blob for maximum backwards compatibility.">
                                             @foreach (var s in Model.AllowedGeometryStorages)
                                             {
-                                                <MudSelectItem Value="s">@s.ToString()</MudSelectItem>
+                                                <MudSelectItem Value="s">@StorageLabel(s)</MudSelectItem>
                                             }
                                         </MudSelect>
                                     </GvGridItem>
@@ -118,4 +118,14 @@
             ((Field)autoField).name = name;
         }
     }
+
+    private static string StorageLabel(gView.Framework.Core.Data.GeometryStorageType s) => s switch
+    {
+        gView.Framework.Core.Data.GeometryStorageType.Classic => "gView Classic (legacy proprietary blob)",
+        gView.Framework.Core.Data.GeometryStorageType.Wkb => "WKB (standard blob)",
+        gView.Framework.Core.Data.GeometryStorageType.PostGis => "PostGIS geometry",
+        gView.Framework.Core.Data.GeometryStorageType.SqlServerGeometry => "SQL Server geometry",
+        gView.Framework.Core.Data.GeometryStorageType.SqlServerGeography => "SQL Server geography",
+        _ => s.ToString()
+    };
 }

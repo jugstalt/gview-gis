@@ -1002,7 +1002,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
 
                         int count = 0;
 
-                        GeometryStorageType storage = (fClass.Dataset as IFDBDataset)?.SpatialIndexDef?.StorageType ?? GeometryStorageType.Default;
+                        GeometryStorageType storage = (fClass.Dataset as IFDBDataset)?.SpatialIndexDef?.StorageType ?? GeometryStorageType.Classic;
                         bool postGis = storage == GeometryStorageType.PostGis;
                         int srid = fClass.SpatialReference?.EpsgCode ?? 0;
 
@@ -1428,7 +1428,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                                 var shape = fClass.ConvertTo(feature.Shape);
                                 GeometryDef.VerifyGeometryType(shape, fClass);
 
-                                GeometryStorageType storage = (fClass.Dataset as IFDBDataset)?.SpatialIndexDef?.StorageType ?? GeometryStorageType.Default;
+                                GeometryStorageType storage = (fClass.Dataset as IFDBDataset)?.SpatialIndexDef?.StorageType ?? GeometryStorageType.Classic;
                                 int srid = fClass.SpatialReference?.EpsgCode ?? 0;
 
                                 DbParameter parameter = _dbProviderFactory.CreateParameter();
