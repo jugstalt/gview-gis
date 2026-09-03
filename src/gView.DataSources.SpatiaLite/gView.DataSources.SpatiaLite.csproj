@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Data.SQLite" Version="2.0.3" />
+    <PackageReference Include="SourceGear.sqlite3" Version="3.53.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\gView.Framework.Core\gView.Framework.Core.csproj" />
+    <ProjectReference Include="..\gView.Framework.Data\gView.Framework.Data.csproj" />
+    <ProjectReference Include="..\gView.Framework.Db\gView.Framework.Db.csproj" />
+    <ProjectReference Include="..\gView.Editor.Core\gView.Editor.Core.csproj" />
+    <ProjectReference Include="..\gView.Framework.OGC\gView.Framework.OGC.csproj" />
+    <ProjectReference Include="..\gView.Framework.Geometry\gView.Framework.Geometry.csproj" />
+  </ItemGroup>
+
+  <!--
+    Bundled mod_spatialite native binaries, laid out per RID:
+      runtimes/<rid>/native/mod_spatialite.(dll|so|dylib)  (+ its dependency libs)
+    They are copied next to the output preserving the runtimes/<rid>/native structure.
+    SpatiaLiteNative resolves the file from there at runtime (see that class for the
+    lookup order and the GVIEW_MOD_SPATIALITE override).
+  -->
+  <ItemGroup>
+    <None Include="runtimes\**\*" Exclude="runtimes\**\*.md" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

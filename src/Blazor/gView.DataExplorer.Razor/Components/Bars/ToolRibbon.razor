@@ -124,6 +124,7 @@
         creatableExplorerTools = PluginManager.GetPlugins<IExplorerObject>(Framework.Common.Plugins.Type.IExplorerObject)
                                               .Where(e => e is IExplorerObjectCreatable)
                                               .Select(e => (IExplorerObjectCreatable)e)
+                                              .OrderBy(e => e.Priority)
                                               .ToArray();
 
         EventBus.OnContextExplorerObjectsChanged += OnContextExplorerObjectsChanged;

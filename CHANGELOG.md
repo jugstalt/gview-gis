@@ -5,6 +5,55 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 8.26.3602
+
+## Added
+
+- New datasource `gView.DataSources.SpatiaLite` (`SpatiaLiteDataset`, plugin
+  `975bcd88-bee4-43ed-a82c-ba10e0b45500`): opens and **edits** stand-alone SpatiaLite
+  (`geometry_columns` + SpatiaLite blob) and GeoPackage (`gpkg_*` metadata, handled in
+  mod_spatialite "amphibious" mode) files - `*.sqlite` / `*.db` / `*.sqlite3` / `*.gpkg`.
+  Built on the shared `OgcSpatialDataset` pipeline like the PostGIS provider, so
+  query / insert / update / delete all go through the common code path; single-part
+  geometries are promoted (`CastToMultiPolygon` / `-LineString` / `-Point`) into strictly
+  typed multi-geometry columns on write. Schema management too: `Create()` makes a new
+  empty database (`*.gpkg` &rarr; `gpkgCreateBaseTables()`, otherwise
+  `InitSpatialMetaData()`), and `CreateFeatureClass()` / `DeleteFeatureClass()` add and
+  remove layers in both formats (GeoPackage via the `gpkgAddGeometryColumn` /
+  `gpkgAddGeometryTriggers` / `gpkgAddSpatialIndex` helpers plus the `gpkg_contents` /
+  `gpkg_geometry_columns` rows; SpatiaLite via `AddGeometryColumn` / `CreateSpatialIndex`).
+  GeoPackage specifics: the geometry column is
+  read through `CastAutomagic()` (raw GPB blobs are invisible to `MbrIntersects` /
+  `Extent` even in amphibious mode), written through `AsGPB()` so the stored blob stays
+  spec-compliant, and the connection sets `PRAGMA trusted_schema=ON` so the GPKG
+  RTree / feature-count triggers don't fail edits with "unsafe use of ST_IsEmpty()".
+  Awkward field names survive the round-trip: `DbParameterName` sanitises the bind-token
+  (OSM-style `mtb:scale:uphill` no longer breaks inserts with `near ":scale": syntax
+  error`), and `SelectCommand` builds its column list from `QuerySubFields` instead of a
+  space-split so a field name containing a space (`some name`) still reads back.
+  - The spatial SQL comes from the native `mod_spatialite` extension, loaded per
+    connection via `SpatiaLiteNative`. It is located, in order, from the
+    `GVIEW_MOD_SPATIALITE` environment variable, `runtimes/<rid>/native/` next to the
+    output, a local QGIS / OSGeo4W install, or `PATH`; on Windows its dependency DLLs
+    (geos, proj, …) are pre-loaded from its own folder. The extension itself is **not**
+    committed to the repo (see `src/gView.DataSources.SpatiaLite/runtimes/README.md`).
+  - Blazor DataExplorer: browse to a SpatiaLite / GeoPackage file and expand it to its
+    feature classes (`SpatiaLiteExplorerObject` / `SpatiaLiteFeatureClassExplorerObject`).
+    "Create new" makes a fresh database in the current folder (`.gpkg` name &rarr;
+    GeoPackage, otherwise SpatiaLite), and the file node is a valid paste target for the
+    "Copy / Paste feature class" tool (runs `CopyFeatureClassCommand` in the background).
+- New test project `gView.DataSources.SpatiaLite.Tests` (needs a real `mod_spatialite`:
+  `GVIEW_MOD_SPATIALITE`, QGIS/OSGeo4W, or `libsqlite3-mod-spatialite`).
+
+## Changed
+
+- `OgcSpatialDataset` (`gView.Framework.OGC.DB`): the query/edit paths now open their
+  ADO connections through a single `OpenConnectionAsync()` seam with a
+  `OnConnectionOpenedAsync(DbConnection)` provider hook (default: no-op), instead of
+  ~15 inline `ProviderFactory.CreateConnection()` calls. Behaviour for the existing
+  PostGIS / MS SQL Spatial providers is unchanged; SpatiaLite uses the hook to load
+  `mod_spatialite` (and enable GeoPackage amphibious mode) on every connection.
+
 ## 8.26.3601
 
 ## Added

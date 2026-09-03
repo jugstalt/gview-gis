@@ -191,11 +191,8 @@ namespace gView.Framework.OGC.DB
                 DataTable tab = new DataTable();
                 try
                 {
-                    using (DbConnection conn = this.ProviderFactory.CreateConnection())
+                    using (DbConnection conn = await OpenConnectionAsync())
                     {
-                        conn.ConnectionString = _connectionString;
-                        conn.Open();
-
                         DbDataAdapter adapter = this.ProviderFactory.CreateDataAdapter();
                         adapter.SelectCommand = this.ProviderFactory.CreateCommand();
                         adapter.SelectCommand.CommandText = "SELECT * FROM " + DbSchemaPrefix + OgcDictionary("geometry_columns");
@@ -241,11 +238,8 @@ namespace gView.Framework.OGC.DB
             try
             {
                 DataTable tab = new DataTable();
-                using (DbConnection conn = this.ProviderFactory.CreateConnection())
+                using (DbConnection conn = await OpenConnectionAsync())
                 {
-                    conn.ConnectionString = _connectionString;
-                    await conn.OpenAsync();
-
                     DbDataAdapter adapter = this.ProviderFactory.CreateDataAdapter();
                     adapter.SelectCommand = this.ProviderFactory.CreateCommand();
 
@@ -464,11 +458,8 @@ namespace gView.Framework.OGC.DB
             sb.Append(")\n");
             try
             {
-                using (DbConnection connection = this.ProviderFactory.CreateConnection())
+                using (DbConnection connection = await OpenConnectionAsync())
                 {
-                    connection.ConnectionString = _connectionString;
-                    await connection.OpenAsync();
-
                     DbCommand command = this.ProviderFactory.CreateCommand();
                     command.CommandText = sb.ToString();
                     command.Connection = connection;
@@ -531,11 +522,8 @@ namespace gView.Framework.OGC.DB
         {
             try
             {
-                using (DbConnection connection = this.ProviderFactory.CreateConnection())
+                using (DbConnection connection = await OpenConnectionAsync())
                 {
-                    connection.ConnectionString = this.ConnectionString;
-                    await connection.OpenAsync();
-
                     //NpgsqlCommand command = new NpgsqlCommand("DROP TABLE " + name, connection);
                     //NpgsqlCommand command = new NpgsqlCommand("SELECT DropGeometryTable ('','" + name + "')", connection);
                     DbCommand command = this.ProviderFactory.CreateCommand();
@@ -630,11 +618,8 @@ namespace gView.Framework.OGC.DB
                     }
                 }
 
-                using (DbConnection connection = this.ProviderFactory.CreateConnection())
+                using (DbConnection connection = await OpenConnectionAsync())
                 {
-                    connection.ConnectionString = _connectionString;
-                    await connection.OpenAsync();
-
                     using (var transaction = this.DbImplementsTransactions ? connection.BeginTransaction() : new FakeTransaction(connection))
                     {
                         DbCommand command = this.ProviderFactory.CreateCommand();
@@ -829,21 +814,18 @@ namespace gView.Framework.OGC.DB
 
             try
             {
-                using (DbConnection connection = this.ProviderFactory.CreateConnection())
+                int srid = 0;
+                if (fClass.SpatialReference != null)
                 {
-                    int srid = 0;
-                    if (fClass.SpatialReference != null)
+                    string sridName = fClass.SpatialReference.Name;
+                    if (sridName.ToLower().StartsWith("epsg:"))
                     {
-                        string sridName = fClass.SpatialReference.Name;
-                        if (sridName.ToLower().StartsWith("epsg:"))
-                        {
-                            srid = int.Parse(sridName.Split(':')[1]);
-                        }
+                        srid = int.Parse(sridName.Split(':')[1]);
                     }
+                }
 
-                    connection.ConnectionString = _connectionString;
-                    await connection.OpenAsync();
-
+                using (DbConnection connection = await OpenConnectionAsync())
+                {
                     using (var transaction = this.DbImplementsTransactions ? connection.BeginTransaction() : new FakeTransaction(connection))
                     {
                         DbCommand command = this.ProviderFactory.CreateCommand();
@@ -976,12 +958,8 @@ namespace gView.Framework.OGC.DB
 
             try
             {
-                using (DbConnection connection = this.ProviderFactory.CreateConnection())
+                using (DbConnection connection = await OpenConnectionAsync())
                 {
-                    connection.ConnectionString = _connectionString;
-                    await connection.OpenAsync();
-
-
                     DbCommand command = this.ProviderFactory.CreateCommand();
                     command.Connection = connection;
                     command.CommandText = "DELETE FROM " + DbTableName(fClass.Name) + ((where != String.Empty) ? " WHERE " + where : "");
@@ -1011,6 +989,29 @@ namespace gView.Framework.OGC.DB
             get;
         }
         protected abstract OgcSpatialDataset CreateInstance();
+
+        /// <summary>
+        /// Creates a provider connection for this dataset's connection string, opens it and
+        /// runs the <see cref="OnConnectionOpenedAsync"/> provider hook. Every internal
+        /// query/edit path opens its connection through this method so a provider that needs
+        /// to prepare each connection (e.g. SpatiaLite loading the mod_spatialite extension)
+        /// gets a single reliable seam instead of ~15 inline <c>CreateConnection()</c> calls.
+        /// </summary>
+        public async Task<DbConnection> OpenConnectionAsync()
+        {
+            var connection = this.ProviderFactory.CreateConnection();
+            connection.ConnectionString = _connectionString;
+            await connection.OpenAsync();
+            await OnConnectionOpenedAsync(connection);
+
+            return connection;
+        }
+
+        /// <summary>
+        /// Called right after a connection returned by <see cref="OpenConnectionAsync"/> has
+        /// been opened. Default: no-op. Providers override this to prepare the connection.
+        /// </summary>
+        protected virtual Task OnConnectionOpenedAsync(DbConnection connection) => Task.CompletedTask;
 
         protected string DbSchemaPrefix
         {

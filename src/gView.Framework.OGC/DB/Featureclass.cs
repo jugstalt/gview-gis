@@ -144,11 +144,8 @@ namespace gView.Framework.OGC.DB
             try
             {
                 // Fields
-                using (DbConnection dbConnection = _dataset.ProviderFactory.CreateConnection())
+                using (DbConnection dbConnection = await _dataset.OpenConnectionAsync())
                 {
-                    dbConnection.ConnectionString = _dataset.ConnectionString;
-                    await dbConnection.OpenAsync();
-
                     DbCommand command = _dataset.ProviderFactory.CreateCommand();
                     command.CommandText = _dataset.SelectReadSchema(this.Name); // "select * from " + this.Name;
                     command.Connection = dbConnection;
@@ -350,11 +347,8 @@ namespace gView.Framework.OGC.DB
             try
             {
                 _lastException = null;
-                using (DbConnection connection = _dataset.ProviderFactory.CreateConnection())
+                using (DbConnection connection = await _dataset.OpenConnectionAsync())
                 {
-                    connection.ConnectionString = _dataset.ConnectionString;
-                    await connection.OpenAsync();
-
                     DbCommand command = _dataset.ProviderFactory.CreateCommand();
                     command.CommandText = "select count(" + _idfield + ") from " + this.Name;
                     command.Connection = connection;
@@ -457,11 +451,8 @@ namespace gView.Framework.OGC.DB
         {
             filter.GeometryToSpatialReference(this.SpatialReference, filter?.DatumTransformations);
 
-            using (DbConnection connection = _dataset.ProviderFactory.CreateConnection())
+            using (DbConnection connection = await _dataset.OpenConnectionAsync())
             {
-                connection.ConnectionString = _dataset.ConnectionString;
-                await connection.OpenAsync();
-
                 DbCommand command = _dataset.SelectCommand(this, filter, out string shapeFieldname, "count", this.IDFieldName);
                 command.Connection = connection;
 

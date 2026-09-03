@@ -86,20 +86,9 @@ namespace gView.Framework.OGC.DB
 
                 featureCursor._subFields = filter.QuerySubFields.ToArray();
 
-                featureCursor._conn = ((OgcSpatialDataset)fc.Dataset).ProviderFactory.CreateConnection();
-                featureCursor._conn.ConnectionString = fc.Dataset.ConnectionString;
+                featureCursor._conn = await ((OgcSpatialDataset)fc.Dataset).OpenConnectionAsync();
 
                 command.Connection = featureCursor._conn;
-
-                if (featureCursor._conn.State != ConnectionState.Closed)
-                {
-                    try
-                    {
-                        featureCursor._conn.Close();
-                    }
-                    catch { }
-                }
-                await featureCursor._conn.OpenAsync();
 
                 command.SetCustomCursorTimeout();
 
