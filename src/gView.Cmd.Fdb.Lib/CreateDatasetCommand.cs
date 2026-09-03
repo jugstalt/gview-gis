@@ -51,15 +51,15 @@ public class CreateDatasetCommand : ICommand
         },
         new CommandParameter<string>("geometry_storage")
         {
-            Description="Geometry storage [Default | Wkb | PostGis | SqlServerGeometry | SqlServerGeography]. Default = gView proprietary blob."
+            Description="Geometry storage [Classic | Wkb | PostGis | SqlServerGeometry | SqlServerGeography]. Classic = gView proprietary blob (default). The native formats build no gView spatial index."
         },
-        new RequiredCommandParameter<IEnvelope>("si_bounds")
+        new CommandParameter<IEnvelope>("si_bounds")
         {
-            Description = "Spatial Index Bounds"
+            Description = "Spatial Index Bounds (required for Classic/Wkb storage, optional otherwise)"
         },
-        new RequiredCommandParameter<int>("si_max_levels")
+        new CommandParameter<int>("si_max_levels")
         {
-            Description = "Maximal Spatial Index Levels"
+            Description = "Maximal Spatial Index Levels (Classic/Wkb storage only)"
         },
         new RequiredCommandParameter<string>("autofields")
         {
@@ -113,33 +113,39 @@ public class CreateDatasetCommand : ICommand
 
             #region Spatial Index Def
 
-            ISpatialIndexDef? spatialIndexDef = null;
-            try
+            var storageString = parameters.GetValueOrDefault<string>("geometry_storage", nameof(GeometryStorageType.Classic));
+            if (!Enum.TryParse<GeometryStorageType>(storageString, ignoreCase: true, out var storageType))
             {
-                var envelopeBuilder = new EnvelopeParameterBuilder("si_bounds");
-                var bounds = await envelopeBuilder.Build<IEnvelope>(parameters);
-
-                var maxLevels = parameters.GetRequiredValue<int>("si_max_levels");
-
-                var storageString = parameters.GetValueOrDefault<string>("geometry_storage", "Default");
-                Enum.TryParse<GeometryStorageType>(storageString, ignoreCase: true, out var storageType);
-
-                spatialIndexDef = storageType switch
-                {
-                    GeometryStorageType.PostGis => new PostGisSpatialIndexDef(bounds, maxLevels),
-                    GeometryStorageType.SqlServerGeometry => new MSSpatialIndex { GeometryType = GeometryFieldType.MsGeometry, SpatialIndexBounds = bounds, Levels = maxLevels },
-                    GeometryStorageType.SqlServerGeography => new MSSpatialIndex { GeometryType = GeometryFieldType.MsGeography, SpatialIndexBounds = bounds, Levels = maxLevels },
-                    _ => new gViewSpatialIndexDef(bounds, maxLevels) { StorageType = storageType },
-                };
+                storageType = GeometryStorageType.Classic;
             }
-            catch
+
+            bool nativeStorage = storageType is GeometryStorageType.PostGis
+                or GeometryStorageType.SqlServerGeometry
+                or GeometryStorageType.SqlServerGeography;
+
+            // Bounds / levels are only required for the gView BinaryTree (Classic / Wkb); optional otherwise.
+            IEnvelope? siBounds = null;
+            try { siBounds = await new EnvelopeParameterBuilder("si_bounds").Build<IEnvelope>(parameters); } catch { }
+
+            int siMaxLevels = parameters.GetValueOrDefault<int>("si_max_levels", 0);
+
+            bool haveSi = siBounds != null && siMaxLevels > 0;
+
+            if (!nativeStorage && !haveSi && datasetType.Equals("ImageDataset", StringComparison.OrdinalIgnoreCase))
             {
-                if (datasetType.Equals("ImageDataset", StringComparison.OrdinalIgnoreCase))
-                {
-                    throw;  // spatialIndex is required with imagedataset
-                }
-                spatialIndexDef = null;
+                throw new Exception("Spatial index bounds / max levels are required for an image dataset.");
             }
+
+            ISpatialIndexDef? spatialIndexDef = storageType switch
+            {
+                GeometryStorageType.PostGis => new PostGisSpatialIndexDef(siBounds, siMaxLevels),
+                GeometryStorageType.SqlServerGeometry => new MSSpatialIndex { GeometryType = GeometryFieldType.MsGeometry, SpatialIndexBounds = siBounds ?? new Envelope() },
+                GeometryStorageType.SqlServerGeography => new MSSpatialIndex { GeometryType = GeometryFieldType.MsGeography, SpatialIndexBounds = new Envelope() },
+                GeometryStorageType.Wkb => haveSi
+                    ? new gViewSpatialIndexDef(siBounds, siMaxLevels) { StorageType = GeometryStorageType.Wkb }
+                    : new gViewSpatialIndexDef() { StorageType = GeometryStorageType.Wkb },
+                _ => haveSi ? new gViewSpatialIndexDef(siBounds, siMaxLevels) : null,   // Classic: keep legacy "no def without bounds"
+            };
 
             #endregion
 

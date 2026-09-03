@@ -53,7 +53,9 @@
                                     </GvGridItem>
                                 }
                                 <GvGridItem>
-                                    <SpatialIndexDefControl BinaryTreeDef="Model.SpatialIndex" BinaryTreeDefChanged="SpatialIndexDefChanged" />
+                                    <SpatialIndexDefControl BinaryTreeDef="Model.SpatialIndex"
+                                                            BinaryTreeDefChanged="SpatialIndexDefChanged"
+                                                            NativeStorage="@(Model.GeometryStorage != gView.Framework.Core.Data.GeometryStorageType.Classic)" />
                                 </GvGridItem>
                             </GvGrid>
                         </MudTabPanel>

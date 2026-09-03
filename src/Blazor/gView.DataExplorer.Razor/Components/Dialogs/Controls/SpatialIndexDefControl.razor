@@ -2,18 +2,29 @@
     <GvGridItem>
         @if (BinaryTreeDef != null)
         {
+            @if (NativeStorage)
+            {
+                <MudText Typo="Typo.body2" Class="mb-2">
+                    A gView spatial index is not built for database-native storage. The extent below is
+                    optional - it is only used as a hint; the real extent is derived from the data.
+                </MudText>
+            }
+
             <ExtentControl Extent="_bounds" ExtentChanged="ExtentChanged"></ExtentControl>
 
-            <GvCard>
-                <GvCardContent>
-                    <MudNumericField T="int" ValueChanged="(val) => MaxLabelChanged(val)" Value="_maxLevel"
-                                     Label="Max Level"
-                                     Min="0" Max="64" />
-                    <MudNumericField @bind-Value="_cellSize" T="double" ReadOnly="true"
-                                     Label="Cellsize" />
-                </GvCardContent>
-            
-            </GvCard>
+            @if (!NativeStorage)
+            {
+                <GvCard>
+                    <GvCardContent>
+                        <MudNumericField T="int" ValueChanged="(val) => MaxLabelChanged(val)" Value="_maxLevel"
+                                         Label="Max Level"
+                                         Min="0" Max="64" />
+                        <MudNumericField @bind-Value="_cellSize" T="double" ReadOnly="true"
+                                         Label="Cellsize" />
+                    </GvCardContent>
+
+                </GvCard>
+            }
         }
     </GvGridItem>
 </GvGrid>
@@ -21,6 +32,9 @@
 @code{
     [Parameter] public BinaryTreeDef? BinaryTreeDef { get; set; }
     [Parameter] public EventCallback<BinaryTreeDef> BinaryTreeDefChanged { get; set; }
+
+    /// <summary>Hide the gView BinaryTree parameters (Max Level / Cellsize) and make the extent optional.</summary>
+    [Parameter] public bool NativeStorage { get; set; }
 
     private IEnvelope? _bounds = null;
     private int _maxLevel;

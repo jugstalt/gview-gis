@@ -231,8 +231,14 @@ public class FdbImport
             }
             else if (sIndexDef.StorageType == GeometryStorageType.PostGis && fdb is pgFDB pgfdb)
             {
-                pgfdb.SetPostGisSpatialIndex(destFC.Name, sIndexDef.SpatialIndexBounds);
-                await pgfdb.SetFeatureclassExtent(destFC.Name, sIndexDef.SpatialIndexBounds);
+                IEnvelope bbox = sIndexDef.SpatialIndexBounds;
+                if (bbox == null || (bbox.Width == 0 && bbox.Height == 0))
+                {
+                    bbox = sourceFC.Envelope;   // no extent given -> take the source featureclass extent
+                }
+
+                pgfdb.SetPostGisSpatialIndex(destFC.Name, bbox);
+                await pgfdb.SetFeatureclassExtent(destFC.Name, bbox);
             }
             else
             {
@@ -337,7 +343,7 @@ public class FdbImport
 
                 await ((AccessFDB)fdb).CalculateExtent(destFC);
 
-                if (msSpatial == false)
+                if (!nativeDbGeometry)
                 {
                     if (_treeVersion == TreeVersion.BinaryTree && tree != null)
                     {

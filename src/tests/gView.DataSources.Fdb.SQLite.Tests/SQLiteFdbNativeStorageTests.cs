@@ -148,6 +148,52 @@ public class SQLiteFdbNativeStorageTests : IDisposable
     }
 
     [Fact]
+    public async Task NativeStorageDataset_DoesNotCreateGViewSpatialIndex()
+    {
+        // A PostGIS dataset must not get an FDB_NID column, no FCSI_ spatial-index table,
+        // and must persist its storage kind so tools (FdbImport, the DataExplorer) can detect it.
+        var fdb = new SQLiteFDB();
+        Assert.True(fdb.Create(_dbPath), "FDB Create failed: " + fdb.LastErrorMessage);
+        Assert.True(await fdb.Open("Data Source=" + _dbPath));
+
+        // no bounds / max levels given - native storage must still be persisted
+        var sIndexDef = new PostGisSpatialIndexDef();
+        int dsId = await fdb.CreateDataset("nds", SpatialReference.FromID("epsg:25832"), sIndexDef);
+        Assert.True(dsId > 0, fdb.LastErrorMessage);
+
+        int fcId = await fdb.CreateFeatureClass("nds", "npts", new GeometryDef(GeometryType.Point), new FieldCollection());
+        Assert.True(fcId > 0, fdb.LastErrorMessage);
+
+        // read the dataset's storage kind back the way FdbImport does
+        var readBack = await fdb.SpatialIndexDef("nds");
+        Assert.Equal(GeometryStorageType.PostGis, readBack.StorageType);
+
+        Assert.True(fdb.FdbVersion >= new Version(8, 0, 0));
+
+        using var conn = new SQLiteConnection("Data Source=" + _dbPath);
+        conn.Open();
+
+        Assert.False(TableExists(conn, "FCSI_npts"), "FCSI_npts (gView spatial index) must not be created for native storage");
+        Assert.False(ColumnExists(conn, "FC_npts", "FDB_NID"), "FDB_NID must not be created for native storage");
+    }
+
+    private static bool TableExists(SQLiteConnection conn, string name)
+    {
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT count(*) FROM sqlite_master WHERE type='table' AND name=@n";
+        cmd.Parameters.AddWithValue("@n", name);
+        return Convert.ToInt64(cmd.ExecuteScalar()) > 0;
+    }
+
+    private static bool ColumnExists(SQLiteConnection conn, string table, string column)
+    {
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = $"SELECT count(*) FROM pragma_table_info('{table}') WHERE name=@c";
+        cmd.Parameters.AddWithValue("@c", column);
+        return Convert.ToInt64(cmd.ExecuteScalar()) > 0;
+    }
+
+    [Fact]
     public async Task WkbDataset_SpatialQueryUsesNidIndex()
     {
         var fdb = await CreateFdbAsync(GeometryStorageType.Wkb);
