@@ -25,7 +25,8 @@ public class PostgreSqlDatasetExplorerObject : ExplorerParentObject<PostgreSqlEx
                                             ISerializableExplorerObject,
                                             IExplorerObjectCreatable,
                                             IExplorerObjectContextTools,
-                                            IExplorerObjectRenamable
+                                            IExplorerObjectRenamable,
+                                            IFdbGeometryStorageContext
 {
     private AccessFDB? _fdb = null;
     private string _dsname = "", _icon = "";
@@ -82,6 +83,9 @@ public class PostgreSqlDatasetExplorerObject : ExplorerParentObject<PostgreSqlEx
 
     public IEnumerable<IExplorerObjectContextTool> ContextTools
         => _contextTools ?? Array.Empty<IExplorerObjectContextTool>();
+
+    public GeometryStorageType GeometryStorage
+        => (_dataset as IFDBDataset)?.SpatialIndexDef?.StorageType ?? GeometryStorageType.Classic;
 
 
     #endregion

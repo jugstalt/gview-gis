@@ -24,7 +24,7 @@ internal class SpatialIndexDefinition : IExplorerObjectContextTool
 
     public bool IsEnabled(IExplorerApplicationScopeService scope, IExplorerObject exObject)
     {
-        return true;
+        return FdbGeometryStorageContextExtensions.UsesGViewSpatialIndex(exObject);
     }
 
     async public Task<bool> OnEvent(IExplorerApplicationScopeService scope, IExplorerObject exObject)

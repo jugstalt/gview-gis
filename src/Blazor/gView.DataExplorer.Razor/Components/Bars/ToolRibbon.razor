@@ -68,7 +68,9 @@
         @if (contextExplorerObject is IExplorerObjectContextTools)
         {
             <div class="explorer-tool-sub-box">
-                @foreach (var contextToolChunks in ((IExplorerObjectContextTools)contextExplorerObject).ContextTools.Chunk(2)) 
+                @foreach (var contextToolChunks in ((IExplorerObjectContextTools)contextExplorerObject).ContextTools
+                                                        .Where(t => t.IsEnabled(AppScope, contextExplorerObject))
+                                                        .Chunk(2))
                 {
                     <div style="display:inline-block;vertical-align:top;">
                     @foreach(var contextTool in contextToolChunks)
@@ -128,13 +130,23 @@
         EventBus.OnCurrentExplorerObjectChanged += OnCurrentExplorerObjectChanged;
     });
 
-    private Task OnContextExplorerObjectsChanged(IEnumerable<IExplorerObject>? contextExplorerObjects)
+    async private Task OnContextExplorerObjectsChanged(IEnumerable<IExplorerObject>? contextExplorerObjects)
     {
         contextExplorerObject = contextExplorerObjects != null && contextExplorerObjects.Count() == 1 ?
                                             contextExplorerObjects.First() : null;
-        StateHasChanged();
 
-        return Task.CompletedTask;
+        // Make sure the underlying instance is loaded before we ask the context tools whether
+        // they apply (e.g. IFdbGeometryStorageContext reads the opened dataset's storage kind).
+        if (contextExplorerObject is IExplorerObjectContextTools)
+        {
+            try
+            {
+                await contextExplorerObject.GetInstanceAsync();
+            }
+            catch { }
+        }
+
+        StateHasChanged();
     }
 
     private Task OnCurrentExplorerObjectChanged(IExplorerObject? explorerObject)

@@ -27,7 +27,8 @@ public class SqlFdbFeatureClassExplorerObject : ExplorerObjectCls<SqlFdbDatasetE
                                                 IExplorerObjectContextTools,
                                                 IExplorerObjectRenamable,
                                                 IExplorerObjectCreatable,
-                                                IExporerOjectSchema
+                                                IExporerOjectSchema,
+                                                IFdbGeometryStorageContext
 {
     private string _dsname = "", _fcname = "", _type = "", _icon = "";
     private IFeatureClass? _fc = null;
@@ -168,6 +169,10 @@ public class SqlFdbFeatureClassExplorerObject : ExplorerObjectCls<SqlFdbDatasetE
 
     public IEnumerable<IExplorerObjectContextTool> ContextTools
         => _contextTools ?? Array.Empty<IExplorerObjectContextTool>();
+
+    public GeometryStorageType GeometryStorage
+        => (_fc?.Dataset as gView.Framework.Core.FDB.IFDBDataset)?.SpatialIndexDef?.StorageType
+           ?? GeometryStorageType.Classic;
 
 
     #endregion

@@ -23,7 +23,8 @@ public class SqlFdbDatasetExplorerObject : ExplorerParentObject<SqlFdbExplorerOb
                                            ISerializableExplorerObject,
                                            IExplorerObjectCreatable,
                                            IExplorerObjectContextTools,
-                                           IExplorerObjectRenamable
+                                           IExplorerObjectRenamable,
+                                           IFdbGeometryStorageContext
 {
     public string _icon = "";
     private bool _isImageDataset = false;
@@ -62,6 +63,9 @@ public class SqlFdbDatasetExplorerObject : ExplorerParentObject<SqlFdbExplorerOb
 
     public IEnumerable<IExplorerObjectContextTool> ContextTools
         => _contextTools ?? Array.Empty<IExplorerObjectContextTool>();
+
+    public GeometryStorageType GeometryStorage
+        => (_dataset as IFDBDataset)?.SpatialIndexDef?.StorageType ?? GeometryStorageType.Classic;
 
 
     #endregion

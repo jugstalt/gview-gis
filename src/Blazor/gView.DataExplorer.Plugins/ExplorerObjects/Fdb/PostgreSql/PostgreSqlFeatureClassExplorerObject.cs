@@ -26,7 +26,8 @@ public class PostgreSqlFeatureClassExplorerObject : ExplorerObjectCls<PostgreSql
                                                     IExplorerObjectRenamable,
                                                     IExplorerObjectCreatable,
                                                     IExporerOjectSchema,
-                                                    IExplorerObjectContextTools
+                                                    IExplorerObjectContextTools,
+                                                    IFdbGeometryStorageContext
 {
     private string _dsname = String.Empty, _fcname = String.Empty, _type = String.Empty;
     private string _icon = "";
@@ -172,6 +173,10 @@ public class PostgreSqlFeatureClassExplorerObject : ExplorerObjectCls<PostgreSql
 
 
     #endregion
+
+    public GeometryStorageType GeometryStorage
+        => (_fc?.Dataset as gView.Framework.Core.FDB.IFDBDataset)?.SpatialIndexDef?.StorageType
+           ?? GeometryStorageType.Classic;
 
     #region IExplorerObject Members
 
