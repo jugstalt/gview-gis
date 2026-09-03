@@ -26,7 +26,7 @@ using System.Threading.Tasks;
 namespace gView.DataSources.Fdb.MSSql
 {
     /// <summary>
-    /// Zusammenfassung für Class1.
+    /// Zusammenfassung fï¿½r Class1.
     /// </summary>
     [RegisterPlugIn("e6efb823-82ff-4682-8654-ffb099db7050")]
     public class SqlFDB : gView.DataSources.Fdb.MSAccess.AccessFDB
@@ -442,10 +442,9 @@ namespace gView.DataSources.Fdb.MSSql
                             }
                         }
                     }
-                    if (((ISpatialFilter)filter).SpatialRelation == spatialRelation.SpatialRelationMapEnvelopeIntersects)
-                    {
-                        sFilter = null;
-                    }
+                    // sFilter is kept (not nulled) for MapEnvelopeIntersects so the cursor
+                    // dispatcher can route by SpatialRelation and the MapEnvelope cursor can
+                    // bbox-test each row.
                 }
 
                 string tabName = ((fc is SqlFDBFeatureClass) ? ((SqlFDBFeatureClass)fc).DbTableName : "FC_" + fc.Name);
@@ -1162,7 +1161,7 @@ namespace gView.DataSources.Fdb.MSSql
                     _errMsg = _conn.errorMessage;
                     return false;
                 }
-                // Beim Umbennenen Schema für Datenbank nicht zum Tabellennamen hinzufügen
+                // Beim Umbennenen Schema fï¿½r Datenbank nicht zum Tabellennamen hinzufï¿½gen
                 if (!_conn.RenameTable(FcTableName(newFCName), "FC_" + FCName))
                 {
                     _errMsg = _conn.errorMessage;

@@ -1118,10 +1118,8 @@ namespace gView.DataSources.Fdb.SQLite
                     }
                 }
 
-                if (((ISpatialFilter)filter).SpatialRelation == spatialRelation.SpatialRelationMapEnvelopeIntersects)
-                {
-                    sFilter = null;
-                }
+                // sFilter is kept (not nulled) for MapEnvelopeIntersects so the cursor dispatcher
+                // can route by SpatialRelation and the MapEnvelope cursor can bbox-test each row.
             }
 
             string sql = "SELECT " + subfields + " FROM " + FcTableName(fc);
