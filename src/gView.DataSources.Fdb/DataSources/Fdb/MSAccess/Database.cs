@@ -367,6 +367,7 @@ namespace gView.DataSources.Fdb.MSAccess
                     {
                         await EnsureGeometryStorageColumnsAsync();
                         EnsureFdbVersionAtLeast(new Version(8, 0, 0));
+                        await EnsureNativeGeometrySupportAsync(sIndexDef.StorageType);
                     }
 
                     ds = new DataSet();
@@ -547,6 +548,7 @@ namespace gView.DataSources.Fdb.MSAccess
             {
                 await EnsureGeometryStorageColumnsAsync();
                 EnsureFdbVersionAtLeast(new Version(8, 0, 0));
+                await EnsureNativeGeometrySupportAsync(storage);
             }
             try
             {
@@ -3925,6 +3927,12 @@ namespace gView.DataSources.Fdb.MSAccess
 
             return GeometryStorageType.Classic;
         }
+
+        /// <summary>
+        /// Provider hook: make sure the database can host the given native geometry storage
+        /// (e.g. <c>CREATE EXTENSION postgis</c>). No-op by default.
+        /// </summary>
+        protected virtual Task EnsureNativeGeometrySupportAsync(GeometryStorageType storage) => Task.CompletedTask;
 
         /// <summary>Raises the stored FDB schema version if it is below <paramref name="version"/>.</summary>
         protected void EnsureFdbVersionAtLeast(Version version)

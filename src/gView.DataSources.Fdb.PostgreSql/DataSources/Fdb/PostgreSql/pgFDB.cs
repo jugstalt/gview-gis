@@ -453,6 +453,24 @@ namespace gView.DataSources.Fdb.PostgreSql
             }
         }
 
+        protected override Task EnsureNativeGeometrySupportAsync(GeometryStorageType storage)
+        {
+            if (storage == GeometryStorageType.PostGis)
+            {
+                try
+                {
+                    _conn.ExecuteNoneQuery("CREATE EXTENSION IF NOT EXISTS postgis");
+                }
+                catch (Exception ex)
+                {
+                    _errMsg = "The PostGIS extension is required for PostGIS geometry storage and could not be enabled "
+                        + "automatically (needs a superuser or an installed 'postgis' extension): " + ex.Message;
+                }
+            }
+
+            return Task.CompletedTask;
+        }
+
         /// <summary>
         /// Marks a feature class as PostGIS-stored (<c>FDB_FeatureClasses.SI='postgis'</c>) and
         /// creates the GiST index on its <c>FDB_SHAPE</c> geometry column. Mirrors
