@@ -503,6 +503,16 @@ namespace gView.DataSources.Fdb.PostgreSql
             }
         }
 
+        protected override Task<bool> CreateNativeSpatialIndexAsync(string fcName, ISpatialIndexDef sIndexDef)
+        {
+            if (sIndexDef?.StorageType == GeometryStorageType.PostGis)
+            {
+                return Task.FromResult(SetPostGisSpatialIndex(fcName, sIndexDef.SpatialIndexBounds));
+            }
+
+            return Task.FromResult(true);
+        }
+
         async protected override Task<bool> TableExists(string tableName)
         {
             if (_conn == null)

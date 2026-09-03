@@ -2735,7 +2735,17 @@ namespace gView.DataSources.Fdb.MSAccess
                 // Delete Dataset;
                 return -1;
             }
-            if (sIndexDef is gViewSpatialIndexDef)
+            if (sIndexDef is PostGisSpatialIndexDef ||
+                sIndexDef.StorageType == GeometryStorageType.PostGis)
+            {
+                // native DB geometry column + native spatial index -> no gView BinaryTree
+                if (!await CreateNativeSpatialIndexAsync(name + "_IMAGE_POLYGONS", sIndexDef))
+                {
+                    await DeleteFeatureClass(name + "_IMAGE_POLYGONS");
+                    return -1;
+                }
+            }
+            else if (sIndexDef is gViewSpatialIndexDef)
             {
                 if (!await SetSpatialIndexBounds(name + "_IMAGE_POLYGONS", "BinaryTree2", sIndexDef.SpatialIndexBounds, sIndexDef.SplitRatio, sIndexDef.MaxPerNode, sIndexDef.Levels))
                 {
@@ -3933,6 +3943,14 @@ namespace gView.DataSources.Fdb.MSAccess
         /// (e.g. <c>CREATE EXTENSION postgis</c>). No-op by default.
         /// </summary>
         protected virtual Task EnsureNativeGeometrySupportAsync(GeometryStorageType storage) => Task.CompletedTask;
+
+        /// <summary>
+        /// Provider hook: create the database-native spatial index (PostGIS GiST, ...) for a
+        /// freshly created feature class whose <paramref name="sIndexDef"/> requests native storage.
+        /// The base does nothing and reports success; a provider that owns a native index overrides it.
+        /// </summary>
+        protected virtual Task<bool> CreateNativeSpatialIndexAsync(string fcName, ISpatialIndexDef sIndexDef)
+            => Task.FromResult(true);
 
         /// <summary>Raises the stored FDB schema version if it is below <paramref name="version"/>.</summary>
         protected void EnsureFdbVersionAtLeast(Version version)

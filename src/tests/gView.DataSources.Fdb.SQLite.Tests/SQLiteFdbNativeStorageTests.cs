@@ -177,6 +177,33 @@ public class SQLiteFdbNativeStorageTests : IDisposable
         Assert.False(ColumnExists(conn, "FC_npts", "FDB_NID"), "FDB_NID must not be created for native storage");
     }
 
+    [Fact]
+    public async Task NativeStorageImageDataset_DoesNotBuildGViewSpatialIndexForCatalog()
+    {
+        // CreateImageDataset must route a native ISpatialIndexDef through the
+        // CreateNativeSpatialIndexAsync hook instead of force-building a gView BinaryTree2
+        // on the <ds>_IMAGE_POLYGONS catalog feature class.
+        var fdb = new SQLiteFDB();
+        Assert.True(fdb.Create(_dbPath), "FDB Create failed: " + fdb.LastErrorMessage);
+        Assert.True(await fdb.Open("Data Source=" + _dbPath));
+
+        var sIndexDef = new PostGisSpatialIndexDef();
+        int dsId = await fdb.CreateImageDataset("img", SpatialReference.FromID("epsg:25832"),
+            sIndexDef, string.Empty, new FieldCollection());
+        Assert.True(dsId > 0, fdb.LastErrorMessage);
+
+        var readBack = await fdb.SpatialIndexDef("img");
+        Assert.Equal(GeometryStorageType.PostGis, readBack.StorageType);
+
+        using var conn = new SQLiteConnection("Data Source=" + _dbPath);
+        conn.Open();
+
+        Assert.False(TableExists(conn, "FCSI_img_IMAGE_POLYGONS"),
+            "no gView spatial-index table for a native image catalog");
+        Assert.False(ColumnExists(conn, "FC_img_IMAGE_POLYGONS", "FDB_NID"),
+            "no FDB_NID on a native image catalog");
+    }
+
     private static bool TableExists(SQLiteConnection conn, string name)
     {
         using var cmd = conn.CreateCommand();
