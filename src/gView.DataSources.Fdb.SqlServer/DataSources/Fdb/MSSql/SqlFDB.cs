@@ -471,6 +471,22 @@ namespace gView.DataSources.Fdb.MSSql
         }
         async override public Task<IFeatureCursor> QueryIDs(IFeatureClass fc, string subFields, List<int> IDs, ISpatialReference toSRef, IDatumTransformations datumTransformations)
         {
+            if (fc.Dataset is IFDBDataset fdbDs && fdbDs.SpatialIndexDef is MSSpatialIndex msIndex)
+            {
+                var idFilter = new RowIDFilter(fc.IDFieldName, IDs)
+                {
+                    SubFields = subFields,
+                    fieldPrefix = "[",
+                    fieldPostfix = "]",
+                };
+                if (idFilter.SubFields != "*")
+                {
+                    idFilter.AddField("FDB_SHAPE");
+                }
+                idFilter.SetFeatureSpatialReference(toSRef, datumTransformations);
+                return await SqlFDBFeatureCursor2008.Create(_conn.ConnectionString, fc, idFilter, msIndex.GeometryType);
+            }
+
             string tabName = ((fc is SqlFDBFeatureClass)
                 ? ((SqlFDBFeatureClass)fc).DbTableName
                 : $"FC_{fc.Name}");
@@ -1427,13 +1443,15 @@ namespace gView.DataSources.Fdb.MSSql
                                 string wkt;
                                 if (si.GeometryType == GeometryFieldType.MsGeometry)
                                 {
+                                    // geometry keeps the feature class' SRID (0 when unknown)
+                                    int srid = fClass.SpatialReference?.EpsgCode ?? 0;
                                     if (fClass.GeometryType == GeometryType.Polygon)
                                     {
-                                        wkt = "geometry::STGeomFromText('" + WKT.ToWKT(shape) + "',0).MakeValid()";
+                                        wkt = "geometry::STGeomFromText('" + WKT.ToWKT(shape) + "'," + srid + ").MakeValid()";
                                     }
                                     else
                                     {
-                                        wkt = "geometry::STGeomFromText('" + WKT.ToWKT(shape) + "',0)";
+                                        wkt = "geometry::STGeomFromText('" + WKT.ToWKT(shape) + "'," + srid + ")";
                                     }
                                 }
                                 else
@@ -1695,13 +1713,15 @@ namespace gView.DataSources.Fdb.MSSql
                                 string wkt;
                                 if (si.GeometryType == GeometryFieldType.MsGeometry)
                                 {
+                                    // geometry keeps the feature class' SRID (0 when unknown)
+                                    int srid = fClass.SpatialReference?.EpsgCode ?? 0;
                                     if (fClass.GeometryType == GeometryType.Polygon)
                                     {
-                                        wkt = "geometry::STGeomFromText('" + WKT.ToWKT(feature.Shape) + "',0).MakeValid()";
+                                        wkt = "geometry::STGeomFromText('" + WKT.ToWKT(feature.Shape) + "'," + srid + ").MakeValid()";
                                     }
                                     else
                                     {
-                                        wkt = "geometry::STGeomFromText('" + WKT.ToWKT(feature.Shape) + "',0)";
+                                        wkt = "geometry::STGeomFromText('" + WKT.ToWKT(feature.Shape) + "'," + srid + ")";
                                     }
                                 }
                                 else

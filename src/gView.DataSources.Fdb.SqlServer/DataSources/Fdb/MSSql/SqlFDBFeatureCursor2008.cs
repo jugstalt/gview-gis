@@ -32,6 +32,9 @@ namespace gView.DataSources.Fdb.MSSql
         {
             var cursor = new SqlFDBFeatureCursor2008(fc, filter);
 
+            // geography must be a geographic SRID (4326); geometry uses the feature class' EPSG (0 if unknown)
+            int srid = geometryType == GeometryFieldType.MsGeography ? 4326 : (fc.SpatialReference?.EpsgCode ?? 0);
+
             StringBuilder where = new StringBuilder();
 
             if (filter.SubFields == "*")
@@ -62,15 +65,7 @@ namespace gView.DataSources.Fdb.MSSql
 
                     where.Append(WKT.ToWKT(sFilter.Geometry));
                     where.Append("',");
-                    if (geometryType == GeometryFieldType.MsGeometry)
-                    {
-                        where.Append("0");
-                    }
-                    else
-                    {
-                        where.Append("4326");
-                    }
-
+                    where.Append(srid);
                     where.Append("))=1");
                 }
                 else if (sFilter.Geometry != null)
@@ -87,15 +82,7 @@ namespace gView.DataSources.Fdb.MSSql
 
                     where.Append(WKT.ToWKT(sFilter.Geometry));
                     where.Append("',");
-                    if (geometryType == GeometryFieldType.MsGeometry)
-                    {
-                        where.Append("0");
-                    }
-                    else
-                    {
-                        where.Append("4326");
-                    }
-
+                    where.Append(srid);
                     where.Append("))=1");
                 }
                 filter.AddField(fc.ShapeFieldName);
