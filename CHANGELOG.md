@@ -42,11 +42,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     "Create new" makes a fresh database in the current folder (`.gpkg` name &rarr;
     GeoPackage, otherwise SpatiaLite), and the file node is a valid paste target for the
     "Copy / Paste feature class" tool (runs `CopyFeatureClassCommand` in the background).
-    `SpatiaLiteDataset` also implements `IFileFeatureDatabase`, so pasting a feature class
-    onto a plain folder offers "SpatiaLite / GeoPackage" as a target format and prompts
-    for the new file name. `IFileFeatureDatabase` gains a defaulted `IsFolderBased`
-    (`true` for the existing directory-of-files databases, `false` here) that the Paste
-    tool uses to decide whether it needs to ask for a file name.
+    `SpatiaLiteDataset` also implements `IFileFeatureDatabase` (with an `Open(connstr)` /
+    `GetDataset(connstr)` that accept a file path or a `Data Source=…` string, as the
+    CopyFeatureClass parameter builders call them), so pasting a feature class onto a
+    plain folder offers "SpatiaLite / GeoPackage" as a target format and prompts for the
+    new file name. `IFileFeatureDatabase` gains a defaulted `IsFolderBased` (`true` for
+    the existing directory-of-files databases, `false` here) that the Paste tool uses to
+    decide whether it needs to ask for a file name. `CreateFeatureClass` no longer emits
+    a spurious `UNIQUE constraint failed: spatial_ref_sys.srid` when the SRID is already
+    registered.
   - "Create new" ribbon entries are now ordered by `Priority`.
 - New test project `gView.DataSources.SpatiaLite.Tests` (needs a real `mod_spatialite`:
   `GVIEW_MOD_SPATIALITE`, QGIS/OSGeo4W, or `libsqlite3-mod-spatialite`).

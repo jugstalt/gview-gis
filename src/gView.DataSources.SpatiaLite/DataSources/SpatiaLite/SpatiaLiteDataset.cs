@@ -57,23 +57,12 @@ namespace gView.DataSources.SpatiaLite
 
             connectionString = connectionString.Trim();
 
-            // a bare file path -> wrap it
-            if (connectionString.IndexOf('=') < 0)
-            {
-                _filename = connectionString;
-                return $"Data Source={connectionString}";
-            }
+            _filename = FilePathOf(connectionString);
 
-            try
-            {
-                _filename = new SQLiteConnectionStringBuilder(connectionString).DataSource;
-            }
-            catch
-            {
-                _filename = String.Empty;
-            }
-
-            return connectionString;
+            // a bare file path -> wrap it into a real connection string
+            return connectionString.IndexOf('=') < 0
+                ? $"Data Source={connectionString}"
+                : connectionString;
         }
 
         public override async Task<bool> Open()
@@ -386,7 +375,7 @@ namespace gView.DataSources.SpatiaLite
                     if (_flavor == SpatiaLiteFlavor.GeoPackage)
                     {
                         // SRS row must exist before the gpkg_contents FK references it
-                        if (srid > 0)
+                        if (srid > 0 && !await SridExistsAsync(command, "gpkg_spatial_ref_sys", "srs_id", srid))
                         {
                             await TryExecuteAsync(command, $"SELECT gpkgInsertEpsgSRID({srid})");
                         }
@@ -415,7 +404,7 @@ namespace gView.DataSources.SpatiaLite
                         command.CommandText = $"CREATE TABLE {DbTableName(fcname)} ({columns})";
                         await command.ExecuteNonQueryAsync();
 
-                        if (srid > 0)
+                        if (srid > 0 && !await SridExistsAsync(command, "spatial_ref_sys", "srid", srid))
                         {
                             await TryExecuteAsync(command, $"SELECT InsertEpsgSrid({srid})");
                         }
@@ -521,6 +510,19 @@ namespace gView.DataSources.SpatiaLite
             catch
             {
                 // best effort cleanup step
+            }
+        }
+
+        private static async Task<bool> SridExistsAsync(DbCommand command, string table, string column, int srid)
+        {
+            try
+            {
+                command.CommandText = $"SELECT count(*) FROM {table} WHERE {column} = {srid}";
+                return Convert.ToInt64(await command.ExecuteScalarAsync()) > 0;
+            }
+            catch
+            {
+                return false;
             }
         }
 
@@ -899,16 +901,30 @@ namespace gView.DataSources.SpatiaLite
         public bool Flush(IFeatureClass fc) => true; // SQLite commits per transaction
 
         public override Task<int> CreateDataset(string name, ISpatialReference sRef)
-            => Task.FromResult(Create(name) ? 0 : -1);
+            => Task.FromResult(Create(FilePathOf(name)) ? 0 : -1);
+
+        /// <summary>
+        /// <see cref="IDatabase.Open"/> overload used by the command parameter builders for
+        /// an <see cref="IFileFeatureDatabase"/>: <paramref name="name"/> is a file path or a
+        /// <c>Data Source=…</c> connection string.
+        /// </summary>
+        public override async Task<bool> Open(string name)
+        {
+            await SetConnectionString(name);
+            return await Open();
+        }
 
         /// <summary>
         /// Re-implemented for <see cref="IFileFeatureDatabase"/>: <paramref name="name"/> is a
-        /// file path. Opens it (creating an empty SpatiaLite/GeoPackage first if missing) and
-        /// returns a dataset bound to that file.
+        /// file path or a <c>Data Source=…</c> connection string. Opens it (creating an empty
+        /// SpatiaLite / GeoPackage first if the file is missing) and returns a dataset bound
+        /// to that file.
         /// </summary>
         async Task<IFeatureDataset> IFeatureDatabase.GetDataset(string name)
         {
-            if (!File.Exists(name) && !Create(name))
+            var path = FilePathOf(name);
+
+            if (!String.IsNullOrEmpty(path) && !File.Exists(path) && !Create(path))
             {
                 return null;
             }
@@ -917,6 +933,30 @@ namespace gView.DataSources.SpatiaLite
             await dataset.SetConnectionString(name);
 
             return await dataset.Open() ? dataset : null;
+        }
+
+        /// <summary>Extracts the file path from a bare path or a <c>Data Source=…</c> string.</summary>
+        private static string FilePathOf(string nameOrConnectionString)
+        {
+            if (String.IsNullOrWhiteSpace(nameOrConnectionString))
+            {
+                return String.Empty;
+            }
+
+            var value = nameOrConnectionString.Trim();
+            if (value.IndexOf('=') < 0)
+            {
+                return value;
+            }
+
+            try
+            {
+                return new SQLiteConnectionStringBuilder(value).DataSource;
+            }
+            catch
+            {
+                return String.Empty;
+            }
         }
 
         #endregion

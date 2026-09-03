@@ -433,6 +433,27 @@ public class SpatiaLiteDatasetTests : IDisposable
     }
 
     [Fact]
+    public async Task IFileFeatureDatabase_OpenAndGetDataset_AcceptDataSourceConnectionString()
+    {
+        // the CopyFeatureClass command parameter builders take the IFileFeatureDatabase
+        // branch: fileDB.Open(connstr) then fileDB.GetDataset(connstr), with connstr being
+        // "Data Source=<path>". Both must work (regression for "method not implemented").
+        using var source = await OpenSpatiaLiteAsync();
+
+        gView.Framework.Core.FDB.IFileFeatureDatabase fileDb = new SpatiaLiteDataset();
+        var connStr = $"Data Source={_spatiaLitePath}";
+
+        Assert.True(await ((gView.Framework.Core.FDB.IDatabase)fileDb).Open(connStr),
+            ((gView.Framework.Core.FDB.IDatabase)fileDb).LastException?.Message);
+
+        var dataset = await ((gView.Framework.Core.FDB.IFeatureDatabase)fileDb).GetDataset(connStr) as SpatiaLiteDataset;
+        Assert.NotNull(dataset);
+
+        var fc = await GetFeatureClassAsync(dataset!, "pts");
+        Assert.Equal(3, (await DrainAsync(await dataset!.Query(fc, new QueryFilter { SubFields = "*" }))).Count);
+    }
+
+    [Fact]
     public async Task CopyFeatureClass_SpatiaLiteToNewGeoPackage_RoundTrips()
     {
         // mirrors what FeatureImport / CopyFeatureClassCommand do when pasting a feature
