@@ -1,3 +1,4 @@
+using gView.DataSources.Fdb;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Data.Cursors;
 using gView.Framework.Core.Geometry;
@@ -6,7 +7,6 @@ using gView.Framework.Db.Extensions;
 using System;
 using System.Data;
 using System.Data.SQLite;
-using System.IO;
 using System.Threading.Tasks;
 
 namespace gView.DataSources.Fdb.SQLite.Cursors
@@ -24,6 +24,7 @@ namespace gView.DataSources.Fdb.SQLite.Cursors
         private SQLiteDataReader _reader;
 
         protected readonly IGeometryDef _geomDef;
+        private readonly IFdbGeometryCodec _geometryCodec;
 
         protected SQLiteFeatureCursorBase(IGeometryDef geomDef, ISpatialReference toSRef, IDatumTransformations datumTransformations)
             : base(geomDef,
@@ -32,6 +33,7 @@ namespace gView.DataSources.Fdb.SQLite.Cursors
                    datumTransformations)
         {
             _geomDef = geomDef;
+            _geometryCodec = FdbGeometryCodec.ForFeatureClass(geomDef);
         }
 
         /// <summary>Opens the connection and executes <paramref name="commandText"/>.</summary>
@@ -127,27 +129,7 @@ namespace gView.DataSources.Fdb.SQLite.Cursors
         protected virtual bool PassesGeometryFilter(IGeometry shape) => true;
 
         private IGeometry DeserializeShape(byte[] bytes)
-        {
-            IGeometry p = _geomDef.GeometryType switch
-            {
-                GeometryType.Point => new gView.Framework.Geometry.Point(),
-                GeometryType.Polyline => new gView.Framework.Geometry.Polyline(),
-                GeometryType.Polygon => new gView.Framework.Geometry.Polygon(),
-                _ => null
-            };
-
-            if (p == null)
-            {
-                return null;
-            }
-
-            using var r = new BinaryReader(new MemoryStream());
-            r.BaseStream.Write(bytes, 0, bytes.Length);
-            r.BaseStream.Position = 0;
-            p.Deserialize(r, _geomDef);
-
-            return p;
-        }
+            => _geometryCodec.Decode(bytes, _geomDef);
 
         public abstract override Task<IFeature> NextFeature();
 

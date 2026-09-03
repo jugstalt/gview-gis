@@ -272,20 +272,12 @@ namespace gView.DataSources.Fdb.SQLite
 				foreach(IFeature feature in features) 
 				{
 					DataRow row=ds.Tables[0].NewRow();
-					if(feature.Shape!=null) 
+					if(feature.Shape!=null)
 					{
-						BinaryWriter writer=new BinaryWriter(new MemoryStream());
-						feature.Shape.Serialize(writer,fClass);
-
-						byte [] geometry=new byte[writer.BaseStream.Length];
-						writer.BaseStream.Position=0;
-						writer.BaseStream.Read(geometry,(int)0,(int)writer.BaseStream.Length);
-						writer.Close();
-
-						row["FDB_SHAPE"]=geometry;
+						row["FDB_SHAPE"]=gView.DataSources.Fdb.FdbGeometryCodec.ForFeatureClass(fClass).Encode(feature.Shape, fClass);
 						row["FDB_NID"]=0;
 
-						foreach(IFieldValue fv in feature.Fields) 
+						foreach(IFieldValue fv in feature.Fields)
 						{
                             if (fv.Name == "FDB_NID" || fv.Name == "FDB_SHAPE") continue;
                             string name = fv.Name.Replace("$", "");
@@ -338,20 +330,12 @@ namespace gView.DataSources.Fdb.SQLite
 				}
 
 				DataRow row=ds.Tables[0].NewRow();
-				if(feature.Shape!=null) 
+				if(feature.Shape!=null)
 				{
-					BinaryWriter writer=new BinaryWriter(new MemoryStream());
-					feature.Shape.Serialize(writer,fClass);
-
-					byte [] geometry=new byte[writer.BaseStream.Length];
-					writer.BaseStream.Position=0;
-					writer.BaseStream.Read(geometry,(int)0,(int)writer.BaseStream.Length);
-					writer.Close();
-
-					row["FDB_SHAPE"]=geometry;
+					row["FDB_SHAPE"]=gView.DataSources.Fdb.FdbGeometryCodec.ForFeatureClass(fClass).Encode(feature.Shape, fClass);
 					row["FDB_NID"]=0;
 
-					foreach(IFieldValue fv in feature.Fields) 
+					foreach(IFieldValue fv in feature.Fields)
 					{
 						if(row.Table.Columns[fv.Name]==null) continue;
 						try 
@@ -451,13 +435,7 @@ namespace gView.DataSources.Fdb.SQLite
                                 var shape = fClass.ConvertTo(feature.Shape);
                                 GeometryDef.VerifyGeometryType(shape, fClass);
 
-                                BinaryWriter writer = new BinaryWriter(new MemoryStream());
-                                shape.Serialize(writer, fClass);
-
-                                byte[] geometry = new byte[writer.BaseStream.Length];
-                                writer.BaseStream.Position = 0;
-                                writer.BaseStream.ReadExactly(geometry, 0, (int)writer.BaseStream.Length);
-                                writer.Close();
+                                byte[] geometry = gView.DataSources.Fdb.FdbGeometryCodec.ForFeatureClass(fClass).Encode(shape, fClass);
 
                                 SQLiteParameter parameter = new SQLiteParameter("@FDB_SHAPE", geometry);
                                 fields.Append("[FDB_SHAPE]");
@@ -597,15 +575,7 @@ namespace gView.DataSources.Fdb.SQLite
 
             if (feature.Shape != null)
             {
-                BinaryWriter writer = new BinaryWriter(new MemoryStream());
-                feature.Shape.Serialize(writer,fClass);
-
-                byte[] geometry = new byte[writer.BaseStream.Length];
-                writer.BaseStream.Position = 0;
-                writer.BaseStream.Read(geometry, (int)0, (int)writer.BaseStream.Length);
-                writer.Close();
-
-                tab.Rows[0]["FDB_SHAPE"] = geometry;
+                tab.Rows[0]["FDB_SHAPE"] = gView.DataSources.Fdb.FdbGeometryCodec.ForFeatureClass(fClass).Encode(feature.Shape, fClass);
                 tab.Rows[0]["FDB_NID"] = 0;
             }
 
@@ -719,13 +689,7 @@ namespace gView.DataSources.Fdb.SQLite
                                 var shape = fClass.ConvertTo(feature.Shape);
                                 GeometryDef.VerifyGeometryType(shape, fClass);
 
-                                BinaryWriter writer = new BinaryWriter(new MemoryStream());
-                                shape.Serialize(writer, fClass);
-
-                                byte[] geometry = new byte[writer.BaseStream.Length];
-                                writer.BaseStream.Position = 0;
-                                writer.BaseStream.ReadExactly(geometry, 0, (int)writer.BaseStream.Length);
-                                writer.Close();
+                                byte[] geometry = gView.DataSources.Fdb.FdbGeometryCodec.ForFeatureClass(fClass).Encode(shape, fClass);
 
                                 SQLiteParameter parameter = new SQLiteParameter("@FDB_SHAPE", geometry);
                                 fields.Append("[FDB_SHAPE]=@FDB_SHAPE");
@@ -1961,6 +1925,7 @@ namespace gView.DataSources.Fdb.SQLite
             SQLiteDataReader _reader;
             //DataTable _schemaTable;
             IGeometryDef _geomDef;
+            gView.DataSources.Fdb.IFdbGeometryCodec _geometryCodec;
             List<int> _IDs;
             int _id_pos = 0;
             string _sql;
@@ -1981,6 +1946,7 @@ namespace gView.DataSources.Fdb.SQLite
                     cursor._sql = sql;
                     cursor._connection.Open();
                     cursor._geomDef = geomDef;
+                    cursor._geometryCodec = gView.DataSources.Fdb.FdbGeometryCodec.ForFeatureClass(geomDef);
 
                     cursor._IDs = IDs;
 
@@ -2094,32 +2060,9 @@ namespace gView.DataSources.Fdb.SQLite
                         string name = _reader.GetName(i);
                         object obj = _reader.GetValue(i);
 
-                        if (/*_schemaTable.Rows[i][0].ToString()*/name == "FDB_SHAPE")
+                        if (/*_schemaTable.Rows[i][0].ToString()*/name == "FDB_SHAPE" && obj != DBNull.Value)
                         {
-                            BinaryReader r = new BinaryReader(new MemoryStream());
-                            r.BaseStream.Write((byte[])obj, 0, ((byte[])obj).Length);
-                            r.BaseStream.Position = 0;
-
-                            IGeometry p = null;
-                            switch (_geomDef.GeometryType)
-                            {
-                                case GeometryType.Point:
-                                    p = new gView.Framework.Geometry.Point();
-                                    break;
-                                case GeometryType.Polyline:
-                                    p = new gView.Framework.Geometry.Polyline();
-                                    break;
-                                case GeometryType.Polygon:
-                                    p = new gView.Framework.Geometry.Polygon();
-                                    break;
-                            }
-                            if (p != null)
-                            {
-                                p.Deserialize(r, _geomDef);
-                                r.Close();
-
-                                feature.Shape = p;
-                            }
+                            feature.Shape = _geometryCodec.Decode((byte[])obj, _geomDef);
                         }
                         else
                         {

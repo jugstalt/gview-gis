@@ -1,4 +1,5 @@
 using gView.Framework.Core.Data;
+using gView.Framework.Core.FDB;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Geometry;
 using gView.Framework.OGC;
@@ -37,6 +38,21 @@ namespace gView.DataSources.Fdb
             GeometryStorageType.Wkb => Wkb,
             _ => null
         };
+
+        /// <summary>
+        /// Blob codec for a feature class' <c>FDB_SHAPE</c> column, resolved from its dataset's
+        /// <see cref="ISpatialIndexDef.StorageType"/>. Falls back to <see cref="Classic"/> for
+        /// anything that is not a blob-stored FDB feature class.
+        /// </summary>
+        public static IFdbGeometryCodec ForFeatureClass(IGeometryDef geometryDef)
+        {
+            if (geometryDef is IFeatureClass fc && fc.Dataset is IFDBDataset fdbDataset)
+            {
+                return For(fdbDataset.SpatialIndexDef?.StorageType ?? GeometryStorageType.Default) ?? Classic;
+            }
+
+            return Classic;
+        }
     }
 
     /// <summary>gView's proprietary geometry serialization (no header, geometry class taken from the catalog).</summary>

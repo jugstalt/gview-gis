@@ -26,7 +26,7 @@ using System.Threading.Tasks;
 namespace gView.DataSources.Fdb.MSAccess
 {
     /// <summary>
-    /// Zusammenfassung für AccessFDB.
+    /// Zusammenfassung fï¿½r AccessFDB.
     /// </summary>
     public abstract class AccessFDB : IFeatureDatabase3, IImageDB, IFeatureUpdater, IAltertable, gView.Framework.Offline.IFeatureDatabaseReplication, IEditableDatabase, IImplementsBinarayTreeDef, IAlterDatabase, IDatabaseNames, IDisposable, IFDBDatabase
     {
@@ -363,6 +363,12 @@ namespace gView.DataSources.Fdb.MSAccess
                 #region DatasetGeometryType
                 if (sIndexDef != null && FdbVersion >= new Version(1, 2, 0))
                 {
+                    if (sIndexDef.StorageType != GeometryStorageType.Default)
+                    {
+                        await EnsureGeometryStorageColumnsAsync();
+                        EnsureFdbVersionAtLeast(new Version(8, 0, 0));
+                    }
+
                     ds = new DataSet();
                     if (!await _conn.SQLQuery(ds, "SELECT * FROM " + TableName("FDB_DatasetGeometryType") + " WHERE " + DbColName("DatasetID") + "=" + dsID, "DSGT", true))
                     {
@@ -418,6 +424,11 @@ namespace gView.DataSources.Fdb.MSAccess
                         }
                         #endregion
                     }
+                    if (ds.Tables["DSGT"].Columns.Contains("GeometryStorage"))
+                    {
+                        row["GeometryStorage"] = (int)sIndexDef.StorageType;
+                    }
+
                     ds.Tables["DSGT"].Rows.Add(row);
                     if (!_conn.UpdateData(ref ds, "DSGT"))
                     {
@@ -519,14 +530,23 @@ namespace gView.DataSources.Fdb.MSAccess
                 _errMsg = "no GeometryDef...";
                 return -1;
             }
-            bool msSpatial = false;
-            if (_conn.dbType == DBType.sql)
+
+            GeometryStorageType storage = sIndexDef.StorageType;
+
+            // "native DB geometry" = the geometry lives in a database-native column with the
+            // database's own spatial index -> no FDB_NID column, no gView BinaryTree.
+            bool nativeDbGeometry = storage == GeometryStorageType.PostGis
+                || storage == GeometryStorageType.SqlServerGeometry
+                || storage == GeometryStorageType.SqlServerGeography;
+
+            // SQL Server geometry/geography column (drives the [GEOMETRY]/[GEOGRAPHY] DDL + clustered PK).
+            bool msSpatial = _conn.dbType == DBType.sql
+                && (storage == GeometryStorageType.SqlServerGeometry || storage == GeometryStorageType.SqlServerGeography);
+
+            if (storage != GeometryStorageType.Default)
             {
-                if (sIndexDef.GeometryType == GeometryFieldType.MsGeography ||
-                    sIndexDef.GeometryType == GeometryFieldType.MsGeometry)
-                {
-                    msSpatial = true;
-                }
+                await EnsureGeometryStorageColumnsAsync();
+                EnsureFdbVersionAtLeast(new Version(8, 0, 0));
             }
             try
             {
@@ -561,6 +581,10 @@ namespace gView.DataSources.Fdb.MSAccess
                 row["HasZ"] = geomDef.HasZ;
                 row["HasM"] = geomDef.HasM;
                 row["ShapeField"] = "SHAPE";
+                if (ds.Tables[0].Columns.Contains("GeometryStorage"))
+                {
+                    row["GeometryStorage"] = (int)storage;
+                }
                 if (!recreate)
                 {
                     ds.Tables[0].Rows.Add(row);
@@ -627,29 +651,17 @@ namespace gView.DataSources.Fdb.MSAccess
                 {
                     field = new Field();
                     field.name = field.aliasname = ColumnName("FDB_SHAPE");
-                    if (msSpatial)
+                    field.type = storage switch
                     {
-                        switch (sIndexDef.GeometryType)
-                        {
-                            case GeometryFieldType.Default:
-                                field.type = FieldType.Shape;
-                                break;
-                            case GeometryFieldType.MsGeography:
-                                field.type = FieldType.GEOGRAPHY;
-                                break;
-                            case GeometryFieldType.MsGeometry:
-                                field.type = FieldType.GEOMETRY;
-                                break;
-                        }
-                    }
-                    else
-                    {
-                        field.type = FieldType.binary;
-                    }
+                        GeometryStorageType.SqlServerGeography => FieldType.GEOGRAPHY,
+                        GeometryStorageType.SqlServerGeometry => FieldType.GEOMETRY,
+                        GeometryStorageType.PostGis => FieldType.GEOMETRY, // pg CreateTable emits a PostGIS geometry column
+                        _ => FieldType.binary,                              // Default (proprietary blob) and Wkb
+                    };
 
                     fields.Insert(1, field);
-                    // FDB_NID
-                    if (!msSpatial)
+                    // FDB_NID (gView BinaryTree node id) - not needed when the database has its own spatial index
+                    if (!nativeDbGeometry)
                     {
                         field = new Field();
                         field.name = field.aliasname = ColumnName("FDB_NID");
@@ -670,7 +682,11 @@ namespace gView.DataSources.Fdb.MSAccess
                     geomDef.GeometryType == GeometryType.Aggregate ||
                     geomDef.GeometryType == GeometryType.Unknown)
                 {
-                    if (_conn.dbType == DBType.oledb)
+                    if (nativeDbGeometry)
+                    {
+                        // the database's own spatial index is used - no FDB_NID index
+                    }
+                    else if (_conn.dbType == DBType.oledb)
                     {
                         if (!_conn.createIndex("FC_" + fcname + "_NID", "FC_" + fcname, "FDB_NID", false))
                         {
@@ -680,22 +696,7 @@ namespace gView.DataSources.Fdb.MSAccess
                     }
                     else if (_conn.dbType == DBType.sql)
                     {
-                        if (msSpatial)
-                        {
-                            // keinen Index für dieses Feld
-                        }
-                        else
-                        {
-                            if (!_conn.createIndex("FC_" + System.Guid.NewGuid().ToString("N") + "_NID", "FC_" + fcname, "FDB_NID", false, false))
-                            {
-                                _errMsg = _conn.errorMessage;
-                                return -1;
-                            }
-                        }
-                    }
-                    else if (_conn.dbType == DBType.npgsql)
-                    {
-                        if (!_conn.createIndex("fc_" + System.Guid.NewGuid().ToString("N").ToLower() + "_nid", "FC_" + fcname, "FDB_NID", false, true))
+                        if (!_conn.createIndex("FC_" + System.Guid.NewGuid().ToString("N") + "_NID", "FC_" + fcname, "FDB_NID", false, false))
                         {
                             _errMsg = _conn.errorMessage;
                             return -1;
@@ -775,12 +776,12 @@ namespace gView.DataSources.Fdb.MSAccess
                     geomDef.GeometryType == GeometryType.Envelope ||
                     geomDef.GeometryType == GeometryType.Aggregate)
                 {
-                    if (msSpatial == false)
+                    if (!nativeDbGeometry)
                     {
                         this.InitSpatialIndex2(fcname);
                     }
                 }
-                // Index für Netzwerk Graphen
+                // Index fï¿½r Netzwerk Graphen
                 if (geomDef.GeometryType == GeometryType.Network)
                 {
                     //_conn.createIndex("GRAPH_" + Guid.NewGuid().ToString("N"),
@@ -958,14 +959,14 @@ namespace gView.DataSources.Fdb.MSAccess
             }
             if (!_conn.dropTable(FcsiTableName(fcName)))
             {
-                if (await TableExists(TableName("FCSI_" + fcName))) // event. war Tab. schon gelöscht!!! Hier nicht DBSchema vor Tabelle angeben
+                if (await TableExists(TableName("FCSI_" + fcName))) // event. war Tab. schon gelï¿½scht!!! Hier nicht DBSchema vor Tabelle angeben
                 {
                     _errMsg = _conn.errorMessage;
                 }
             }
             if (!_conn.dropTable(FcTableName(fcName)))
             {
-                if (await TableExists(TableName("FC_" + fcName))) // event. war Tab. schon gelöscht!!! Hier nicht DBSchema vor Tabelle angeben
+                if (await TableExists(TableName("FC_" + fcName))) // event. war Tab. schon gelï¿½scht!!! Hier nicht DBSchema vor Tabelle angeben
                 {
                     _errMsg += "\n" + _conn.errorMessage;
                     return false;
@@ -1409,7 +1410,7 @@ namespace gView.DataSources.Fdb.MSAccess
             }
             bool isNetwork = ((GeometryType)tab.Rows[0]["GeometryType"] == GeometryType.Network);
             int fcId = Convert.ToInt32(tab.Rows[0]["ID"]);
-            // Beim Umbennenen Schema für Datenbank nicht zum Tabellennamen hinzufügen
+            // Beim Umbennenen Schema fï¿½r Datenbank nicht zum Tabellennamen hinzufï¿½gen
             if (await TableExists("FCSI_" + FCName))  // Gibts zB nicht bei Sql2008 GEOMETRY; TableExists...DbSchema nicht angeben
             {
                 if (!_conn.RenameTable(FcsiTableName(FCName), "FCSI_" + newFCName))
@@ -1688,13 +1689,18 @@ namespace gView.DataSources.Fdb.MSAccess
                 if (tab != null && tab.Rows.Count == 1)
                 {
                     DataRow row = tab.Rows[0];
+                    GeometryStorageType storage = ReadGeometryStorage(row);
                     if ((GeometryFieldType)row["GeometryType"] == GeometryFieldType.Default)
                     {
-                        gViewSpatialIndexDef gvIndex = new gViewSpatialIndexDef(
-                            new Envelope((double)row["SIMinX"], (double)row["SIMinY"], (double)row["SIMaxX"], (double)row["SIMaxY"]),
-                            Convert.ToInt32(row["MaxLevels"]),
-                            Convert.ToInt32(row["MaxPerNode"]),
-                            (double)row["SIRATIO"]);
+                        var bounds = new Envelope((double)row["SIMinX"], (double)row["SIMinY"], (double)row["SIMaxX"], (double)row["SIMaxY"]);
+                        int maxLevels = Convert.ToInt32(row["MaxLevels"]);
+
+                        gViewSpatialIndexDef gvIndex = storage == GeometryStorageType.PostGis
+                            ? new PostGisSpatialIndexDef(bounds, maxLevels)
+                            : new gViewSpatialIndexDef(bounds, maxLevels, Convert.ToInt32(row["MaxPerNode"]), (double)row["SIRATIO"])
+                            {
+                                StorageType = storage
+                            };
                         gvIndex.SpatialReference = await this.SpatialReference(dsID);
                         return gvIndex;
                     }
@@ -1735,13 +1741,24 @@ namespace gView.DataSources.Fdb.MSAccess
                 {
                     DataRow row = tab.Rows[0];
                     string si = row["SI"].ToString().ToLower();
-                    if (si == "binarytree" || si == "binarytree2")
+                    GeometryStorageType storage = ReadGeometryStorage(row);
+
+                    if (si == "postgis" || storage == GeometryStorageType.PostGis)
+                    {
+                        return new PostGisSpatialIndexDef(
+                            new Envelope((double)row["SIMinX"], (double)row["SIMinY"], (double)row["SIMaxX"], (double)row["SIMaxY"]),
+                            Convert.ToInt32(row["MaxLevels"]));
+                    }
+                    else if (si == "binarytree" || si == "binarytree2")
                     {
                         return new gViewSpatialIndexDef(
                             new Envelope((double)row["SIMinX"], (double)row["SIMinY"], (double)row["SIMaxX"], (double)row["SIMaxY"]),
                             Convert.ToInt32(row["MaxLevels"]),
                             Convert.ToInt32(row["MaxPerNode"]),
-                            (double)row["SIRATIO"]);
+                            (double)row["SIRATIO"])
+                        {
+                            StorageType = storage
+                        };
                     }
                     else if (si == "msgeometry")
                     {
@@ -1843,7 +1860,7 @@ namespace gView.DataSources.Fdb.MSAccess
             }
             else if (_indexType == IndexType.BinaryTree2)
             {
-                // ID ... damit auch Update/Remove in der Tabelle möglich ist...
+                // ID ... damit auch Update/Remove in der Tabelle mï¿½glich ist...
                 Field field = new Field();
                 field.name = ColumnName("ID"); field.aliasname = ColumnName("ID");
                 field.type = FieldType.ID;
@@ -2351,7 +2368,7 @@ namespace gView.DataSources.Fdb.MSAccess
                 return false;
             }
 
-            // Nur jetzt zum test Tabelle löschen und neu erzeugen
+            // Nur jetzt zum test Tabelle lï¿½schen und neu erzeugen
             // Grund: liegen noch von erstellen her in alter Structur vor!!
             //DropTable("FCSI_" + fcName);
             //if (!InitSpatialIndex2(fcName)) return false;
@@ -3791,43 +3808,17 @@ namespace gView.DataSources.Fdb.MSAccess
                     return false;
                 }
 
+                var geometryCodec = FdbGeometryCodec.ForFeatureClass(fc);
+
                 foreach (DataRow feat in tab.Rows)
                 {
                     byte[] obj = (byte[])feat[ColumnName("FDB_SHAPE")];
 
-                    BinaryReader r = new BinaryReader(new MemoryStream());
-                    r.BaseStream.Write((byte[])obj, 0, ((byte[])obj).Length);
-                    r.BaseStream.Position = 0;
-
-                    IGeometry p = null;
-                    switch (fc.GeometryType)
-                    {
-                        case GeometryType.Point:
-                            p = new gView.Framework.Geometry.Point();
-                            break;
-                        case GeometryType.Polyline:
-                            p = new gView.Framework.Geometry.Polyline();
-                            break;
-                        case GeometryType.Polygon:
-                            p = new gView.Framework.Geometry.Polygon();
-                            break;
-                    }
+                    IGeometry p = geometryCodec.Decode(obj, fc);
                     if (p != null)
                     {
-                        p.Deserialize(r, fc);
-                        r.Close();
-
                         p = (IGeometry)transformer.Transform2D((object)p);
-
-                        BinaryWriter w = new BinaryWriter(new MemoryStream());
-                        p.Serialize(w, fc);
-
-                        byte[] geometry = new byte[w.BaseStream.Length];
-                        w.BaseStream.Position = 0;
-                        w.BaseStream.ReadExactly(geometry, (int)0, (int)w.BaseStream.Length);
-                        w.Close();
-
-                        feat[ColumnName("FDB_SHAPE")] = geometry;
+                        feat[ColumnName("FDB_SHAPE")] = geometryCodec.Encode(p, fc);
                     }
                 }
 
@@ -3886,6 +3877,69 @@ namespace gView.DataSources.Fdb.MSAccess
                 {
                     _version = new Version(Convert.ToInt32(tab.Rows[0]["Major"]), Convert.ToInt32(tab.Rows[0]["Minor"]), Convert.ToInt32(tab.Rows[0]["Bugfix"]));
                 }
+            }
+            catch { }
+        }
+
+        private bool _geomStorageColsChecked = false;
+
+        /// <summary>
+        /// Adds the nullable <c>GeometryStorage</c> column to <c>FDB_FeatureClasses</c> and
+        /// <c>FDB_DatasetGeometryType</c> if it is missing. Called only when a non-classic
+        /// <see cref="GeometryStorageType"/> is actually written, so classic-only FDBs stay
+        /// schema-compatible with older gView versions.
+        /// </summary>
+        async protected Task EnsureGeometryStorageColumnsAsync()
+        {
+            if (_geomStorageColsChecked)
+            {
+                return;
+            }
+            _geomStorageColsChecked = true;
+
+            foreach (string table in new[] { "FDB_FeatureClasses", "FDB_DatasetGeometryType" })
+            {
+                try
+                {
+                    DataTable tab = await _conn.Select("*", TableName(table), "1=0");
+                    if (tab != null && !tab.Columns.Contains("GeometryStorage"))
+                    {
+                        _conn.ExecuteNoneQuery("ALTER TABLE " + TableName(table) + " ADD " + DbColName("GeometryStorage") + " int NULL");
+                    }
+                }
+                catch { }
+            }
+        }
+
+        /// <summary>Reads the <c>GeometryStorage</c> catalog column, defaulting to the legacy proprietary blob.</summary>
+        protected static GeometryStorageType ReadGeometryStorage(DataRow row)
+        {
+            try
+            {
+                if (row != null && row.Table.Columns.Contains("GeometryStorage") && row["GeometryStorage"] != DBNull.Value)
+                {
+                    return (GeometryStorageType)Convert.ToInt32(row["GeometryStorage"]);
+                }
+            }
+            catch { }
+
+            return GeometryStorageType.Default;
+        }
+
+        /// <summary>Raises the stored FDB schema version if it is below <paramref name="version"/>.</summary>
+        protected void EnsureFdbVersionAtLeast(Version version)
+        {
+            if (_version >= version)
+            {
+                return;
+            }
+            try
+            {
+                _conn.ExecuteNoneQuery("UPDATE " + TableName("FDB_ReleaseInfo") + " SET "
+                    + DbColName("Major") + "=" + version.Major + ","
+                    + DbColName("Minor") + "=" + version.Minor + ","
+                    + DbColName("Bugfix") + "=" + Math.Max(0, version.Build));
+                _version = version;
             }
             catch { }
         }
@@ -4159,7 +4213,7 @@ namespace gView.DataSources.Fdb.MSAccess
                 this.GetType().Equals(typeof(gView.DataSources.Fdb.MSAccess.AccessFDB)))
             {
                 // Umbenennen erst einmal verhindern. ADOX nicht verwenden...
-                // Neues Feld anlegen, daten kopieren, ... erst prüfen!
+                // Neues Feld anlegen, daten kopieren, ... erst prï¿½fen!
                 _errMsg = "Changing the field name is not possible for MS Access FDB";
                 return false;
             }

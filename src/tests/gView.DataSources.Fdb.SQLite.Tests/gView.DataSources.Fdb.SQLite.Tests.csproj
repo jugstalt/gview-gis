@@ -23,4 +23,11 @@
     <ProjectReference Include="..\..\gView.Framework.Geometry\gView.Framework.Geometry.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- SQLiteFDB.Create() reads this from StartupDirectory (= test bin dir) at runtime -->
+    <None Include="Resources\SQLiteFDB.createdatabase.sql" Link="sql\SQLiteFDB\createdatabase.sql">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

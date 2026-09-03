@@ -403,6 +403,10 @@ namespace gView.DataSources.Fdb.PostgreSql
                         case FieldType.binary:
                             types.Append("bytea NULL");
                             break;
+                        case FieldType.GEOMETRY:
+                        case FieldType.GEOGRAPHY:
+                            types.Append("geometry NULL");   // PostGIS; GiST index added by SetPostGisSpatialIndex
+                            break;
                         case FieldType.character:
                             types.Append("varchar(1) NULL");
                             break;
