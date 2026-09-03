@@ -1,6 +1,7 @@
 using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Data.Filters;
+using gView.Framework.Core.FDB;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Data;
 using gView.Framework.Data.Filters;
@@ -30,7 +31,7 @@ namespace gView.DataSources.SpatiaLite
     /// </summary>
     [UseDatasetNameCase(DatasetNameCase.ignore)]
     [RegisterPlugIn("975bcd88-bee4-43ed-a82c-ba10e0b45500")]
-    public class SpatiaLiteDataset : OgcSpatialDataset, IPlugInDependencies
+    public class SpatiaLiteDataset : OgcSpatialDataset, IPlugInDependencies, IFileFeatureDatabase
     {
         private static readonly IFormatProvider _inv = CultureInfo.InvariantCulture;
 
@@ -884,6 +885,39 @@ namespace gView.DataSources.SpatiaLite
 
         public static bool HasUnsolvedDependenciesStatic
             => SQLiteFactory.Instance == null || !SpatiaLiteNative.EnsureAvailable(out _);
+
+        #endregion
+
+        #region IFileFeatureDatabase
+
+        public string DatabaseName => "SpatiaLite / GeoPackage";
+
+        public int MaxFieldNameLength => 0; // SQLite has no practical identifier-length limit
+
+        public bool IsFolderBased => false; // single file, not a directory of files
+
+        public bool Flush(IFeatureClass fc) => true; // SQLite commits per transaction
+
+        public override Task<int> CreateDataset(string name, ISpatialReference sRef)
+            => Task.FromResult(Create(name) ? 0 : -1);
+
+        /// <summary>
+        /// Re-implemented for <see cref="IFileFeatureDatabase"/>: <paramref name="name"/> is a
+        /// file path. Opens it (creating an empty SpatiaLite/GeoPackage first if missing) and
+        /// returns a dataset bound to that file.
+        /// </summary>
+        async Task<IFeatureDataset> IFeatureDatabase.GetDataset(string name)
+        {
+            if (!File.Exists(name) && !Create(name))
+            {
+                return null;
+            }
+
+            var dataset = new SpatiaLiteDataset();
+            await dataset.SetConnectionString(name);
+
+            return await dataset.Open() ? dataset : null;
+        }
 
         #endregion
 

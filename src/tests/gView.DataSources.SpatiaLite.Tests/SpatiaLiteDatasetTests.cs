@@ -392,6 +392,46 @@ public class SpatiaLiteDatasetTests : IDisposable
         Assert.Equal("changed", afterUpdate.FindField("some name")!.Value!.ToString());
     }
 
+    [Theory]
+    [InlineData("db.gpkg")]
+    [InlineData("db.sqlite")]
+    public async Task IFileFeatureDatabase_CreatesInFolderAndOpens(string fileName)
+    {
+        SpatiaLiteTestEnvironment.RequireModSpatialite();
+
+        var folder = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"gview_sl_folder_{Guid.NewGuid():N}");
+        System.IO.Directory.CreateDirectory(folder);
+        try
+        {
+            gView.Framework.Core.FDB.IFileFeatureDatabase fileDb = new SpatiaLiteDataset();
+
+            Assert.False(fileDb.IsFolderBased);
+            Assert.Equal("SpatiaLite / GeoPackage", fileDb.DatabaseName);
+
+            var target = System.IO.Path.Combine(folder, fileName);
+            Assert.Equal(0, await fileDb.CreateDataset(target, null));
+            Assert.True(System.IO.File.Exists(target));
+
+            var dataset = await ((gView.Framework.Core.FDB.IFeatureDatabase)fileDb).GetDataset(target) as SpatiaLiteDataset;
+            Assert.NotNull(dataset);
+
+            var geomDef = new GeometryDef(GeometryType.Point)
+            {
+                SpatialReference = SpatialReference.FromID("epsg:4326")
+            };
+            Assert.Equal(0, await dataset!.CreateFeatureClass("", "p", geomDef, new FieldCollection()));
+
+            var fc = await GetFeatureClassAsync(dataset, "p");
+            Assert.True(await dataset.Insert(fc, new List<IFeature> { new Feature { Shape = new Point(1, 2) } }),
+                dataset.LastErrorMessage);
+            Assert.Single(await DrainAsync(await dataset.Query(fc, new QueryFilter { SubFields = "*" })));
+        }
+        finally
+        {
+            try { System.IO.Directory.Delete(folder, true); } catch { }
+        }
+    }
+
     [Fact]
     public async Task CopyFeatureClass_SpatiaLiteToNewGeoPackage_RoundTrips()
     {

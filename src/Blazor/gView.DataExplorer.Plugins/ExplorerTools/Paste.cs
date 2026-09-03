@@ -85,7 +85,38 @@ internal class Paste : IExplorerTool
             }
 
             var fileDb = model.SelectedValue;
-            destDataset = await fileDb.GetDataset(scope.CurrentExplorerObject.FullName);
+            var targetPath = scope.CurrentExplorerObject.FullName;
+
+            if (!fileDb.IsFolderBased)
+            {
+                // single-file database (SpatiaLite / GeoPackage): ask for the file name and
+                // create an empty database in the folder before the copy runs.
+                var nameModel = await scope.ShowModalDialog(
+                    typeof(gView.DataExplorer.Razor.Components.Dialogs.InputBoxDialog),
+                    $"New {fileDb.DatabaseName}",
+                    new InputBoxModel()
+                    {
+                        Value = "",
+                        Icon = "basic:database",
+                        Name = fileDb.DatabaseName,
+                        Label = "Name",
+                        Prompt = "File name (a '.gpkg' extension creates a GeoPackage, otherwise SpatiaLite)."
+                    });
+
+                if (String.IsNullOrEmpty(nameModel?.Value))
+                {
+                    return false;
+                }
+
+                targetPath = System.IO.Path.Combine(scope.CurrentExplorerObject.FullName, nameModel.Value.Trim());
+
+                if (await fileDb.CreateDataset(targetPath, null) < 0)
+                {
+                    throw new Exception($"Can't create {fileDb.DatabaseName} '{targetPath}'.");
+                }
+            }
+
+            destDataset = await fileDb.GetDataset(targetPath);
         }
         else
         {
