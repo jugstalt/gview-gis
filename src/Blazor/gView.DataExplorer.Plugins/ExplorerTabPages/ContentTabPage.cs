@@ -55,6 +55,13 @@ public class ContentTabPage : IExplorerTabPage
                         .AddData("Type", child.Type)
                         .SetIcon(child.Icon);
 
+                    // FDB objects report their geometry storage kind only once the dataset is
+                    // opened - load it so the "Storage" column below is accurate.
+                    if (child is ExplorerObjects.Fdb.IFdbGeometryStorageContext)
+                    {
+                        try { await child.GetInstanceAsync(); } catch { }
+                    }
+
                     if(child is IExplorerObjectCustomContentValues customValues)
                     {
                         var values = customValues.GetCustomContentValues();

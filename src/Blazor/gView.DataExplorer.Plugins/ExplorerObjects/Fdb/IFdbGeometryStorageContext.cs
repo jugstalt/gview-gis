@@ -24,4 +24,20 @@ internal static class FdbGeometryStorageContextExtensions
     public static bool UsesGViewSpatialIndex(IExplorerObject? exObject)
         => exObject is not IFdbGeometryStorageContext ctx
            || ctx.GeometryStorage is GeometryStorageType.Classic or GeometryStorageType.Wkb;
+
+    /// <summary>True for a database-native geometry column (PostGIS / SQL Server) that manages its own index.</summary>
+    public static bool IsNativeDbGeometry(this GeometryStorageType storage)
+        => storage is GeometryStorageType.PostGis
+                   or GeometryStorageType.SqlServerGeometry
+                   or GeometryStorageType.SqlServerGeography;
+
+    /// <summary>Short human-readable label for the content list / ribbon.</summary>
+    public static string StorageLabel(this GeometryStorageType storage) => storage switch
+    {
+        GeometryStorageType.Wkb => "gView (WKB)",
+        GeometryStorageType.PostGis => "PostGIS (native)",
+        GeometryStorageType.SqlServerGeometry => "SQL Server geometry (native)",
+        GeometryStorageType.SqlServerGeography => "SQL Server geography (native)",
+        _ => "gView managed",
+    };
 }

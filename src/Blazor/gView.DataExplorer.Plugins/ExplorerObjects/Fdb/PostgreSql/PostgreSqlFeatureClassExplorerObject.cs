@@ -27,6 +27,7 @@ public class PostgreSqlFeatureClassExplorerObject : ExplorerObjectCls<PostgreSql
                                                     IExplorerObjectCreatable,
                                                     IExporerOjectSchema,
                                                     IExplorerObjectContextTools,
+                                                    IExplorerObjectCustomContentValues,
                                                     IFdbGeometryStorageContext
 {
     private string _dsname = String.Empty, _fcname = String.Empty, _type = String.Empty;
@@ -142,6 +143,7 @@ public class PostgreSqlFeatureClassExplorerObject : ExplorerObjectCls<PostgreSql
                 {
                     new ShrinkSpatialIndices(),
                     new RepairSpatialIndex(),
+                    new RepairNativeSpatialIndex(),
                     new SpatialIndexDefinition(),
                     new TruncateFeatureClass()
                 });
@@ -177,6 +179,9 @@ public class PostgreSqlFeatureClassExplorerObject : ExplorerObjectCls<PostgreSql
     public GeometryStorageType GeometryStorage
         => (_fc?.Dataset as gView.Framework.Core.FDB.IFDBDataset)?.SpatialIndexDef?.StorageType
            ?? GeometryStorageType.Classic;
+
+    public IDictionary<string, object?> GetCustomContentValues()
+        => new Dictionary<string, object?> { { "Storage", GeometryStorage.StorageLabel() } };
 
     #region IExplorerObject Members
 
