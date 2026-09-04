@@ -971,6 +971,129 @@ public class GeoServicesRestController : BaseController
         });
     }
 
+    async public Task<IActionResult> FeatureServerApplyEdits(string id, int layerId, string folder = "")
+    {
+        return await SecureMethodHandler(async (identity) =>
+        {
+            var interpreter = _mapServerService.GetInterpreter(typeof(GeoServicesRestInterperter));
+
+            #region Request
+
+            JsonFeatureServerApplyEditsRequestDTO editRequest = Deserialize<JsonFeatureServerApplyEditsRequestDTO>(
+                Request.HasFormContentType ?
+                Request.Form :
+                Request.Query);
+            editRequest.LayerId = layerId;
+
+            ServiceRequest serviceRequest = new ServiceRequest(id, folder, JSerializer.Serialize(editRequest))
+            {
+                OnlineResource = _mapServerService.Options.OnlineResource,
+                OutputUrl = _mapServerService.Options.OutputUrl,
+                Method = "featureserver_applyedits",
+                Identity = identity
+            };
+
+            #endregion
+
+            #region Queue & Wait
+
+            IServiceRequestContext context = await ServiceRequestContext.TryCreate(
+                _mapServerService.Instance,
+                interpreter,
+                serviceRequest);
+
+            string format = ResultFormat();
+            if (String.IsNullOrWhiteSpace(format))
+            {
+                return FormResult(editRequest);
+            }
+
+            await _mapServerService.TaskQueue.AwaitRequest(interpreter.Request, context);
+
+            #endregion
+
+            return Result(JSerializer.Deserialize<JsonFeatureServerResponseDTO>(serviceRequest.ResponseAsString));
+        },
+        onException: (ex) =>
+        {
+            var errorResponse = new JsonFeatureServerResponseDTO.JsonResponse[]
+            {
+                new JsonFeatureServerResponseDTO.JsonResponse()
+                {
+                    Success=false,
+                    Error=new JsonFeatureServerResponseDTO.JsonError()
+                    {
+                        Code=999,
+                        Description=ex.Message
+                    }
+                }
+            };
+
+            return Result(new JsonFeatureServerResponseDTO()
+            {
+                AddResults = errorResponse,
+                UpdateResults = errorResponse,
+                DeleteResults = errorResponse
+            });
+        });
+    }
+
+    async public Task<IActionResult> FeatureServerApplyEditsService(string id, string folder = "")
+    {
+        return await SecureMethodHandler(async (identity) =>
+        {
+            var interpreter = _mapServerService.GetInterpreter(typeof(GeoServicesRestInterperter));
+
+            #region Request
+
+            JsonFeatureServerApplyEditsServiceRequestDTO editRequest = Deserialize<JsonFeatureServerApplyEditsServiceRequestDTO>(
+                Request.HasFormContentType ?
+                Request.Form :
+                Request.Query);
+
+            ServiceRequest serviceRequest = new ServiceRequest(id, folder, JSerializer.Serialize(editRequest))
+            {
+                OnlineResource = _mapServerService.Options.OnlineResource,
+                OutputUrl = _mapServerService.Options.OutputUrl,
+                Method = "featureserver_applyedits_service",
+                Identity = identity
+            };
+
+            #endregion
+
+            #region Queue & Wait
+
+            IServiceRequestContext context = await ServiceRequestContext.TryCreate(
+                _mapServerService.Instance,
+                interpreter,
+                serviceRequest);
+
+            string format = ResultFormat();
+            if (String.IsNullOrWhiteSpace(format))
+            {
+                return FormResult(editRequest);
+            }
+
+            await _mapServerService.TaskQueue.AwaitRequest(interpreter.Request, context);
+
+            #endregion
+
+            if (!serviceRequest.Succeeded)
+            {
+                return Result(JSerializer.Deserialize<JsonErrorDTO>(serviceRequest.ResponseAsString));
+            }
+
+            return Result(JSerializer.Deserialize<JsonFeatureServerApplyEditsServiceResultDTO[]>(serviceRequest.ResponseAsString));
+        },
+        onException: (ex) =>
+        {
+            return Result(new JsonErrorDTO()
+            {
+                Error = new JsonErrorDTO.ErrorDef() { Code = 999, Message = ex.Message }
+            });
+        });
+    }
+
     async public Task<IActionResult> FeatureServerLayer(string id, int layerId, string folder = "")
     {
         return await SecureMethodHandler(async (identity) =>
@@ -1282,8 +1405,28 @@ public class GeoServicesRestController : BaseController
 
                         if (editOperations.Count > 0)
                         {
-                            ((JsonFeatureServerLayerDTO)result).IsEditable = true;
-                            ((JsonFeatureServerLayerDTO)result).EditOperations = editOperations.ToArray();
+                            var featureServerLayer = (JsonFeatureServerLayerDTO)result;
+                            featureServerLayer.IsEditable = true;
+                            featureServerLayer.EditOperations = editOperations.ToArray();
+                            featureServerLayer.SupportsRollbackOnFailureParameter = true;
+
+                            // ArcGIS style capabilities string, so clients (QGIS, ArcGIS Pro)
+                            // recognize the editing operations incl. applyEdits
+                            var caps = new List<string>() { "Query" };
+                            if (editLayer.Statements.HasFlag(Framework.Editor.Core.EditStatements.INSERT))
+                            {
+                                caps.Add("Create");
+                            }
+                            if (editLayer.Statements.HasFlag(Framework.Editor.Core.EditStatements.UPDATE))
+                            {
+                                caps.Add("Update");
+                            }
+                            if (editLayer.Statements.HasFlag(Framework.Editor.Core.EditStatements.DELETE))
+                            {
+                                caps.Add("Delete");
+                            }
+                            caps.Add("Editing");
+                            featureServerLayer.Capabilities = String.Join(",", caps);
                         }
                     }
                 }

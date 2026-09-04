@@ -21,7 +21,7 @@ namespace gView.Interoperability.GeoServices.Rest.DTOs
                 Subject = String.Empty,
                 Keywords = String.Empty
             };
-            Capabilities = "Create,Query,Update,Delete";
+            Capabilities = "Create,Query,Update,Delete,Editing";
             DatumTransformations = new JsonMapServiceDTO.DatumTransformationsClass[0];
             SupportsDatumTransformation = true;
             Units = "esriMeters";

@@ -8,6 +8,9 @@ namespace gView.Interoperability.GeoServices.Rest.DTOs
         [JsonPropertyName("objectIdFieldName")]
         public string ObjectIdFieldName { get; set; }
 
+        [JsonPropertyName("exceededTransferLimit")]
+        public bool ExceededTransferLimit { get; set; }
+
         [JsonPropertyName("objectIds")]
         public IEnumerable<int> ObjectIds { get; set; }
     }
