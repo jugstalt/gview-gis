@@ -187,17 +187,28 @@ namespace gView.Framework.Data
         }
         #endregion
 
+        // SQL Server only accepts LOW / MEDIUM / HIGH for a grid level. "NO" (the unset default,
+        // e.g. a native dataset created without explicit levels) must be mapped to a real value.
+        private static string GridLevel(MSSpatialIndexLevelSize level)
+            => level == MSSpatialIndexLevelSize.NO ? "MEDIUM" : level.ToString();
+
+        private string GridsClause()
+            => "GRIDS = (LEVEL_1 = " + GridLevel(_level1) + ", LEVEL_2 = " + GridLevel(_level2)
+               + ", LEVEL_3 = " + GridLevel(_level3) + ", LEVEL_4 = " + GridLevel(_level4) + ")";
+
         public string ToSql(string indexName, string tableName, string colName)
         {
             StringBuilder sb = new StringBuilder();
+
+            int cellsPerObject = (_cellsPerObject >= 1 && _cellsPerObject <= 8192) ? _cellsPerObject : 16;
 
             if (_fieldType == GeometryFieldType.MsGeography)
             {
                 sb.Append("CREATE SPATIAL INDEX " + indexName);
                 sb.Append(" ON " + tableName + "(" + colName + ")");
                 sb.Append(" USING GEOGRAPHY_GRID WITH (");
-                sb.Append("GRIDS = (LEVEL_1 = " + _level1.ToString() + ", LEVEL_2 = " + _level2.ToString() + ", LEVEL_3 = " + _level3.ToString() + ", LEVEL_4 = " + _level4.ToString() + ")");
-                sb.Append(",CELLS_PER_OBJECT = " + _cellsPerObject.ToString());
+                sb.Append(GridsClause());
+                sb.Append(",CELLS_PER_OBJECT = " + cellsPerObject.ToString());
                 sb.Append(")");
             }
             else if (_fieldType == GeometryFieldType.MsGeometry)
@@ -213,8 +224,8 @@ namespace gView.Framework.Data
                     sb.Append("xmax=" + _extent.MaxX.ToString(_nhi) + ",");
                     sb.Append("ymax=" + _extent.MaxY.ToString(_nhi) + "),");
                 }
-                sb.Append("GRIDS = (LEVEL_1 = " + _level1.ToString() + ", LEVEL_2 = " + _level2.ToString() + ", LEVEL_3 = " + _level3.ToString() + ", LEVEL_4 = " + _level4.ToString() + ")");
-                sb.Append(",CELLS_PER_OBJECT = " + _cellsPerObject.ToString());
+                sb.Append(GridsClause());
+                sb.Append(",CELLS_PER_OBJECT = " + cellsPerObject.ToString());
                 sb.Append(")");
             }
             return sb.ToString();

@@ -226,8 +226,21 @@ public class FdbImport
 
             if (msSpatial)
             {
-                ((SqlFDB)fdb).SetMSSpatialIndex((MSSpatialIndex)sIndexDef, destFC.Name);
-                await ((SqlFDB)fdb).SetFeatureclassExtent(destFC.Name, sIndexDef.SpatialIndexBounds);
+                var msIndex = (MSSpatialIndex)sIndexDef;
+
+                // GEOMETRY_GRID needs a valid BOUNDING_BOX; fall back to the source extent when the
+                // dataset was created without one (geography does not use a bounding box).
+                if (Envelope.IsNull(msIndex.SpatialIndexBounds) && !Envelope.IsNull(sourceFC.Envelope))
+                {
+                    msIndex.SpatialIndexBounds = sourceFC.Envelope;
+                }
+
+                if(!((SqlFDB)fdb).SetMSSpatialIndex(msIndex, destFC.Name))
+                {
+                    _errMsg = fdb.LastErrorMessage;
+                    return false;
+                }
+                await ((SqlFDB)fdb).SetFeatureclassExtent(destFC.Name, msIndex.SpatialIndexBounds);
             }
             else if (sIndexDef.StorageType == GeometryStorageType.PostGis && fdb is pgFDB pgfdb)
             {
@@ -342,6 +355,28 @@ public class FdbImport
                 }
 
                 await ((AccessFDB)fdb).CalculateExtent(destFC);
+
+                // SQL Server GEOMETRY_GRID: its BOUNDING_BOX must cover the data. Rebuild the
+                // spatial index now that CalculateExtent has written the real extent.
+                if (msSpatial && ((MSSpatialIndex)sIndexDef).GeometryType == GeometryFieldType.MsGeometry)
+                {
+                    IEnvelope calculated = await ((AccessFDB)fdb).QueryExtent(fcname);
+                    if (!Envelope.IsNull(calculated))
+                    {
+                        if (ReportAction != null)
+                        {
+                            ReportAction(this, "Set spatial index bounds");
+                        }
+
+                        var msIndex = (MSSpatialIndex)sIndexDef;
+                        msIndex.SpatialIndexBounds = calculated;
+                        if(!((SqlFDB)fdb).SetMSSpatialIndex(msIndex, destFC.Name))
+                        {
+                            _errMsg = fdb.LastErrorMessage;
+                            return false;
+                        }
+                    }
+                }
 
                 if (!nativeDbGeometry)
                 {
