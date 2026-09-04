@@ -164,8 +164,10 @@ namespace gView.DataSources.MongoDb
             return Insert(fClass, new List<IFeature>(new IFeature[] { feature }));
         }
 
-        async public Task<bool> Insert(IFeatureClass fClass, List<IFeature> features)
+        async public Task<bool> Insert(IFeatureClass fClass, List<IFeature> features, bool returnIds = false)
         {
+            // returnIds is not supported by this provider - features are inserted without
+            // back-filling IFeature.OID.
             try
             {
                 var featureCollection = await GetFeatureCollection(fClass);

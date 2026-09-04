@@ -585,7 +585,7 @@ namespace gView.Framework.OGC.DB
             return Insert(fClass, features);
         }
 
-        async virtual public Task<bool> Insert(IFeatureClass fClass, List<IFeature> features)
+        async virtual public Task<bool> Insert(IFeatureClass fClass, List<IFeature> features, bool returnIds = false)
         {
             DatasetNameCase nameCase = DatasetNameCase.ignore;
             foreach (System.Attribute attribute in System.Attribute.GetCustomAttributes(this.GetType()))
@@ -690,6 +690,10 @@ namespace gView.Framework.OGC.DB
                                         feature.Fields.Add(idFieleValue);
                                     }
                                     idFieleValue.Value = rowId;
+                                    if (returnIds && feature is Row unmanagedRow)
+                                    {
+                                        unmanagedRow.OID = rowId.Value;
+                                    }
                                 }
                             }
 
@@ -762,8 +766,15 @@ namespace gView.Framework.OGC.DB
                                 command.Parameters.Add(parameter);
                             }
 
-                            command.CommandText = $"{sqlStatementHeader}INSERT INTO {DbTableName(fClass.Name)} ({fields}) VALUES ({parameters});";
-                            await command.ExecuteNonQueryAsync();
+                            command.CommandText = $"{sqlStatementHeader}INSERT INTO {DbTableName(fClass.Name)} ({fields}) VALUES ({parameters})";
+
+                            string returnRowIdStatement = returnIds && HasManagedRowIds(fClass)
+                                ? InsertReturnRowIdStatement((OgcSpatialFeatureclass)fClass)
+                                : null;
+
+                            await (String.IsNullOrEmpty(returnRowIdStatement)
+                                ? command.ExecuteNonQueryAsync()
+                                : command.ExecuteInsertAndApplyId(returnRowIdStatement, feature));
                         }
 
                         try
@@ -1119,6 +1130,16 @@ namespace gView.Framework.OGC.DB
         {
             return "{0}";
         }
+
+        /// <summary>
+        /// SQL that is appended to the single row INSERT statement so that
+        /// <c>ExecuteScalar</c> returns the row id the database assigned to the new feature
+        /// (eg <c>RETURNING &lt;idColumn&gt;</c> for PostgreSQL, <c>; SELECT SCOPE_IDENTITY()</c>
+        /// for SQL Server). Return <c>null</c> (default) to keep <c>ExecuteNonQuery</c> and not
+        /// back-fill <see cref="IFeature.OID"/>. Only called when
+        /// <see cref="HasManagedRowIds(ITableClass)"/> is <c>true</c>.
+        /// </summary>
+        virtual protected string InsertReturnRowIdStatement(OgcSpatialFeatureclass featureClass) => null;
 
         virtual public Task<IEnvelope> FeatureClassEnvelope(IFeatureClass fc)
         {

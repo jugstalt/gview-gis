@@ -142,8 +142,11 @@ public class SpatiaLiteDatasetTests : IDisposable
         var fc = await GetFeatureClassAsync(dataset, "pts");
 
         // insert
-        Assert.True(await dataset.Insert(fc, new List<IFeature> { PointFeature(250.5, 400.25, "new", 99) }),
-            dataset.LastErrorMessage);
+        var toInsert = PointFeature(250.5, 400.25, "new", 99);
+        Assert.True(await dataset.Insert(fc, new List<IFeature> { toInsert }, returnIds: true), dataset.LastErrorMessage);
+
+        // returnIds:true must back-fill the database assigned id onto the passed feature
+        Assert.True(toInsert.OID > 0, $"OID not back-filled: {toInsert.OID}");
 
         var inserted = (await DrainAsync(await dataset.Query(fc, new QueryFilter { SubFields = "*" })))
             .Single(f => f.FindField("name")!.Value!.ToString() == "new");
@@ -151,6 +154,7 @@ public class SpatiaLiteDatasetTests : IDisposable
         Assert.Equal(250.5, ((IPoint)inserted.Shape).X, 6);
         Assert.Equal(400.25, ((IPoint)inserted.Shape).Y, 6);
         Assert.True(inserted.OID > 0);
+        Assert.Equal(inserted.OID, toInsert.OID);
 
         // update
         var update = new Feature { Shape = new Point(1, 2), OID = inserted.OID };
@@ -250,14 +254,16 @@ public class SpatiaLiteDatasetTests : IDisposable
         Assert.Equal(3, before.Count);
 
         // insert
-        Assert.True(await dataset.Insert(fc, new List<IFeature> { PointFeature(600, 600, "added", 7) }),
-            dataset.LastErrorMessage);
+        var toInsert = PointFeature(600, 600, "added", 7);
+        Assert.True(await dataset.Insert(fc, new List<IFeature> { toInsert }, returnIds: true), dataset.LastErrorMessage);
+        Assert.True(toInsert.OID > 0, $"OID not back-filled: {toInsert.OID}");
 
         var after = await DrainAsync(await dataset.Query(fc, new QueryFilter { SubFields = "*" }));
         Assert.Equal(4, after.Count);
         var added = after.Single(f => f.FindField("name")!.Value!.ToString() == "added");
         Assert.Equal(600, ((IPoint)added.Shape).X, 6);
         Assert.True(added.OID > 0);
+        Assert.Equal(added.OID, toInsert.OID);
 
         // the geometry column must still hold spec-compliant GPB ("GP..") blobs
         var validGpb = Convert.ToInt64(SpatiaLiteTestEnvironment.Scalar(

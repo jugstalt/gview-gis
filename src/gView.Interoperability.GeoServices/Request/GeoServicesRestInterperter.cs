@@ -1355,7 +1355,7 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
 
                 features.GeometryMakeValid(serviceMap, featureClass);
 
-                if (!await database.Insert(featureClass, features))
+                if (!await database.Insert(featureClass, features, returnIds: true))
                 {
                     throw new Exception(database.LastErrorMessage);
                 }
@@ -1364,13 +1364,7 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
                 context.ServiceRequest.Response = JSerializer.Serialize(
                     new JsonFeatureServerResponseDTO()
                     {
-                        AddResults = new JsonFeatureServerResponseDTO.JsonResponse[]
-                        {
-                            new JsonFeatureServerResponseDTO.JsonResponse()
-                            {
-                                Success = true
-                            }
-                        }
+                        AddResults = features.Select(f => EditJsonResponse(true, f.OID)).ToArray()
                     });
             }
         }
@@ -1624,7 +1618,7 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
 
             addFeatures.GeometryMakeValid(serviceMap, featureClass);
 
-            if (!await database.Insert(featureClass, addFeatures))
+            if (!await database.Insert(featureClass, addFeatures, returnIds: true))
             {
                 if (rollbackOnFailure)
                 {
@@ -1637,11 +1631,11 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
             }
             else
             {
-                // NOTE: the IFeatureUpdater.Insert implementations do not report back the
-                // generated ObjectIds, so addResults are returned without "objectId".
-                // Clients (QGIS) pick up the real ids on the next layer refresh.
+                // IFeatureUpdater.Insert back-fills feature.OID with the id the database
+                // assigned; report it as "objectId" (omitted when the provider could not
+                // determine it).
                 response.AddResults = addFeatures
-                    .Select(_ => new JsonFeatureServerResponseDTO.JsonResponse() { Success = true })
+                    .Select(f => EditJsonResponse(true, f.OID))
                     .ToArray();
             }
         }
@@ -1721,6 +1715,13 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
 
         return response;
     }
+
+    private static JsonFeatureServerResponseDTO.JsonResponse EditJsonResponse(bool success, int objectId)
+        => new JsonFeatureServerResponseDTO.JsonResponse()
+        {
+            Success = success,
+            ObjectId = objectId > 0 ? objectId : (int?)null
+        };
 
     private static JsonFeatureServerResponseDTO.JsonResponse ApplyEditsErrorResponse(string message, int? objectId = null)
         => new JsonFeatureServerResponseDTO.JsonResponse()

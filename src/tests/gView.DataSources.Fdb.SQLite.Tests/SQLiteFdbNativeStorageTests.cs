@@ -117,6 +117,44 @@ public class SQLiteFdbNativeStorageTests : IDisposable
         Assert.Equal(400.25, byName["b"].Y);
     }
 
+    [Theory]
+    [InlineData(GeometryStorageType.Wkb)]
+    [InlineData(GeometryStorageType.Classic)]
+    public async Task Insert_BackfillsObjectId(GeometryStorageType storage)
+    {
+        var fdb = await CreateFdbAsync(storage);
+        var fc = await GetFeatureClassAsync(fdb, "ds", "pts");
+
+        var features = new List<IFeature>
+        {
+            PointFeature(10, 10, "a"),
+            PointFeature(20, 20, "b"),
+            PointFeature(30, 30, "c"),
+        };
+        Assert.True(await fdb.Insert(fc, features, returnIds: true), fdb.LastErrorMessage);
+
+        // returnIds:true => every inserted feature got the database assigned FDB_OID written back
+        Assert.All(features, f => Assert.True(f.OID > 0, $"OID not back-filled: {f.OID}"));
+        Assert.Equal(3, features.Select(f => f.OID).Distinct().Count());
+
+        // and those OIDs address exactly the rows we inserted
+        var oids = features.ToDictionary(f => f.OID, f => f.FindField("NAME")!.Value!.ToString());
+        var filter = new QueryFilter
+        {
+            SubFields = "*",
+            WhereClause = "FDB_OID IN (" + string.Join(",", oids.Keys) + ")",
+        };
+        var read = await DrainAsync(await fdb.Query(fc, filter));
+
+        Assert.Equal(3, read.Count);
+        Assert.All(read, f => Assert.Equal(oids[f.OID], f.FindField("NAME")!.Value!.ToString()));
+
+        // default (returnIds:false) keeps the plain insert path - no id back-fill
+        var plain = PointFeature(40, 40, "d");
+        Assert.True(await fdb.Insert(fc, new List<IFeature> { plain }), fdb.LastErrorMessage);
+        Assert.Equal(0, plain.OID);
+    }
+
     [Fact]
     public async Task WkbDataset_BumpsFdbVersionTo8AndStoresRealWkb()
     {

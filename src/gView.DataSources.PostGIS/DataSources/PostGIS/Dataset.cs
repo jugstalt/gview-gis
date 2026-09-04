@@ -118,6 +118,14 @@ namespace gView.DataSources.PostGIS
             }
         }
 
+        protected override string InsertReturnRowIdStatement(OgcSpatialFeatureclass featureClass)
+        {
+            // the INSERT itself returns the id the sequence / identity assigned
+            return String.IsNullOrEmpty(featureClass?.IDFieldName)
+                ? null
+                : $" RETURNING {DbColumnName(featureClass.IDFieldName)}";
+        }
+
         void PostGISDataset_ConnectionStringChanged(gView.Framework.OGC.DB.OgcSpatialDataset sender, string provider)
         {
             try

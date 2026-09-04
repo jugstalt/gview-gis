@@ -75,9 +75,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - Editable feature layers now advertise an ArcGIS-style `capabilities` string
     (`Query,Create,Update,Delete,Editing`), `supportsRollbackOnFailureParameter` and an
     `Apply Edits` service method; the FeatureService reports `Editing` in its capabilities.
-  - Known limitation: `addResults` are returned without a generated `objectId` (the
-    `IFeatureUpdater.Insert` implementations do not report new ids back); clients pick up the
-    real ObjectIds on the next layer refresh, matching the existing `addFeatures` behaviour.
+  - `addFeatures` / `applyEdits` now return the generated `objectId` in `addResults`
+    (see `## Fixed`), so QGIS keeps the correct server ids without a layer refresh.
 
 ## Changed
 
@@ -92,10 +91,23 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   `exceededTransferLimit` property, matching current ArcGIS Server. Without `resultRecordCount`
   all object ids are still returned and `exceededTransferLimit` is `false`; with
   `resultRecordCount` (and `resultOffset`) the response is a page and `exceededTransferLimit` is
-  `true` when the page is full. New `JsonObjectIdResponseDTO.Exceeded
+  `true` when the page is full. New `JsonObjectIdResponseDTO.ExceededTransferLimit`.
 
 ## Fixed
 
+- GeoServices REST FeatureServer `addFeatures` / `applyEdits`: `addResults` now carry the
+  database generated `objectId`. `IFeatureUpdater.Insert(fClass, features, returnIds = false)`
+  gained an opt-in `returnIds` flag &mdash; when `true` the new row id is written back onto
+  each `IFeature.OID` via `RETURNING` (PostgreSQL / PostGIS / FDB-PostgreSQL),
+  `SCOPE_IDENTITY()` (SQL Server Geometry/Geography, FDB-SQL Server) or
+  `last_insert_rowid()` (SQLite/SpatiaLite/GeoPackage, FDB-SQLite), and for SDE the id
+  assigned before the insert is kept. `false` (the default, used by every existing caller
+  such as FdbImport / CopyFeatureClass) keeps the plain insert statement unchanged. A new
+  `OgcSpatialDataset.InsertReturnRowIdStatement` hook carries the per-provider SQL and the
+  shared `DbCommand.ExecuteInsertAndApplyId` / `ExecuteInsertAndApplyIds` extensions
+  (`gView.Framework.Db.Extensions`) run it and write the ids back; the FeatureServer add /
+  applyEdits path passes `returnIds: true`. Providers that do not support it (Shape, MongoDB,
+  GML) ignore the flag and `objectId` is then omitted from the response.
 - Query `returnCountOnly` / GeoJSON `CountOnly`: the count is no longer capped at the
   service `MaxRecordCount`. For feature classes without a fast `ExecuteCount` (FDB, Shape,
   &hellip;) the fallback iterated the cursor with the normal page limit applied, so

@@ -225,8 +225,10 @@ namespace gView.Interoperability.OGC.Dataset.GML
             return Insert(fClass, features);
         }
 
-        async public Task<bool> Insert(IFeatureClass fClass, List<IFeature> features)
+        async public Task<bool> Insert(IFeatureClass fClass, List<IFeature> features, bool returnIds = false)
         {
+            // returnIds is not supported by this provider - features are inserted without
+            // back-filling IFeature.OID.
             if (fClass == null || !(fClass.Dataset is Dataset) || features == null)
             {
                 return false;

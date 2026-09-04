@@ -1360,7 +1360,7 @@ namespace gView.DataSources.Fdb.MSSql
             features.Add(feature);
             return Insert(fClass, features);
         }
-        async public override Task<bool> Insert(IFeatureClass fClass, List<IFeature> features)
+        async public override Task<bool> Insert(IFeatureClass fClass, List<IFeature> features, bool returnIds = false)
         {
             if (fClass == null || features == null || !(fClass.Dataset is IFDBDataset))
             {
@@ -1583,7 +1583,12 @@ namespace gView.DataSources.Fdb.MSSql
                             com.Append("exec dbo.UpdateSIndex '" + fClass.Name + "',@FDB_NID");
                             command.CommandText = com.ToString();
                         }
-                        await command.ExecuteNonQueryAsync();
+
+                        // FDB_OID is an IDENTITY column; SCOPE_IDENTITY() stays correct across the
+                        // dbo.UpdateSIndex call (different scope).
+                        await (returnIds
+                            ? command.ExecuteInsertAndApplyId("; SELECT SCOPE_IDENTITY()", feature)
+                            : command.ExecuteNonQueryAsync());
                     }
 
                     transaction.Commit();

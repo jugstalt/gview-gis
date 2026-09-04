@@ -5,6 +5,7 @@ using gView.Framework.Core.Data.Filters;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Data;
 using gView.Framework.Data.Filters;
+using gView.Framework.Db.Extensions;
 using gView.Framework.Geometry;
 using gView.Framework.Offline;
 using gView.Framework.Common;
@@ -371,7 +372,7 @@ namespace gView.DataSources.Fdb.SQLite
             features.Add(feature);
             return Insert(fClass, features);
         }
-        async public override Task<bool> Insert(IFeatureClass fClass, List<IFeature> features)
+        async public override Task<bool> Insert(IFeatureClass fClass, List<IFeature> features, bool returnIds = false)
         {
             if (fClass == null || features == null)
             {
@@ -513,7 +514,12 @@ namespace gView.DataSources.Fdb.SQLite
                             }
 
                             command.CommandText = "INSERT INTO " + FcTableName(fClass) + " (" + fields.ToString() + ") VALUES (" + parameters + ")";
-                            await command.ExecuteNonQueryAsync();
+
+                            // FDB_OID is an INTEGER PRIMARY KEY (rowid alias) - last_insert_rowid()
+                            // is exact and connection-local (one row inserted, then read back).
+                            await (returnIds
+                                ? command.ExecuteInsertAndApplyId("; SELECT last_insert_rowid()", feature)
+                                : command.ExecuteNonQueryAsync());
                         }
 
                         //return SplitIndexNodes(fClass, connection, _nids);

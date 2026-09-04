@@ -1546,7 +1546,7 @@ namespace gView.DataSources.Fdb.MSAccess
             features.Add(feature);
             return Insert(fClass, features);
         }
-        public abstract Task<bool> Insert(IFeatureClass fClass, List<IFeature> features);
+        public abstract Task<bool> Insert(IFeatureClass fClass, List<IFeature> features, bool returnIds = false);
 
         public abstract Task<bool> Update(IFeatureClass fClass, IFeature feature);
         public abstract Task<bool> Update(IFeatureClass fClass, List<IFeature> features);

@@ -116,6 +116,14 @@ namespace gView.DataSources.MSSqlSpatial
             return $"DROP TABLE {tableName}";
         }
 
+        protected override string InsertReturnRowIdStatement(OgcSpatialFeatureclass featureClass)
+        {
+            // SCOPE_IDENTITY() in the same command batch returns the IDENTITY value of the
+            // row just inserted; trigger-safe (unlike an OUTPUT clause). NULL for non-identity
+            // id columns - the caller then just leaves feature.OID untouched.
+            return "; SELECT SCOPE_IDENTITY()";
+        }
+
         protected override string DbColumnName(string colName)
         {
             return $"[{colName}]";

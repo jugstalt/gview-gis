@@ -608,6 +608,13 @@ namespace gView.DataSources.SpatiaLite
                    "WHERE pk = 1 AND instr(lower(type), 'int') > 0 LIMIT 1";
         }
 
+        protected override string InsertReturnRowIdStatement(OgcSpatialFeatureclass featureClass)
+        {
+            // the id column is always an INTEGER PRIMARY KEY (rowid alias) - SpatiaLite tables
+            // as well as GeoPackage "fid" - so last_insert_rowid() is exact and connection-local.
+            return "; SELECT last_insert_rowid()";
+        }
+
         public override string CaseInsensitivLikeOperator => "like";
 
         protected override bool DbImplementsTransactions => true;

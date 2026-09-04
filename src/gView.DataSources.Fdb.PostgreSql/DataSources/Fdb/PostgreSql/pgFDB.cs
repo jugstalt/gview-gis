@@ -1056,7 +1056,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
             return Insert(fClass, features);
         }
 
-        async public override Task<bool> Insert(IFeatureClass fClass, List<IFeature> features)
+        async public override Task<bool> Insert(IFeatureClass fClass, List<IFeature> features, bool returnIds = false)
         {
             if (fClass == null || features == null || !(fClass.Dataset is IFDBDataset))
             {
@@ -1251,7 +1251,12 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                         }
 
                         command.CommandText = "INSERT INTO " + FcTableName(fClass) + " (" + fields.ToString() + ") VALUES " + parameterLines;
-                        await command.ExecuteNonQueryAsync();
+
+                        // PostgreSQL returns the RETURNING rows in VALUES order for a single
+                        // INSERT, so they map 1:1 onto the feature list.
+                        await (returnIds
+                            ? command.ExecuteInsertAndApplyIds(" RETURNING " + DbColName("FDB_OID"), features)
+                            : command.ExecuteNonQueryAsync());
 
                         transaction.Commit();
                     }
