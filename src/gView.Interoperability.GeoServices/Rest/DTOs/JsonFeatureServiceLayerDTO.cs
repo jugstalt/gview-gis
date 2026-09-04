@@ -8,6 +8,7 @@ namespace gView.Interoperability.GeoServices.Rest.DTOs
     [ServiceMethod("Add Feature", "addfeatures")]
     [ServiceMethod("Update Feature", "updatefeatures")]
     [ServiceMethod("Delete Feature", "deletefeatures")]
+    [ServiceMethod("Apply Edits", "applyedits")]
     public class JsonFeatureServerLayerDTO : JsonLayerDTO
     {
         public JsonFeatureServerLayerDTO()

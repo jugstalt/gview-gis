@@ -95,6 +95,12 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
             case "featureserver_deletefeatures":
                 await DeleteFeatures(context);
                 break;
+            case "featureserver_applyedits":
+                await ApplyEdits(context);
+                break;
+            case "featureserver_applyedits_service":
+                await ApplyEditsService(context);
+                break;
             default:
                 throw new NotImplementedException(context.ServiceRequest.Method + " is not support for geoservices rest");
         }
@@ -122,6 +128,8 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
             case "featureserver_addfeatures":
             case "featureserver_updatefeatures":
             case "featureserver_deletefeatures":
+            case "featureserver_applyedits":
+            case "featureserver_applyedits_service":
                 accessTypes |= AccessTypes.Edit;
                 break;
         }
@@ -1446,6 +1454,354 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
         }
     }
 
+    /// <summary>
+    /// Layer level applyEdits (.../FeatureServer/{layerId}/applyEdits).
+    /// This is the operation used by QGIS to commit adds, updates and deletes in one request.
+    /// </summary>
+    async private Task ApplyEdits(IServiceRequestContext context)
+    {
+        try
+        {
+            var editRequest = JSerializer.Deserialize<JsonFeatureServerApplyEditsRequestDTO>(context.ServiceRequest.Request);
+
+            using (var serviceMap = await context.CreateServiceMapInstance())
+            {
+                var response = await ApplyEditsToLayer(
+                    serviceMap,
+                    editRequest.LayerId,
+                    editRequest.Adds,
+                    editRequest.Updates,
+                    ParseObjectIds(editRequest.Deletes),
+                    editRequest.RollbackOnFailure);
+
+                context.ServiceRequest.Succeeded = true;
+                context.ServiceRequest.Response = JSerializer.Serialize(response);
+            }
+        }
+        catch (Exception ex)
+        {
+            await context.HandleFeatureServerException(ex);
+        }
+    }
+
+    /// <summary>
+    /// Service level applyEdits (.../FeatureServer/applyEdits) with an "edits" array
+    /// containing per layer adds/updates/deletes. This is the variant used by ArcGIS Pro.
+    /// </summary>
+    async private Task ApplyEditsService(IServiceRequestContext context)
+    {
+        try
+        {
+            var editRequest = JSerializer.Deserialize<JsonFeatureServerApplyEditsServiceRequestDTO>(context.ServiceRequest.Request);
+
+            if (editRequest?.Edits == null || editRequest.Edits.Length == 0)
+            {
+                throw new MapServerException("applyEdits: no 'edits' in request");
+            }
+
+            using (var serviceMap = await context.CreateServiceMapInstance())
+            {
+                var results = new List<JsonFeatureServerApplyEditsServiceResultDTO>();
+
+                foreach (var layerEdits in editRequest.Edits)
+                {
+                    try
+                    {
+                        var layerResponse = await ApplyEditsToLayer(
+                            serviceMap,
+                            layerEdits.Id,
+                            layerEdits.Adds,
+                            layerEdits.Updates,
+                            ParseObjectIds(layerEdits.Deletes),
+                            editRequest.RollbackOnFailure);
+
+                        results.Add(new JsonFeatureServerApplyEditsServiceResultDTO()
+                        {
+                            Id = layerEdits.Id,
+                            AddResults = layerResponse.AddResults,
+                            UpdateResults = layerResponse.UpdateResults,
+                            DeleteResults = layerResponse.DeleteResults
+                        });
+                    }
+                    catch (Exception ex) when (!editRequest.RollbackOnFailure)
+                    {
+                        results.Add(new JsonFeatureServerApplyEditsServiceResultDTO()
+                        {
+                            Id = layerEdits.Id,
+                            AddResults = new[] { ApplyEditsErrorResponse(ex.Message) }
+                        });
+                    }
+                }
+
+                context.ServiceRequest.Succeeded = true;
+                context.ServiceRequest.Response = JSerializer.Serialize(results.ToArray());
+            }
+        }
+        catch (Exception ex)
+        {
+            await context.HandleFeatureServerException(ex);
+
+            // service level applyEdits returns a top level error object on a full failure
+            context.ServiceRequest.Response = JSerializer.Serialize(new JsonErrorDTO()
+            {
+                Error = new JsonErrorDTO.ErrorDef()
+                {
+                    Code = 500,
+                    Message = ex.Message
+                }
+            });
+        }
+    }
+
+    /// <summary>
+    /// Shared implementation for the layer level and service level applyEdits operations.
+    /// Adds, updates and deletes are applied in this order. Each phase (insert/update) is
+    /// executed as a single database call (transactional per phase); a true rollback across
+    /// all three phases is not supported, so with rollbackOnFailure=true the first failing
+    /// phase aborts the request and phases that already succeeded are kept.
+    /// </summary>
+    async private Task<JsonFeatureServerResponseDTO> ApplyEditsToLayer(
+        IServiceMap serviceMap,
+        int layerId,
+        JsonFeatureDTO[] adds,
+        JsonFeatureDTO[] updates,
+        IReadOnlyList<int> deleteObjectIds,
+        bool rollbackOnFailure)
+    {
+        var featureClass = GetFeatureClass(serviceMap, layerId);
+        var database = featureClass?.Dataset?.Database as IFeatureUpdater;
+        if (database == null)
+        {
+            throw new MapServerException("Featureclass is not editable");
+        }
+
+        var datumTransformations = serviceMap.Display?.DatumTransformations;
+
+        bool hasAdds = adds is { Length: > 0 };
+        bool hasUpdates = updates is { Length: > 0 };
+        bool hasDeletes = deleteObjectIds is { Count: > 0 };
+
+        if (!hasAdds && !hasUpdates && !hasDeletes)
+        {
+            throw new MapServerException("applyEdits: request contains no adds, updates or deletes");
+        }
+
+        var response = new JsonFeatureServerResponseDTO();
+
+        #region Adds
+
+        if (hasAdds)
+        {
+            CheckEditableStatement(serviceMap, layerId, EditStatements.INSERT);
+
+            var addFeatures = GetFeatures(featureClass, adds, true, datumTransformations);
+
+            if (addFeatures.Any(f => f.OID > 0))
+            {
+                throw new MapServerException("Can't insert features with existing ObjectId");
+            }
+            if (addFeatures.Any(f => f.Shape is null))
+            {
+                throw new MapServerException("Insert features without geometry are not allowed");
+            }
+
+            addFeatures.GeometryMakeValid(serviceMap, featureClass);
+
+            if (!await database.Insert(featureClass, addFeatures))
+            {
+                if (rollbackOnFailure)
+                {
+                    throw new MapServerException($"applyEdits (adds) failed: {database.LastErrorMessage}");
+                }
+
+                response.AddResults = addFeatures
+                    .Select(_ => ApplyEditsErrorResponse(database.LastErrorMessage))
+                    .ToArray();
+            }
+            else
+            {
+                // NOTE: the IFeatureUpdater.Insert implementations do not report back the
+                // generated ObjectIds, so addResults are returned without "objectId".
+                // Clients (QGIS) pick up the real ids on the next layer refresh.
+                response.AddResults = addFeatures
+                    .Select(_ => new JsonFeatureServerResponseDTO.JsonResponse() { Success = true })
+                    .ToArray();
+            }
+        }
+
+        #endregion
+
+        #region Updates
+
+        if (hasUpdates)
+        {
+            CheckEditableStatement(serviceMap, layerId, EditStatements.UPDATE);
+
+            var updateFeatures = GetFeatures(featureClass, updates, true, datumTransformations);
+
+            if (updateFeatures.Any(f => f.OID <= 0))
+            {
+                throw new MapServerException("Can't update features without existing ObjectId");
+            }
+
+            updateFeatures.GeometryMakeValid(serviceMap, featureClass);
+
+            if (!await database.Update(featureClass, updateFeatures))
+            {
+                if (rollbackOnFailure)
+                {
+                    throw new MapServerException($"applyEdits (updates) failed: {database.LastErrorMessage}");
+                }
+
+                response.UpdateResults = updateFeatures
+                    .Select(f => ApplyEditsErrorResponse(database.LastErrorMessage, f.OID))
+                    .ToArray();
+            }
+            else
+            {
+                response.UpdateResults = updateFeatures
+                    .Select(f => f.OID)
+                    .ToEditJsonResponse(true)
+                    .ToArray();
+            }
+        }
+
+        #endregion
+
+        #region Deletes
+
+        if (hasDeletes)
+        {
+            CheckEditableStatement(serviceMap, layerId, EditStatements.DELETE);
+
+            var deleteResults = new List<JsonFeatureServerResponseDTO.JsonResponse>(deleteObjectIds.Count);
+
+            foreach (var objectId in deleteObjectIds)
+            {
+                if (await database.Delete(featureClass, objectId))
+                {
+                    deleteResults.Add(new JsonFeatureServerResponseDTO.JsonResponse()
+                    {
+                        Success = true,
+                        ObjectId = objectId
+                    });
+                }
+                else
+                {
+                    if (rollbackOnFailure)
+                    {
+                        throw new MapServerException($"applyEdits (deletes) failed for objectId={objectId}: {database.LastErrorMessage}");
+                    }
+
+                    deleteResults.Add(ApplyEditsErrorResponse(database.LastErrorMessage, objectId));
+                }
+            }
+
+            response.DeleteResults = deleteResults.ToArray();
+        }
+
+        #endregion
+
+        return response;
+    }
+
+    private static JsonFeatureServerResponseDTO.JsonResponse ApplyEditsErrorResponse(string message, int? objectId = null)
+        => new JsonFeatureServerResponseDTO.JsonResponse()
+        {
+            Success = false,
+            ObjectId = objectId,
+            Error = new JsonFeatureServerResponseDTO.JsonError()
+            {
+                Code = 999,
+                Description = String.IsNullOrWhiteSpace(message) ? "unknown error" : message
+            }
+        };
+
+    /// <summary>
+    /// Parses the "deletes" parameter of the layer level applyEdits operation.
+    /// Accepts "1,2,3", "[1,2,3]" and "[{ \"objectId\": 1 }, ...]".
+    /// </summary>
+    private static IReadOnlyList<int> ParseObjectIds(string deletes)
+    {
+        var result = new List<int>();
+
+        if (String.IsNullOrWhiteSpace(deletes))
+        {
+            return result;
+        }
+
+        var text = deletes.Trim();
+
+        if (text.StartsWith("[") || text.StartsWith("{"))
+        {
+            try
+            {
+                using var doc = System.Text.Json.JsonDocument.Parse(text);
+                AppendObjectIds(doc.RootElement, result);
+                return result;
+            }
+            catch
+            {
+                text = text.Trim('[', ']', ' ');
+            }
+        }
+
+        foreach (var part in text.Split(new[] { ',', ';', ' ' }, StringSplitOptions.RemoveEmptyEntries))
+        {
+            if (int.TryParse(part.Trim(), System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var oid))
+            {
+                result.Add(oid);
+            }
+        }
+
+        return result;
+    }
+
+    private static IReadOnlyList<int> ParseObjectIds(System.Text.Json.JsonElement? deletes)
+    {
+        var result = new List<int>();
+
+        if (deletes.HasValue)
+        {
+            AppendObjectIds(deletes.Value, result);
+        }
+
+        return result;
+    }
+
+    private static void AppendObjectIds(System.Text.Json.JsonElement element, List<int> target)
+    {
+        switch (element.ValueKind)
+        {
+            case System.Text.Json.JsonValueKind.Array:
+                foreach (var item in element.EnumerateArray())
+                {
+                    AppendObjectIds(item, target);
+                }
+                break;
+            case System.Text.Json.JsonValueKind.Number:
+                if (element.TryGetInt32(out var number))
+                {
+                    target.Add(number);
+                }
+                break;
+            case System.Text.Json.JsonValueKind.String:
+                if (int.TryParse(element.GetString(), System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var s))
+                {
+                    target.Add(s);
+                }
+                break;
+            case System.Text.Json.JsonValueKind.Object:
+                if (element.TryGetProperty("objectId", out var objectIdProperty)
+                    && objectIdProperty.ValueKind == System.Text.Json.JsonValueKind.Number
+                    && objectIdProperty.TryGetInt32(out var objectId))
+                {
+                    target.Add(objectId);
+                }
+                break;
+        }
+    }
+
     #region Helper
 
     private IFeatureLayer GetFeatureLayer(IServiceMap serviceMap, JsonFeatureServerEditRequesDTO editRequest)
@@ -1454,10 +1810,13 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
     }
 
     private IFeatureClass GetFeatureClass(IServiceMap serviceMap, JsonFeatureServerEditRequesDTO editRequest)
+        => GetFeatureClass(serviceMap, editRequest.LayerId);
+
+    private IFeatureClass GetFeatureClass(IServiceMap serviceMap, int layerId)
     {
         string filterQuery;
 
-        var tableClasses = FindTableClass(serviceMap, editRequest.LayerId.ToString(), out filterQuery);
+        var tableClasses = FindTableClass(serviceMap, layerId.ToString(), out filterQuery);
         if (tableClasses.Count > 1)
         {
             throw new MapServerException("FeatureService can't be used with aggregated feature classes");
@@ -1473,11 +1832,14 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
     }
 
     private List<IFeature> GetFeatures(IFeatureClass featureClass, JsonFeatureServerUpdateRequestDTO editRequest, bool projetToFeatureClassSpatialReference, IDatumTransformations datumTransformations)
+        => GetFeatures(featureClass, editRequest.Features, projetToFeatureClassSpatialReference, datumTransformations);
+
+    private List<IFeature> GetFeatures(IFeatureClass featureClass, IEnumerable<JsonFeatureDTO> jsonFeatures, bool projetToFeatureClassSpatialReference, IDatumTransformations datumTransformations)
     {
         int? fcSrs = featureClass?.SpatialReference?.EpsgCode;
 
         List<IFeature> features = new List<IFeature>();
-        foreach (var jsonFeature in editRequest.Features)
+        foreach (var jsonFeature in jsonFeatures ?? Enumerable.Empty<JsonFeatureDTO>())
         {
             var feature = ToFeature(featureClass, jsonFeature);
 
@@ -1507,6 +1869,9 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
     }
 
     private void CheckEditableStatement(IServiceMap serviceMap, JsonFeatureServerEditRequesDTO editRequest, EditStatements statement)
+        => CheckEditableStatement(serviceMap, editRequest.LayerId, statement);
+
+    private void CheckEditableStatement(IServiceMap serviceMap, int layerId, EditStatements statement)
     {
         var editModule = serviceMap.GetModule<gView.Plugins.Modules.EditorModule>();
         if (editModule == null)
@@ -1514,15 +1879,15 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
             throw new MapServerException("No editor module available for service");
         }
 
-        var editLayer = editModule.GetEditLayer(editRequest.LayerId);
+        var editLayer = editModule.GetEditLayer(layerId);
         if (editLayer == null)
         {
-            throw new MapServerException($"No editable layer found with id={editRequest.LayerId}");
+            throw new MapServerException($"No editable layer found with id={layerId}");
         }
 
         if (!editLayer.Statements.HasFlag(statement))
         {
-            throw new MapServerException($"Editoperation {statement} not allowed for layer with id={editRequest.LayerId}");
+            throw new MapServerException($"Editoperation {statement} not allowed for layer with id={layerId}");
         }
     }
 
