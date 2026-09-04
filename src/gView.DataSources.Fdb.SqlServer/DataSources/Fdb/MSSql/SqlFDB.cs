@@ -1,4 +1,4 @@
-using gView.Framework.Common;
+﻿using gView.Framework.Common;
 using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Data.Cursors;
@@ -375,7 +375,7 @@ namespace gView.DataSources.Fdb.MSSql
 
             if (((IFDBDataset)fc.Dataset).SpatialIndexDef is MSSpatialIndex)
             {
-                return await SqlFDBFeatureCursor2008.Create(_conn.ConnectionString, fc, filter, ((MSSpatialIndex)((IFDBDataset)fc.Dataset).SpatialIndexDef).GeometryType);
+                return await Cursors.SqlNativeFeatureCursor.Create(_conn.ConnectionString, fc, filter, ((MSSpatialIndex)((IFDBDataset)fc.Dataset).SpatialIndexDef).GeometryType);
             }
 
             //if (_seVersion != 0)
@@ -484,7 +484,7 @@ namespace gView.DataSources.Fdb.MSSql
                     idFilter.AddField("FDB_SHAPE");
                 }
                 idFilter.SetFeatureSpatialReference(toSRef, datumTransformations);
-                return await SqlFDBFeatureCursor2008.Create(_conn.ConnectionString, fc, idFilter, msIndex.GeometryType);
+                return await Cursors.SqlNativeFeatureCursor.Create(_conn.ConnectionString, fc, idFilter, msIndex.GeometryType);
             }
 
             string tabName = ((fc is SqlFDBFeatureClass)
@@ -2025,16 +2025,24 @@ namespace gView.DataSources.Fdb.MSSql
                     command.CommandText += " WHERE Name='" + fcName + "'";
                     command.ExecuteNonQuery();
 
-                    command = new SqlCommand(index.ToSql("SI_" + fcName, FcTableName(fcName), "FDB_SHAPE"), connection);
+                    // idempotent: drop an existing spatial index first so this can be re-run
+                    // (e.g. FdbImport rebuilds a GEOMETRY_GRID once the real extent is known).
+                    string siName = "SI_" + fcName;
+                    string siTable = FcTableName(fcName);
+                    command.CommandText = "IF EXISTS (SELECT 1 FROM sys.indexes WHERE name = '" + siName
+                        + "' AND object_id = OBJECT_ID('" + siTable + "')) DROP INDEX [" + siName + "] ON " + siTable + ";";
+                    command.ExecuteNonQuery();
+
+                    command = new SqlCommand(index.ToSql(siName, siTable, "FDB_SHAPE"), connection);
                     command.ExecuteNonQuery();
 
                     command.CommandText = "UPDATE [FDB_FeatureClasses] SET SI='" + index.GeometryType.ToString() + "' WHERE Name='" + fcName + "'";
                     command.ExecuteNonQuery();
                 }
             }
-            catch (Exception /*ex*/)
+            catch (Exception ex)
             {
-                _errMsg = _conn.errorMessage;
+                _errMsg = ex.Message;
                 return false;
             }
             return true;
