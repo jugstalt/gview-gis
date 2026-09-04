@@ -47,6 +47,13 @@ public class RepairNativeSpatialIndexCommand : ICommand
             throw new Exception("Can't build featureclass");
         }
 
+        if (featureClass is IRasterClass)
+        {
+            // e.g. the <ds> raster-catalog element of an image dataset - only <ds>_IMAGE_POLYGONS
+            // has a spatial index.
+            throw new Exception($"'{featureClass.Name}' is a raster catalog, not a plain feature class.");
+        }
+
         if (featureClass.Dataset?.Database is not AccessFDB fdb)
         {
             throw new Exception("Dataset is not a gView FDB Dataset");

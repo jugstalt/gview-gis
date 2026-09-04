@@ -40,12 +40,17 @@ internal class RepairNativeSpatialIndex : IExplorerObjectContextTool
 
             foreach (var datasetElement in await featureDataset.Elements())
             {
-                if (datasetElement.Class is not IFeatureClass)
+                // only plain feature classes carry a (native) spatial index - skip the raster
+                // catalog and network classes. For an image dataset only <ds>_IMAGE_POLYGONS
+                // qualifies; the catalog element and the image/paths structures do not.
+                if (datasetElement.Class is not IFeatureClass fc
+                    || datasetElement.Class is IRasterClass
+                    || fc.GeometryType == gView.Framework.Core.Geometry.GeometryType.Network)
                 {
                     continue;
                 }
 
-                commandItems.Add(NativeCommandItem(featureDataset.ConnectionString, featureDatasetGuid.ToString(), datasetElement.Class.Name));
+                commandItems.Add(NativeCommandItem(featureDataset.ConnectionString, featureDatasetGuid.ToString(), fc.Name));
             }
         }
         else if (instance is IFeatureClass featureClass)

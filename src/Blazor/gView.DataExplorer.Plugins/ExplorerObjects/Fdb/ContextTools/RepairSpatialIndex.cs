@@ -38,7 +38,9 @@ internal class RepairSpatialIndex : IExplorerObjectContextTool
 
             foreach(var datasetElement in await featureDataset.Elements())
             {
-                if(!(datasetElement.Class is IFeatureClass))
+                // only plain feature classes carry a spatial index - skip the raster catalog
+                // element (for an image dataset only <ds>_IMAGE_POLYGONS qualifies).
+                if(!(datasetElement.Class is IFeatureClass) || datasetElement.Class is IRasterClass)
                 {
                     continue;
                 }
