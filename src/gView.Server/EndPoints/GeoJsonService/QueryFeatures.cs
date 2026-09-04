@@ -195,13 +195,17 @@ public class QueryFeatures : BaseApiEndpoint
 
                     #region Limit/Begin/Order
 
-                    filter.Limit = queryRequest.Limit.HasValue && queryRequest.Limit.Value > 0
-                        ? Math.Min(queryRequest.Limit.Value, maxRecordCount)
-                        : maxRecordCount;
+                    filter.Limit = queryRequest.Command == QueryCommand.CountOnly
+                        ? int.MaxValue                                 // count queries always consider all matching features
+                        : queryRequest.Limit.HasValue && queryRequest.Limit.Value > 0
+                            ? Math.Min(queryRequest.Limit.Value, maxRecordCount)
+                            : maxRecordCount;
 
-                    filter.BeginRecord = queryRequest.Offset.HasValue
-                                ? queryRequest.Offset.Value + 1
-                                : 1;  // Start is 1 by IQueryFilter definition
+                    filter.BeginRecord = queryRequest.Command == QueryCommand.CountOnly
+                                ? 1
+                                : queryRequest.Offset.HasValue
+                                    ? queryRequest.Offset.Value + 1
+                                    : 1;  // Start is 1 by IQueryFilter definition
 
                     filter.OrderBy = queryRequest.OrderByFields is not null
                                 ? String.Join(",", queryRequest.OrderByFields.ProjectNamesAndCheckIfFieldsExists(tableClass))
@@ -249,6 +253,11 @@ public class QueryFeatures : BaseApiEndpoint
                                 while ((feature = await featureCursor.NextFeature()) != null)
                                 {
                                     featureCount++;
+
+                                    if (queryRequest.Command == QueryCommand.CountOnly)
+                                    {
+                                        continue;  // slow-count fallback: only the number of features matters
+                                    }
 
                                     var geoJsonFeature = new gView.GeoJsonService.DTOs.Feature();
 

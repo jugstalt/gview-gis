@@ -632,11 +632,15 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
 
                     #region Limit/Begin/Order
 
-                    filter.Limit = query.ResultRecordCount > 0 ?
-                        Math.Min(query.ResultRecordCount, maxRecordCount) :
-                        maxRecordCount;
+                    filter.Limit = query.ReturnCountOnly ?
+                        int.MaxValue :                                 // count queries always consider all matching features
+                        query.ResultRecordCount > 0 ?
+                            Math.Min(query.ResultRecordCount, maxRecordCount) :
+                            maxRecordCount;
 
-                    filter.BeginRecord = query.ResultOffset + 1;  // Start is 1 by IQueryFilter definition
+                    filter.BeginRecord = query.ReturnCountOnly ?
+                        1 :
+                        query.ResultOffset + 1;  // Start is 1 by IQueryFilter definition
 
                     filter.OrderBy = query.OrderByFields;
 
@@ -688,6 +692,11 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
                                 while ((feature = await featureCursor.NextFeature()) != null)
                                 {
                                     featureCount++;
+
+                                    if (query.ReturnCountOnly)
+                                    {
+                                        continue;  // slow-count fallback: only the number of features matters
+                                    }
 
                                     if (query.ReturnGeometry == false && query.ReturnExtentOnly == false)
                                     {

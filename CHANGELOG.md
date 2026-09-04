@@ -64,6 +64,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   PostGIS / MS SQL Spatial providers is unchanged; SpatiaLite uses the hook to load
   `mod_spatialite` (and enable GeoPackage amphibious mode) on every connection.
 
+## Fixed
+
+- Query `returnCountOnly` / GeoJSON `CountOnly`: the count is no longer capped at the
+  service `MaxRecordCount`. For feature classes without a fast `ExecuteCount` (FDB, Shape,
+  &hellip;) the fallback iterated the cursor with the normal page limit applied, so
+  `where=1=1` reported e.g. exactly `1000`. Count queries now run unlimited (from record 1)
+  and the cursor loop only counts, without materialising feature DTOs.
+
 ## 8.26.3601
 
 ## Added
