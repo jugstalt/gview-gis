@@ -473,8 +473,9 @@ namespace gView.DataSources.Fdb.PostgreSql
 
         /// <summary>
         /// Marks a feature class as PostGIS-stored (<c>FDB_FeatureClasses.SI='postgis'</c>) and
-        /// creates the GiST index on its <c>FDB_SHAPE</c> geometry column. Mirrors
-        /// <c>SqlFDB.SetMSSpatialIndex</c>.
+        /// (re)creates the GiST index on its <c>FDB_SHAPE</c> geometry column. Idempotent - an
+        /// existing <c>SI_&lt;fc&gt;</c> index is dropped first so this can be re-run to rebuild it.
+        /// Mirrors <c>SqlFDB.SetMSSpatialIndex</c>.
         /// </summary>
         public bool SetPostGisSpatialIndex(string fcName, IEnvelope bounds)
         {
@@ -491,6 +492,10 @@ namespace gView.DataSources.Fdb.PostgreSql
                     + "," + DbColName("SIMaxY") + "=" + bounds.MaxY.ToString(nfi)
                     + " WHERE " + DbColName("Name") + "='" + fcName + "'");
 
+                string schema = GetFeatureClassDbSchema(fcName);
+                string qualifiedIndex = (String.IsNullOrEmpty(schema) ? "" : "\"" + schema + "\".") + "\"SI_" + fcName + "\"";
+
+                _conn.ExecuteNoneQuery("DROP INDEX IF EXISTS " + qualifiedIndex);
                 _conn.ExecuteNoneQuery("CREATE INDEX \"SI_" + fcName + "\" ON " + FcTableName(fcName)
                     + " USING GIST (\"FDB_SHAPE\")");
 

@@ -28,6 +28,7 @@ public class SqlFdbFeatureClassExplorerObject : ExplorerObjectCls<SqlFdbDatasetE
                                                 IExplorerObjectRenamable,
                                                 IExplorerObjectCreatable,
                                                 IExporerOjectSchema,
+                                                IExplorerObjectCustomContentValues,
                                                 IFdbGeometryStorageContext
 {
     private string _dsname = "", _fcname = "", _type = "", _icon = "";
@@ -141,6 +142,7 @@ public class SqlFdbFeatureClassExplorerObject : ExplorerObjectCls<SqlFdbDatasetE
                 {
                     new ShrinkSpatialIndices(),
                     new RepairSpatialIndex(),
+                    new RepairNativeSpatialIndex(),
                     new SpatialIndexDefinition(),
                     new TruncateFeatureClass()
                 });
@@ -173,6 +175,9 @@ public class SqlFdbFeatureClassExplorerObject : ExplorerObjectCls<SqlFdbDatasetE
     public GeometryStorageType GeometryStorage
         => (_fc?.Dataset as gView.Framework.Core.FDB.IFDBDataset)?.SpatialIndexDef?.StorageType
            ?? GeometryStorageType.Classic;
+
+    public IDictionary<string, object?> GetCustomContentValues()
+        => new Dictionary<string, object?> { { "Storage", GeometryStorage.StorageLabel() } };
 
 
     #endregion

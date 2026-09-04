@@ -24,6 +24,7 @@ public class SqlFdbDatasetExplorerObject : ExplorerParentObject<SqlFdbExplorerOb
                                            IExplorerObjectCreatable,
                                            IExplorerObjectContextTools,
                                            IExplorerObjectRenamable,
+                                           IExplorerObjectCustomContentValues,
                                            IFdbGeometryStorageContext
 {
     public string _icon = "";
@@ -55,7 +56,8 @@ public class SqlFdbDatasetExplorerObject : ExplorerParentObject<SqlFdbExplorerOb
         {
             new SetSpatialReference(),
             new ShrinkSpatialIndices(),
-            new RepairSpatialIndex()
+            new RepairSpatialIndex(),
+            new RepairNativeSpatialIndex()
         };
     }
 
@@ -66,6 +68,9 @@ public class SqlFdbDatasetExplorerObject : ExplorerParentObject<SqlFdbExplorerOb
 
     public GeometryStorageType GeometryStorage
         => (_dataset as IFDBDataset)?.SpatialIndexDef?.StorageType ?? GeometryStorageType.Classic;
+
+    public IDictionary<string, object?> GetCustomContentValues()
+        => new Dictionary<string, object?> { { "Storage", GeometryStorage.StorageLabel() } };
 
 
     #endregion

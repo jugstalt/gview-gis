@@ -714,6 +714,60 @@ public class Startup
 
             #endregion
 
+            #region FeatureServerApplyEdits
+
+            routes.MapRoute(
+                name: "geoservices_rest_featureserver_applyedits",
+                template: "geoservices/rest/services/{folder}/{id}/featureserver/{layerId}/applyedits",
+                defaults: new { controller = "GeoServicesRest", Action = "FeatureServerApplyEdits" }
+            );
+            routes.MapRoute(
+                name: "geoservices_rest_featureserver_applyedits2",
+                template: "geoservices/rest/services/{id}/featureserver/{layerId}/applyedits",
+                defaults: new { controller = "GeoServicesRest", Action = "FeatureServerApplyEdits" }
+            );
+
+            // Experimental
+            routes.MapRoute(
+                name: "geoservices_rest_featureserver_applyedits_token",
+                template: "geoservices({urltoken})/rest/services/{folder}/{id}/featureserver/{layerId}/applyedits",
+                defaults: new { controller = "GeoServicesRest", Action = "FeatureServerApplyEdits" }
+            );
+            routes.MapRoute(
+                name: "geoservices_rest_featureserver_applyedits2_token",
+                template: "geoservices({urltoken})/rest/services/{id}/featureserver/{layerId}/applyedits",
+                defaults: new { controller = "GeoServicesRest", Action = "FeatureServerApplyEdits" }
+            );
+
+            #endregion
+
+            #region FeatureServerApplyEdits (Service)
+
+            routes.MapRoute(
+                name: "geoservices_rest_featureserver_applyedits_service",
+                template: "geoservices/rest/services/{folder}/{id}/featureserver/applyedits",
+                defaults: new { controller = "GeoServicesRest", Action = "FeatureServerApplyEditsService" }
+            );
+            routes.MapRoute(
+                name: "geoservices_rest_featureserver_applyedits_service2",
+                template: "geoservices/rest/services/{id}/featureserver/applyedits",
+                defaults: new { controller = "GeoServicesRest", Action = "FeatureServerApplyEditsService" }
+            );
+
+            // Experimental
+            routes.MapRoute(
+                name: "geoservices_rest_featureserver_applyedits_service_token",
+                template: "geoservices({urltoken})/rest/services/{folder}/{id}/featureserver/applyedits",
+                defaults: new { controller = "GeoServicesRest", Action = "FeatureServerApplyEditsService" }
+            );
+            routes.MapRoute(
+                name: "geoservices_rest_featureserver_applyedits_service2_token",
+                template: "geoservices({urltoken})/rest/services/{id}/featureserver/applyedits",
+                defaults: new { controller = "GeoServicesRest", Action = "FeatureServerApplyEditsService" }
+            );
+
+            #endregion
+
             #region FeatureServerLayer
 
             routes.MapRoute(

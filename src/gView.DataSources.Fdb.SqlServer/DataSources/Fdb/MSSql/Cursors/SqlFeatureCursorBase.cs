@@ -70,9 +70,9 @@ namespace gView.DataSources.Fdb.MSSql.Cursors
                         string name = _reader.GetName(i);
                         object obj = _reader.GetValue(i);
 
-                        if (name == "FDB_SHAPE" && obj != DBNull.Value)
+                        if (name == ShapeColumn && obj != DBNull.Value)
                         {
-                            IGeometry shape = DeserializeShape((byte[])obj);
+                            IGeometry shape = DecodeShape((byte[])obj);
                             if (shape != null)
                             {
                                 if (!PassesGeometryFilter(shape))
@@ -111,6 +111,16 @@ namespace gView.DataSources.Fdb.MSSql.Cursors
         }
 
         protected virtual bool PassesGeometryFilter(IGeometry shape) => true;
+
+        /// <summary>
+        /// Name of the column carrying the geometry in the reader. The classic cursors read the
+        /// proprietary blob from <c>FDB_SHAPE</c>; the native cursor aliases
+        /// <c>FDB_SHAPE.STAsBinary()</c> to <c>temp_geometry</c>.
+        /// </summary>
+        protected virtual string ShapeColumn => "FDB_SHAPE";
+
+        /// <summary>Decodes the geometry bytes of <see cref="ShapeColumn"/>. Default: proprietary FDB blob.</summary>
+        protected virtual IGeometry DecodeShape(byte[] bytes) => DeserializeShape(bytes);
 
         private IGeometry DeserializeShape(byte[] bytes)
         {
