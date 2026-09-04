@@ -791,10 +791,18 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
             }
             else if (query.ReturnIdsOnly)
             {
+                var objectIds = jsonFeatures
+                    .Select(f => Convert.ToInt32(((IDictionary<string, object>)f.Attributes)[objectIdFieldName]))
+                    .ToArray();
+
                 context.ServiceRequest.Response = new JsonObjectIdResponseDTO()
                 {
                     ObjectIdFieldName = objectIdFieldName,
-                    ObjectIds = jsonFeatures.Select(f => Convert.ToInt32(((IDictionary<string, object>)f.Attributes)[objectIdFieldName]))
+                    // No resultRecordCount => all ids are returned (exceededTransferLimit stays false).
+                    // With resultRecordCount the result is a page (resultOffset is honored by filter.BeginRecord);
+                    // if the page is full there may be more ids beyond it.
+                    ExceededTransferLimit = query.ResultRecordCount > 0 && objectIds.Length >= query.ResultRecordCount,
+                    ObjectIds = objectIds
                 };
             }
             else if (query.ReturnExtentOnly)

@@ -33,6 +33,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     `IFeatureUpdater.Insert` implementations do not report new ids back); clients pick up the
     real ObjectIds on the next layer refresh, matching the existing `addFeatures` behaviour.
 
+## Changed
+
+- GeoServices REST Query (`returnIdsOnly=true`): the response now carries an
+  `exceededTransferLimit` property, matching current ArcGIS Server. Without `resultRecordCount`
+  all object ids are still returned and `exceededTransferLimit` is `false`; with
+  `resultRecordCount` (and `resultOffset`) the response is a page and `exceededTransferLimit` is
+  `true` when the page is full. New `JsonObjectIdResponseDTO.ExceededTransferLimit`.
+
 ## 8.26.3601
 
 ## Added
