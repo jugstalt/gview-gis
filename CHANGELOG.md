@@ -55,6 +55,30 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - New test project `gView.DataSources.SpatiaLite.Tests` (needs a real `mod_spatialite`:
   `GVIEW_MOD_SPATIALITE`, QGIS/OSGeo4W, or `libsqlite3-mod-spatialite`).
 
+- GeoServices REST FeatureServer: implemented the `applyEdits` operation so third-party clients
+  (QGIS in particular, ArcGIS Pro optionally) can edit through the FeatureService.
+  - Layer level `.../FeatureServer/{layerId}/applyEdits` with `adds` / `updates` / `deletes`
+    (the operation QGIS uses to commit a layer's changes in one request). `deletes` accepts
+    `1,2,3`, `[1,2,3]` and `[{ "objectId": 1 }]`. Honours `rollbackOnFailure` (per-phase:
+    adds and updates each run as one transactional database call; deletes are applied
+    per objectId).
+  - Service level `.../FeatureServer/applyEdits` with an `edits` array of per-layer
+    adds/updates/deletes, returning the ArcGIS-style result array (used by ArcGIS Pro).
+  - New DTOs `JsonFeatureServerApplyEditsRequestDTO`,
+    `JsonFeatureServerApplyEditsServiceRequestDTO`,
+    `JsonFeatureServerApplyEditsServiceResultDTO`; new controller actions
+    `GeoServicesRestController.FeatureServerApplyEdits` /
+    `FeatureServerApplyEditsService` and the matching routes in `Startup.cs`;
+    `GeoServicesRestInterperter` methods `ApplyEdits` / `ApplyEditsService` /
+    `ApplyEditsToLayer` sharing the existing add/update/delete logic via new
+    `GetFeatureClass` / `GetFeatures` / `CheckEditableStatement` overloads.
+  - Editable feature layers now advertise an ArcGIS-style `capabilities` string
+    (`Query,Create,Update,Delete,Editing`), `supportsRollbackOnFailureParameter` and an
+    `Apply Edits` service method; the FeatureService reports `Editing` in its capabilities.
+  - Known limitation: `addResults` are returned without a generated `objectId` (the
+    `IFeatureUpdater.Insert` implementations do not report new ids back); clients pick up the
+    real ObjectIds on the next layer refresh, matching the existing `addFeatures` behaviour.
+
 ## Changed
 
 - `OgcSpatialDataset` (`gView.Framework.OGC.DB`): the query/edit paths now open their
@@ -63,6 +87,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   ~15 inline `ProviderFactory.CreateConnection()` calls. Behaviour for the existing
   PostGIS / MS SQL Spatial providers is unchanged; SpatiaLite uses the hook to load
   `mod_spatialite` (and enable GeoPackage amphibious mode) on every connection.
+
+- GeoServices REST Query (`returnIdsOnly=true`): the response now carries an
+  `exceededTransferLimit` property, matching current ArcGIS Server. Without `resultRecordCount`
+  all object ids are still returned and `exceededTransferLimit` is `false`; with
+  `resultRecordCount` (and `resultOffset`) the response is a page and `exceededTransferLimit` is
+  `true` when the page is full. New `JsonObjectIdResponseDTO.Exceeded
 
 ## 8.26.3601
 
