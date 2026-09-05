@@ -23,9 +23,15 @@ using System.Threading.Tasks;
 namespace gView.DataSources.Fdb.PostgreSql
 {
     [RegisterPlugIn("a408f01d-7237-4e33-81ba-ac9d29dfc433")]
-    public class pgFDB : gView.DataSources.Fdb.MSAccess.AccessFDB
+    public class pgFDB : gView.DataSources.Fdb.MSAccess.AccessFDB, ISupportsFeatureEditSession
     {
         internal static DbProviderFactory _dbProviderFactory = DataProvider.PostgresProvider;
+
+        async Task<IFeatureEditSession> ISupportsFeatureEditSession.BeginEditSession()
+            => await gView.DataSources.Fdb.FdbFeatureEditSession.CreateAsync(
+                this, _dbProviderFactory, _conn.ConnectionString,
+                InsertInternal, UpdateInternal, DeleteInternal,
+                oid => DbColName("FDB_OID") + "=" + oid);
 
         public pgFDB()
             : base()
@@ -1057,6 +1063,10 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
         }
 
         async public override Task<bool> Insert(IFeatureClass fClass, List<IFeature> features, bool returnIds = false)
+            => await InsertInternal(fClass, features, returnIds, null, null);
+
+        internal async Task<bool> InsertInternal(IFeatureClass fClass, List<IFeature> features, bool returnIds,
+                                                 DbConnection sharedConnection, DbTransaction sharedTransaction)
         {
             if (fClass == null || features == null || !(fClass.Dataset is IFDBDataset))
             {
@@ -1089,14 +1099,19 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
             {
                 //List<long> _nids = new List<long>();
                 DbProviderFactory factory = DataProvider.PostgresProvider;
-                using (DbConnection connection = factory.CreateConnection())
+                using (var ownConnection = sharedConnection is null ? factory.CreateConnection() : null)
                 {
-                    connection.ConnectionString = _conn.ConnectionString;
-                    await connection.OpenAsync();
+                    var connection = ownConnection ?? sharedConnection;
+                    if (ownConnection is not null)
+                    {
+                        connection.ConnectionString = _conn.ConnectionString;
+                        await connection.OpenAsync();
+                    }
 
                     using (DbCommand command = factory.CreateCommand())
-                    using (DbTransaction transaction = connection.BeginTransaction())
+                    using (var ownTransaction = sharedTransaction is null ? connection.BeginTransaction() : null)
                     {
+                        var transaction = ownTransaction ?? sharedTransaction;
                         command.Connection = connection;
                         ReplicationTransaction replTrans = null;// new ReplicationTransaction(connection, transaction);
                         command.Transaction = transaction;
@@ -1258,7 +1273,10 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                             ? command.ExecuteInsertAndApplyIds(" RETURNING " + DbColName("FDB_OID"), features)
                             : command.ExecuteNonQueryAsync());
 
-                        transaction.Commit();
+                        if (ownTransaction is not null)
+                        {
+                            transaction.Commit();
+                        }
                     }
                     return true;
                 }
@@ -1456,6 +1474,10 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
             return Update(fClass, features);
         }
         async public override Task<bool> Update(IFeatureClass fClass, List<IFeature> features)
+            => await UpdateInternal(fClass, features, null, null);
+
+        internal async Task<bool> UpdateInternal(IFeatureClass fClass, List<IFeature> features,
+                                                 DbConnection sharedConnection, DbTransaction sharedTransaction)
         {
             if (fClass == null || features == null || !(fClass.Dataset is IFDBDataset))
             {
@@ -1487,14 +1509,19 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
             {
                 //List<long> _nids = new List<long>();
 
-                using (DbConnection connection = _dbProviderFactory.CreateConnection())
+                using (var ownConnection = sharedConnection is null ? _dbProviderFactory.CreateConnection() : null)
                 {
-                    connection.ConnectionString = _conn.ConnectionString;
-                    await connection.OpenAsync();
+                    var connection = ownConnection ?? sharedConnection;
+                    if (ownConnection is not null)
+                    {
+                        connection.ConnectionString = _conn.ConnectionString;
+                        await connection.OpenAsync();
+                    }
 
                     using (DbCommand command = _dbProviderFactory.CreateCommand())
-                    using (DbTransaction transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted))
+                    using (var ownTransaction = sharedTransaction is null ? connection.BeginTransaction(IsolationLevel.ReadCommitted) : null)
                     {
+                        var transaction = ownTransaction ?? sharedTransaction;
                         command.Connection = connection;
                         ReplicationTransaction replTrans = new ReplicationTransaction(connection, transaction);
                         command.Transaction = transaction;
@@ -1603,8 +1630,10 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                             await command.ExecuteNonQueryAsync();
                         }
 
-                        transaction.Commit();
-
+                        if (ownTransaction is not null)
+                        {
+                            transaction.Commit();
+                        }
                     }
                     return true;
                 }
@@ -1621,6 +1650,10 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
             return Delete(fClass, DbColName("FDB_OID") + "=" + oid.ToString());
         }
         async public override Task<bool> Delete(IFeatureClass fClass, string where)
+            => await DeleteInternal(fClass, where, null, null);
+
+        internal async Task<bool> DeleteInternal(IFeatureClass fClass, string where,
+                                                 DbConnection sharedConnection, DbTransaction sharedTransaction)
         {
             if (fClass == null)
             {
@@ -1629,15 +1662,20 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
 
             try
             {
-                using (DbConnection connection = _dbProviderFactory.CreateConnection())
+                using (var ownConnection = sharedConnection is null ? _dbProviderFactory.CreateConnection() : null)
                 {
-                    connection.ConnectionString = _conn.ConnectionString;
-                    connection.Open();
+                    var connection = ownConnection ?? sharedConnection;
+                    if (ownConnection is not null)
+                    {
+                        connection.ConnectionString = _conn.ConnectionString;
+                        connection.Open();
+                    }
 
                     string sql = "DELETE FROM " + FcTableName(fClass) + ((where != String.Empty) ? " WHERE " + where : "");
                     using (DbCommand command = _dbProviderFactory.CreateCommand())
-                    using (DbTransaction transaction = connection.BeginTransaction())
+                    using (var ownTransaction = sharedTransaction is null ? connection.BeginTransaction() : null)
                     {
+                        var transaction = ownTransaction ?? sharedTransaction;
                         command.CommandText = sql;
                         command.Connection = connection;
                         ReplicationTransaction replTrans = new ReplicationTransaction(connection, transaction);
@@ -1672,7 +1710,11 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                         }
 
                         await command.ExecuteNonQueryAsync();
-                        transaction.Commit();
+
+                        if (ownTransaction is not null)
+                        {
+                            transaction.Commit();
+                        }
                     }
                     return true;
                 }

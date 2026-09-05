@@ -29,8 +29,16 @@ namespace gView.DataSources.Fdb.MSSql
     /// Zusammenfassung f�r Class1.
     /// </summary>
     [RegisterPlugIn("e6efb823-82ff-4682-8654-ffb099db7050")]
-    public class SqlFDB : gView.DataSources.Fdb.MSAccess.AccessFDB
+    public class SqlFDB : gView.DataSources.Fdb.MSAccess.AccessFDB, ISupportsFeatureEditSession
     {
+        async Task<IFeatureEditSession> ISupportsFeatureEditSession.BeginEditSession()
+            => await gView.DataSources.Fdb.FdbFeatureEditSession.CreateAsync(
+                this, this.ProviderFactory, _conn.ConnectionString,
+                (fc, features, returnIds, c, t) => InsertInternal(fc, features, returnIds, (SqlConnection)c, (SqlTransaction)t),
+                (fc, features, c, t) => UpdateInternal(fc, features, (SqlConnection)c, (SqlTransaction)t),
+                (fc, where, c, t) => DeleteInternal(fc, where, (SqlConnection)c, (SqlTransaction)t),
+                oid => "FDB_OID=" + oid);
+
         //public delegate void ProgressEvent(object progressEventReport);
         //override public event ProgressEvent reportProgress;
         private int _seVersion = 1;
@@ -1361,6 +1369,10 @@ namespace gView.DataSources.Fdb.MSSql
             return Insert(fClass, features);
         }
         async public override Task<bool> Insert(IFeatureClass fClass, List<IFeature> features, bool returnIds = false)
+            => await InsertInternal(fClass, features, returnIds, null, null);
+
+        internal async Task<bool> InsertInternal(IFeatureClass fClass, List<IFeature> features, bool returnIds,
+                                                 SqlConnection sharedConnection, SqlTransaction sharedTransaction)
         {
             if (fClass == null || features == null || !(fClass.Dataset is IFDBDataset))
             {
@@ -1402,12 +1414,17 @@ namespace gView.DataSources.Fdb.MSSql
             {
                 //List<long> _nids = new List<long>();
 
-                using (SqlConnection connection = new SqlConnection(_conn.ConnectionString))
+                using (var ownConnection = sharedConnection is null ? new SqlConnection(_conn.ConnectionString) : null)
                 {
-                    await connection.OpenAsync();
+                    var connection = ownConnection ?? sharedConnection;
+                    if (ownConnection is not null)
+                    {
+                        await connection.OpenAsync();
+                    }
 
                     SqlCommand command = connection.CreateCommand();
-                    SqlTransaction transaction = connection.BeginTransaction("InsertFeatureTransaction");
+                    bool ownTransaction = sharedTransaction is null;
+                    SqlTransaction transaction = sharedTransaction ?? connection.BeginTransaction("InsertFeatureTransaction");
 
                     ReplicationTransaction replTrans = new ReplicationTransaction(connection, transaction);
 
@@ -1591,20 +1608,14 @@ namespace gView.DataSources.Fdb.MSSql
                             : command.ExecuteNonQueryAsync());
                     }
 
-                    transaction.Commit();
-
-                    transaction.Dispose();
+                    if (ownTransaction)
+                    {
+                        transaction.Commit();
+                        transaction.Dispose();
+                    }
                     command.Dispose();
 
-                    if (_seVersion > 0)
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        //return SplitIndexNodes(fClass, connection, _nids);
-                        return true;
-                    }
+                    return true;
                 }
             }
             catch (Exception ex)
@@ -1621,6 +1632,10 @@ namespace gView.DataSources.Fdb.MSSql
             return Update(fClass, features);
         }
         async public override Task<bool> Update(IFeatureClass fClass, List<IFeature> features)
+            => await UpdateInternal(fClass, features, null, null);
+
+        internal async Task<bool> UpdateInternal(IFeatureClass fClass, List<IFeature> features,
+                                                 SqlConnection sharedConnection, SqlTransaction sharedTransaction)
         {
             if (fClass == null || features == null || !(fClass.Dataset is IFDBDataset))
             {
@@ -1662,12 +1677,17 @@ namespace gView.DataSources.Fdb.MSSql
             {
                 //List<long> _nids = new List<long>();
 
-                using (SqlConnection connection = new SqlConnection(_conn.ConnectionString))
+                using (var ownConnection = sharedConnection is null ? new SqlConnection(_conn.ConnectionString) : null)
                 {
-                    await connection.OpenAsync();
+                    var connection = ownConnection ?? sharedConnection;
+                    if (ownConnection is not null)
+                    {
+                        await connection.OpenAsync();
+                    }
 
                     SqlCommand command = connection.CreateCommand();
-                    SqlTransaction transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted, "UpdateFeatureTransaction");
+                    bool ownTransaction = sharedTransaction is null;
+                    SqlTransaction transaction = sharedTransaction ?? connection.BeginTransaction(IsolationLevel.ReadCommitted, "UpdateFeatureTransaction");
                     ReplicationTransaction replTrans = new ReplicationTransaction(connection, transaction);
                     //replTrans = null;
 
@@ -1836,20 +1856,14 @@ namespace gView.DataSources.Fdb.MSSql
                         await command.ExecuteNonQueryAsync();
                     }
 
-                    transaction.Commit();
-
-                    transaction.Dispose();
+                    if (ownTransaction)
+                    {
+                        transaction.Commit();
+                        transaction.Dispose();
+                    }
                     command.Dispose();
 
-                    if (_seVersion > 0)
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        //return SplitIndexNodes(fClass, connection, _nids);
-                        return true;
-                    }
+                    return true;
                 }
             }
             catch (Exception ex)
@@ -1864,6 +1878,10 @@ namespace gView.DataSources.Fdb.MSSql
             return Delete(fClass, "FDB_OID=" + oid.ToString());
         }
         async public override Task<bool> Delete(IFeatureClass fClass, string where)
+            => await DeleteInternal(fClass, where, null, null);
+
+        internal async Task<bool> DeleteInternal(IFeatureClass fClass, string where,
+                                                 SqlConnection sharedConnection, SqlTransaction sharedTransaction)
         {
             if (fClass == null)
             {
@@ -1872,13 +1890,18 @@ namespace gView.DataSources.Fdb.MSSql
 
             try
             {
-                using (SqlConnection connection = new SqlConnection(_conn.ConnectionString))
+                using (var ownConnection = sharedConnection is null ? new SqlConnection(_conn.ConnectionString) : null)
                 {
-                    await connection.OpenAsync();
+                    var connection = ownConnection ?? sharedConnection;
+                    if (ownConnection is not null)
+                    {
+                        await connection.OpenAsync();
+                    }
 
                     string sql = "DELETE FROM " + FcTableName(fClass) + ((where != String.Empty) ? " WHERE " + where : "");
                     SqlCommand command = new SqlCommand(sql, connection);
-                    SqlTransaction transaction = connection.BeginTransaction("DeleteFeatureTransaction");
+                    bool ownTransaction = sharedTransaction is null;
+                    SqlTransaction transaction = sharedTransaction ?? connection.BeginTransaction("DeleteFeatureTransaction");
                     ReplicationTransaction replTrans = new ReplicationTransaction(connection, transaction);
                     command.Transaction = transaction;
 
@@ -1912,10 +1935,14 @@ namespace gView.DataSources.Fdb.MSSql
                     }
 
                     await command.ExecuteNonQueryAsync();
-                    transaction.Commit();
-                    transaction.Dispose();
 
-                    connection.Close();
+                    if (ownTransaction)
+                    {
+                        transaction.Commit();
+                        transaction.Dispose();
+                    }
+                    command.Dispose();
+
                     return true;
                 }
             }

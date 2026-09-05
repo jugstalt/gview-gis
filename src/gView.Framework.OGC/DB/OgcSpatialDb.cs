@@ -23,7 +23,7 @@ using gView.Framework.Db.Extensions;
 
 namespace gView.Framework.OGC.DB
 {
-    public abstract class OgcSpatialDataset : DatasetMetadata, IFeatureDataset2, IFeatureDatabase, IEditableDatabase, IDatasetCapabilities
+    public abstract class OgcSpatialDataset : DatasetMetadata, IFeatureDataset2, IFeatureDatabase, IEditableDatabase, IDatasetCapabilities, ISupportsFeatureEditSession
     {
         protected string _connectionString = "", _errMsg = "";
         protected List<IDatasetElement> _layers;
@@ -577,6 +577,17 @@ namespace gView.Framework.OGC.DB
 
         #region IFeatureUpdater Member
 
+        async Task<IFeatureEditSession> ISupportsFeatureEditSession.BeginEditSession()
+        {
+            if (!this.DbImplementsTransactions)
+            {
+                return null;   // can't guarantee a rollback across operations
+            }
+
+            var connection = await OpenConnectionAsync();
+            return new OgcFeatureEditSession(this, connection, connection.BeginTransaction());
+        }
+
         //Encoding _encoder = new UTF7Encoding();
         virtual public Task<bool> Insert(IFeatureClass fClass, IFeature feature)
         {
@@ -586,6 +597,10 @@ namespace gView.Framework.OGC.DB
         }
 
         async virtual public Task<bool> Insert(IFeatureClass fClass, List<IFeature> features, bool returnIds = false)
+            => await InsertInternal(fClass, features, returnIds, null, null);
+
+        internal async Task<bool> InsertInternal(IFeatureClass fClass, List<IFeature> features, bool returnIds,
+                                                 DbConnection sharedConnection, DbTransaction sharedTransaction)
         {
             DatasetNameCase nameCase = DatasetNameCase.ignore;
             foreach (System.Attribute attribute in System.Attribute.GetCustomAttributes(this.GetType()))
@@ -618,10 +633,15 @@ namespace gView.Framework.OGC.DB
                     }
                 }
 
-                using (DbConnection connection = await OpenConnectionAsync())
+                using (var ownConnection = sharedConnection is null ? await OpenConnectionAsync() : null)
                 {
-                    using (var transaction = this.DbImplementsTransactions ? connection.BeginTransaction() : new FakeTransaction(connection))
+                    var connection = ownConnection ?? sharedConnection;
+
+                    using (var ownTransaction = sharedTransaction is null
+                        ? (this.DbImplementsTransactions ? connection.BeginTransaction() : new FakeTransaction(connection))
+                        : null)
                     {
+                        var transaction = ownTransaction ?? sharedTransaction;
                         DbCommand command = this.ProviderFactory.CreateCommand();
                         command.Connection = connection;
 
@@ -777,14 +797,17 @@ namespace gView.Framework.OGC.DB
                                 : command.ExecuteInsertAndApplyId(returnRowIdStatement, feature));
                         }
 
-                        try
+                        if (ownTransaction is not null)
                         {
-                            transaction.Commit();
-                        }
-                        catch (Exception)
-                        {
-                            transaction.Rollback();
-                            throw;
+                            try
+                            {
+                                transaction.Commit();
+                            }
+                            catch (Exception)
+                            {
+                                transaction.Rollback();
+                                throw;
+                            }
                         }
                     }
                 }
@@ -812,6 +835,10 @@ namespace gView.Framework.OGC.DB
         }
 
         async public Task<bool> Update(IFeatureClass fClass, List<IFeature> features)
+            => await UpdateInternal(fClass, features, null, null);
+
+        internal async Task<bool> UpdateInternal(IFeatureClass fClass, List<IFeature> features,
+                                                 DbConnection sharedConnection, DbTransaction sharedTransaction)
         {
             if (fClass == null)
             {
@@ -835,10 +862,15 @@ namespace gView.Framework.OGC.DB
                     }
                 }
 
-                using (DbConnection connection = await OpenConnectionAsync())
+                using (var ownConnection = sharedConnection is null ? await OpenConnectionAsync() : null)
                 {
-                    using (var transaction = this.DbImplementsTransactions ? connection.BeginTransaction() : new FakeTransaction(connection))
+                    var connection = ownConnection ?? sharedConnection;
+
+                    using (var ownTransaction = sharedTransaction is null
+                        ? (this.DbImplementsTransactions ? connection.BeginTransaction() : new FakeTransaction(connection))
+                        : null)
                     {
+                        var transaction = ownTransaction ?? sharedTransaction;
                         DbCommand command = this.ProviderFactory.CreateCommand();
                         command.Connection = connection;
 
@@ -924,14 +956,17 @@ namespace gView.Framework.OGC.DB
                             await command.ExecuteNonQueryAsync();
                         }
 
-                        try
+                        if (ownTransaction is not null)
                         {
-                            transaction.Commit();
-                        }
-                        catch (Exception)
-                        {
-                            transaction.Rollback();
-                            throw;
+                            try
+                            {
+                                transaction.Commit();
+                            }
+                            catch (Exception)
+                            {
+                                transaction.Rollback();
+                                throw;
+                            }
                         }
                     }
                 }
@@ -956,6 +991,14 @@ namespace gView.Framework.OGC.DB
         }
 
         async public Task<bool> Delete(IFeatureClass fClass, string where)
+            => await DeleteInternal(fClass, where, null, null);
+
+        internal Task<bool> DeleteInternal(IFeatureClass fClass, int oid,
+                                           DbConnection sharedConnection, DbTransaction sharedTransaction)
+            => DeleteInternal(fClass, $"{DbColumnName(fClass.IDFieldName)}={oid}", sharedConnection, sharedTransaction);
+
+        internal async Task<bool> DeleteInternal(IFeatureClass fClass, string where,
+                                                 DbConnection sharedConnection, DbTransaction sharedTransaction)
         {
             if (fClass == null)
             {
@@ -969,14 +1012,19 @@ namespace gView.Framework.OGC.DB
 
             try
             {
-                using (DbConnection connection = await OpenConnectionAsync())
+                using (var ownConnection = sharedConnection is null ? await OpenConnectionAsync() : null)
                 {
+                    var connection = ownConnection ?? sharedConnection;
+
                     DbCommand command = this.ProviderFactory.CreateCommand();
                     command.Connection = connection;
+                    if (this.DbImplementsTransactions && sharedTransaction is not null)
+                    {
+                        command.Transaction = sharedTransaction;
+                    }
                     command.CommandText = "DELETE FROM " + DbTableName(fClass.Name) + ((where != String.Empty) ? " WHERE " + where : "");
 
                     await command.ExecuteNonQueryAsync();
-                    connection.Close();
 
                     return true;
                 }

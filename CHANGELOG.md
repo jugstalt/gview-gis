@@ -101,9 +101,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   `IFeatureEditSession` (`gView.Framework.Core.FDB`): a provider runs the whole batch on one
   connection + transaction; the interpreter commits it once (a thrown error disposes the
   session and rolls everything back). Service-level `applyEdits` groups its `edits` by target
-  dataset and uses one session per dataset. Providers without session support fall back to the
-  previous per-phase behaviour. First provider wired: gView FDB (SQLite); PostgreSQL / SQL
-  Server FDB and PostGIS / MS SQL Spatial / SDE to follow.
+  dataset and uses one session per dataset. Wired for gView FDB (SQLite / PostgreSQL / SQL
+  Server) and `OgcSpatialDataset` (PostGIS / MS SQL Spatial Geometry+Geography / SDE /
+  SpatiaLite); the edit methods gained an `...Internal(...)` overload that optionally runs on a
+  caller supplied connection + transaction (`ownConnection` / `ownTransaction` flags, per-feature
+  bodies unchanged). Providers without session support (Shape, MongoDB, GML) fall back to the
+  previous per-phase behaviour.
 - GeoServices REST FeatureServer `addFeatures` / `applyEdits`: `addResults` now carry the
   database generated `objectId`. `IFeatureUpdater.Insert(fClass, features, returnIds = false)`
   gained an opt-in `returnIds` flag &mdash; when `true` the new row id is written back onto
