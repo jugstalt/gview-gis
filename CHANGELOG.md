@@ -95,6 +95,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Fixed
 
+- GeoServices REST FeatureServer `applyEdits` `rollbackOnFailure=true` (the default) now really
+  rolls back across adds, updates **and** deletes: a single failing edit leaves the layer
+  unchanged, matching ArcGIS Server. New opt-in `ISupportsFeatureEditSession` /
+  `IFeatureEditSession` (`gView.Framework.Core.FDB`): a provider runs the whole batch on one
+  connection + transaction; the interpreter commits it once (a thrown error disposes the
+  session and rolls everything back). Service-level `applyEdits` groups its `edits` by target
+  dataset and uses one session per dataset. Providers without session support fall back to the
+  previous per-phase behaviour. First provider wired: gView FDB (SQLite); PostgreSQL / SQL
+  Server FDB and PostGIS / MS SQL Spatial / SDE to follow.
 - GeoServices REST FeatureServer `addFeatures` / `applyEdits`: `addResults` now carry the
   database generated `objectId`. `IFeatureUpdater.Insert(fClass, features, returnIds = false)`
   gained an opt-in `returnIds` flag &mdash; when `true` the new row id is written back onto

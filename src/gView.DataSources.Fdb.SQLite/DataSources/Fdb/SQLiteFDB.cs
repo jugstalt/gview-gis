@@ -4,6 +4,7 @@ using gView.Framework.Core.Data.Cursors;
 using gView.Framework.Core.Data.Filters;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Data;
+using gView.Framework.Core.FDB;
 using gView.Framework.Data.Filters;
 using gView.Framework.Db.Extensions;
 using gView.Framework.Geometry;
@@ -20,7 +21,7 @@ using System.Threading.Tasks;
 
 namespace gView.DataSources.Fdb.SQLite
 {
-    public class SQLiteFDB : gView.DataSources.Fdb.MSAccess.AccessFDB
+    public class SQLiteFDB : gView.DataSources.Fdb.MSAccess.AccessFDB, ISupportsFeatureEditSession
     {
         private string _filename;
 
@@ -372,7 +373,15 @@ namespace gView.DataSources.Fdb.SQLite
             features.Add(feature);
             return Insert(fClass, features);
         }
+
+        async Task<IFeatureEditSession> ISupportsFeatureEditSession.BeginEditSession()
+            => await SQLiteFeatureEditSession.CreateAsync(this, _conn.ConnectionString);
+
         async public override Task<bool> Insert(IFeatureClass fClass, List<IFeature> features, bool returnIds = false)
+            => await InsertInternal(fClass, features, returnIds, null, null);
+
+        internal async Task<bool> InsertInternal(IFeatureClass fClass, List<IFeature> features, bool returnIds,
+                                                 SQLiteConnection sharedConnection, SQLiteTransaction sharedTransaction)
         {
             if (fClass == null || features == null)
             {
@@ -401,14 +410,20 @@ namespace gView.DataSources.Fdb.SQLite
             }
             try
             {
-                using (SQLiteConnection connection = new SQLiteConnection(_conn.ConnectionString))
+                using (var ownConnection = sharedConnection is null ? new SQLiteConnection(_conn.ConnectionString) : null)
                 {
-                    await connection.OpenAsync();
+                    var connection = ownConnection ?? sharedConnection;
+                    if (ownConnection is not null)
+                    {
+                        await connection.OpenAsync();
+                    }
 
                     using (var command = new SQLiteCommand())
-                    using (var transaction = connection.BeginTransaction())
+                    using (var ownTransaction = sharedTransaction is null ? connection.BeginTransaction() : null)
                     {
+                        var transaction = ownTransaction ?? sharedTransaction;
                         command.Connection = connection;
+                        command.Transaction = transaction;
                         ReplicationTransaction replTrans = new ReplicationTransaction(connection, transaction);
 
                         foreach (IFeature feature in features)
@@ -524,11 +539,19 @@ namespace gView.DataSources.Fdb.SQLite
 
                         //return SplitIndexNodes(fClass, connection, _nids);
 
-                        transaction.Commit();
+                        if (ownTransaction is not null)
+                        {
+                            transaction.Commit();
+                        }
                     }
                 }
 
-                await AddTreeNodes();
+                // classic spatial index bookkeeping runs outside the feature transaction
+                // (same as before); an edit session flushes it on Commit instead.
+                if (sharedConnection is null)
+                {
+                    await AddTreeNodes();
+                }
             }
             catch (Exception ex)
             {
@@ -615,6 +638,10 @@ namespace gView.DataSources.Fdb.SQLite
             return Update(fClass, features);
         }
         async public override Task<bool> Update(IFeatureClass fClass, List<IFeature> features)
+            => await UpdateInternal(fClass, features, null, null);
+
+        internal async Task<bool> UpdateInternal(IFeatureClass fClass, List<IFeature> features,
+                                                 SQLiteConnection sharedConnection, SQLiteTransaction sharedTransaction)
         {
             if (fClass == null || features == null)
             {
@@ -646,13 +673,19 @@ namespace gView.DataSources.Fdb.SQLite
             {
                 //List<long> _nids = new List<long>();
 
-                using (SQLiteConnection connection = new SQLiteConnection(_conn.ConnectionString))
+                using (var ownConnection = sharedConnection is null ? new SQLiteConnection(_conn.ConnectionString) : null)
                 {
-                    await connection.OpenAsync();
+                    var connection = ownConnection ?? sharedConnection;
+                    if (ownConnection is not null)
+                    {
+                        await connection.OpenAsync();
+                    }
 
                     using (SQLiteCommand command = connection.CreateCommand())
-                    using (var transaction = connection.BeginTransaction())
+                    using (var ownTransaction = sharedTransaction is null ? connection.BeginTransaction() : null)
                     {
+                        var transaction = ownTransaction ?? sharedTransaction;
+                        command.Transaction = transaction;
                         ReplicationTransaction replTrans = new ReplicationTransaction(connection, transaction);
 
                         foreach (IFeature feature in features)
@@ -769,11 +802,17 @@ namespace gView.DataSources.Fdb.SQLite
                         }
 
                         //return SplitIndexNodes(fClass, connection, _nids);
-                        transaction.Commit();
+                        if (ownTransaction is not null)
+                        {
+                            transaction.Commit();
+                        }
                     }
                 }
 
-                await AddTreeNodes();
+                if (sharedConnection is null)
+                {
+                    await AddTreeNodes();
+                }
             }
 
             catch (Exception ex)
@@ -790,6 +829,10 @@ namespace gView.DataSources.Fdb.SQLite
             return Delete(fClass, "FDB_OID=" + oid.ToString());
         }
         async public override Task<bool> Delete(IFeatureClass fClass, string where)
+            => await DeleteInternal(fClass, where, null, null);
+
+        internal async Task<bool> DeleteInternal(IFeatureClass fClass, string where,
+                                                 SQLiteConnection sharedConnection, SQLiteTransaction sharedTransaction)
         {
             if (fClass == null)
             {
@@ -798,14 +841,19 @@ namespace gView.DataSources.Fdb.SQLite
 
             try
             {
-                using (SQLiteConnection connection = new SQLiteConnection(_conn.ConnectionString))
+                using (var ownConnection = sharedConnection is null ? new SQLiteConnection(_conn.ConnectionString) : null)
                 {
-                    await connection.OpenAsync();
+                    var connection = ownConnection ?? sharedConnection;
+                    if (ownConnection is not null)
+                    {
+                        await connection.OpenAsync();
+                    }
 
                     string sql = "DELETE FROM " + FcTableName(fClass) + ((where != String.Empty) ? " WHERE " + where : "");
                     using (SQLiteCommand command = new SQLiteCommand(sql, connection))
-                    using (SQLiteTransaction transaction = connection.BeginTransaction())
+                    using (var ownTransaction = sharedTransaction is null ? connection.BeginTransaction() : null)
                     {
+                        var transaction = ownTransaction ?? sharedTransaction;
                         ReplicationTransaction replTrans = new ReplicationTransaction(connection, transaction);
                         command.Transaction = transaction;
 
@@ -839,9 +887,12 @@ namespace gView.DataSources.Fdb.SQLite
                         }
 
                         await command.ExecuteNonQueryAsync();
-                        transaction.Commit();
 
-                        connection.Close();
+                        if (ownTransaction is not null)
+                        {
+                            transaction.Commit();
+                        }
+
                         return true;
                     }
                 }
@@ -879,7 +930,7 @@ namespace gView.DataSources.Fdb.SQLite
 
             return Task.CompletedTask;
         }
-        async private Task AddTreeNodes()
+        async internal Task AddTreeNodes()
         {
             //lock (thisLock)
             {
@@ -890,6 +941,18 @@ namespace gView.DataSources.Fdb.SQLite
                         await base.AddTreeNode(fcName, nid);
                     }
                 }
+                _addTreeNodes.Clear();
+            }
+        }
+
+        /// <summary>
+        /// Drops the classic spatial-index nodes accumulated by the current edit batch without
+        /// writing them - used when an <see cref="IFeatureEditSession"/> is rolled back.
+        /// </summary>
+        internal void DiscardPendingTreeNodes()
+        {
+            lock (thisLock)
+            {
                 _addTreeNodes.Clear();
             }
         }

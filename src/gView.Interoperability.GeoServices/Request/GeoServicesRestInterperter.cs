@@ -1477,22 +1477,73 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
 
             using (var serviceMap = await context.CreateServiceMapInstance())
             {
-                var response = await ApplyEditsToLayer(
+                var database = GetFeatureClass(serviceMap, editRequest.LayerId)?.Dataset?.Database as IFeatureUpdater;
+
+                var results = await ApplyEditsBatch(
                     serviceMap,
-                    editRequest.LayerId,
-                    editRequest.Adds,
-                    editRequest.Updates,
-                    ParseObjectIds(editRequest.Deletes),
+                    database,
+                    new (int, JsonFeatureDTO[], JsonFeatureDTO[], IReadOnlyList<int>)[]
+                    {
+                        (editRequest.LayerId, editRequest.Adds, editRequest.Updates, ParseObjectIds(editRequest.Deletes))
+                    },
                     editRequest.RollbackOnFailure);
 
                 context.ServiceRequest.Succeeded = true;
-                context.ServiceRequest.Response = JSerializer.Serialize(response);
+                context.ServiceRequest.Response = JSerializer.Serialize(results[0].response);
             }
         }
         catch (Exception ex)
         {
             await context.HandleFeatureServerException(ex);
         }
+    }
+
+    /// <summary>
+    /// Applies one or more layers' adds/updates/deletes that all target <paramref name="database"/>.
+    /// If <paramref name="rollbackOnFailure"/> is set and the provider supports it, every layer's
+    /// edits run in a single transaction that is committed once at the end (a thrown error rolls
+    /// the whole batch back). Otherwise each layer falls back to the per-phase path.
+    /// </summary>
+    async private Task<List<(int layerId, JsonFeatureServerResponseDTO response)>> ApplyEditsBatch(
+        IServiceMap serviceMap,
+        IFeatureUpdater database,
+        IReadOnlyList<(int layerId, JsonFeatureDTO[] adds, JsonFeatureDTO[] updates, IReadOnlyList<int> deletes)> layerEdits,
+        bool rollbackOnFailure)
+    {
+        var results = new List<(int, JsonFeatureServerResponseDTO)>(layerEdits.Count);
+
+        IFeatureEditSession session = null;
+        if (rollbackOnFailure && database is ISupportsFeatureEditSession sessionFactory)
+        {
+            session = await sessionFactory.BeginEditSession();
+        }
+
+        if (session == null)
+        {
+            foreach (var le in layerEdits)
+            {
+                results.Add((le.layerId, await ApplyEditsToLayer(
+                    serviceMap, le.layerId, le.adds, le.updates, le.deletes, rollbackOnFailure)));
+            }
+
+            return results;
+        }
+
+        await using (session)
+        {
+            foreach (var le in layerEdits)
+            {
+                results.Add((le.layerId, await ApplyEditsToLayer(
+                    serviceMap, le.layerId, le.adds, le.updates, le.deletes, rollbackOnFailure, session)));
+            }
+
+            if (!await session.Commit())
+            {
+                throw new MapServerException($"applyEdits failed: {session.LastErrorMessage}");
+            }
+        }
+
+        return results;
     }
 
     /// <summary>
@@ -1512,40 +1563,55 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
 
             using (var serviceMap = await context.CreateServiceMapInstance())
             {
-                var results = new List<JsonFeatureServerApplyEditsServiceResultDTO>();
+                var resultsById = new Dictionary<int, JsonFeatureServerApplyEditsServiceResultDTO>();
 
-                foreach (var layerEdits in editRequest.Edits)
+                // group by the database instance the layers target, so a session (when used)
+                // spans every layer of one dataset in a single transaction
+                var groups = editRequest.Edits
+                    .GroupBy(le => GetFeatureClass(serviceMap, le.Id)?.Dataset?.Database as IFeatureUpdater);
+
+                foreach (var group in groups)
                 {
+                    var layerEdits = group
+                        .Select(le => (le.Id, le.Adds, le.Updates, ParseObjectIds(le.Deletes)))
+                        .ToArray();
+
                     try
                     {
-                        var layerResponse = await ApplyEditsToLayer(
-                            serviceMap,
-                            layerEdits.Id,
-                            layerEdits.Adds,
-                            layerEdits.Updates,
-                            ParseObjectIds(layerEdits.Deletes),
-                            editRequest.RollbackOnFailure);
+                        var groupResults = await ApplyEditsBatch(
+                            serviceMap, group.Key, layerEdits, editRequest.RollbackOnFailure);
 
-                        results.Add(new JsonFeatureServerApplyEditsServiceResultDTO()
+                        foreach (var (layerId, layerResponse) in groupResults)
                         {
-                            Id = layerEdits.Id,
-                            AddResults = layerResponse.AddResults,
-                            UpdateResults = layerResponse.UpdateResults,
-                            DeleteResults = layerResponse.DeleteResults
-                        });
+                            resultsById[layerId] = new JsonFeatureServerApplyEditsServiceResultDTO()
+                            {
+                                Id = layerId,
+                                AddResults = layerResponse.AddResults,
+                                UpdateResults = layerResponse.UpdateResults,
+                                DeleteResults = layerResponse.DeleteResults
+                            };
+                        }
                     }
                     catch (Exception ex) when (!editRequest.RollbackOnFailure)
                     {
-                        results.Add(new JsonFeatureServerApplyEditsServiceResultDTO()
+                        foreach (var le in group)
                         {
-                            Id = layerEdits.Id,
-                            AddResults = new[] { ApplyEditsErrorResponse(ex.Message) }
-                        });
+                            resultsById[le.Id] = new JsonFeatureServerApplyEditsServiceResultDTO()
+                            {
+                                Id = le.Id,
+                                AddResults = new[] { ApplyEditsErrorResponse(ex.Message) }
+                            };
+                        }
                     }
                 }
 
+                // emit in the request's edit order
+                var results = editRequest.Edits
+                    .Select(le => resultsById[le.Id])
+                    .ToArray();
+
                 context.ServiceRequest.Succeeded = true;
-                context.ServiceRequest.Response = JSerializer.Serialize(results.ToArray());
+                context.ServiceRequest.Response = JSerializer.Serialize(results);
             }
         }
         catch (Exception ex)
@@ -1566,10 +1632,10 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
 
     /// <summary>
     /// Shared implementation for the layer level and service level applyEdits operations.
-    /// Adds, updates and deletes are applied in this order. Each phase (insert/update) is
-    /// executed as a single database call (transactional per phase); a true rollback across
-    /// all three phases is not supported, so with rollbackOnFailure=true the first failing
-    /// phase aborts the request and phases that already succeeded are kept.
+    /// Adds, updates and deletes are applied in this order. When <paramref name="session"/> is
+    /// given, every operation runs on that session's single transaction and the caller commits
+    /// it (true all-or-nothing for rollbackOnFailure=true). Without a session each phase is a
+    /// separate database call and phases that already succeeded are kept.
     /// </summary>
     async private Task<JsonFeatureServerResponseDTO> ApplyEditsToLayer(
         IServiceMap serviceMap,
@@ -1577,7 +1643,8 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
         JsonFeatureDTO[] adds,
         JsonFeatureDTO[] updates,
         IReadOnlyList<int> deleteObjectIds,
-        bool rollbackOnFailure)
+        bool rollbackOnFailure,
+        IFeatureEditSession session = null)
     {
         var featureClass = GetFeatureClass(serviceMap, layerId);
         var database = featureClass?.Dataset?.Database as IFeatureUpdater;
@@ -1585,6 +1652,17 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
         {
             throw new MapServerException("Featureclass is not editable");
         }
+
+        Task<bool> InsertFeatures(List<IFeature> features)
+            => session != null
+                ? session.Insert(featureClass, features, returnIds: true)
+                : database.Insert(featureClass, features, returnIds: true);
+        Task<bool> UpdateFeatures(List<IFeature> features)
+            => session != null ? session.Update(featureClass, features) : database.Update(featureClass, features);
+        Task<bool> DeleteFeature(int objectId)
+            => session != null ? session.Delete(featureClass, objectId) : database.Delete(featureClass, objectId);
+        string LastError()
+            => session != null ? session.LastErrorMessage : database.LastErrorMessage;
 
         var datumTransformations = serviceMap.Display?.DatumTransformations;
 
@@ -1618,15 +1696,15 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
 
             addFeatures.GeometryMakeValid(serviceMap, featureClass);
 
-            if (!await database.Insert(featureClass, addFeatures, returnIds: true))
+            if (!await InsertFeatures(addFeatures))
             {
                 if (rollbackOnFailure)
                 {
-                    throw new MapServerException($"applyEdits (adds) failed: {database.LastErrorMessage}");
+                    throw new MapServerException($"applyEdits (adds) failed: {LastError()}");
                 }
 
                 response.AddResults = addFeatures
-                    .Select(_ => ApplyEditsErrorResponse(database.LastErrorMessage))
+                    .Select(_ => ApplyEditsErrorResponse(LastError()))
                     .ToArray();
             }
             else
@@ -1657,15 +1735,15 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
 
             updateFeatures.GeometryMakeValid(serviceMap, featureClass);
 
-            if (!await database.Update(featureClass, updateFeatures))
+            if (!await UpdateFeatures(updateFeatures))
             {
                 if (rollbackOnFailure)
                 {
-                    throw new MapServerException($"applyEdits (updates) failed: {database.LastErrorMessage}");
+                    throw new MapServerException($"applyEdits (updates) failed: {LastError()}");
                 }
 
                 response.UpdateResults = updateFeatures
-                    .Select(f => ApplyEditsErrorResponse(database.LastErrorMessage, f.OID))
+                    .Select(f => ApplyEditsErrorResponse(LastError(), f.OID))
                     .ToArray();
             }
             else
@@ -1689,7 +1767,7 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
 
             foreach (var objectId in deleteObjectIds)
             {
-                if (await database.Delete(featureClass, objectId))
+                if (await DeleteFeature(objectId))
                 {
                     deleteResults.Add(new JsonFeatureServerResponseDTO.JsonResponse()
                     {
@@ -1701,10 +1779,10 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
                 {
                     if (rollbackOnFailure)
                     {
-                        throw new MapServerException($"applyEdits (deletes) failed for objectId={objectId}: {database.LastErrorMessage}");
+                        throw new MapServerException($"applyEdits (deletes) failed for objectId={objectId}: {LastError()}");
                     }
 
-                    deleteResults.Add(ApplyEditsErrorResponse(database.LastErrorMessage, objectId));
+                    deleteResults.Add(ApplyEditsErrorResponse(LastError(), objectId));
                 }
             }
 

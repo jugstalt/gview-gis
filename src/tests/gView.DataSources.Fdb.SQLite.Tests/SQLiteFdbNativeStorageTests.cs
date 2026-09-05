@@ -4,6 +4,7 @@ using gView.DataSources.Fdb.SQLite;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Data.Cursors;
 using gView.Framework.Core.Data.Filters;
+using gView.Framework.Core.FDB;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Data;
 using gView.Framework.Data.Filters;
@@ -153,6 +154,98 @@ public class SQLiteFdbNativeStorageTests : IDisposable
         var plain = PointFeature(40, 40, "d");
         Assert.True(await fdb.Insert(fc, new List<IFeature> { plain }), fdb.LastErrorMessage);
         Assert.Equal(0, plain.OID);
+    }
+
+    [Theory]
+    [InlineData(GeometryStorageType.Wkb)]
+    [InlineData(GeometryStorageType.Classic)]
+    public async Task EditSession_Commit_AppliesAllPhases(GeometryStorageType storage)
+    {
+        var fdb = await CreateFdbAsync(storage);
+        var fc = await GetFeatureClassAsync(fdb, "ds", "pts");
+
+        var seed = new List<IFeature> { PointFeature(1, 1, "keep"), PointFeature(2, 2, "toupdate"), PointFeature(3, 3, "todelete") };
+        Assert.True(await fdb.Insert(fc, seed, returnIds: true), fdb.LastErrorMessage);
+        int updateOid = seed[1].OID, deleteOid = seed[2].OID;
+
+        var session = await ((ISupportsFeatureEditSession)fdb).BeginEditSession();
+        Assert.NotNull(session);
+        await using (session)
+        {
+            var add = PointFeature(9, 9, "added");
+            Assert.True(await session.Insert(fc, new List<IFeature> { add }, returnIds: true), session.LastErrorMessage);
+            Assert.True(add.OID > 0);
+
+            var upd = new Feature { Shape = new Point(20, 20), OID = updateOid };
+            upd.Fields.Add(new FieldValue("NAME", "updated"));
+            Assert.True(await session.Update(fc, new List<IFeature> { upd }), session.LastErrorMessage);
+
+            Assert.True(await session.Delete(fc, deleteOid), session.LastErrorMessage);
+
+            Assert.True(await session.Commit(), session.LastErrorMessage);
+        }
+
+        var all = await DrainAsync(await fdb.Query(fc, new QueryFilter { SubFields = "*" }));
+        var byName = all.ToDictionary(f => f.FindField("NAME")!.Value!.ToString()!, f => f);
+        Assert.Equal(3, all.Count);
+        Assert.True(byName.ContainsKey("keep"));
+        Assert.True(byName.ContainsKey("added"));
+        Assert.True(byName.ContainsKey("updated"));
+        Assert.False(byName.ContainsKey("toupdate"));
+        Assert.False(byName.ContainsKey("todelete"));
+        Assert.DoesNotContain(all, f => f.OID == deleteOid);
+    }
+
+    [Theory]
+    [InlineData(GeometryStorageType.Wkb)]
+    [InlineData(GeometryStorageType.Classic)]
+    public async Task EditSession_DisposeWithoutCommit_RollsBack(GeometryStorageType storage)
+    {
+        var fdb = await CreateFdbAsync(storage);
+        var fc = await GetFeatureClassAsync(fdb, "ds", "pts");
+
+        var seed = new List<IFeature> { PointFeature(1, 1, "a"), PointFeature(2, 2, "b") };
+        Assert.True(await fdb.Insert(fc, seed, returnIds: true), fdb.LastErrorMessage);
+
+        var session = await ((ISupportsFeatureEditSession)fdb).BeginEditSession();
+        Assert.NotNull(session);
+        await using (session)
+        {
+            Assert.True(await session.Insert(fc, new List<IFeature> { PointFeature(8, 8, "x"), PointFeature(9, 9, "y") }), session.LastErrorMessage);
+            Assert.True(await session.Delete(fc, seed[0].OID), session.LastErrorMessage);
+            // no Commit()
+        }
+
+        var all = await DrainAsync(await fdb.Query(fc, new QueryFilter { SubFields = "*" }));
+        Assert.Equal(2, all.Count);
+        Assert.DoesNotContain(all, f => f.FindField("NAME")!.Value!.ToString() is "x" or "y");
+    }
+
+    [Theory]
+    [InlineData(GeometryStorageType.Wkb)]
+    [InlineData(GeometryStorageType.Classic)]
+    public async Task EditSession_FailingOperation_RollsBackEarlierInserts(GeometryStorageType storage)
+    {
+        var fdb = await CreateFdbAsync(storage);
+        var fc = await GetFeatureClassAsync(fdb, "ds", "pts");
+
+        var session = await ((ISupportsFeatureEditSession)fdb).BeginEditSession();
+        Assert.NotNull(session);
+        await using (session)
+        {
+            Assert.True(await session.Insert(fc, new List<IFeature> { PointFeature(1, 1, "one"), PointFeature(2, 2, "two") }), session.LastErrorMessage);
+
+            // an update of a feature with an invalid OID must fail...
+            var bad = new Feature { Shape = new Point(0, 0), OID = -1 };
+            bad.Fields.Add(new FieldValue("NAME", "bad"));
+            Assert.False(await session.Update(fc, new List<IFeature> { bad }));
+
+            // ...and a session that saw a failure must not commit
+            Assert.False(await session.Commit());
+        }
+
+        var all = await DrainAsync(await fdb.Query(fc, new QueryFilter { SubFields = "*" }));
+        Assert.Empty(all);
     }
 
     [Fact]
