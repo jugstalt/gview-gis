@@ -1,4 +1,5 @@
-﻿using gView.DataExplorer.Plugins.Extensions;
+﻿using gView.DataExplorer.Plugins.ExplorerObjects.Fdb;
+using gView.DataExplorer.Plugins.Extensions;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.Core.Data;
@@ -69,6 +70,11 @@ internal class ObjectInfo : IExplorerTool
             if (instance is IDataset)
             {
                 model.Properties.Add("ConnectionString", ((IDataset)instance).ConnectionString);
+            }
+
+            if (instance is gView.Framework.Core.FDB.IFDBDataset fdbDataset && fdbDataset.SpatialIndexDef is not null)
+            {
+                model.Properties.Add("Geometry Storage", fdbDataset.SpatialIndexDef.StorageType.StorageLabel());
             }
 
             await scope.ShowModalDialog(

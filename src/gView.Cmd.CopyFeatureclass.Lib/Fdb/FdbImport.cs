@@ -1,6 +1,7 @@
 ﻿using gView.DataSources.Fdb.MSAccess;
 using gView.DataSources.Fdb.MSSql;
 using gView.DataSources.Fdb.PostgreSql;
+using gView.DataSources.Fdb.SQLite;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Data.Cursors;
 using gView.Framework.Core.Data.Filters;
@@ -91,9 +92,8 @@ public class FdbImport
             (sIndexDef.GeometryType == GeometryFieldType.MsGeography ||
              sIndexDef.GeometryType == GeometryFieldType.MsGeometry);
 
-        // native DB geometry column + native spatial index -> the gView BinaryTree is not built.
-        bool nativeDbGeometry = msSpatial
-            || sIndexDef.StorageType == GeometryStorageType.PostGis;
+        // native DB geometry column / format + native spatial index -> the gView BinaryTree is not built.
+        bool nativeDbGeometry = msSpatial || sIndexDef.StorageType.IsDatabaseNative();
 
         if (!nativeDbGeometry)
         {
@@ -252,6 +252,18 @@ public class FdbImport
 
                 pgfdb.SetPostGisSpatialIndex(destFC.Name, bbox);
                 await pgfdb.SetFeatureclassExtent(destFC.Name, bbox);
+            }
+            else if (sIndexDef.StorageType.IsDatabaseNative() && fdb is SQLiteFDB sqliteFdb)
+            {
+                // The FDB_SHAPE geometry column + R-Tree were already created by
+                // CreateFeatureClass' FinalizeNativeGeometryColumnAsync hook; the insert triggers
+                // keep the R-Tree populated. Just record the extent (recomputed after the copy).
+                IEnvelope bbox = sIndexDef.SpatialIndexBounds;
+                if (bbox == null || (bbox.Width == 0 && bbox.Height == 0))
+                {
+                    bbox = sourceFC.Envelope;
+                }
+                await sqliteFdb.SetFeatureclassExtent(destFC.Name, bbox);
             }
             else
             {

@@ -35,7 +35,7 @@ static internal class ApplicationScopeServiceExtensions
         {
             SqlFdbExplorerObject => new[] { GeometryStorageType.SqlServerGeometry, GeometryStorageType.SqlServerGeography, GeometryStorageType.Classic },
             PostgreSqlExplorerObject => new[] { GeometryStorageType.PostGis, GeometryStorageType.Classic },
-            SqLiteFdbExplorerObject => new[] { GeometryStorageType.Wkb, GeometryStorageType.Classic },
+            SqLiteFdbExplorerObject => new[] { GeometryStorageType.GeoPackage, GeometryStorageType.SpatiaLite, GeometryStorageType.Classic },
             _ => new[] { GeometryStorageType.Classic }
         };
 

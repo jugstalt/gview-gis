@@ -41,11 +41,11 @@ public class NewFdbDatasetModel : IDialogResultItem
     /// How geometry is stored: an open / database-native format (recommended) or the legacy
     /// gView-managed proprietary blob (<see cref="GeometryStorageType.Classic"/>).
     /// </summary>
-    public GeometryStorageType GeometryStorage { get; set; } = GeometryStorageType.Wkb;
+    public GeometryStorageType GeometryStorage { get; set; } = GeometryStorageType.GeoPackage;
 
     /// <summary>The storage options offered for the current FDB engine, recommended one first (set by the caller).</summary>
     public IReadOnlyList<GeometryStorageType> AllowedGeometryStorages { get; set; } =
-        new[] { GeometryStorageType.Wkb, GeometryStorageType.Classic };
+        new[] { GeometryStorageType.GeoPackage, GeometryStorageType.SpatiaLite, GeometryStorageType.Classic };
 
     public Dictionary<IAutoField, bool> AutoFields { get; set; } = new Dictionary<IAutoField, bool>();
 }

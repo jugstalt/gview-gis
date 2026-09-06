@@ -26,7 +26,9 @@ public class SqLiteFdbFeatureClassExplorerObject : ExplorerObjectCls<SqLiteFdbDa
                                                    IExplorerObjectDeletable,
                                                    IExplorerObjectContextTools,
                                                    IExplorerObjectRenamable,
-                                                   IExplorerObjectCreatable
+                                                   IExplorerObjectCreatable,
+                                                   IExplorerObjectCustomContentValues,
+                                                   IFdbGeometryStorageContext
 {
     private string _filename = "", _dsname = "", _fcname = "", _type = "";
     private string _icon = "basic:table";
@@ -144,6 +146,7 @@ public class SqLiteFdbFeatureClassExplorerObject : ExplorerObjectCls<SqLiteFdbDa
                 {
                     new ShrinkSpatialIndices(),
                     new RepairSpatialIndex(),
+                    new RepairNativeSpatialIndex(),
                     new SpatialIndexDefinition(),
                     new TruncateFeatureClass()
                 });
@@ -154,6 +157,13 @@ public class SqLiteFdbFeatureClassExplorerObject : ExplorerObjectCls<SqLiteFdbDa
 
         #endregion
     }
+
+    public gView.Framework.Core.Data.GeometryStorageType GeometryStorage
+        => (_fc?.Dataset as gView.Framework.Core.FDB.IFDBDataset)?.SpatialIndexDef?.StorageType
+           ?? gView.Framework.Core.Data.GeometryStorageType.Classic;
+
+    public IDictionary<string, object?> GetCustomContentValues()
+        => new Dictionary<string, object?> { { "Storage", GeometryStorage.StorageLabel() } };
 
     #region IExplorerObject Members
 

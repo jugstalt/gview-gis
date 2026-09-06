@@ -15,7 +15,7 @@ namespace gView.DataSources.Fdb.SQLite.Tests;
 
 /// <summary>
 /// End-to-end tests for a SQLite FDB whose dataset stores geometry as standard WKB
-/// (<see cref="GeometryStorageType.Wkb"/>) instead of the gView-proprietary blob. Creates a real
+/// in a database-native format instead of the gView-proprietary blob. Creates a real
 /// temp <c>.sqlite</c> FDB, a dataset, a feature class, inserts geometries and reads them back
 /// through the normal cursor path.
 /// </summary>
@@ -92,7 +92,6 @@ public class SQLiteFdbNativeStorageTests : IDisposable
     }
 
     [Theory]
-    [InlineData(GeometryStorageType.Wkb)]
     [InlineData(GeometryStorageType.Classic)]
     public async Task InsertAndQuery_RoundTripsGeometry(GeometryStorageType storage)
     {
@@ -119,7 +118,6 @@ public class SQLiteFdbNativeStorageTests : IDisposable
     }
 
     [Theory]
-    [InlineData(GeometryStorageType.Wkb)]
     [InlineData(GeometryStorageType.Classic)]
     public async Task Insert_BackfillsObjectId(GeometryStorageType storage)
     {
@@ -157,7 +155,6 @@ public class SQLiteFdbNativeStorageTests : IDisposable
     }
 
     [Theory]
-    [InlineData(GeometryStorageType.Wkb)]
     [InlineData(GeometryStorageType.Classic)]
     public async Task EditSession_Commit_AppliesAllPhases(GeometryStorageType storage)
     {
@@ -197,7 +194,6 @@ public class SQLiteFdbNativeStorageTests : IDisposable
     }
 
     [Theory]
-    [InlineData(GeometryStorageType.Wkb)]
     [InlineData(GeometryStorageType.Classic)]
     public async Task EditSession_DisposeWithoutCommit_RollsBack(GeometryStorageType storage)
     {
@@ -222,7 +218,6 @@ public class SQLiteFdbNativeStorageTests : IDisposable
     }
 
     [Theory]
-    [InlineData(GeometryStorageType.Wkb)]
     [InlineData(GeometryStorageType.Classic)]
     public async Task EditSession_FailingOperation_RollsBackEarlierInserts(GeometryStorageType storage)
     {
@@ -246,29 +241,6 @@ public class SQLiteFdbNativeStorageTests : IDisposable
 
         var all = await DrainAsync(await fdb.Query(fc, new QueryFilter { SubFields = "*" }));
         Assert.Empty(all);
-    }
-
-    [Fact]
-    public async Task WkbDataset_BumpsFdbVersionTo8AndStoresRealWkb()
-    {
-        var fdb = await CreateFdbAsync(GeometryStorageType.Wkb);
-        Assert.True(fdb.FdbVersion >= new Version(8, 0, 0), $"FdbVersion={fdb.FdbVersion}");
-
-        var fc = await GetFeatureClassAsync(fdb, "ds", "pts");
-        Assert.True(await fdb.Insert(fc, new List<IFeature> { PointFeature(123, 456, "x") }), fdb.LastErrorMessage);
-
-        // the raw FDB_SHAPE blob must be parseable as standard WKB
-        using var conn = new SQLiteConnection("Data Source=" + _dbPath);
-        conn.Open();
-        using var cmd = conn.CreateCommand();
-        cmd.CommandText = "SELECT FDB_SHAPE FROM FC_pts LIMIT 1";
-        var blob = (byte[])cmd.ExecuteScalar();
-
-        Assert.Equal(0x01, blob[0]); // NDR
-        var geom = OGC.WKBToGeometry(blob);
-        var p = Assert.IsAssignableFrom<IPoint>(geom);
-        Assert.Equal(123, p.X);
-        Assert.Equal(456, p.Y);
     }
 
     [Fact]
@@ -351,28 +323,4 @@ public class SQLiteFdbNativeStorageTests : IDisposable
         return Convert.ToInt64(cmd.ExecuteScalar()) > 0;
     }
 
-    [Fact]
-    public async Task WkbDataset_SpatialQueryUsesNidIndex()
-    {
-        var fdb = await CreateFdbAsync(GeometryStorageType.Wkb);
-        var fc = await GetFeatureClassAsync(fdb, "ds", "pts");
-
-        await fdb.Insert(fc, new List<IFeature>
-        {
-            PointFeature(100, 100, "in"),
-            PointFeature(500, 500, "in2"),
-            PointFeature(950, 950, "out"),
-        });
-
-        var filter = new SpatialFilter
-        {
-            SubFields = "*",
-            SpatialRelation = spatialRelation.SpatialRelationMapEnvelopeIntersects,
-            Geometry = new Envelope(0, 0, 600, 600),
-        };
-        var read = await DrainAsync(await fdb.Query(fc, filter));
-
-        var names = read.Select(f => f.FindField("NAME")!.Value!.ToString()).OrderBy(x => x).ToArray();
-        Assert.Equal(new[] { "in", "in2" }, names);
-    }
 }

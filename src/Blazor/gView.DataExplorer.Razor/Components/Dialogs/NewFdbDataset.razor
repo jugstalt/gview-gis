@@ -55,7 +55,7 @@
                                 <GvGridItem>
                                     <SpatialIndexDefControl BinaryTreeDef="Model.SpatialIndex"
                                                             BinaryTreeDefChanged="SpatialIndexDefChanged"
-                                                            NativeStorage="@(Model.GeometryStorage != gView.Framework.Core.Data.GeometryStorageType.Classic)" />
+                                                            NativeStorage="@(Model.GeometryStorage.IsDatabaseNative())" />
                                 </GvGridItem>
                             </GvGrid>
                         </MudTabPanel>
@@ -124,10 +124,11 @@
     private static string StorageLabel(gView.Framework.Core.Data.GeometryStorageType s) => s switch
     {
         gView.Framework.Core.Data.GeometryStorageType.Classic => "gView Classic (legacy proprietary blob)",
-        gView.Framework.Core.Data.GeometryStorageType.Wkb => "WKB (standard blob)",
         gView.Framework.Core.Data.GeometryStorageType.PostGis => "PostGIS geometry",
         gView.Framework.Core.Data.GeometryStorageType.SqlServerGeometry => "SQL Server geometry",
         gView.Framework.Core.Data.GeometryStorageType.SqlServerGeography => "SQL Server geography",
+        gView.Framework.Core.Data.GeometryStorageType.SpatiaLite => "SpatiaLite",
+        gView.Framework.Core.Data.GeometryStorageType.GeoPackage => "GeoPackage",
         _ => s.ToString()
     };
 }

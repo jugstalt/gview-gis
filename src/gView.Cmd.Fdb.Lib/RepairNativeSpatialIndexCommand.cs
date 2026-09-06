@@ -4,6 +4,7 @@ using gView.Cmd.Core.Builders;
 using gView.DataSources.Fdb.MSAccess;
 using gView.DataSources.Fdb.MSSql;
 using gView.DataSources.Fdb.PostgreSql;
+using gView.DataSources.Fdb.SQLite;
 using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.FDB;
@@ -62,7 +63,7 @@ public class RepairNativeSpatialIndexCommand : ICommand
         var sIndexDef = (featureClass.Dataset as IFDBDataset)?.SpatialIndexDef;
         var storage = sIndexDef?.StorageType ?? GeometryStorageType.Classic;
 
-        if (storage is GeometryStorageType.Classic or GeometryStorageType.Wkb)
+        if (!storage.IsDatabaseNative())
         {
             throw new Exception($"Featureclass '{featureClass.Name}' uses gView-managed storage - use FDB.RepairSpatialIndex instead.");
         }
@@ -85,6 +86,12 @@ public class RepairNativeSpatialIndexCommand : ICommand
 
             case GeometryStorageType.SqlServerGeography when fdb is SqlFDB sqlGeog:
                 ok = RebuildMsIndex(sqlGeog, sIndexDef, featureClass.Name, GeometryFieldType.MsGeography, extent, logger);
+                break;
+
+            case GeometryStorageType.SpatiaLite when fdb is SQLiteFDB:
+            case GeometryStorageType.GeoPackage when fdb is SQLiteFDB:
+                logger?.LogLine("Rebuild SpatiaLite / GeoPackage R-Tree...");
+                ok = await ((SQLiteFDB)fdb).RebuildNativeSpatialIndex(featureClass.Name);
                 break;
 
             default:
