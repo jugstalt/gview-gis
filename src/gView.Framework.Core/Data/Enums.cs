@@ -61,8 +61,8 @@ namespace gView.Framework.Core.Data
         /// </summary>
         Classic = 0,
 
-        /// <summary>Standard OGC WKB in the blob column, gView BinaryTree index kept (SQLite).</summary>
-        Wkb = 1,
+        // value 1 was "Wkb" (standard WKB blob, gView BinaryTree kept) - dropped before release
+        // in favour of the SpatiaLite / GeoPackage native formats below.
 
         /// <summary>PostGIS <c>geometry</c> column + GiST index (PostgreSQL).</summary>
         PostGis = 2,
@@ -72,6 +72,29 @@ namespace gView.Framework.Core.Data
 
         /// <summary>SQL Server <c>geography</c> column + GEOGRAPHY_GRID spatial index.</summary>
         SqlServerGeography = 4,
+
+        /// <summary>SpatiaLite geometry blob + <c>geometry_columns</c> + SpatiaLite R-Tree (SQLite).</summary>
+        SpatiaLite = 5,
+
+        /// <summary>GeoPackage GPB blob + <c>gpkg_*</c> metadata + GeoPackage R-Tree (SQLite).</summary>
+        GeoPackage = 6,
+    }
+
+    public static class GeometryStorageTypeExtensions
+    {
+        /// <summary>
+        /// True when the geometry lives in a database-native column / format with the database's
+        /// own spatial index - no gView BinaryTree, no Max Level, extent only a hint.
+        /// </summary>
+        public static bool IsDatabaseNative(this GeometryStorageType storage) => storage switch
+        {
+            GeometryStorageType.PostGis => true,
+            GeometryStorageType.SqlServerGeometry => true,
+            GeometryStorageType.SqlServerGeography => true,
+            GeometryStorageType.SpatiaLite => true,
+            GeometryStorageType.GeoPackage => true,
+            _ => false,
+        };
     }
 
     public enum DatasetState { unknown = 0, opened = 1 }

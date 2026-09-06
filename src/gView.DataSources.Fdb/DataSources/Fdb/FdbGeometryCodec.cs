@@ -10,15 +10,13 @@ namespace gView.DataSources.Fdb
 {
     /// <summary>
     /// Encodes / decodes the geometry stored in an FDB feature class' <c>FDB_SHAPE</c> blob column.
-    /// One implementation per <see cref="GeometryStorageType"/> that keeps the geometry in a blob
-    /// (<see cref="GeometryStorageType.Classic"/> = gView proprietary, <see cref="GeometryStorageType.Wkb"/>
-    /// = standard WKB). Database-native columns (PostGIS / SQL Server <c>geometry</c>) are not blobs
-    /// and are handled by the provider's SQL directly, not through this seam.
+    /// Only <see cref="GeometryStorageType.Classic"/> (gView proprietary blob) goes through this
+    /// seam. Database-native formats (PostGIS / SQL Server <c>geometry</c>, SpatiaLite / GeoPackage
+    /// blobs) are handled by the provider's SQL directly - see <see cref="Wkb"/> for the shared
+    /// geometry&#8596;WKB helper they use to feed <c>GeomFromWKB</c> and decode <c>ST_AsBinary</c>.
     /// </summary>
     public interface IFdbGeometryCodec
     {
-        GeometryStorageType StorageType { get; }
-
         /// <summary>Serializes <paramref name="shape"/> for the <c>FDB_SHAPE</c> blob parameter.</summary>
         byte[] Encode(IGeometry shape, IGeometryDef geometryDef);
 
@@ -30,20 +28,25 @@ namespace gView.DataSources.Fdb
     {
         /// <summary>Legacy gView proprietary blob format (<see cref="GeometryStorageType.Classic"/>).</summary>
         public static readonly IFdbGeometryCodec Proprietary = new FdbProprietaryGeometryCodec();
+
+        /// <summary>
+        /// Standard WKB helper. Not a storage choice any more - used by the native providers to turn
+        /// a geometry into WKB bytes for <c>ST_GeomFromWKB</c> / <c>GeomFromWKB</c> and to decode
+        /// <c>ST_AsBinary(...)</c> results.
+        /// </summary>
         public static readonly IFdbGeometryCodec Wkb = new FdbWkbGeometryCodec();
 
-        /// <summary>Blob codec for the given storage type; <c>null</c> for database-native storage.</summary>
+        /// <summary>Blob codec for the given storage type; <c>null</c> for every database-native format.</summary>
         public static IFdbGeometryCodec For(GeometryStorageType storageType) => storageType switch
         {
             GeometryStorageType.Classic => Proprietary,
-            GeometryStorageType.Wkb => Wkb,
             _ => null
         };
 
         /// <summary>
         /// Serializes a geometry for a given storage type: the proprietary blob for
-        /// <see cref="GeometryStorageType.Classic"/>, WKB for everything else (WKB blob column, or
-        /// WKB bytes to feed <c>ST_GeomFromWKB</c> / <c>geometry::STGeomFromWKB</c> for a native column).
+        /// <see cref="GeometryStorageType.Classic"/>, WKB bytes for everything else (to feed
+        /// <c>ST_GeomFromWKB</c> / <c>GeomFromWKB</c> / <c>geometry::STGeomFromWKB</c>).
         /// </summary>
         public static byte[] Encode(GeometryStorageType storageType, IGeometry shape, IGeometryDef geometryDef)
             => (storageType == GeometryStorageType.Classic ? Proprietary : Wkb).Encode(shape, geometryDef);
@@ -67,8 +70,6 @@ namespace gView.DataSources.Fdb
     /// <summary>gView's proprietary geometry serialization (no header, geometry class taken from the catalog).</summary>
     internal sealed class FdbProprietaryGeometryCodec : IFdbGeometryCodec
     {
-        public GeometryStorageType StorageType => GeometryStorageType.Classic;
-
         public byte[] Encode(IGeometry shape, IGeometryDef geometryDef)
         {
             using var ms = new MemoryStream();
@@ -110,8 +111,6 @@ namespace gView.DataSources.Fdb
     /// </summary>
     internal sealed class FdbWkbGeometryCodec : IFdbGeometryCodec
     {
-        public GeometryStorageType StorageType => GeometryStorageType.Wkb;
-
         public byte[] Encode(IGeometry shape, IGeometryDef geometryDef)
             => OGC.GeometryToWKB(
                 shape,

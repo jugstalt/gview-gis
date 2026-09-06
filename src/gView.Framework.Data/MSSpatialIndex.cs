@@ -50,10 +50,10 @@ namespace gView.Framework.Data
         }
 
         /// <summary>
-        /// Geometry storage. <see cref="GeometryStorageType.Classic"/> (proprietary blob) or
-        /// <see cref="GeometryStorageType.Wkb"/> (standard WKB in the blob column) - both keep the
-        /// gView BinaryTree index this def describes. <see cref="GeometryStorageType.PostGis"/> is
-        /// set via <see cref="PostGisSpatialIndexDef"/>.
+        /// Geometry storage. <see cref="GeometryStorageType.Classic"/> (proprietary blob) keeps the
+        /// gView BinaryTree index this def describes; the database-native formats
+        /// (<see cref="GeometryStorageType.PostGis"/>, <see cref="GeometryStorageType.SpatiaLite"/>,
+        /// <see cref="GeometryStorageType.GeoPackage"/>) set it here and build no gView tree.
         /// </summary>
         public virtual GeometryStorageType StorageType
         {

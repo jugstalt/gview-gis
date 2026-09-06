@@ -14,9 +14,21 @@ public class FdbGeometryCodecTests
     public void For_MapsStorageTypesToCodecs()
     {
         Assert.Same(FdbGeometryCodec.Proprietary, FdbGeometryCodec.For(GeometryStorageType.Classic));
-        Assert.Same(FdbGeometryCodec.Wkb, FdbGeometryCodec.For(GeometryStorageType.Wkb));
         Assert.Null(FdbGeometryCodec.For(GeometryStorageType.PostGis));
         Assert.Null(FdbGeometryCodec.For(GeometryStorageType.SqlServerGeometry));
+        Assert.Null(FdbGeometryCodec.For(GeometryStorageType.SpatiaLite));
+        Assert.Null(FdbGeometryCodec.For(GeometryStorageType.GeoPackage));
+    }
+
+    [Fact]
+    public void IsDatabaseNative_Mapping()
+    {
+        Assert.False(GeometryStorageType.Classic.IsDatabaseNative());
+        Assert.True(GeometryStorageType.PostGis.IsDatabaseNative());
+        Assert.True(GeometryStorageType.SqlServerGeometry.IsDatabaseNative());
+        Assert.True(GeometryStorageType.SqlServerGeography.IsDatabaseNative());
+        Assert.True(GeometryStorageType.SpatiaLite.IsDatabaseNative());
+        Assert.True(GeometryStorageType.GeoPackage.IsDatabaseNative());
     }
 
     [Fact]
