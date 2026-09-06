@@ -171,7 +171,9 @@
             var newExObject = await creatable.CreateExplorerObjectAsync(AppScope, currentExplorerObject);
             if (newExObject != null)
             {
-                await EventBus.FireSoftRefreshContentAsync();
+                // The new object was written to disk after the parent's child list was cached.
+                // A soft refresh re-reads the cached children, so force a full rescan instead.
+                await AppScope.ForceContentRefresh();
             }
         }
     });
