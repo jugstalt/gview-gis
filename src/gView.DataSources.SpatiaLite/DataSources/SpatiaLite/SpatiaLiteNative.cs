@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 [assembly: InternalsVisibleTo("gView.DataSources.SpatiaLite.Tests")]
+[assembly: InternalsVisibleTo("gView.DataSources.Fdb.SQLite")]
 
 namespace gView.DataSources.SpatiaLite
 {

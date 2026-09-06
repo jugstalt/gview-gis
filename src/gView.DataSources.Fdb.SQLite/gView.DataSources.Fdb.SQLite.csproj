@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\gView.DataSources.Fdb\gView.DataSources.Fdb.csproj" />
+    <ProjectReference Include="..\gView.DataSources.SpatiaLite\gView.DataSources.SpatiaLite.csproj" />
     <ProjectReference Include="..\gView.DataSources.Raster\gView.DataSources.Raster.csproj" />
     <ProjectReference Include="..\gView.Framework.Data\gView.Framework.Data.csproj" />
     <ProjectReference Include="..\gView.Framework.Db\gView.Framework.Db.csproj" />
