@@ -41,6 +41,7 @@ namespace gView.DataSources.Fdb.SQLite.Cursors
         {
             _connection = new SQLiteConnection(connectionString);
             await _connection.OpenAsync();
+            PrepareConnection(_connection);
 
             _command = new SQLiteCommand(commandText, _connection);
             _command.Prepare();
@@ -85,9 +86,9 @@ namespace gView.DataSources.Fdb.SQLite.Cursors
                         }
                         catch { }
 
-                        if (name == "FDB_SHAPE" && obj != DBNull.Value)
+                        if (name == ShapeColumn && obj != DBNull.Value)
                         {
-                            IGeometry shape = DeserializeShape((byte[])obj);
+                            IGeometry shape = DecodeShape((byte[])obj);
                             if (shape != null)
                             {
                                 if (!PassesGeometryFilter(shape))
@@ -128,8 +129,18 @@ namespace gView.DataSources.Fdb.SQLite.Cursors
         /// <summary>Cursor-side geometry post-filter. Base implementation accepts every row.</summary>
         protected virtual bool PassesGeometryFilter(IGeometry shape) => true;
 
-        private IGeometry DeserializeShape(byte[] bytes)
-            => _geometryCodec.Decode(bytes, _geomDef);
+        /// <summary>
+        /// Name of the column carrying the geometry bytes in the reader. The classic cursors read
+        /// the proprietary blob from <c>FDB_SHAPE</c>; a native cursor aliases
+        /// <c>ST_AsBinary(...)</c> to something else (e.g. <c>temp_geometry</c>).
+        /// </summary>
+        protected virtual string ShapeColumn => "FDB_SHAPE";
+
+        /// <summary>Decodes the geometry bytes of <see cref="ShapeColumn"/>. Default: the FDB blob codec.</summary>
+        protected virtual IGeometry DecodeShape(byte[] bytes) => _geometryCodec.Decode(bytes, _geomDef);
+
+        /// <summary>Hook to prepare a freshly opened connection (e.g. load mod_spatialite). No-op by default.</summary>
+        protected virtual void PrepareConnection(SQLiteConnection connection) { }
 
         public abstract override Task<IFeature> NextFeature();
 

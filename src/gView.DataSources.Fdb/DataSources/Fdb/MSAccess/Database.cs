@@ -534,15 +534,19 @@ namespace gView.DataSources.Fdb.MSAccess
 
             GeometryStorageType storage = sIndexDef.StorageType;
 
-            // "native DB geometry" = the geometry lives in a database-native column with the
-            // database's own spatial index -> no FDB_NID column, no gView BinaryTree.
-            bool nativeDbGeometry = storage == GeometryStorageType.PostGis
-                || storage == GeometryStorageType.SqlServerGeometry
-                || storage == GeometryStorageType.SqlServerGeography;
+            // "native DB geometry" = the geometry lives in a database-native column / format with
+            // the database's own spatial index -> no FDB_NID column, no gView BinaryTree.
+            bool nativeDbGeometry = storage.IsDatabaseNative();
 
             // SQL Server geometry/geography column (drives the [GEOMETRY]/[GEOGRAPHY] DDL + clustered PK).
             bool msSpatial = _conn.dbType == DBType.sql
                 && (storage == GeometryStorageType.SqlServerGeometry || storage == GeometryStorageType.SqlServerGeography);
+
+            // SpatiaLite / GeoPackage: the FDB_SHAPE column is created + registered by the
+            // provider's FinalizeNativeGeometryColumnAsync hook (AddGeometryColumn), so it must
+            // NOT be part of the CREATE TABLE.
+            bool geometryColumnDeferred = storage == GeometryStorageType.SpatiaLite
+                || storage == GeometryStorageType.GeoPackage;
 
             if (storage != GeometryStorageType.Classic)
             {
@@ -651,17 +655,20 @@ namespace gView.DataSources.Fdb.MSAccess
                     geomDef.GeometryType == GeometryType.Aggregate ||
                     geomDef.GeometryType == GeometryType.Unknown)
                 {
-                    field = new Field();
-                    field.name = field.aliasname = ColumnName("FDB_SHAPE");
-                    field.type = storage switch
+                    if (!geometryColumnDeferred)
                     {
-                        GeometryStorageType.SqlServerGeography => FieldType.GEOGRAPHY,
-                        GeometryStorageType.SqlServerGeometry => FieldType.GEOMETRY,
-                        GeometryStorageType.PostGis => FieldType.GEOMETRY, // pg CreateTable emits a PostGIS geometry column
-                        _ => FieldType.binary,                              // Default (proprietary blob) and Wkb
-                    };
+                        field = new Field();
+                        field.name = field.aliasname = ColumnName("FDB_SHAPE");
+                        field.type = storage switch
+                        {
+                            GeometryStorageType.SqlServerGeography => FieldType.GEOGRAPHY,
+                            GeometryStorageType.SqlServerGeometry => FieldType.GEOMETRY,
+                            GeometryStorageType.PostGis => FieldType.GEOMETRY, // pg CreateTable emits a PostGIS geometry column
+                            _ => FieldType.binary,                              // Classic (proprietary blob)
+                        };
 
-                    fields.Insert(1, field);
+                        fields.Insert(1, field);
+                    }
                     // FDB_NID (gView BinaryTree node id) - not needed when the database has its own spatial index
                     if (!nativeDbGeometry)
                     {
@@ -1754,6 +1761,16 @@ namespace gView.DataSources.Fdb.MSAccess
                         return new PostGisSpatialIndexDef(
                             new Envelope((double)row["SIMinX"], (double)row["SIMinY"], (double)row["SIMaxX"], (double)row["SIMaxY"]),
                             Convert.ToInt32(row["MaxLevels"]));
+                    }
+                    else if (si == "spatialite" || si == "geopackage"
+                             || storage == GeometryStorageType.SpatiaLite || storage == GeometryStorageType.GeoPackage)
+                    {
+                        return new gViewSpatialIndexDef(
+                            new Envelope((double)row["SIMinX"], (double)row["SIMinY"], (double)row["SIMaxX"], (double)row["SIMaxY"]),
+                            Convert.ToInt32(row["MaxLevels"]))
+                        {
+                            StorageType = storage == GeometryStorageType.Classic ? GeometryStorageType.SpatiaLite : storage
+                        };
                     }
                     else if (si == "binarytree" || si == "binarytree2")
                     {
@@ -3795,6 +3812,12 @@ namespace gView.DataSources.Fdb.MSAccess
             if (fc.SpatialReference.Equals(destSRef))
             {
                 return true;
+            }
+
+            if (((fc.Dataset as IFDBDataset)?.SpatialIndexDef?.StorageType ?? GeometryStorageType.Classic).IsDatabaseNative())
+            {
+                _errMsg = "ProjectFeatureClass is not supported for database-native geometry storage.";
+                return false;
             }
 
             List<SpatialIndexNode> nodes = await this.SpatialIndexNodes2(fc.Name, true);

@@ -106,6 +106,132 @@ namespace gView.DataSources.Fdb.SQLite
             }
         }
 
+        #region SpatiaLite / GeoPackage native storage
+
+        internal static bool IsSpatiaLiteStorage(GeometryStorageType storage)
+            => storage == GeometryStorageType.SpatiaLite || storage == GeometryStorageType.GeoPackage;
+
+        /// <summary>
+        /// A connection to the FDB file with <c>mod_spatialite</c> loaded (extension loads do not
+        /// survive the connection pool, so this is done per connection). For GeoPackage storage it
+        /// also enables amphibious mode + <c>trusted_schema</c>.
+        /// </summary>
+        internal SQLiteConnection OpenSpatialConnection(gView.DataSources.SpatiaLite.SpatiaLiteFlavor flavor)
+        {
+            if (!gView.DataSources.SpatiaLite.SpatiaLiteNative.EnsureAvailable(out var err))
+            {
+                throw new Exception("mod_spatialite is required for SpatiaLite / GeoPackage FDB storage: " + err);
+            }
+
+            var connection = new SQLiteConnection("Data Source=" + _filename);
+            connection.Open();
+            gView.DataSources.SpatiaLite.SpatiaLiteNative.LoadInto(connection);
+
+            if (flavor == gView.DataSources.SpatiaLite.SpatiaLiteFlavor.GeoPackage)
+            {
+                using var cmd = connection.CreateCommand();
+                cmd.CommandText = "SELECT EnableGpkgAmphibiousMode()";
+                cmd.ExecuteNonQuery();
+                cmd.CommandText = "PRAGMA trusted_schema = ON";
+                cmd.ExecuteNonQuery();
+            }
+
+            return connection;
+        }
+
+        protected override Task EnsureNativeGeometrySupportAsync(GeometryStorageType storage)
+        {
+            if (IsSpatiaLiteStorage(storage))
+            {
+                var flavor = gView.DataSources.SpatiaLite.SpatiaLiteSchema.FlavorFor(storage);
+                using var connection = OpenSpatialConnection(flavor);
+                gView.DataSources.SpatiaLite.SpatiaLiteSchema.EnsureBaseTables(connection, flavor);
+            }
+
+            return Task.CompletedTask;
+        }
+
+        protected override Task FinalizeNativeGeometryColumnAsync(string fcName, IGeometryDef geomDef, ISpatialIndexDef sIndexDef)
+        {
+            var storage = sIndexDef?.StorageType ?? GeometryStorageType.Classic;
+            if (!IsSpatiaLiteStorage(storage))
+            {
+                return Task.CompletedTask;
+            }
+
+            var flavor = gView.DataSources.SpatiaLite.SpatiaLiteSchema.FlavorFor(storage);
+            int srid = (sIndexDef?.SpatialReference ?? geomDef?.SpatialReference)?.EpsgCode ?? 0;
+            string table = "FC_" + fcName;
+
+            using var connection = OpenSpatialConnection(flavor);
+            gView.DataSources.SpatiaLite.SpatiaLiteSchema.EnsureBaseTables(connection, flavor);
+            gView.DataSources.SpatiaLite.SpatiaLiteSchema.AddGeometryColumn(connection, flavor, table, "FDB_SHAPE", geomDef.GeometryType, srid);
+            gView.DataSources.SpatiaLite.SpatiaLiteSchema.AddSpatialIndex(connection, flavor, table, "FDB_SHAPE");
+
+            using (var cmd = connection.CreateCommand())
+            {
+                cmd.CommandText = "UPDATE FDB_FeatureClasses SET SI='"
+                    + (flavor == gView.DataSources.SpatiaLite.SpatiaLiteFlavor.GeoPackage ? "geopackage" : "spatialite")
+                    + "' WHERE Name='" + fcName.Replace("'", "''") + "'";
+                cmd.ExecuteNonQuery();
+            }
+
+            return Task.CompletedTask;
+        }
+
+        protected override Task<bool> CreateNativeSpatialIndexAsync(string fcName, ISpatialIndexDef sIndexDef)
+        {
+            var storage = sIndexDef?.StorageType ?? GeometryStorageType.Classic;
+            if (IsSpatiaLiteStorage(storage))
+            {
+                var flavor = gView.DataSources.SpatiaLite.SpatiaLiteSchema.FlavorFor(storage);
+                using var connection = OpenSpatialConnection(flavor);
+                gView.DataSources.SpatiaLite.SpatiaLiteSchema.AddSpatialIndex(connection, flavor, "FC_" + fcName, "FDB_SHAPE");
+            }
+
+            return Task.FromResult(true);
+        }
+
+        async protected override Task<bool> DeleteFeatureClass(string fcName, bool deleteFeatureClassesRow)
+        {
+            try
+            {
+                var sIndexDef = await FcSpatialIndexDef(fcName);
+                var storage = sIndexDef?.StorageType ?? GeometryStorageType.Classic;
+                if (IsSpatiaLiteStorage(storage))
+                {
+                    var flavor = gView.DataSources.SpatiaLite.SpatiaLiteSchema.FlavorFor(storage);
+                    using var connection = OpenSpatialConnection(flavor);
+                    // drop the R-Tree + triggers and the geometry-column registration first, so
+                    // the base's DROP TABLE does not leave dangling triggers / catalog rows behind.
+                    gView.DataSources.SpatiaLite.SpatiaLiteSchema.DropSpatialIndex(connection, flavor, "FC_" + fcName, "FDB_SHAPE");
+                    gView.DataSources.SpatiaLite.SpatiaLiteSchema.DiscardGeometryColumn(connection, flavor, "FC_" + fcName, "FDB_SHAPE");
+                }
+            }
+            catch { /* best effort - continue with the normal drop */ }
+
+            return await base.DeleteFeatureClass(fcName, deleteFeatureClassesRow);
+        }
+
+        /// <summary>Rebuilds the SpatiaLite / GeoPackage R-Tree of a feature class (FDB.RepairNativeSpatialIndex).</summary>
+        public async Task<bool> RebuildNativeSpatialIndex(string fcName)
+        {
+            var sIndexDef = await FcSpatialIndexDef(fcName);
+            var storage = sIndexDef?.StorageType ?? GeometryStorageType.Classic;
+            if (!IsSpatiaLiteStorage(storage))
+            {
+                _errMsg = $"'{fcName}' is not a SpatiaLite / GeoPackage feature class.";
+                return false;
+            }
+
+            var flavor = gView.DataSources.SpatiaLite.SpatiaLiteSchema.FlavorFor(storage);
+            using var connection = OpenSpatialConnection(flavor);
+            gView.DataSources.SpatiaLite.SpatiaLiteSchema.AddSpatialIndex(connection, flavor, "FC_" + fcName, "FDB_SHAPE");
+            return true;
+        }
+
+        #endregion
+
         async override public Task<List<IDatasetElement>> DatasetLayers(IDataset dataset)
         {
             _errMsg = "";
@@ -393,13 +519,21 @@ namespace gView.DataSources.Fdb.SQLite
                 return true;
             }
 
+            var storage = (fClass.Dataset as IFDBDataset)?.SpatialIndexDef?.StorageType ?? GeometryStorageType.Classic;
+            bool spatiaLite = IsSpatiaLiteStorage(storage);
+            var slFlavor = spatiaLite ? gView.DataSources.SpatiaLite.SpatiaLiteSchema.FlavorFor(storage) : default;
+            int slSrid = spatiaLite ? (fClass.SpatialReference?.EpsgCode ?? 0) : 0;
+
             BinarySearchTree2 tree = null;
-            await CheckSpatialSearchTreeVersion(fClass.Name);
-            if (_spatialSearchTrees[fClass.Name] == null)
+            if (!spatiaLite)
             {
-                _spatialSearchTrees[fClass.Name] = await this.SpatialSearchTree(fClass.Name);
+                await CheckSpatialSearchTreeVersion(fClass.Name);
+                if (_spatialSearchTrees[fClass.Name] == null)
+                {
+                    _spatialSearchTrees[fClass.Name] = await this.SpatialSearchTree(fClass.Name);
+                }
+                tree = _spatialSearchTrees[fClass.Name] as BinarySearchTree2;
             }
-            tree = _spatialSearchTrees[fClass.Name] as BinarySearchTree2;
 
             var allowFcEditing = await Replication.AllowFeatureClassEditing(fClass);
             string replicationField = allowFcEditing.replFieldName;
@@ -410,12 +544,18 @@ namespace gView.DataSources.Fdb.SQLite
             }
             try
             {
-                using (var ownConnection = sharedConnection is null ? new SQLiteConnection(_conn.ConnectionString) : null)
+                using (var ownConnection = sharedConnection is null
+                        ? (spatiaLite ? OpenSpatialConnection(slFlavor) : new SQLiteConnection(_conn.ConnectionString))
+                        : null)
                 {
                     var connection = ownConnection ?? sharedConnection;
-                    if (ownConnection is not null)
+                    if (ownConnection is not null && ownConnection.State != System.Data.ConnectionState.Open)
                     {
                         await connection.OpenAsync();
+                    }
+                    if (spatiaLite && sharedConnection is not null)
+                    {
+                        gView.DataSources.SpatiaLite.SpatiaLiteNative.LoadInto(sharedConnection);
                     }
 
                     using (var command = new SQLiteCommand())
@@ -452,11 +592,15 @@ namespace gView.DataSources.Fdb.SQLite
                                 var shape = fClass.ConvertTo(feature.Shape);
                                 GeometryDef.VerifyGeometryType(shape, fClass);
 
-                                byte[] geometry = gView.DataSources.Fdb.FdbGeometryCodec.ForFeatureClass(fClass).Encode(shape, fClass);
+                                byte[] geometry = spatiaLite
+                                    ? gView.DataSources.Fdb.FdbGeometryCodec.Wkb.Encode(shape, fClass)
+                                    : gView.DataSources.Fdb.FdbGeometryCodec.ForFeatureClass(fClass).Encode(shape, fClass);
 
                                 SQLiteParameter parameter = new SQLiteParameter("@FDB_SHAPE", geometry);
                                 fields.Append("[FDB_SHAPE]");
-                                parameters.Append("@FDB_SHAPE");
+                                parameters.Append(spatiaLite
+                                    ? gView.DataSources.SpatiaLite.SpatiaLiteSchema.ShapeInsertExpression(slFlavor, "@FDB_SHAPE", fClass.GeometryType, slSrid)
+                                    : "@FDB_SHAPE");
                                 command.Parameters.Add(parameter);
                             }
 
@@ -502,7 +646,7 @@ namespace gView.DataSources.Fdb.SQLite
                                 }
                             }
 
-                            if (!hasNID)
+                            if (!hasNID && !spatiaLite)
                             {
                                 long NID = 0;
                                 if (tree != null && feature.Shape != null)
@@ -653,14 +797,22 @@ namespace gView.DataSources.Fdb.SQLite
                 return true;
             }
 
+            var storage = (fClass.Dataset as IFDBDataset)?.SpatialIndexDef?.StorageType ?? GeometryStorageType.Classic;
+            bool spatiaLite = IsSpatiaLiteStorage(storage);
+            var slFlavor = spatiaLite ? gView.DataSources.SpatiaLite.SpatiaLiteSchema.FlavorFor(storage) : default;
+            int slSrid = spatiaLite ? (fClass.SpatialReference?.EpsgCode ?? 0) : 0;
+
             //int counter = 0;
             BinarySearchTree2 tree = null;
-            await CheckSpatialSearchTreeVersion(fClass.Name);
-            if (_spatialSearchTrees[fClass.Name] == null)
+            if (!spatiaLite)
             {
-                _spatialSearchTrees[fClass.Name] = await this.SpatialSearchTree(fClass.Name);
+                await CheckSpatialSearchTreeVersion(fClass.Name);
+                if (_spatialSearchTrees[fClass.Name] == null)
+                {
+                    _spatialSearchTrees[fClass.Name] = await this.SpatialSearchTree(fClass.Name);
+                }
+                tree = _spatialSearchTrees[fClass.Name] as BinarySearchTree2;
             }
-            tree = _spatialSearchTrees[fClass.Name] as BinarySearchTree2;
 
             var allowFcEditing = await Replication.AllowFeatureClassEditing(fClass);
             string replicationField = allowFcEditing.replFieldName;
@@ -673,12 +825,18 @@ namespace gView.DataSources.Fdb.SQLite
             {
                 //List<long> _nids = new List<long>();
 
-                using (var ownConnection = sharedConnection is null ? new SQLiteConnection(_conn.ConnectionString) : null)
+                using (var ownConnection = sharedConnection is null
+                        ? (spatiaLite ? OpenSpatialConnection(slFlavor) : new SQLiteConnection(_conn.ConnectionString))
+                        : null)
                 {
                     var connection = ownConnection ?? sharedConnection;
-                    if (ownConnection is not null)
+                    if (ownConnection is not null && ownConnection.State != System.Data.ConnectionState.Open)
                     {
                         await connection.OpenAsync();
+                    }
+                    if (spatiaLite && sharedConnection is not null)
+                    {
+                        gView.DataSources.SpatiaLite.SpatiaLiteNative.LoadInto(sharedConnection);
                     }
 
                     using (SQLiteCommand command = connection.CreateCommand())
@@ -729,10 +887,14 @@ namespace gView.DataSources.Fdb.SQLite
                                 var shape = fClass.ConvertTo(feature.Shape);
                                 GeometryDef.VerifyGeometryType(shape, fClass);
 
-                                byte[] geometry = gView.DataSources.Fdb.FdbGeometryCodec.ForFeatureClass(fClass).Encode(shape, fClass);
+                                byte[] geometry = spatiaLite
+                                    ? gView.DataSources.Fdb.FdbGeometryCodec.Wkb.Encode(shape, fClass)
+                                    : gView.DataSources.Fdb.FdbGeometryCodec.ForFeatureClass(fClass).Encode(shape, fClass);
 
                                 SQLiteParameter parameter = new SQLiteParameter("@FDB_SHAPE", geometry);
-                                fields.Append("[FDB_SHAPE]=@FDB_SHAPE");
+                                fields.Append(spatiaLite
+                                    ? "[FDB_SHAPE]=" + gView.DataSources.SpatiaLite.SpatiaLiteSchema.ShapeInsertExpression(slFlavor, "@FDB_SHAPE", fClass.GeometryType, slSrid)
+                                    : "[FDB_SHAPE]=@FDB_SHAPE");
                                 command.Parameters.Add(parameter);
                             }
 
@@ -839,14 +1001,22 @@ namespace gView.DataSources.Fdb.SQLite
                 return false;
             }
 
+            var delStorage = (fClass.Dataset as IFDBDataset)?.SpatialIndexDef?.StorageType ?? GeometryStorageType.Classic;
+            bool delSpatiaLite = IsSpatiaLiteStorage(delStorage);
             try
             {
-                using (var ownConnection = sharedConnection is null ? new SQLiteConnection(_conn.ConnectionString) : null)
+                using (var ownConnection = sharedConnection is null
+                        ? (delSpatiaLite ? OpenSpatialConnection(gView.DataSources.SpatiaLite.SpatiaLiteSchema.FlavorFor(delStorage)) : new SQLiteConnection(_conn.ConnectionString))
+                        : null)
                 {
                     var connection = ownConnection ?? sharedConnection;
-                    if (ownConnection is not null)
+                    if (ownConnection is not null && ownConnection.State != System.Data.ConnectionState.Open)
                     {
                         await connection.OpenAsync();
+                    }
+                    if (delSpatiaLite && sharedConnection is not null)
+                    {
+                        gView.DataSources.SpatiaLite.SpatiaLiteNative.LoadInto(sharedConnection);
                     }
 
                     string sql = "DELETE FROM " + FcTableName(fClass) + ((where != String.Empty) ? " WHERE " + where : "");
@@ -1091,6 +1261,23 @@ namespace gView.DataSources.Fdb.SQLite
                 return null;
             }
 
+            {
+                var storage = (fc.Dataset as IFDBDataset)?.SpatialIndexDef?.StorageType ?? GeometryStorageType.Classic;
+                if (IsSpatiaLiteStorage(storage))
+                {
+                    if (filter is ISpatialFilter)
+                    {
+                        filter = SpatialFilter.Project(filter as ISpatialFilter, fc.SpatialReference);
+                    }
+
+                    return await Cursors.SQLiteNativeFeatureCursor.Create(
+                        _conn.ConnectionString, FcTableName(fc), "FC_" + fc.Name, fc, filter,
+                        gView.DataSources.SpatiaLite.SpatiaLiteSchema.FlavorFor(storage),
+                        fc.SpatialReference?.EpsgCode ?? 0,
+                        filter?.FeatureSpatialReference, filter?.DatumTransformations);
+                }
+            }
+
             string subfields = "";
             if (filter != null)
             {
@@ -1173,6 +1360,16 @@ namespace gView.DataSources.Fdb.SQLite
 
         async public override Task<IFeatureCursor> QueryIDs(IFeatureClass fc, string subFields, List<int> IDs, ISpatialReference toSRef, IDatumTransformations datumTransformations)
         {
+            var storage = (fc.Dataset as IFDBDataset)?.SpatialIndexDef?.StorageType ?? GeometryStorageType.Classic;
+            if (IsSpatiaLiteStorage(storage))
+            {
+                var idFilter = new RowIDFilter(fc.IDFieldName, IDs) { SubFields = subFields };
+                return await Cursors.SQLiteNativeFeatureCursor.Create(
+                    _conn.ConnectionString, FcTableName(fc), "FC_" + fc.Name, fc, idFilter,
+                    gView.DataSources.SpatiaLite.SpatiaLiteSchema.FlavorFor(storage),
+                    fc.SpatialReference?.EpsgCode ?? 0, toSRef, datumTransformations);
+            }
+
             string sql = "SELECT " + subFields + " FROM " + FcTableName(fc);
             return await SQLiteFDBFeatureCursorIDs.Create(_conn.ConnectionString, sql, IDs, fc, toSRef, datumTransformations);
         }
