@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.IO;
@@ -18,6 +18,15 @@ namespace gView.DataSources.SpatiaLite
     {
         SpatiaLite,
         GeoPackage
+    }
+
+    /// <summary>
+    /// Thrown when a SpatiaLite operation needs the native <c>mod_spatialite</c> extension but it
+    /// could not be found / loaded. The message is user-facing and lists how to fix it.
+    /// </summary>
+    public sealed class SpatiaLiteNotAvailableException : Exception
+    {
+        public SpatiaLiteNotAvailableException(string message) : base(message) { }
     }
 
     /// <summary>
@@ -55,6 +64,7 @@ namespace gView.DataSources.SpatiaLite
                 try
                 {
                     _modSpatialitePath = ResolvePath();
+                    Console.WriteLine($"Resolved mod_spatialite path: {_modSpatialitePath}");
                     PrepareNativeSearchPath(_modSpatialitePath);
 
                     using (var connection = new SQLiteConnection("Data Source=:memory:"))
@@ -90,16 +100,67 @@ namespace gView.DataSources.SpatiaLite
         /// Enables and loads <c>mod_spatialite</c> on an already-open connection.
         /// Call once per freshly opened connection (extensions do not survive a
         /// connection being returned to the pool and re-handed out as a new handle).
+        /// Throws <see cref="SpatiaLiteNotAvailableException"/> (with an actionable message)
+        /// when the native library is missing, instead of a cryptic SQLite error.
         /// </summary>
         public static void LoadInto(SQLiteConnection connection)
         {
-            if (!_probed)
+            if (!EnsureAvailable(out var error))
             {
-                EnsureAvailable(out _);
+                throw new SpatiaLiteNotAvailableException(BuildNotAvailableMessage(error));
             }
 
             connection.EnableExtensions(true);
             connection.LoadExtension(_modSpatialitePath);
+        }
+
+        /// <summary>User-facing "mod_spatialite is missing - here is how to fix it" text.</summary>
+        public static string BuildNotAvailableMessage(string underlyingError = null)
+        {
+            var rid = GenericRid();
+            var envValue = Environment.GetEnvironmentVariable("GVIEW_MOD_SPATIALITE");
+            var sb = new System.Text.StringBuilder();
+
+            sb.AppendLine("The native 'mod_spatialite' library is required for SpatiaLite geometry storage, but it was not found.");
+            sb.AppendLine();
+            sb.AppendLine("Searched:");
+            sb.AppendLine($"  - GVIEW_MOD_SPATIALITE (environment) : {(String.IsNullOrWhiteSpace(envValue) ? "(not set)" : envValue)}");
+            foreach (var dir in NativeProbeDirectories())
+            {
+                sb.AppendLine($"  - {dir}");
+            }
+            sb.AppendLine();
+            sb.AppendLine("How to fix (any one of these):");
+            sb.AppendLine("  * Use a GeoPackage feature database instead (*.fdb.gpkg / *.gpkg) - it stores geometry");
+            sb.AppendLine("    natively and needs NO native library.");
+            sb.AppendLine($"  * Copy 'mod_spatialite' and ALL its dependency libraries into:");
+            sb.AppendLine($"        {Path.Combine(AppContext.BaseDirectory, "runtimes", rid, "native")}");
+            sb.AppendLine("  * Or set the environment variable GVIEW_MOD_SPATIALITE to the full path of a");
+            sb.AppendLine("    mod_spatialite library (e.g. from a QGIS / OSGeo4W installation).");
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                sb.AppendLine("    Windows: get the 'mod_spatialite-*-win-amd64' bundle from https://www.gaia-gis.it/gaia-sins/");
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                sb.AppendLine("    macOS:   brew install libspatialite");
+            }
+            else
+            {
+                sb.AppendLine("    Linux:   apt install libsqlite3-mod-spatialite");
+            }
+
+            sb.AppendLine();
+            sb.AppendLine("See docs/mod_spatialite.md in the gView repository for details.");
+
+            if (!String.IsNullOrWhiteSpace(underlyingError))
+            {
+                sb.AppendLine();
+                sb.Append("Loader error: ").Append(underlyingError);
+            }
+
+            return sb.ToString();
         }
 
         private static string FileName =>
@@ -127,13 +188,13 @@ namespace gView.DataSources.SpatiaLite
             }
 
             // 3) a local GIS install (QGIS / OSGeo4W on Windows) or a system package
-            foreach (var candidate in SystemProbeCandidates())
-            {
-                if (File.Exists(candidate))
-                {
-                    return candidate;
-                }
-            }
+            //foreach (var candidate in SystemProbeCandidates())
+            //{
+            //    if (File.Exists(candidate))
+            //    {
+            //        return candidate;
+            //    }
+            //}
 
             // 4) last resort: hand the bare name to SQLite and let the OS loader find it
             //    (PATH / LD_LIBRARY_PATH)

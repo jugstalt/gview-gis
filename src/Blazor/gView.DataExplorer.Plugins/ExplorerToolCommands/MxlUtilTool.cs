@@ -81,6 +81,19 @@ internal class MxlUtilTool : IExplorerToolCommand
                 parameters.Add("target-connectionstring", model.MxlToFdb_TargetConnectionString);
                 parameters.Add("target-guid", model.MxlToFdb_TargetGuid);
 
+                if (!String.IsNullOrWhiteSpace(model.MxlToFdb_GeometryStorage) &&
+                    !model.MxlToFdb_GeometryStorage.Equals("Classic", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (Enum.TryParse<gView.Framework.Core.Data.GeometryStorageType>(model.MxlToFdb_GeometryStorage, true, out var storage) &&
+                        !gView.Cmd.MxlUtil.Lib.Utilities.MxlToFdbStorage.IsCompatible(model.MxlToFdb_TargetGuid, storage))
+                    {
+                        throw new Exception(
+                            $"MxlToFdb: geometry storage '{model.MxlToFdb_GeometryStorage}' is not valid for target database '{model.MxlToFdb_TargetGuid}'.");
+                    }
+
+                    parameters.Add("geometry-storage", model.MxlToFdb_GeometryStorage);
+                }
+
                 if (!String.IsNullOrWhiteSpace(model.MxlToFdb_OutMxl))
                 {
                     parameters.Add("out-mxl", model.MxlToFdb_OutMxl);

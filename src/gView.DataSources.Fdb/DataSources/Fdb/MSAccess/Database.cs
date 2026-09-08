@@ -3980,6 +3980,48 @@ namespace gView.DataSources.Fdb.MSAccess
             => Task.FromResult(true);
 
         /// <summary>
+        /// Recomputes the feature class extent and (re)builds the database-native spatial index
+        /// (PostGIS GiST / SQL Server GEOMETRY_GRID|GEOGRAPHY_GRID / SQLite R-Tree). A no-op that
+        /// returns <c>true</c> when the feature class uses classic gView-managed storage - use the
+        /// BinaryTree helpers (<see cref="RepairSpatialIndex"/> / <see cref="ShrinkSpatialIndex(string)"/>)
+        /// for that.
+        /// </summary>
+        async public virtual Task<bool> RebuildNativeSpatialIndexAsync(string fcName)
+        {
+            var sIndexDef = await FcSpatialIndexDef(fcName);
+            if (sIndexDef == null || !sIndexDef.StorageType.IsDatabaseNative())
+            {
+                return true;
+            }
+
+            if (!await CalculateExtent(fcName))
+            {
+                return false;
+            }
+
+            IEnvelope extent = await QueryExtent(fcName) ?? new Envelope();
+            if (!Envelope.IsNull(extent))
+            {
+                // the interface bounds are read-only; set them on the concrete impl so the
+                // provider hook (GEOMETRY_GRID bounding box) sees the real extent.
+                switch (sIndexDef)
+                {
+                    case MSSpatialIndex ms: ms.SpatialIndexBounds = extent; break;
+                    case gViewSpatialIndexDef gv: gv.SpatialIndexBounds = extent; break;
+                }
+            }
+
+            bool ok = await CreateNativeSpatialIndexAsync(fcName, sIndexDef);
+
+            if (ok && !Envelope.IsNull(extent))
+            {
+                await SetFeatureclassExtent(fcName, extent);
+            }
+
+            return ok;
+        }
+
+        /// <summary>
         /// Provider hook: finalize the database-native geometry column of a freshly created feature
         /// class (e.g. give a PostGIS <c>geometry</c> column its concrete type + SRID and make sure
         /// <c>FDB_OID</c> is a real PRIMARY KEY) so the table is directly usable by the native

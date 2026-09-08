@@ -844,6 +844,12 @@ public class FdbImport
             }
         }
 
+        // final report with the exact total (the loop only reports every FeatureBufferSize)
+        if (_cancelTracker.Continue)
+        {
+            ReportProgress?.Invoke(this, featcounter);
+        }
+
         return true;
     }
 }

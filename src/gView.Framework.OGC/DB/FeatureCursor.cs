@@ -142,7 +142,9 @@ namespace gView.Framework.OGC.DB
 
                         if (fieldname == _shapeField)
                         {
-                            feature.Shape = gView.Framework.OGC.OGC.WKBToGeometry((byte[])obj);
+                            feature.Shape = (_fc?.Dataset is OgcSpatialDataset ogcDataset)
+                                ? ogcDataset.DecodeShape((byte[])obj)
+                                : gView.Framework.OGC.OGC.WKBToGeometry((byte[])obj);
 
                             if (_spatialfilter != null && 
                                 //_spatialfilter.IgnoreFeatureCursorCheckIntersection != true &&   // experimental

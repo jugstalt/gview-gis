@@ -1,9 +1,7 @@
 using gView.Blazor.Core.Exceptions;
 using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataExplorer.Plugins.ExplorerObjects.FileSystem;
-using gView.DataExplorer.Razor.Components.Dialogs.Models;
-using gView.DataSources.SpatiaLite;
-using gView.Framework.Blazor;
+using gView.DataSources.GeoPackage;
 using gView.Framework.Common.Extensions;
 using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
@@ -14,24 +12,22 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace gView.DataExplorer.Plugins.ExplorerObjects.SpatiaLite;
+namespace gView.DataExplorer.Plugins.ExplorerObjects.GeoPackage;
 
-[RegisterPlugIn("29172403-2f3e-485a-bb06-d5039fe89cbd")]
-public class SpatiaLiteExplorerObject : ExplorerParentObject<IExplorerObject, IFeatureDataset>,
+[RegisterPlugIn("7a684b04-8c38-4717-9527-a7248aa72b8d")]
+public class GeoPackageExplorerObject : ExplorerParentObject<IExplorerObject, IFeatureDataset>,
                                         IExplorerFileObject,
                                         ISerializableExplorerObject,
                                         IExplorerObjectCreatable,
                                         IExplorerObjectDeletable
 {
     private string _filename = "";
-    private SpatiaLiteDataset? _dataset;
+    private GeoPackageDataset? _dataset;
 
-    // High priority so the "Create new" ribbon lists "SpatiaLite" after the built-in
-    // creatables (Directory, FileUpload, SQLite Feature Database). GeoPackage is a
-    // separate creatable (GeoPackageExplorerObject).
-    public SpatiaLiteExplorerObject() : base(1000) { }
+    // High priority so the "Create new" ribbon lists "GeoPackage" next to "SpatiaLite".
+    public GeoPackageExplorerObject() : base(1000) { }
 
-    private SpatiaLiteExplorerObject(IExplorerObject parent, string filename)
+    private GeoPackageExplorerObject(IExplorerObject parent, string filename)
         : base(parent, 2)
     {
         _filename = filename;
@@ -39,7 +35,7 @@ public class SpatiaLiteExplorerObject : ExplorerParentObject<IExplorerObject, IF
 
     #region IExplorerFileObject
 
-    public string Filter => "*.sqlite|*.db|*.sqlite3";
+    public string Filter => "*.gpkg";
 
     async public Task<IExplorerFileObject?> CreateInstance(IExplorerObject parent, string filename)
     {
@@ -50,14 +46,14 @@ public class SpatiaLiteExplorerObject : ExplorerParentObject<IExplorerObject, IF
                 return null;
             }
 
-            // *.fdb.gpkg / *.fdb.sqlite are gView SQLite feature databases - the FDB explorer object
-            // handles those, not the plain SpatiaLite datasource.
+            // *.fdb.gpkg is a gView SQLite feature database - handled by the FDB explorer object,
+            // not the plain GeoPackage datasource.
             if (gView.DataSources.Fdb.SQLite.SqliteFdbFile.IsFdbFileName(filename))
             {
                 return null;
             }
 
-            var dataset = new SpatiaLiteDataset();
+            var dataset = new GeoPackageDataset();
             await dataset.SetConnectionString(filename);
             if (!await dataset.Open())
             {
@@ -69,7 +65,7 @@ public class SpatiaLiteExplorerObject : ExplorerParentObject<IExplorerObject, IF
             return null;
         }
 
-        return new SpatiaLiteExplorerObject(parent, filename);
+        return new GeoPackageExplorerObject(parent, filename);
     }
 
     #endregion
@@ -87,7 +83,7 @@ public class SpatiaLiteExplorerObject : ExplorerParentObject<IExplorerObject, IF
 
     public string FullName => _filename;
 
-    public string Type => "SpatiaLite";
+    public string Type => "GeoPackage";
 
     public string Icon => "basic:database";
 
@@ -106,7 +102,7 @@ public class SpatiaLiteExplorerObject : ExplorerParentObject<IExplorerObject, IF
     {
         if (_dataset == null)
         {
-            _dataset = new SpatiaLiteDataset();
+            _dataset = new GeoPackageDataset();
             await _dataset.SetConnectionString(_filename);
             if (!await _dataset.Open())
             {
@@ -126,7 +122,7 @@ public class SpatiaLiteExplorerObject : ExplorerParentObject<IExplorerObject, IF
     {
         await base.Refresh();
 
-        var dataset = new SpatiaLiteDataset();
+        var dataset = new GeoPackageDataset();
         await dataset.SetConnectionString(_filename);
         if (!await dataset.Open())
         {
@@ -137,7 +133,7 @@ public class SpatiaLiteExplorerObject : ExplorerParentObject<IExplorerObject, IF
         {
             if (element.Class is IFeatureClass)
             {
-                base.AddChildObject(new SpatiaLiteFeatureClassExplorerObject(this, element));
+                base.AddChildObject(new GeoPackageFeatureClassExplorerObject(this, element));
             }
         }
 
@@ -177,37 +173,16 @@ public class SpatiaLiteExplorerObject : ExplorerParentObject<IExplorerObject, IF
             return null;
         }
 
-        // SpatiaLite needs the native mod_spatialite extension. When it is missing, show the
-        // install guide instead of failing on Create(). (GeoPackage has no such dependency -
-        // use the separate "GeoPackage" creatable.)
-        if (!SpatiaLiteDataset.IsModSpatialiteAvailable)
-        {
-            var warnings = new System.Collections.Generic.List<string>(
-                SpatiaLiteDataset.ModSpatialiteHelpMessage()
-                    .Replace("\r\n", "\n").Split('\n'))
-            {
-                "",
-                "Full guide: https://github.com/jugstalt/gview-gis/blob/main/docs/mod_spatialite.md"
-            };
-
-            await scope.ShowKnownDialog<WarningsDialogModel>(
-                KnownDialogs.WarningsDialog,
-                "SpatiaLite needs mod_spatialite",
-                new WarningsDialogModel() { Warnings = warnings });
-
-            return null;
-        }
-
         var model = await scope.ShowModalDialog(
             typeof(gView.DataExplorer.Razor.Components.Dialogs.InputBoxDialog),
-            "Create SpatiaLite",
+            "Create GeoPackage",
             new gView.DataExplorer.Razor.Components.Dialogs.Models.InputBoxModel()
             {
                 Value = "",
                 Icon = this.Icon,
                 Name = this.Type ?? String.Empty,
                 Label = "Name",
-                Prompt = "Enter a name. A '.sqlite' extension is added when you omit a known one (.sqlite / .sqlite3 / .db)."
+                Prompt = "Enter a name. A '.gpkg' extension is added when you omit it. No native library needed."
             });
 
         if (String.IsNullOrEmpty(model?.Value))
@@ -216,26 +191,21 @@ public class SpatiaLiteExplorerObject : ExplorerParentObject<IExplorerObject, IF
         }
 
         var name = model.Value.Trim();
-        if (!HasKnownExtension(name))
+        if (!name.EndsWith(".gpkg", StringComparison.OrdinalIgnoreCase))
         {
-            name += ".sqlite";
+            name += ".gpkg";
         }
 
         var filename = Path.Combine(parentExObject.FullName, name);
 
-        var dataset = new SpatiaLiteDataset();
+        var dataset = new GeoPackageDataset();
         if (!dataset.Create(filename))
         {
             throw new GeneralException(dataset.LastErrorMessage);
         }
 
-        return new SpatiaLiteExplorerObject(parentExObject, filename);
+        return new GeoPackageExplorerObject(parentExObject, filename);
     }
-
-    private static bool HasKnownExtension(string name)
-        => name.EndsWith(".sqlite", StringComparison.OrdinalIgnoreCase)
-        || name.EndsWith(".sqlite3", StringComparison.OrdinalIgnoreCase)
-        || name.EndsWith(".db", StringComparison.OrdinalIgnoreCase);
 
     #endregion
 

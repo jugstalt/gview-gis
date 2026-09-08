@@ -1,3 +1,4 @@
+using gView.DataSources.GeoPackage;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Geometry;
 using System;
@@ -9,9 +10,14 @@ namespace gView.DataSources.SpatiaLite
     /// <summary>
     /// The spatial SQL of <see cref="SpatiaLiteDataset"/> factored into small, table/column-agnostic
     /// building blocks so it can also be used by the SQLite FDB provider (which owns its own
-    /// <c>FC_&lt;name&gt;</c> tables, connections and catalog). Every method that runs SQL expects an
-    /// already-open <see cref="SQLiteConnection"/> with <c>mod_spatialite</c> loaded
-    /// (<see cref="SpatiaLiteNative.LoadInto"/>) - and, for GeoPackage, amphibious mode enabled.
+    /// <c>FC_&lt;name&gt;</c> tables, connections and catalog).
+    /// <para>
+    /// For the <see cref="SpatiaLiteFlavor.SpatiaLite"/> flavor every SQL-running method needs an
+    /// open <see cref="SQLiteConnection"/> with <c>mod_spatialite</c> loaded
+    /// (<see cref="SpatiaLiteNative.LoadInto"/>). The <see cref="SpatiaLiteFlavor.GeoPackage"/> flavor
+    /// is <b>mod_spatialite-free</b>: it delegates to <see cref="GeoPackageSchema"/> (pure SQL) and
+    /// the geometry blob is handled in managed code (<see cref="GpkgGeometry"/>).
+    /// </para>
     /// </summary>
     internal static class SpatiaLiteSchema
     {
@@ -42,23 +48,17 @@ namespace gView.DataSources.SpatiaLite
         /// </summary>
         public static void EnsureBaseTables(SQLiteConnection connection, SpatiaLiteFlavor flavor)
         {
-            using var cmd = connection.CreateCommand();
-
             if (flavor == SpatiaLiteFlavor.GeoPackage)
             {
-                if (!TableExists(connection, "gpkg_contents"))
-                {
-                    cmd.CommandText = "SELECT gpkgCreateBaseTables()";
-                    cmd.ExecuteNonQuery();
-                }
+                GeoPackageSchema.EnsureBaseTables(connection);
+                return;
             }
-            else
+
+            if (!TableExists(connection, "geometry_columns"))
             {
-                if (!TableExists(connection, "geometry_columns"))
-                {
-                    cmd.CommandText = "SELECT InitSpatialMetaData(1)";
-                    cmd.ExecuteNonQuery();
-                }
+                using var cmd = connection.CreateCommand();
+                cmd.CommandText = "SELECT InitSpatialMetaData(1)";
+                cmd.ExecuteNonQuery();
             }
         }
 
@@ -74,37 +74,21 @@ namespace gView.DataSources.SpatiaLite
             SQLiteConnection connection, SpatiaLiteFlavor flavor,
             string table, string geomColumn, GeometryType geometryType, int srid)
         {
-            string typeName = GeometryTypeName(geometryType);
-            using var cmd = connection.CreateCommand();
-
             if (flavor == SpatiaLiteFlavor.GeoPackage)
             {
-                if (srid > 0 && !SridExists(connection, "gpkg_spatial_ref_sys", "srs_id", srid))
-                {
-                    TryExecute(cmd, $"SELECT gpkgInsertEpsgSRID({srid})");
-                }
-
-                cmd.CommandText =
-                    "INSERT INTO gpkg_contents (table_name, data_type, identifier, srs_id) " +
-                    $"VALUES ('{Escape(table)}', 'features', '{Escape(table)}', {srid})";
-                cmd.ExecuteNonQuery();
-
-                cmd.CommandText = $"SELECT gpkgAddGeometryColumn('{Escape(table)}', '{Escape(geomColumn)}', '{typeName}', 0, 0, {srid})";
-                cmd.ExecuteNonQuery();
-
-                cmd.CommandText = $"SELECT gpkgAddGeometryTriggers('{Escape(table)}', '{Escape(geomColumn)}')";
-                cmd.ExecuteNonQuery();
+                GeoPackageSchema.EnsureSrs(connection, srid);
+                GeoPackageSchema.RegisterFeatureTable(connection, table, geomColumn, geometryType, srid, hasZ: false, hasM: false);
+                return;
             }
-            else
+
+            using var cmd = connection.CreateCommand();
+            if (srid > 0 && !SridExists(connection, "spatial_ref_sys", "srid", srid))
             {
-                if (srid > 0 && !SridExists(connection, "spatial_ref_sys", "srid", srid))
-                {
-                    TryExecute(cmd, $"SELECT InsertEpsgSrid({srid})");
-                }
-
-                cmd.CommandText = $"SELECT AddGeometryColumn('{Escape(table)}', '{Escape(geomColumn)}', {srid}, '{typeName}', 'XY')";
-                cmd.ExecuteNonQuery();
+                TryExecute(cmd, $"SELECT InsertEpsgSrid({srid})");
             }
+
+            cmd.CommandText = $"SELECT AddGeometryColumn('{Escape(table)}', '{Escape(geomColumn)}', {srid}, '{GeometryTypeName(geometryType)}', 'XY')";
+            cmd.ExecuteNonQuery();
         }
 
         // ------------------------------------------------------------------ spatial index
@@ -113,71 +97,74 @@ namespace gView.DataSources.SpatiaLite
         public static void AddSpatialIndex(
             SQLiteConnection connection, SpatiaLiteFlavor flavor, string table, string geomColumn)
         {
+            if (flavor == SpatiaLiteFlavor.GeoPackage)
+            {
+                GeoPackageSchema.CreateRTree(connection, table, geomColumn);
+                return;
+            }
+
             DropSpatialIndex(connection, flavor, table, geomColumn);
 
             using var cmd = connection.CreateCommand();
-            cmd.CommandText = flavor == SpatiaLiteFlavor.GeoPackage
-                ? $"SELECT gpkgAddSpatialIndex('{Escape(table)}', '{Escape(geomColumn)}')"
-                : $"SELECT CreateSpatialIndex('{Escape(table)}', '{Escape(geomColumn)}')";
+            cmd.CommandText = $"SELECT CreateSpatialIndex('{Escape(table)}', '{Escape(geomColumn)}')";
             cmd.ExecuteNonQuery();
         }
 
         public static void DropSpatialIndex(
             SQLiteConnection connection, SpatiaLiteFlavor flavor, string table, string geomColumn)
         {
-            using var cmd = connection.CreateCommand();
-
             if (flavor == SpatiaLiteFlavor.GeoPackage)
             {
-                foreach (var suffix in new[] { "insert", "update1", "update2", "update3", "update4", "update5", "update6", "update7", "delete" })
-                {
-                    TryExecute(cmd, $"DROP TRIGGER IF EXISTS \"rtree_{table}_{geomColumn}_{suffix}\"");
-                }
-                TryExecute(cmd, $"DROP TABLE IF EXISTS \"rtree_{table}_{geomColumn}\"");
-                TryExecute(cmd, $"DELETE FROM gpkg_extensions WHERE lower(table_name)=lower('{Escape(table)}') AND lower(column_name)=lower('{Escape(geomColumn)}') AND extension_name='gpkg_rtree_index'");
+                GeoPackageSchema.DropRTree(connection, table, geomColumn);
+                return;
             }
-            else
-            {
-                TryExecute(cmd, $"SELECT DisableSpatialIndex('{Escape(table)}', '{Escape(geomColumn)}')");
-                TryExecute(cmd, $"DROP TABLE IF EXISTS \"idx_{table}_{geomColumn}\"");
-            }
+
+            using var cmd = connection.CreateCommand();
+            TryExecute(cmd, $"SELECT DisableSpatialIndex('{Escape(table)}', '{Escape(geomColumn)}')");
+            TryExecute(cmd, $"DROP TABLE IF EXISTS \"idx_{table}_{geomColumn}\"");
         }
 
         /// <summary>Removes the geometry-column registration (used when a feature class is dropped).</summary>
         public static void DiscardGeometryColumn(
             SQLiteConnection connection, SpatiaLiteFlavor flavor, string table, string geomColumn)
         {
-            using var cmd = connection.CreateCommand();
-
             if (flavor == SpatiaLiteFlavor.GeoPackage)
             {
-                TryExecute(cmd, $"DELETE FROM gpkg_geometry_columns WHERE lower(table_name)=lower('{Escape(table)}')");
-                TryExecute(cmd, $"DELETE FROM gpkg_contents WHERE lower(table_name)=lower('{Escape(table)}')");
+                GeoPackageSchema.Unregister(connection, table, geomColumn);
+                return;
             }
-            else
-            {
-                TryExecute(cmd, $"SELECT DiscardGeometryColumn('{Escape(table)}', '{Escape(geomColumn)}')");
-            }
+
+            using var cmd = connection.CreateCommand();
+            TryExecute(cmd, $"SELECT DiscardGeometryColumn('{Escape(table)}', '{Escape(geomColumn)}')");
         }
 
         // ------------------------------------------------------------------ SQL fragments
 
         /// <summary>
-        /// Column expression that yields a geometry the <c>ST_*</c> functions understand. GeoPackage
-        /// GPB blobs are wrapped in <c>CastAutomagic()</c> (even in amphibious mode); SpatiaLite uses
-        /// the plain column.
+        /// Column expression that yields a geometry the SpatiaLite <c>ST_*</c> functions understand.
+        /// GeoPackage is handled in managed code (<see cref="GpkgGeometry"/>), so there the raw blob
+        /// column is used as-is.
         /// </summary>
         public static string GeometryReadExpression(SpatiaLiteFlavor flavor, string quotedColumn)
-            => flavor == SpatiaLiteFlavor.GeoPackage ? $"CastAutomagic({quotedColumn})" : quotedColumn;
+            => quotedColumn;
 
         /// <summary>
-        /// INSERT/UPDATE value expression: turns the WKB bytes bound as <paramref name="paramName"/>
-        /// into the strictly-typed native column blob. Mirrors
-        /// <c>SpatiaLiteDataset.InsertShapeParameterExpression</c>.
+        /// INSERT/UPDATE value expression for the geometry column.
+        /// <list type="bullet">
+        ///   <item><b>GeoPackage</b>: the caller binds a ready GPB blob (<see cref="GpkgGeometry.ToGpb"/>) -
+        ///     the expression is just the parameter.</item>
+        ///   <item><b>SpatiaLite</b>: the WKB parameter is turned into the strictly-typed native blob
+        ///     via <c>GeomFromWKB</c> / <c>CastToMulti*</c> (needs mod_spatialite).</item>
+        /// </list>
         /// </summary>
         public static string ShapeInsertExpression(
             SpatiaLiteFlavor flavor, string paramName, GeometryType geometryType, int srid)
         {
+            if (flavor == SpatiaLiteFlavor.GeoPackage)
+            {
+                return paramName;
+            }
+
             string expr = $"GeomFromWKB({paramName}, {srid})";
 
             if (geometryType == GeometryType.Polygon)
@@ -192,11 +179,6 @@ namespace gView.DataSources.SpatiaLite
                 "MULTIPOINT" => $"CastToMultiPoint({expr})",
                 _ => expr,
             };
-
-            if (flavor == SpatiaLiteFlavor.GeoPackage)
-            {
-                expr = $"AsGPB({expr})";
-            }
 
             return expr;
         }
@@ -224,9 +206,15 @@ namespace gView.DataSources.SpatiaLite
             }
         }
 
-        /// <summary>Precise-relation predicate (used on top of the MBR pre-filter).</summary>
+        /// <summary>
+        /// Precise-relation SQL predicate (on top of the MBR pre-filter) - <b>SpatiaLite only</b>.
+        /// GeoPackage has no in-database <c>ST_Intersects</c> without mod_spatialite; returns an empty
+        /// string there and the cursor does the exact per-row check in managed code.
+        /// </summary>
         public static string IntersectsPredicate(SpatiaLiteFlavor flavor, string quotedColumn, string wkt, int srid)
-            => $"ST_Intersects({GeometryReadExpression(flavor, quotedColumn)}, GeomFromText('{Escape(wkt)}', {srid})) = 1";
+            => flavor == SpatiaLiteFlavor.GeoPackage
+                ? String.Empty
+                : $"ST_Intersects({quotedColumn}, GeomFromText('{Escape(wkt)}', {srid})) = 1";
 
         // ------------------------------------------------------------------ helpers
 

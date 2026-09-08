@@ -10,7 +10,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\gView.DataSources.GeoPackage\gView.DataSources.GeoPackage.csproj" />
     <ProjectReference Include="..\gView.Framework.Core\gView.Framework.Core.csproj" />
     <ProjectReference Include="..\gView.Framework.Data\gView.Framework.Data.csproj" />
     <ProjectReference Include="..\gView.Framework.Db\gView.Framework.Db.csproj" />
@@ -20,14 +19,10 @@
   </ItemGroup>
 
   <!--
-    Bundled mod_spatialite native binaries, laid out per RID:
-      runtimes/<rid>/native/mod_spatialite.(dll|so|dylib)  (+ its dependency libs)
-    They are copied next to the output preserving the runtimes/<rid>/native structure.
-    SpatiaLiteNative resolves the file from there at runtime (see that class for the
-    lookup order and the GVIEW_MOD_SPATIALITE override).
+    No 'runtimes/' folder here on purpose: a GeoPackage feature database is fully
+    mod_spatialite-free. gView reads / writes the GeoPackage geometry (GPB) blob in
+    managed code (GpkgGeometry) and maintains the R-Tree itself (GeoPackageSchema),
+    so nothing native has to be shipped or resolved at runtime.
   -->
-  <ItemGroup>
-    <None Include="runtimes\**\*" Exclude="runtimes\**\*.md" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>
 
 </Project>

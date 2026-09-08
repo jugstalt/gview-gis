@@ -36,6 +36,7 @@ namespace gView.DataSources.Fdb.SQLite
                 FileInfo fi = new FileInfo(name);
                 if (fi.Exists)
                 {
+                    _errMsg = $"File already exists: {name}";
                     return false;
                 }
 
@@ -68,13 +69,42 @@ namespace gView.DataSources.Fdb.SQLite
                     }
                     reader.Close();
                 }
+
+                // Stamp the SpatiaLite / GeoPackage base metadata right away (based on the file
+                // name) so QGIS / GDAL recognise the file even before the first dataset exists.
+                var fileStorage = SqliteFdbFile.StorageFromFileName(name);
+                if (IsSpatiaLiteStorage(fileStorage))
+                {
+                    var flavor = gView.DataSources.SpatiaLite.SpatiaLiteSchema.FlavorFor(fileStorage);
+                    using (var spatialConnection = OpenSpatialConnection(name, flavor))
+                    {
+                        gView.DataSources.SpatiaLite.SpatiaLiteSchema.EnsureBaseTables(spatialConnection, flavor);
+                    }
+                }
             }
             catch (Exception ex)
             {
                 _errMsg = ex.Message;
                 return false;
             }
+            finally
+            {
+                // one-shot op: make sure nothing keeps the fresh file open (SQLite/mod_spatialite
+                // pooled handles) so it can be deleted / renamed / opened right away.
+                ReleaseFileHandles();
+            }
             return true;
+        }
+
+        /// <summary>
+        /// Releases pooled / cached SQLite file handles (incl. the mod_spatialite ones) so a SQLite
+        /// FDB file can be deleted, renamed or re-opened without an "in use by another process" error.
+        /// </summary>
+        public static void ReleaseFileHandles()
+        {
+            try { SQLiteConnection.ClearAllPools(); } catch { }
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
         }
         async override public Task<bool> Open(string connectionString)
         {
@@ -112,32 +142,42 @@ namespace gView.DataSources.Fdb.SQLite
             => storage == GeometryStorageType.SpatiaLite || storage == GeometryStorageType.GeoPackage;
 
         /// <summary>
-        /// A connection to the FDB file with <c>mod_spatialite</c> loaded (extension loads do not
-        /// survive the connection pool, so this is done per connection). For GeoPackage storage it
-        /// also enables amphibious mode + <c>trusted_schema</c>.
+        /// A connection to the FDB file for native geometry storage.
+        /// <list type="bullet">
+        ///   <item><b>GeoPackage</b>: a plain SQLite connection - the GPB blob and the R-Tree are
+        ///     handled by gView itself, no native extension.</item>
+        ///   <item><b>SpatiaLite</b>: <c>mod_spatialite</c> is loaded (throws when it is not available;
+        ///     use a GeoPackage <c>*.fdb.gpkg</c> instead).</item>
+        /// </list>
         /// </summary>
         internal SQLiteConnection OpenSpatialConnection(gView.DataSources.SpatiaLite.SpatiaLiteFlavor flavor)
+            => OpenSpatialConnection(_filename, flavor);
+
+        internal static SQLiteConnection OpenSpatialConnection(string filename, gView.DataSources.SpatiaLite.SpatiaLiteFlavor flavor)
         {
-            if (!gView.DataSources.SpatiaLite.SpatiaLiteNative.EnsureAvailable(out var err))
-            {
-                throw new Exception("mod_spatialite is required for SpatiaLite / GeoPackage FDB storage: " + err);
-            }
-
-            var connection = new SQLiteConnection("Data Source=" + _filename);
+            var connection = new SQLiteConnection("Data Source=" + filename);
             connection.Open();
-            gView.DataSources.SpatiaLite.SpatiaLiteNative.LoadInto(connection);
 
-            if (flavor == gView.DataSources.SpatiaLite.SpatiaLiteFlavor.GeoPackage)
+            if (flavor == gView.DataSources.SpatiaLite.SpatiaLiteFlavor.SpatiaLite)
             {
-                using var cmd = connection.CreateCommand();
-                cmd.CommandText = "SELECT EnableGpkgAmphibiousMode()";
-                cmd.ExecuteNonQuery();
-                cmd.CommandText = "PRAGMA trusted_schema = ON";
-                cmd.ExecuteNonQuery();
+                try
+                {
+                    // throws SpatiaLiteNotAvailableException with an actionable message when missing
+                    gView.DataSources.SpatiaLite.SpatiaLiteNative.LoadInto(connection);
+                }
+                catch
+                {
+                    connection.Dispose();
+                    throw;
+                }
             }
 
             return connection;
         }
+
+        /// <summary>True for a GeoPackage FDB feature class (the mod_spatialite-free native flavor).</summary>
+        internal static bool IsGeoPackageStorage(GeometryStorageType storage)
+            => storage == GeometryStorageType.GeoPackage;
 
         protected override Task EnsureNativeGeometrySupportAsync(GeometryStorageType storage)
         {
@@ -227,7 +267,57 @@ namespace gView.DataSources.Fdb.SQLite
             var flavor = gView.DataSources.SpatiaLite.SpatiaLiteSchema.FlavorFor(storage);
             using var connection = OpenSpatialConnection(flavor);
             gView.DataSources.SpatiaLite.SpatiaLiteSchema.AddSpatialIndex(connection, flavor, "FC_" + fcName, "FDB_SHAPE");
+
+            if (IsGeoPackageStorage(storage))
+            {
+                // GeoPackage R-Tree has no SQL triggers - populate it from the existing rows.
+                PopulateGeoPackageRTree(connection, fcName);
+            }
+
             return true;
+        }
+
+        /// <summary>Fills the (empty) GeoPackage R-Tree of a feature class from the GPB envelopes of its rows.</summary>
+        private static void PopulateGeoPackageRTree(SQLiteConnection connection, string fcName)
+        {
+            string rtree = gView.DataSources.GeoPackage.GeoPackageSchema.RTreeTable("FC_" + fcName, "FDB_SHAPE");
+
+            using var read = connection.CreateCommand();
+            read.CommandText = "SELECT FDB_OID, FDB_SHAPE FROM \"FC_" + fcName + "\" WHERE FDB_SHAPE IS NOT NULL";
+
+            using var tx = connection.BeginTransaction();
+            using (var ins = connection.CreateCommand())
+            {
+                ins.Transaction = tx;
+                ins.CommandText = "INSERT INTO \"" + rtree + "\" (id, minx, maxx, miny, maxy) VALUES (@id, @minx, @maxx, @miny, @maxy)";
+                var pId = ins.Parameters.Add("@id", System.Data.DbType.Int64);
+                var pMinX = ins.Parameters.Add("@minx", System.Data.DbType.Double);
+                var pMaxX = ins.Parameters.Add("@maxx", System.Data.DbType.Double);
+                var pMinY = ins.Parameters.Add("@miny", System.Data.DbType.Double);
+                var pMaxY = ins.Parameters.Add("@maxy", System.Data.DbType.Double);
+
+                using var reader = read.ExecuteReader();
+                while (reader.Read())
+                {
+                    if (reader.IsDBNull(1))
+                    {
+                        continue;
+                    }
+
+                    var wkb = gView.DataSources.GeoPackage.GpkgGeometry.ToWkb((byte[])reader.GetValue(1));
+                    var geom = gView.Framework.OGC.OGC.WKBToGeometry(wkb);
+                    var env = geom?.Envelope;
+                    if (env == null)
+                    {
+                        continue;
+                    }
+
+                    pId.Value = reader.GetInt64(0);
+                    pMinX.Value = env.MinX; pMaxX.Value = env.MaxX; pMinY.Value = env.MinY; pMaxY.Value = env.MaxY;
+                    ins.ExecuteNonQuery();
+                }
+            }
+            tx.Commit();
         }
 
         #endregion
@@ -521,8 +611,12 @@ namespace gView.DataSources.Fdb.SQLite
 
             var storage = (fClass.Dataset as IFDBDataset)?.SpatialIndexDef?.StorageType ?? GeometryStorageType.Classic;
             bool spatiaLite = IsSpatiaLiteStorage(storage);
+            bool geoPackage = IsGeoPackageStorage(storage);
             var slFlavor = spatiaLite ? gView.DataSources.SpatiaLite.SpatiaLiteSchema.FlavorFor(storage) : default;
             int slSrid = spatiaLite ? (fClass.SpatialReference?.EpsgCode ?? 0) : 0;
+            string slRTree = geoPackage
+                ? gView.DataSources.GeoPackage.GeoPackageSchema.RTreeTable("FC_" + fClass.Name, "FDB_SHAPE")
+                : null;
 
             BinarySearchTree2 tree = null;
             if (!spatiaLite)
@@ -553,7 +647,7 @@ namespace gView.DataSources.Fdb.SQLite
                     {
                         await connection.OpenAsync();
                     }
-                    if (spatiaLite && sharedConnection is not null)
+                    if (spatiaLite && !geoPackage && sharedConnection is not null)
                     {
                         gView.DataSources.SpatiaLite.SpatiaLiteNative.LoadInto(sharedConnection);
                     }
@@ -587,6 +681,7 @@ namespace gView.DataSources.Fdb.SQLite
 
                             StringBuilder fields = new StringBuilder(), parameters = new StringBuilder();
                             command.Parameters.Clear();
+                            IEnvelope rtreeEnv = null;
                             if (feature.Shape != null)
                             {
                                 var shape = fClass.ConvertTo(feature.Shape);
@@ -595,6 +690,12 @@ namespace gView.DataSources.Fdb.SQLite
                                 byte[] geometry = spatiaLite
                                     ? gView.DataSources.Fdb.FdbGeometryCodec.Wkb.Encode(shape, fClass)
                                     : gView.DataSources.Fdb.FdbGeometryCodec.ForFeatureClass(fClass).Encode(shape, fClass);
+
+                                if (geoPackage)
+                                {
+                                    rtreeEnv = shape.Envelope;
+                                    geometry = gView.DataSources.GeoPackage.GpkgGeometry.ToGpb(geometry, slSrid, rtreeEnv);
+                                }
 
                                 SQLiteParameter parameter = new SQLiteParameter("@FDB_SHAPE", geometry);
                                 fields.Append("[FDB_SHAPE]");
@@ -673,6 +774,19 @@ namespace gView.DataSources.Fdb.SQLite
                             }
 
                             command.CommandText = "INSERT INTO " + FcTableName(fClass) + " (" + fields.ToString() + ") VALUES (" + parameters + ")";
+
+                            if (geoPackage && rtreeEnv != null)
+                            {
+                                // keep the GeoPackage R-Tree in sync (id = the just-inserted FDB_OID).
+                                // R-Tree virtual tables reject "OR REPLACE" - a fresh row has no conflict.
+                                command.CommandText +=
+                                    "; INSERT INTO \"" + slRTree + "\" (id, minx, maxx, miny, maxy) " +
+                                    "VALUES (last_insert_rowid(), @rt_minx, @rt_maxx, @rt_miny, @rt_maxy)";
+                                command.Parameters.Add(new SQLiteParameter("@rt_minx", rtreeEnv.MinX));
+                                command.Parameters.Add(new SQLiteParameter("@rt_maxx", rtreeEnv.MaxX));
+                                command.Parameters.Add(new SQLiteParameter("@rt_miny", rtreeEnv.MinY));
+                                command.Parameters.Add(new SQLiteParameter("@rt_maxy", rtreeEnv.MaxY));
+                            }
 
                             // FDB_OID is an INTEGER PRIMARY KEY (rowid alias) - last_insert_rowid()
                             // is exact and connection-local (one row inserted, then read back).
@@ -799,8 +913,12 @@ namespace gView.DataSources.Fdb.SQLite
 
             var storage = (fClass.Dataset as IFDBDataset)?.SpatialIndexDef?.StorageType ?? GeometryStorageType.Classic;
             bool spatiaLite = IsSpatiaLiteStorage(storage);
+            bool geoPackage = IsGeoPackageStorage(storage);
             var slFlavor = spatiaLite ? gView.DataSources.SpatiaLite.SpatiaLiteSchema.FlavorFor(storage) : default;
             int slSrid = spatiaLite ? (fClass.SpatialReference?.EpsgCode ?? 0) : 0;
+            string slRTree = geoPackage
+                ? gView.DataSources.GeoPackage.GeoPackageSchema.RTreeTable("FC_" + fClass.Name, "FDB_SHAPE")
+                : null;
 
             //int counter = 0;
             BinarySearchTree2 tree = null;
@@ -834,7 +952,7 @@ namespace gView.DataSources.Fdb.SQLite
                     {
                         await connection.OpenAsync();
                     }
-                    if (spatiaLite && sharedConnection is not null)
+                    if (spatiaLite && !geoPackage && sharedConnection is not null)
                     {
                         gView.DataSources.SpatiaLite.SpatiaLiteNative.LoadInto(sharedConnection);
                     }
@@ -882,6 +1000,7 @@ namespace gView.DataSources.Fdb.SQLite
 
                             StringBuilder fields = new StringBuilder();
                             command.Parameters.Clear();
+                            IEnvelope rtreeEnv = null;
                             if (feature.Shape != null)
                             {
                                 var shape = fClass.ConvertTo(feature.Shape);
@@ -890,6 +1009,12 @@ namespace gView.DataSources.Fdb.SQLite
                                 byte[] geometry = spatiaLite
                                     ? gView.DataSources.Fdb.FdbGeometryCodec.Wkb.Encode(shape, fClass)
                                     : gView.DataSources.Fdb.FdbGeometryCodec.ForFeatureClass(fClass).Encode(shape, fClass);
+
+                                if (geoPackage)
+                                {
+                                    rtreeEnv = shape.Envelope;
+                                    geometry = gView.DataSources.GeoPackage.GpkgGeometry.ToGpb(geometry, slSrid, rtreeEnv);
+                                }
 
                                 SQLiteParameter parameter = new SQLiteParameter("@FDB_SHAPE", geometry);
                                 fields.Append(spatiaLite
@@ -959,6 +1084,20 @@ namespace gView.DataSources.Fdb.SQLite
                             }
 
                             commandText.Append("UPDATE " + FcTableName(fClass) + " SET " + fields.ToString() + " WHERE FDB_OID=" + feature.OID);
+
+                            if (geoPackage && rtreeEnv != null)
+                            {
+                                // shape changed -> refresh the GeoPackage R-Tree entry for this row
+                                // (R-Tree v-tables reject "OR REPLACE", so delete then insert).
+                                commandText.Append("; DELETE FROM \"" + slRTree + "\" WHERE id=").Append(feature.OID)
+                                           .Append("; INSERT INTO \"" + slRTree + "\" (id, minx, maxx, miny, maxy) VALUES (")
+                                           .Append(feature.OID).Append(", @rt_minx, @rt_maxx, @rt_miny, @rt_maxy)");
+                                command.Parameters.Add(new SQLiteParameter("@rt_minx", rtreeEnv.MinX));
+                                command.Parameters.Add(new SQLiteParameter("@rt_maxx", rtreeEnv.MaxX));
+                                command.Parameters.Add(new SQLiteParameter("@rt_miny", rtreeEnv.MinY));
+                                command.Parameters.Add(new SQLiteParameter("@rt_maxy", rtreeEnv.MaxY));
+                            }
+
                             command.CommandText = commandText.ToString();
                             await command.ExecuteNonQueryAsync();
                         }
@@ -1003,6 +1142,10 @@ namespace gView.DataSources.Fdb.SQLite
 
             var delStorage = (fClass.Dataset as IFDBDataset)?.SpatialIndexDef?.StorageType ?? GeometryStorageType.Classic;
             bool delSpatiaLite = IsSpatiaLiteStorage(delStorage);
+            bool delGeoPackage = IsGeoPackageStorage(delStorage);
+            string delRTree = delGeoPackage
+                ? gView.DataSources.GeoPackage.GeoPackageSchema.RTreeTable("FC_" + fClass.Name, "FDB_SHAPE")
+                : null;
             try
             {
                 using (var ownConnection = sharedConnection is null
@@ -1014,12 +1157,19 @@ namespace gView.DataSources.Fdb.SQLite
                     {
                         await connection.OpenAsync();
                     }
-                    if (delSpatiaLite && sharedConnection is not null)
+                    if (delSpatiaLite && !delGeoPackage && sharedConnection is not null)
                     {
                         gView.DataSources.SpatiaLite.SpatiaLiteNative.LoadInto(sharedConnection);
                     }
 
-                    string sql = "DELETE FROM " + FcTableName(fClass) + ((where != String.Empty) ? " WHERE " + where : "");
+                    string whereSuffix = (where != String.Empty) ? " WHERE " + where : "";
+                    string sql =
+                        // GeoPackage: gView keeps the R-Tree in sync (no SQL triggers) - drop the
+                        // matching R-Tree rows first, while the feature rows still exist.
+                        (delGeoPackage
+                            ? "DELETE FROM \"" + delRTree + "\" WHERE id IN (SELECT FDB_OID FROM " + FcTableName(fClass) + whereSuffix + "); "
+                            : "")
+                        + "DELETE FROM " + FcTableName(fClass) + whereSuffix;
                     using (SQLiteCommand command = new SQLiteCommand(sql, connection))
                     using (var ownTransaction = sharedTransaction is null ? connection.BeginTransaction() : null)
                     {

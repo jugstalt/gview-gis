@@ -2038,6 +2038,30 @@ namespace gView.DataSources.Fdb.MSSql
         #endregion
 
         #region MS Spatial Index
+
+        protected override Task<bool> CreateNativeSpatialIndexAsync(string fcName, ISpatialIndexDef sIndexDef)
+        {
+            MSSpatialIndex msIndex = sIndexDef as MSSpatialIndex;
+            if (msIndex == null)
+            {
+                var storage = sIndexDef?.StorageType ?? GeometryStorageType.Classic;
+                if (storage != GeometryStorageType.SqlServerGeometry && storage != GeometryStorageType.SqlServerGeography)
+                {
+                    return Task.FromResult(true);
+                }
+
+                msIndex = new MSSpatialIndex
+                {
+                    GeometryType = storage == GeometryStorageType.SqlServerGeography
+                        ? GeometryFieldType.MsGeography
+                        : GeometryFieldType.MsGeometry,
+                    SpatialIndexBounds = sIndexDef.SpatialIndexBounds,
+                };
+            }
+
+            return Task.FromResult(SetMSSpatialIndex(msIndex, fcName));
+        }
+
         override public bool SetMSSpatialIndex(MSSpatialIndex index, string fcName)
         {
             try

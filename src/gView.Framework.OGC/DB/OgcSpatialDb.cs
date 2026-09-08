@@ -795,6 +795,8 @@ namespace gView.Framework.OGC.DB
                             await (String.IsNullOrEmpty(returnRowIdStatement)
                                 ? command.ExecuteNonQueryAsync()
                                 : command.ExecuteInsertAndApplyId(returnRowIdStatement, feature));
+
+                            await AfterInsertAsync((OgcSpatialFeatureclass)fClass, feature, connection, transaction);
                         }
 
                         if (ownTransaction is not null)
@@ -954,6 +956,8 @@ namespace gView.Framework.OGC.DB
 
                             command.CommandText = $"{sqlStatementHeader}UPDATE {DbTableName(fClass.Name)} SET {fields} WHERE {DbColumnName(fClass.IDFieldName)}={feature.OID}";
                             await command.ExecuteNonQueryAsync();
+
+                            await AfterUpdateAsync((OgcSpatialFeatureclass)fClass, feature, connection, transaction);
                         }
 
                         if (ownTransaction is not null)
@@ -1022,6 +1026,9 @@ namespace gView.Framework.OGC.DB
                     {
                         command.Transaction = sharedTransaction;
                     }
+
+                    await BeforeDeleteAsync((OgcSpatialFeatureclass)fClass, where, connection, sharedTransaction);
+
                     command.CommandText = "DELETE FROM " + DbTableName(fClass.Name) + ((where != String.Empty) ? " WHERE " + where : "");
 
                     await command.ExecuteNonQueryAsync();
@@ -1071,6 +1078,38 @@ namespace gView.Framework.OGC.DB
         /// been opened. Default: no-op. Providers override this to prepare the connection.
         /// </summary>
         protected virtual Task OnConnectionOpenedAsync(DbConnection connection) => Task.CompletedTask;
+
+        /// <summary>
+        /// Decodes the raw bytes of the shape column read back by <see cref="OgcSpatialFeatureCursor"/>
+        /// into an <see cref="IGeometry"/>. The default expects plain OGC WKB (what
+        /// <c>ST_AsBinary(...)</c> yields). Providers whose <see cref="SelectCommand"/> returns the
+        /// raw stored blob (e.g. a GeoPackage GPB blob) override this.
+        /// </summary>
+        protected internal virtual IGeometry DecodeShape(byte[] raw)
+            => gView.Framework.OGC.OGC.WKBToGeometry(raw);
+
+        /// <summary>
+        /// Hook invoked once per feature right after its <c>INSERT</c> has run, on the same
+        /// connection / transaction. Default: no-op. A provider that maintains a side index in
+        /// managed code (e.g. a GeoPackage R-Tree, no SQL triggers) overrides this.
+        /// </summary>
+        protected virtual Task AfterInsertAsync(OgcSpatialFeatureclass fClass, IFeature feature,
+                                                DbConnection connection, DbTransaction transaction)
+            => Task.CompletedTask;
+
+        /// <summary>Hook invoked once per feature right after its <c>UPDATE</c> has run. Default: no-op.</summary>
+        protected virtual Task AfterUpdateAsync(OgcSpatialFeatureclass fClass, IFeature feature,
+                                                DbConnection connection, DbTransaction transaction)
+            => Task.CompletedTask;
+
+        /// <summary>
+        /// Hook invoked right before a <c>DELETE ... WHERE &lt;where&gt;</c> runs, so a provider can
+        /// drop the matching rows from a managed side index while they can still be resolved from
+        /// the base table. Default: no-op.
+        /// </summary>
+        protected virtual Task BeforeDeleteAsync(OgcSpatialFeatureclass fClass, string where,
+                                                 DbConnection connection, DbTransaction transaction)
+            => Task.CompletedTask;
 
         protected string DbSchemaPrefix
         {

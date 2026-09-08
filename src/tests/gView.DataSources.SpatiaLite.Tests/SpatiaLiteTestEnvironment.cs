@@ -5,7 +5,7 @@ namespace gView.DataSources.SpatiaLite.Tests;
 
 /// <summary>
 /// Locates a usable <c>mod_spatialite</c> for the test run and builds throw-away
-/// SpatiaLite / GeoPackage databases to exercise <see cref="SpatiaLiteDataset"/> against.
+/// SpatiaLite databases to exercise <see cref="SpatiaLiteDataset"/> against.
 ///
 /// The datasource itself resolves the extension through
 /// <c>gView.DataSources.SpatiaLite.SpatiaLiteNative</c>; here we just make sure the
@@ -172,90 +172,6 @@ internal static class SpatiaLiteTestEnvironment
         Exec(connection,
             "INSERT INTO areas (name, geom) VALUES " +
             "('poly', CastToMultiPolygon(GeomFromText('POLYGON((0 0, 200 0, 200 200, 0 200, 0 0))', 25832)))");
-    }
-
-    /// <summary>
-    /// Creates a GeoPackage with a POINT feature class (<c>pts</c>, EPSG:25832) seeded
-    /// with rows, by building a SpatiaLite database first and converting it with
-    /// <c>ogr2ogr</c> (shipped alongside the resolved <c>mod_spatialite</c>).
-    /// </summary>
-    public static void CreateGeoPackage(string path)
-    {
-        var ogr2ogr = FindOgr2Ogr()
-            ?? throw new InvalidOperationException(
-                "ogr2ogr not found next to mod_spatialite - cannot build the GeoPackage test fixture.");
-
-        var sourceSqlite = NewTempPath("sqlite");
-        try
-        {
-            CreateSpatiaLite(sourceSqlite);
-
-            var startInfo = new System.Diagnostics.ProcessStartInfo(ogr2ogr)
-            {
-                RedirectStandardError = true,
-                RedirectStandardOutput = true,
-                UseShellExecute = false,
-            };
-            startInfo.ArgumentList.Add("-f");
-            startInfo.ArgumentList.Add("GPKG");
-            startInfo.ArgumentList.Add(path);
-            startInfo.ArgumentList.Add(sourceSqlite);
-            startInfo.ArgumentList.Add("pts");
-            startInfo.ArgumentList.Add("-nln");
-            startInfo.ArgumentList.Add("pts");
-
-            using var process = System.Diagnostics.Process.Start(startInfo)!;
-            string stderr = process.StandardError.ReadToEnd();
-            process.WaitForExit();
-
-            if (process.ExitCode != 0 || !File.Exists(path))
-            {
-                throw new InvalidOperationException($"ogr2ogr failed ({process.ExitCode}): {stderr}");
-            }
-        }
-        finally
-        {
-            TryDelete(sourceSqlite);
-        }
-    }
-
-    private static string? FindOgr2Ogr()
-    {
-        var exe = OperatingSystem.IsWindows() ? "ogr2ogr.exe" : "ogr2ogr";
-
-        var modDir = string.IsNullOrEmpty(ModSpatialitePath)
-            ? null
-            : IoPath.GetDirectoryName(ModSpatialitePath);
-
-        foreach (var dir in new[] { modDir, IoPath.Combine(modDir ?? ".", "..", "apps", "gdal", "bin") })
-        {
-            if (string.IsNullOrEmpty(dir))
-            {
-                continue;
-            }
-
-            var candidate = IoPath.GetFullPath(IoPath.Combine(dir, exe));
-            if (File.Exists(candidate))
-            {
-                return candidate;
-            }
-        }
-
-        foreach (var pathDir in (Environment.GetEnvironmentVariable("PATH") ?? "").Split(IoPath.PathSeparator))
-        {
-            if (string.IsNullOrWhiteSpace(pathDir))
-            {
-                continue;
-            }
-
-            var candidate = IoPath.Combine(pathDir.Trim(), exe);
-            if (File.Exists(candidate))
-            {
-                return candidate;
-            }
-        }
-
-        return null;
     }
 
     public static void TryDelete(string path)

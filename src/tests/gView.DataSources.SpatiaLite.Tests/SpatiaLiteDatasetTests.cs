@@ -9,25 +9,25 @@ using gView.Framework.Geometry;
 namespace gView.DataSources.SpatiaLite.Tests;
 
 /// <summary>
-/// End-to-end tests for <see cref="SpatiaLiteDataset"/>: opens real temp SpatiaLite and
-/// GeoPackage files, lists feature classes and round-trips geometry through
-/// query / insert / update / delete.
+/// End-to-end tests for <see cref="SpatiaLiteDataset"/>: opens real temp SpatiaLite files,
+/// lists feature classes and round-trips geometry through query / insert / update / delete.
+/// <para>
+/// GeoPackage has its own datasource / test project now
+/// (<c>gView.DataSources.GeoPackage.Tests</c>) and does not need <c>mod_spatialite</c>.
+/// </para>
 /// </summary>
 public class SpatiaLiteDatasetTests : IDisposable
 {
     private readonly string _spatiaLitePath;
-    private readonly string _geoPackagePath;
 
     public SpatiaLiteDatasetTests()
     {
         _spatiaLitePath = SpatiaLiteTestEnvironment.NewTempPath("sqlite");
-        _geoPackagePath = SpatiaLiteTestEnvironment.NewTempPath("gpkg");
     }
 
     public void Dispose()
     {
         SpatiaLiteTestEnvironment.TryDelete(_spatiaLitePath);
-        SpatiaLiteTestEnvironment.TryDelete(_geoPackagePath);
     }
 
     private async Task<SpatiaLiteDataset> OpenSpatiaLiteAsync()
@@ -37,18 +37,6 @@ public class SpatiaLiteDatasetTests : IDisposable
 
         var dataset = new SpatiaLiteDataset();
         await dataset.SetConnectionString(_spatiaLitePath);
-        Assert.True(await dataset.Open(), dataset.LastErrorMessage);
-
-        return dataset;
-    }
-
-    private async Task<SpatiaLiteDataset> OpenGeoPackageAsync()
-    {
-        SpatiaLiteTestEnvironment.RequireModSpatialite();
-        SpatiaLiteTestEnvironment.CreateGeoPackage(_geoPackagePath);
-
-        var dataset = new SpatiaLiteDataset();
-        await dataset.SetConnectionString(_geoPackagePath);
         Assert.True(await dataset.Open(), dataset.LastErrorMessage);
 
         return dataset;
@@ -234,136 +222,17 @@ public class SpatiaLiteDatasetTests : IDisposable
     }
 
     [Fact]
-    public async Task Elements_GeoPackage_ListsPointFeatureClass()
-    {
-        using var dataset = await OpenGeoPackageAsync();
-
-        var fc = await GetFeatureClassAsync(dataset, "pts");
-
-        Assert.Equal(GeometryType.Point, fc.GeometryType);
-        Assert.Equal(25832, fc.SpatialReference?.EpsgCode);
-    }
-
-    [Fact]
-    public async Task InsertUpdateDelete_GeoPackage_RoundTripsAndKeepsValidGpbBlob()
-    {
-        using var dataset = await OpenGeoPackageAsync();
-        var fc = await GetFeatureClassAsync(dataset, "pts");
-
-        var before = await DrainAsync(await dataset.Query(fc, new QueryFilter { SubFields = "*" }));
-        Assert.Equal(3, before.Count);
-
-        // insert
-        var toInsert = PointFeature(600, 600, "added", 7);
-        Assert.True(await dataset.Insert(fc, new List<IFeature> { toInsert }, returnIds: true), dataset.LastErrorMessage);
-        Assert.True(toInsert.OID > 0, $"OID not back-filled: {toInsert.OID}");
-
-        var after = await DrainAsync(await dataset.Query(fc, new QueryFilter { SubFields = "*" }));
-        Assert.Equal(4, after.Count);
-        var added = after.Single(f => f.FindField("name")!.Value!.ToString() == "added");
-        Assert.Equal(600, ((IPoint)added.Shape).X, 6);
-        Assert.True(added.OID > 0);
-        Assert.Equal(added.OID, toInsert.OID);
-
-        // the geometry column must still hold spec-compliant GPB ("GP..") blobs
-        var validGpb = Convert.ToInt64(SpatiaLiteTestEnvironment.Scalar(
-            _geoPackagePath, "SELECT min(IsValidGPB(geom)) FROM pts", geoPackage: true));
-        Assert.Equal(1, validGpb);
-
-        // update
-        var update = new Feature { Shape = new Point(11, 22), OID = added.OID };
-        update.Fields.Add(new FieldValue("name", "changed"));
-        update.Fields.Add(new FieldValue("value", 8));
-        Assert.True(await dataset.Update(fc, update), dataset.LastErrorMessage);
-
-        var afterUpdate = (await DrainAsync(await dataset.Query(fc, new QueryFilter { SubFields = "*" })))
-            .Single(f => f.OID == added.OID);
-        Assert.Equal("changed", afterUpdate.FindField("name")!.Value!.ToString());
-        Assert.Equal(11, ((IPoint)afterUpdate.Shape).X, 6);
-
-        // delete
-        Assert.True(await dataset.Delete(fc, added.OID), dataset.LastErrorMessage);
-        var afterDelete = await DrainAsync(await dataset.Query(fc, new QueryFilter { SubFields = "*" }));
-        Assert.Equal(3, afterDelete.Count);
-        Assert.DoesNotContain(afterDelete, f => f.OID == added.OID);
-    }
-
-    [Fact]
-    public async Task CreateDatabaseAndFeatureClass_GeoPackage_RoundTrips()
+    public async Task InsertAndQuery_SpatiaLite_AwkwardFieldNames_RoundTrip()
     {
         SpatiaLiteTestEnvironment.RequireModSpatialite();
 
-        // create a brand-new empty GeoPackage
         var dataset = new SpatiaLiteDataset();
-        Assert.True(dataset.Create(_geoPackagePath), dataset.LastErrorMessage);
-        Assert.True(File.Exists(_geoPackagePath));
-
-        await dataset.SetConnectionString(_geoPackagePath);
+        Assert.True(dataset.Create(_spatiaLitePath), dataset.LastErrorMessage);
+        await dataset.SetConnectionString(_spatiaLitePath);
         Assert.True(await dataset.Open(), dataset.LastErrorMessage);
 
-        var fields = new FieldCollection();
-        fields.Add(new Field("name", FieldType.String) { size = 50 });
-        fields.Add(new Field("value", FieldType.integer));
-
-        var geomDef = new GeometryDef(GeometryType.Polyline)
-        {
-            SpatialReference = SpatialReference.FromID("epsg:25832")
-        };
-
-        Assert.Equal(0, await dataset.CreateFeatureClass("", "roads", geomDef, fields));
-
-        var fc = await GetFeatureClassAsync(dataset, "roads");
-        Assert.Equal(GeometryType.Polyline, fc.GeometryType);
-        Assert.Equal(25832, fc.SpatialReference?.EpsgCode);
-
-        var linePath = new gView.Framework.Geometry.Path();
-        linePath.AddPoint(new Point(0, 0));
-        linePath.AddPoint(new Point(100, 100));
-        var line = new Polyline(linePath);
-
-        var feature = new Feature { Shape = line };
-        feature.Fields.Add(new FieldValue("name", "r1"));
-        feature.Fields.Add(new FieldValue("value", 5));
-        Assert.True(await dataset.Insert(fc, new List<IFeature> { feature }), dataset.LastErrorMessage);
-
-        var read = await DrainAsync(await dataset.Query(fc, new QueryFilter { SubFields = "*" }));
-        Assert.Single(read);
-        Assert.Equal("r1", read[0].FindField("name")!.Value!.ToString());
-        Assert.Equal(0, read[0].Shape.Envelope.MinX, 6);
-        Assert.Equal(100, read[0].Shape.Envelope.MaxX, 6);
-
-        var validGpb = Convert.ToInt64(SpatiaLiteTestEnvironment.Scalar(
-            _geoPackagePath, "SELECT min(IsValidGPB(geom)) FROM roads", geoPackage: true) ?? 0L);
-        Assert.Equal(1, validGpb);
-
-        Assert.True(await dataset.DeleteFeatureClass("roads"), dataset.LastErrorMessage);
-        Assert.Null(await dataset.Element("roads"));
-
-        // the gpkg metadata rows are gone too
-        var leftover = Convert.ToInt64(SpatiaLiteTestEnvironment.Scalar(
-            _geoPackagePath,
-            "SELECT (SELECT count(*) FROM gpkg_contents WHERE table_name='roads') + " +
-            "       (SELECT count(*) FROM gpkg_geometry_columns WHERE table_name='roads')",
-            geoPackage: true) ?? 0L);
-        Assert.Equal(0, leftover);
-    }
-
-    [Theory]
-    [InlineData("sqlite")]
-    [InlineData("gpkg")]
-    public async Task InsertAndQuery_AwkwardFieldNames_RoundTrip(string kind)
-    {
-        SpatiaLiteTestEnvironment.RequireModSpatialite();
-        var path = kind == "gpkg" ? _geoPackagePath : _spatiaLitePath;
-
-        var dataset = new SpatiaLiteDataset();
-        Assert.True(dataset.Create(path), dataset.LastErrorMessage);
-        await dataset.SetConnectionString(path);
-        Assert.True(await dataset.Open(), dataset.LastErrorMessage);
-
-        // OSM-style keys with ":" (common in QGIS/osm2pgsql GeoPackages) are illegal in a
-        // raw SQLite bind-parameter token; a name with a space breaks a space-split
-        // sub-field list.
+        // OSM-style keys with ":" are illegal in a raw SQLite bind-parameter token; a name
+        // with a space breaks a space-split sub-field list.
         var fields = new FieldCollection();
         fields.Add(new Field("mtb:scale:uphill", FieldType.String) { size = 20 });
         fields.Add(new Field("historic:civilization", FieldType.String) { size = 20 });
@@ -389,7 +258,6 @@ public class SpatiaLiteDatasetTests : IDisposable
         Assert.Equal("roman", read[0].FindField("historic:civilization")!.Value!.ToString());
         Assert.Equal("hello world", read[0].FindField("some name")!.Value!.ToString());
 
-        // and update by id still works with those columns
         var update = new Feature { Shape = new Point(3, 4), OID = read[0].OID };
         update.Fields.Add(new FieldValue("some name", "changed"));
         Assert.True(await dataset.Update(fc, update), dataset.LastErrorMessage);
@@ -398,10 +266,8 @@ public class SpatiaLiteDatasetTests : IDisposable
         Assert.Equal("changed", afterUpdate.FindField("some name")!.Value!.ToString());
     }
 
-    [Theory]
-    [InlineData("db.gpkg")]
-    [InlineData("db.sqlite")]
-    public async Task IFileFeatureDatabase_CreatesInFolderAndOpens(string fileName)
+    [Fact]
+    public async Task IFileFeatureDatabase_CreatesInFolderAndOpens()
     {
         SpatiaLiteTestEnvironment.RequireModSpatialite();
 
@@ -412,9 +278,9 @@ public class SpatiaLiteDatasetTests : IDisposable
             gView.Framework.Core.FDB.IFileFeatureDatabase fileDb = new SpatiaLiteDataset();
 
             Assert.False(fileDb.IsFolderBased);
-            Assert.Equal("SpatiaLite / GeoPackage", fileDb.DatabaseName);
+            Assert.Equal("SpatiaLite", fileDb.DatabaseName);
 
-            var target = System.IO.Path.Combine(folder, fileName);
+            var target = System.IO.Path.Combine(folder, "db.sqlite");
             Assert.Equal(0, await fileDb.CreateDataset(target, null));
             Assert.True(System.IO.File.Exists(target));
 
@@ -441,9 +307,6 @@ public class SpatiaLiteDatasetTests : IDisposable
     [Fact]
     public async Task IFileFeatureDatabase_OpenAndGetDataset_AcceptDataSourceConnectionString()
     {
-        // the CopyFeatureClass command parameter builders take the IFileFeatureDatabase
-        // branch: fileDB.Open(connstr) then fileDB.GetDataset(connstr), with connstr being
-        // "Data Source=<path>". Both must work (regression for "method not implemented").
         using var source = await OpenSpatiaLiteAsync();
 
         gView.Framework.Core.FDB.IFileFeatureDatabase fileDb = new SpatiaLiteDataset();
@@ -457,46 +320,6 @@ public class SpatiaLiteDatasetTests : IDisposable
 
         var fc = await GetFeatureClassAsync(dataset!, "pts");
         Assert.Equal(3, (await DrainAsync(await dataset!.Query(fc, new QueryFilter { SubFields = "*" }))).Count);
-    }
-
-    [Fact]
-    public async Task CopyFeatureClass_SpatiaLiteToNewGeoPackage_RoundTrips()
-    {
-        // mirrors what FeatureImport / CopyFeatureClassCommand do when pasting a feature
-        // class onto a SpatiaLite/GeoPackage node in the DataExplorer.
-        using var source = await OpenSpatiaLiteAsync();
-        var sourceFc = await GetFeatureClassAsync(source, "pts");
-
-        var dest = new SpatiaLiteDataset();
-        Assert.True(dest.Create(_geoPackagePath), dest.LastErrorMessage);
-        await dest.SetConnectionString(_geoPackagePath);
-        Assert.True(await dest.Open(), dest.LastErrorMessage);
-
-        var geomDef = new GeometryDef(sourceFc);
-        Assert.Equal(0, await dest.CreateFeatureClass(dest.DatasetName, "pts_copy", geomDef,
-            (IFieldCollection)sourceFc.Fields.Clone()));
-
-        var destFc = await GetFeatureClassAsync(dest, "pts_copy");
-
-        var copied = new List<IFeature>();
-        using (var cursor = await sourceFc.GetFeatures(new QueryFilter { SubFields = "*" }))
-        {
-            IFeature f;
-            while ((f = await cursor.NextFeature()) != null)
-            {
-                copied.Add(f);
-            }
-        }
-        Assert.True(await dest.Insert(destFc, copied), dest.LastErrorMessage);
-
-        var readBack = await DrainAsync(await dest.Query(destFc, new QueryFilter { SubFields = "*" }));
-        Assert.Equal(3, readBack.Count);
-        Assert.Contains(readBack, f => f.FindField("name")!.Value!.ToString() == "a"
-                                    && Math.Abs(((IPoint)f.Shape).X - 100) < 1e-6);
-
-        var validGpb = Convert.ToInt64(SpatiaLiteTestEnvironment.Scalar(
-            _geoPackagePath, "SELECT min(IsValidGPB(geom)) FROM pts_copy", geoPackage: true) ?? 0L);
-        Assert.Equal(1, validGpb);
     }
 
     [Fact]
@@ -523,32 +346,5 @@ public class SpatiaLiteDatasetTests : IDisposable
         var read = await DrainAsync(await dataset.Query(fc, new QueryFilter { SubFields = "*" }));
         Assert.Single(read);
         Assert.Equal(7.5, ((IPoint)read[0].Shape).X, 6);
-    }
-
-    [Fact]
-    public async Task Query_GeoPackage_SpatialFilterReturnsOnlyIntersectingFeatures()
-    {
-        using var dataset = await OpenGeoPackageAsync();
-        var fc = await GetFeatureClassAsync(dataset, "pts");
-
-        // pts seeded at (100,100), (500,500), (900,900) in EPSG:25832
-        var envelopeFilter = new SpatialFilter
-        {
-            SubFields = "*",
-            Geometry = new Envelope(0, 0, 300, 300),
-            SpatialRelation = spatialRelation.SpatialRelationMapEnvelopeIntersects
-        };
-        var envelopeHits = await DrainAsync(await dataset.Query(fc, envelopeFilter));
-        Assert.Single(envelopeHits);
-        Assert.Equal("a", envelopeHits[0].FindField("name")!.Value!.ToString());
-
-        var intersectsFilter = new SpatialFilter
-        {
-            SubFields = "*",
-            Geometry = new Envelope(0, 0, 600, 600),
-            SpatialRelation = spatialRelation.SpatialRelationIntersects
-        };
-        var intersectHits = await DrainAsync(await dataset.Query(fc, intersectsFilter));
-        Assert.Equal(2, intersectHits.Count);
     }
 }

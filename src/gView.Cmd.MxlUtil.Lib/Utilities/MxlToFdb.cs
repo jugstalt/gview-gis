@@ -35,6 +35,8 @@ namespace gView.Cmd.MxlUtil.Lib.Utilities
             string targetConnectionString = String.Empty;
             IEnumerable<string>? dontCopyFeatues = null;
             Guid targetGuid = new Guid();
+            string targetDbToken = String.Empty;
+            GeometryStorageType geometryStorage = GeometryStorageType.Classic;
 
             if(args.Length<2)
             {
@@ -54,6 +56,7 @@ namespace gView.Cmd.MxlUtil.Lib.Utilities
 
                     case "-target-guid":
                         var guid = args[++i];
+                        targetDbToken = guid.Trim().ToLower();
                         switch (guid.ToLower())
                         {
                             case "sqlserver":
@@ -81,6 +84,13 @@ namespace gView.Cmd.MxlUtil.Lib.Utilities
                     case "-dont-copy-features-from":
                         dontCopyFeatues = args[++i].Split(',').Select(n => n.Trim().ToLower());
                         break;
+
+                    case "-geometry-storage":
+                        if (!Enum.TryParse<GeometryStorageType>(args[++i], ignoreCase: true, out geometryStorage))
+                        {
+                            geometryStorage = GeometryStorageType.Classic;
+                        }
+                        break;
                 }
             }
 
@@ -89,6 +99,15 @@ namespace gView.Cmd.MxlUtil.Lib.Utilities
                targetGuid.Equals(new Guid()))
             {
                 throw new IncompleteArgumentsException();
+            }
+
+            if (geometryStorage != GeometryStorageType.Classic &&
+                MxlToFdbStorage.IsKnownTargetDb(targetDbToken) &&
+                !MxlToFdbStorage.IsCompatible(targetDbToken, geometryStorage))
+            {
+                throw new Exception(
+                    $"Geometry storage '{geometryStorage}' is not valid for target database '{targetDbToken}'. " +
+                    $"Valid for '{targetDbToken}': {String.Join(", ", MxlToFdbStorage.CompatibleStorages(targetDbToken))}.");
             }
 
             if (String.IsNullOrEmpty(outFile))
@@ -115,8 +134,52 @@ namespace gView.Cmd.MxlUtil.Lib.Utilities
             await targetFeatureDataset.Open();
 
             var targetDatabase = (IFDBDatabase)targetFeatureDataset.Database;
+            var targetAccessFdb = targetDatabase as AccessFDB
+                ?? throw new Exception("Target database is not a gView Feature Database");
 
             #endregion Destination Dataset
+
+            #region Target Dataset / geometry storage
+
+            bool datasetEnsured = false;
+            GeometryStorageType effectiveStorage = geometryStorage;
+
+            async Task EnsureTargetDatasetAsync(ISpatialReference? sRef)
+            {
+                if (datasetEnsured)
+                {
+                    return;
+                }
+                datasetEnsured = true;
+
+                if (await targetAccessFdb.DatasetID(targetFeatureDataset.DatasetName) <= 0)
+                {
+                    logger?.LogLine($"Create target dataset '{targetFeatureDataset.DatasetName}' (geometry storage: {geometryStorage})");
+
+                    if (await targetAccessFdb.CreateDataset(
+                            targetFeatureDataset.DatasetName, sRef, NewSpatialIndexDef(geometryStorage, sRef)) <= 0)
+                    {
+                        throw new Exception($"Can't create target dataset '{targetFeatureDataset.DatasetName}': {targetAccessFdb.LastErrorMessage}");
+                    }
+
+                    await targetFeatureDataset.SetConnectionString(targetConnectionString);
+                    await targetFeatureDataset.Open();
+                }
+
+                effectiveStorage = (await targetAccessFdb.SpatialIndexDef(targetFeatureDataset.DatasetName))?.StorageType
+                                   ?? GeometryStorageType.Classic;
+
+                if (geometryStorage != GeometryStorageType.Classic && effectiveStorage != geometryStorage)
+                {
+                    logger?.LogLine($"Note: target dataset already uses '{effectiveStorage}' storage - '-geometry-storage {geometryStorage}' is ignored.");
+                }
+                else
+                {
+                    logger?.LogLine($"Geometry storage: {effectiveStorage}");
+                }
+            }
+
+            #endregion Target Dataset / geometry storage
 
             var map = doc.Maps.FirstOrDefault() as Map;
             if (map is null)
@@ -165,6 +228,9 @@ namespace gView.Cmd.MxlUtil.Lib.Utilities
                             logger?.LogLine("Class is not a FeatureClass");
                             continue;
                         }
+
+                        await EnsureTargetDatasetAsync(sourceFc.SpatialReference);
+                        bool nativeStorage = effectiveStorage.IsDatabaseNative();
 
                         #region Create Target Featureclass (if not exists)
 
@@ -228,7 +294,16 @@ namespace gView.Cmd.MxlUtil.Lib.Utilities
                             var copyFeatures = dontCopyFeatues == null ||
                                 (!dontCopyFeatues.Contains(sourceFc.Name.ToLower()) && !dontCopyFeatues.Contains(targetFc.Name.ToLower()));
 
-                            if (copyFeatures)
+                            if (copyFeatures && nativeStorage)
+                            {
+                                // database-native storage: no gView BinaryTree, no $FDB_NID -
+                                // stream the features and let the database build its own index.
+                                await CopyFeaturesNative(sourceFc, targetDatabase, targetFc, logger, cancelTracker);
+
+                                logger?.LogLine("Rebuild native spatial index...");
+                                await targetAccessFdb.RebuildNativeSpatialIndexAsync(targetFcName);
+                            }
+                            else if (copyFeatures)
                             {
                                 var sIndexDef = new gViewSpatialIndexDef(null, 62);
 
@@ -412,12 +487,77 @@ Required arguments:
 Optional arguments:
 -out-xml <name/path of the out xml>
 -dont-copy-features-from <a comma seperated list of layernames, where only an empty Db-Table-Schema is created>
+-geometry-storage <Classic|PostGis|SqlServerGeometry|SqlServerGeography|GeoPackage|SpatiaLite>
+    How the geometry is stored in the target FDB. 'Classic' (default) uses the gView proprietary
+    blob + BinaryTree. The native types use a real database geometry column with the database's own
+    spatial index (no gView BinaryTree). Only applied when the target dataset does not exist yet;
+    an existing dataset keeps its storage.
 ";
         }
 
         #endregion IMxlUtility
 
         #region Helper
+
+        /// <summary>Spatial-index definition for a target dataset of the given geometry storage.</summary>
+        private static ISpatialIndexDef NewSpatialIndexDef(GeometryStorageType storage, ISpatialReference? sRef)
+            => storage switch
+            {
+                GeometryStorageType.PostGis
+                    => new PostGisSpatialIndexDef() { SpatialReference = sRef },
+                GeometryStorageType.SqlServerGeometry
+                    => new MSSpatialIndex() { GeometryType = GeometryFieldType.MsGeometry, SpatialReference = sRef },
+                GeometryStorageType.SqlServerGeography
+                    => new MSSpatialIndex() { GeometryType = GeometryFieldType.MsGeography, SpatialReference = sRef },
+                GeometryStorageType.SpatiaLite or GeometryStorageType.GeoPackage
+                    => new gViewSpatialIndexDef() { StorageType = storage, SpatialReference = sRef },
+                _ => new gViewSpatialIndexDef(null, 62) { SpatialReference = sRef },
+            };
+
+        /// <summary>
+        /// Plain streaming copy for a database-native target feature class: no spatial-index tree,
+        /// no <c>$FDB_NID</c> - the database builds its own index afterwards.
+        /// </summary>
+        private static async Task<bool> CopyFeaturesNative(
+            IFeatureClass sourceFc, IFeatureUpdater targetDatabase, IFeatureClass targetFc,
+            ICommandLogger? logger, ICancelTracker? cancelTracker)
+        {
+            logger?.LogLine("Copy features:");
+
+            var featureBag = new List<IFeature>();
+            int counter = 0;
+
+            QueryFilter filter = new QueryFilter() { WhereClause = "1=1" };
+            filter.AddField("*");
+
+            using (var cursor = await sourceFc.GetFeatures(filter))
+            {
+                if (cursor == null)
+                {
+                    throw new Exception($"Can't query features from source featureclass: {(sourceFc is IDebugging dbg ? dbg.LastException?.Message : "")}");
+                }
+
+                IFeature? feature;
+                while ((feature = await cursor.NextFeature()) != null)
+                {
+                    if (cancelTracker?.Continue == false)
+                    {
+                        break;
+                    }
+
+                    featureBag.Add(feature);
+                    counter++;
+
+                    if (featureBag.Count >= 10000)
+                    {
+                        await Store(targetDatabase, targetFc, featureBag, counter, logger);
+                    }
+                }
+            }
+
+            await Store(targetDatabase, targetFc, featureBag, counter, logger);
+            return true;
+        }
 
         private static async Task<bool> Store(IFeatureUpdater featureUpdater, IFeatureClass fc, List<IFeature> featureBag, int counter, ICommandLogger? logger)
         {

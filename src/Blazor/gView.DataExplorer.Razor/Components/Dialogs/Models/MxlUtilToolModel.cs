@@ -28,6 +28,7 @@ public class MxlUtilToolModel : IDialogResultItem
     public string MxlToFdb_Mxl { get; set; } = "";
     public string MxlToFdb_TargetConnectionString { get; set; } = "";
     public string MxlToFdb_TargetGuid { get; set; } = "sqlite";
+    public string MxlToFdb_GeometryStorage { get; set; } = "Classic";
     public string MxlToFdb_OutMxl { get; set; } = "";
     public string MxlToFdb_DontCopyFeaturesFrom { get; set; } = "";
 

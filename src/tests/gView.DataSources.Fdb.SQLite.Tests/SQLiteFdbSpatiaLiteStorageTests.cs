@@ -15,9 +15,11 @@ namespace gView.DataSources.Fdb.SQLite.Tests;
 /// <summary>
 /// End-to-end tests for a SQLite FDB whose datasets store geometry natively as SpatiaLite or
 /// GeoPackage (<see cref="GeometryStorageType.SpatiaLite"/> / <see cref="GeometryStorageType.GeoPackage"/>):
-/// no gView BinaryTree, an SQLite R-Tree instead, and the resulting file is a valid
-/// SpatiaLite / GeoPackage that <see cref="SpatiaLiteDataset"/> can open directly.
-/// Skipped when no <c>mod_spatialite</c> is available on the machine.
+/// no gView BinaryTree, an SQLite R-Tree instead.
+/// <para>
+/// GeoPackage is <b>mod_spatialite-free</b> (GPB blob + R-Tree handled by gView) so those cases run
+/// unconditionally; the SpatiaLite cases are skipped when no <c>mod_spatialite</c> is available.
+/// </para>
 /// </summary>
 public class SQLiteFdbSpatiaLiteStorageTests : IDisposable
 {
@@ -40,7 +42,12 @@ public class SQLiteFdbSpatiaLiteStorageTests : IDisposable
 
     private static bool? _modSpatialiteOk;
 
-    private static void RequireModSpatialite()
+    /// <summary>
+    /// GeoPackage needs no native library, so its cases always run. The SpatiaLite flavor needs
+    /// <c>mod_spatialite</c>; when it is missing the test returns early (treated as inconclusive)
+    /// rather than failing on a machine / CI without it.
+    /// </summary>
+    private static bool ModSpatialiteAvailable()
     {
         if (_modSpatialiteOk is null)
         {
@@ -55,19 +62,11 @@ public class SQLiteFdbSpatiaLiteStorageTests : IDisposable
             }
         }
 
-        if (_modSpatialiteOk != true)
-        {
-            // Same requirement as gView.DataSources.SpatiaLite.Tests: a real mod_spatialite.
-            throw new InvalidOperationException(
-                "mod_spatialite not found. Set GVIEW_MOD_SPATIALITE or install QGIS / OSGeo4W " +
-                "(Windows) or libsqlite3-mod-spatialite (Linux) to run the SpatiaLite / GeoPackage FDB tests.");
-        }
+        return _modSpatialiteOk == true;
     }
 
     private async Task<SQLiteFDB> CreateFdbAsync(GeometryStorageType storage, GeometryType geometryType)
     {
-        RequireModSpatialite();
-
         var fdb = new SQLiteFDB();
         Assert.True(fdb.Create(_dbPath), "FDB Create failed: " + fdb.LastErrorMessage);
         Assert.True(await fdb.Open("Data Source=" + _dbPath));
@@ -131,6 +130,8 @@ public class SQLiteFdbSpatiaLiteStorageTests : IDisposable
     [InlineData(GeometryStorageType.SpatiaLite)]
     public async Task InsertQuery_RoundTripsGeometry_AndNoGViewIndex(GeometryStorageType storage)
     {
+        if (storage == GeometryStorageType.SpatiaLite && !ModSpatialiteAvailable()) return;
+
         var fdb = await CreateFdbAsync(storage, GeometryType.Point);
         var fc = await GetFcAsync(fdb);
 
@@ -160,6 +161,8 @@ public class SQLiteFdbSpatiaLiteStorageTests : IDisposable
     [InlineData(GeometryStorageType.SpatiaLite)]
     public async Task SpatialFilter_UsesRTree_ReturnsOnlyIntersecting(GeometryStorageType storage)
     {
+        if (storage == GeometryStorageType.SpatiaLite && !ModSpatialiteAvailable()) return;
+
         var fdb = await CreateFdbAsync(storage, GeometryType.Point);
         var fc = await GetFcAsync(fdb);
 
@@ -181,12 +184,10 @@ public class SQLiteFdbSpatiaLiteStorageTests : IDisposable
         Assert.Equal(new[] { "in", "in2" }, names);
     }
 
-    [Theory]
-    [InlineData(GeometryStorageType.GeoPackage)]
-    [InlineData(GeometryStorageType.SpatiaLite)]
-    public async Task ResultingFile_OpensAsSpatiaLiteOrGeoPackage(GeometryStorageType storage)
+    [Fact]
+    public async Task GeoPackageFile_HasValidGpkgMetadata_WithoutModSpatialite()
     {
-        var fdb = await CreateFdbAsync(storage, GeometryType.Polygon);
+        var fdb = await CreateFdbAsync(GeometryStorageType.GeoPackage, GeometryType.Polygon);
         var fc = await GetFcAsync(fdb);
 
         var poly = new Polygon();
@@ -201,13 +202,60 @@ public class SQLiteFdbSpatiaLiteStorageTests : IDisposable
         fdb.Dispose();
         SQLiteConnection.ClearAllPools();
 
-        // the same file is a valid SpatiaLite / GeoPackage: SpatiaLiteDataset lists FC_geo
+        // plain SQLite - no mod_spatialite: the file carries valid GeoPackage metadata
+        using var conn = new SQLiteConnection("Data Source=" + _dbPath);
+        conn.Open();
+
+        using (var cmd = conn.CreateCommand())
+        {
+            cmd.CommandText = "PRAGMA application_id";
+            Assert.Equal(gView.DataSources.GeoPackage.GeoPackageSchema.ApplicationId, Convert.ToInt64(cmd.ExecuteScalar()));
+        }
+
+        Assert.True(TableExists(conn, "gpkg_contents"));
+        Assert.True(TableExists(conn, "gpkg_geometry_columns"));
+        Assert.True(TableExists(conn, "rtree_FC_geo_FDB_SHAPE"), "GeoPackage R-Tree table");
+
+        using (var cmd = conn.CreateCommand())
+        {
+            cmd.CommandText = "SELECT count(*) FROM gpkg_contents WHERE table_name='FC_geo' AND data_type='features'";
+            Assert.Equal(1, Convert.ToInt32(cmd.ExecuteScalar()));
+
+            cmd.CommandText = "SELECT count(*) FROM rtree_FC_geo_FDB_SHAPE";
+            Assert.Equal(1, Convert.ToInt32(cmd.ExecuteScalar()));
+
+            // the FDB_SHAPE blob is a standard GeoPackage binary ('GP' magic)
+            cmd.CommandText = "SELECT FDB_SHAPE FROM FC_geo LIMIT 1";
+            var blob = (byte[])cmd.ExecuteScalar();
+            Assert.True(gView.DataSources.GeoPackage.GpkgGeometry.IsGpb(blob), "FDB_SHAPE is a GPB blob");
+        }
+    }
+
+    [Fact]
+    public async Task SpatiaLiteFile_OpensAsSpatiaLiteDataset()
+    {
+        if (!ModSpatialiteAvailable()) return;
+
+        var fdb = await CreateFdbAsync(GeometryStorageType.SpatiaLite, GeometryType.Polygon);
+        var fc = await GetFcAsync(fdb);
+
+        var poly = new Polygon();
+        var ring = new Ring();
+        ring.AddPoint(new Point(0, 0)); ring.AddPoint(new Point(0, 10));
+        ring.AddPoint(new Point(10, 10)); ring.AddPoint(new Point(10, 0));
+        poly.AddRing(ring);
+        var pf = new Feature { Shape = poly };
+        pf.Fields.Add(new FieldValue("NAME", "square"));
+        Assert.True(await fdb.Insert(fc, new List<IFeature> { pf }), fdb.LastErrorMessage);
+
+        fdb.Dispose();
+        SQLiteConnection.ClearAllPools();
+
         var external = new SpatiaLiteDataset();
         Assert.True(await external.SetConnectionString(_dbPath));
         Assert.True(await external.Open(), external.LastErrorMessage);
 
-        var elements = await external.Elements();
-        var extFc = elements.Select(e => e.Class).OfType<IFeatureClass>()
+        var extFc = (await external.Elements()).Select(e => e.Class).OfType<IFeatureClass>()
                             .FirstOrDefault(c => string.Equals(c.Name, "FC_geo", StringComparison.OrdinalIgnoreCase));
         Assert.NotNull(extFc);
         Assert.Equal(GeometryType.Polygon, extFc!.GeometryType);

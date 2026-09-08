@@ -8,7 +8,6 @@ using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
 using gView.Framework.OGC;
 using gView.Framework.OGC.DB;
-using gView.Framework.OGC.WKT;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -19,40 +18,36 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace gView.DataSources.SpatiaLite
+namespace gView.DataSources.GeoPackage
 {
     /// <summary>
-    /// Editable OGC feature datasource for stand-alone <b>SpatiaLite</b> files
-    /// (<c>geometry_columns</c> metadata + SpatiaLite geometry blob). Read / insert / update /
-    /// delete run through the shared <see cref="OgcSpatialDataset"/> pipeline; the spatial SQL
-    /// comes from the native <c>mod_spatialite</c> extension (see <see cref="SpatiaLiteNative"/>).
+    /// Editable OGC feature datasource for stand-alone <b>GeoPackage</b> (<c>*.gpkg</c>) files.
     /// <para>
-    /// GeoPackage (<c>*.gpkg</c>) has its own, <c>mod_spatialite</c>-free datasource -
-    /// <c>gView.DataSources.GeoPackage.GeoPackageDataset</c>.
+    /// Completely <c>mod_spatialite</c>-free: the GeoPackage geometry (GPB) blob is read / written
+    /// in managed code (<see cref="GpkgGeometry"/>), the metadata and the R-Tree spatial index are
+    /// plain SQL (<see cref="GeoPackageSchema"/>, no triggers), and the precise spatial relation is
+    /// re-checked per row by <c>OgcSpatialFeatureCursor</c>. Read / insert / update / delete run
+    /// through the shared <see cref="OgcSpatialDataset"/> pipeline.
     /// </para>
     /// </summary>
     [UseDatasetNameCase(DatasetNameCase.ignore)]
-    [RegisterPlugIn("975bcd88-bee4-43ed-a82c-ba10e0b45500")]
-    public class SpatiaLiteDataset : OgcSpatialDataset, IPlugInDependencies, IFileFeatureDatabase
+    [RegisterPlugIn("35c6d28f-7c69-4639-b8c9-26e64762da00")]
+    public class GeoPackageDataset : OgcSpatialDataset, IPlugInDependencies, IFileFeatureDatabase
     {
         private static readonly IFormatProvider _inv = CultureInfo.InvariantCulture;
 
         private string _filename = String.Empty;
 
+        // table (lower-case) -> geometry column name, and table (lower-case) -> has a usable R-Tree.
+        private readonly Dictionary<string, string> _geometryColumns = new(StringComparer.OrdinalIgnoreCase);
+        private readonly HashSet<string> _rtreeTables = new(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, bool> _rtreeManaged = new(StringComparer.OrdinalIgnoreCase);
+
         public override DbProviderFactory ProviderFactory => SQLiteFactory.Instance;
 
-        protected override OgcSpatialDataset CreateInstance() => new SpatiaLiteDataset();
+        protected override OgcSpatialDataset CreateInstance() => new GeoPackageDataset();
 
-        public override string DatasetGroupName => "SpatiaLite";
-
-        /// <summary>True if the native <c>mod_spatialite</c> extension is available.</summary>
-        public static bool IsModSpatialiteAvailable => SpatiaLiteNative.EnsureAvailable(out _);
-
-        /// <summary>
-        /// User-facing "mod_spatialite is missing - here is how to install it" text
-        /// (shown by the DataExplorer SpatiaLite "Create new" tool when it is not available).
-        /// </summary>
-        public static string ModSpatialiteHelpMessage() => SpatiaLiteNative.BuildNotAvailableMessage();
+        public override string DatasetGroupName => "GeoPackage";
 
         #region Open / connection string
 
@@ -64,10 +59,8 @@ namespace gView.DataSources.SpatiaLite
             }
 
             connectionString = connectionString.Trim();
-
             _filename = FilePathOf(connectionString);
 
-            // a bare file path -> wrap it into a real connection string
             return connectionString.IndexOf('=') < 0
                 ? $"Data Source={connectionString}"
                 : connectionString;
@@ -77,13 +70,7 @@ namespace gView.DataSources.SpatiaLite
         {
             if (String.IsNullOrEmpty(_filename) || !File.Exists(_filename))
             {
-                LastErrorMessage = $"SpatiaLite file not found: '{_filename}'";
-                return false;
-            }
-
-            if (!SpatiaLiteNative.EnsureAvailable(out var nativeError))
-            {
-                LastErrorMessage = SpatiaLiteNative.BuildNotAvailableMessage(nativeError);
+                LastErrorMessage = $"GeoPackage file not found: '{_filename}'";
                 return false;
             }
 
@@ -91,11 +78,11 @@ namespace gView.DataSources.SpatiaLite
             {
                 using (var connection = await OpenConnectionAsync())
                 {
-                    if (!await HasGeometryColumnsAsync(connection))
+                    if (!await IsGeoPackageAsync(connection))
                     {
                         LastErrorMessage =
-                            $"'{_filename}' is not a SpatiaLite database (no 'geometry_columns' table). " +
-                             "A GeoPackage '*.gpkg' file opens with the GeoPackage datasource instead.";
+                            $"'{_filename}' is not a GeoPackage database " +
+                             "(PRAGMA application_id is not 'GPKG' and there is no 'gpkg_contents' table).";
                         return false;
                     }
                 }
@@ -109,18 +96,18 @@ namespace gView.DataSources.SpatiaLite
             return await base.Open();
         }
 
-        protected override Task OnConnectionOpenedAsync(DbConnection connection)
-        {
-            SpatiaLiteNative.LoadInto((SQLiteConnection)connection);
-            return Task.CompletedTask;
-        }
-
-        private static async Task<bool> HasGeometryColumnsAsync(DbConnection connection)
+        private static async Task<bool> IsGeoPackageAsync(DbConnection connection)
         {
             using (var command = connection.CreateCommand())
             {
+                command.CommandText = "PRAGMA application_id";
+                if (Convert.ToInt64(await command.ExecuteScalarAsync()) == GeoPackageSchema.ApplicationId)
+                {
+                    return true;
+                }
+
                 command.CommandText =
-                    "SELECT count(*) FROM sqlite_master WHERE type IN ('table','view') AND lower(name)='geometry_columns'";
+                    "SELECT count(*) FROM sqlite_master WHERE type='table' AND lower(name)='gpkg_contents'";
                 return Convert.ToInt64(await command.ExecuteScalarAsync()) > 0;
             }
         }
@@ -153,7 +140,8 @@ namespace gView.DataSources.SpatiaLite
                 DataTable meta;
                 using (var connection = await OpenConnectionAsync())
                 {
-                    meta = await ReadSpatiaLiteMetaAsync(connection);
+                    meta = await ReadGeoPackageMetaAsync(connection);
+                    await ReadRTreeIndexAsync(connection);
                 }
 
                 foreach (DataRow row in meta.Rows)
@@ -201,12 +189,17 @@ namespace gView.DataSources.SpatiaLite
             return table;
         }
 
-        private static async Task<DataTable> ReadSpatiaLiteMetaAsync(DbConnection connection)
+        private async Task<DataTable> ReadGeoPackageMetaAsync(DbConnection connection)
         {
             var raw = new DataTable();
             using (var command = connection.CreateCommand())
             {
-                command.CommandText = "SELECT * FROM geometry_columns";
+                command.CommandText =
+                    "SELECT c.table_name AS f_table_name, gc.column_name AS f_geometry_column, " +
+                    "       gc.geometry_type_name AS geometry_type_name, gc.z AS z, gc.srs_id AS srs_id " +
+                    "FROM gpkg_contents c " +
+                    "JOIN gpkg_geometry_columns gc ON lower(gc.table_name) = lower(c.table_name) " +
+                    "WHERE lower(c.data_type) = 'features'";
                 using (var reader = await command.ExecuteReaderAsync())
                 {
                     raw.Load(reader);
@@ -214,20 +207,95 @@ namespace gView.DataSources.SpatiaLite
             }
 
             var result = NewMetaTable();
+            _geometryColumns.Clear();
 
             foreach (DataRow row in raw.Rows)
             {
+                string tableName = GetString(row, "f_table_name");
+                string geomColumn = GetString(row, "f_geometry_column");
+
                 var newRow = result.NewRow();
-                newRow["f_table_name"] = GetString(row, "f_table_name");
-                newRow["f_geometry_column"] = GetString(row, "f_geometry_column");
-                newRow["type"] = SpatiaLiteGeometryTypeName(
-                    HasColumn(row, "geometry_type") ? row["geometry_type"] : GetValue(row, "type"));
-                newRow["coord_dimension"] = CoordDimension(GetValue(row, "coord_dimension"));
-                newRow["srid"] = ToInt(GetValue(row, "srid"));
+                newRow["f_table_name"] = tableName;
+                newRow["f_geometry_column"] = geomColumn;
+                newRow["type"] = (GetString(row, "geometry_type_name") ?? "GEOMETRY").ToUpperInvariant();
+                newRow["coord_dimension"] = ToInt(GetValue(row, "z")) >= 1 ? 3 : 2;
+                newRow["srid"] = ToInt(GetValue(row, "srs_id"));
                 result.Rows.Add(newRow);
+
+                if (!String.IsNullOrEmpty(tableName) && !String.IsNullOrEmpty(geomColumn))
+                {
+                    _geometryColumns[tableName] = geomColumn;
+                }
             }
 
             return result;
+        }
+
+        private async Task ReadRTreeIndexAsync(DbConnection connection)
+        {
+            _rtreeTables.Clear();
+            _rtreeManaged.Clear();
+
+            using (var command = connection.CreateCommand())
+            {
+                command.CommandText =
+                    "SELECT name, type FROM sqlite_master WHERE type IN ('table','trigger') AND name LIKE 'rtree\\_%' ESCAPE '\\'";
+
+                var triggers = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                var tables = new List<string>();
+
+                using (var reader = await command.ExecuteReaderAsync())
+                {
+                    while (await reader.ReadAsync())
+                    {
+                        string name = reader.GetString(0);
+                        string type = reader.GetString(1);
+                        if (type == "table")
+                        {
+                            tables.Add(name);
+                        }
+                        else
+                        {
+                            triggers.Add(name);
+                        }
+                    }
+                }
+
+                foreach (var (tableLower, geomColumn) in EnumerateGeometryColumns())
+                {
+                    string rtree = GeoPackageSchema.RTreeTable(tableLower, geomColumn);
+                    bool hasTable = tables.Exists(t => String.Equals(t, rtree, StringComparison.OrdinalIgnoreCase));
+                    if (!hasTable)
+                    {
+                        continue;
+                    }
+
+                    _rtreeTables.Add(tableLower);
+
+                    // A GeoPackage authored by QGIS / GDAL ships INSERT/UPDATE/DELETE triggers that
+                    // keep its R-Tree current; gView must then NOT also maintain it (double rows).
+                    // Our own GeoPackages are trigger-free, so gView owns the R-Tree.
+                    bool hasTriggers = false;
+                    foreach (var trg in triggers)
+                    {
+                        if (trg.StartsWith(rtree + "_", StringComparison.OrdinalIgnoreCase))
+                        {
+                            hasTriggers = true;
+                            break;
+                        }
+                    }
+
+                    _rtreeManaged[tableLower] = !hasTriggers;
+                }
+            }
+        }
+
+        private IEnumerable<(string tableLower, string geomColumn)> EnumerateGeometryColumns()
+        {
+            foreach (var kvp in _geometryColumns)
+            {
+                yield return (kvp.Key, kvp.Value);
+            }
         }
 
         #endregion
@@ -235,30 +303,18 @@ namespace gView.DataSources.SpatiaLite
         #region Schema (create database / feature class)
 
         /// <summary>
-        /// Creates a new, empty SpatiaLite database file (<c>InitSpatialMetaData()</c>). The
-        /// instance is left pointing at the new file so <see cref="CreateFeatureClass"/> can be
+        /// Creates a new, empty GeoPackage file (<see cref="GeoPackageSchema.EnsureBaseTables"/>).
+        /// The instance is left pointing at the new file so <see cref="CreateFeatureClass"/> can be
         /// called straight away.
         /// </summary>
         public override bool Create(string name)
         {
             try
             {
-                if (!SpatiaLiteNative.EnsureAvailable(out var error))
-                {
-                    LastErrorMessage = SpatiaLiteNative.BuildNotAvailableMessage(error);
-                    return false;
-                }
-
                 using (var connection = new SQLiteConnection($"Data Source={name}"))
                 {
                     connection.Open();
-                    SpatiaLiteNative.LoadInto(connection);
-
-                    using (var command = connection.CreateCommand())
-                    {
-                        command.CommandText = "SELECT InitSpatialMetaData(1)";
-                        command.ExecuteNonQuery();
-                    }
+                    GeoPackageSchema.EnsureBaseTables(connection);
                 }
 
                 _filename = name;
@@ -276,19 +332,20 @@ namespace gView.DataSources.SpatiaLite
 
         public override async Task<int> CreateFeatureClass(string dsname, string fcname, IGeometryDef geomDef, IFieldCollection fields)
         {
-            string geometryType;
             switch (geomDef.GeometryType)
             {
-                case GeometryType.Point: geometryType = "POINT"; break;
-                case GeometryType.Multipoint: geometryType = "MULTIPOINT"; break;
-                case GeometryType.Polyline: geometryType = "MULTILINESTRING"; break;
-                case GeometryType.Polygon: geometryType = "MULTIPOLYGON"; break;
+                case GeometryType.Point:
+                case GeometryType.Multipoint:
+                case GeometryType.Polyline:
+                case GeometryType.Polygon:
+                    break;
                 default:
                     LastErrorMessage = $"Geometry type '{geomDef.GeometryType}' is not supported.";
                     return -1;
             }
 
             int srid = geomDef.SpatialReference?.EpsgCode ?? 0;
+            const string geomColumn = "geom";
 
             var columns = new StringBuilder("\"fid\" INTEGER PRIMARY KEY AUTOINCREMENT");
             foreach (IField field in fields.ToEnumerable())
@@ -303,23 +360,16 @@ namespace gView.DataSources.SpatiaLite
 
             try
             {
-                using (var connection = await OpenConnectionAsync())
+                using (var connection = (SQLiteConnection)await OpenConnectionAsync())
                 using (var command = connection.CreateCommand())
                 {
                     command.CommandText = $"CREATE TABLE {DbTableName(fcname)} ({columns})";
                     await command.ExecuteNonQueryAsync();
 
-                    if (srid > 0 && !await SridExistsAsync(command, "spatial_ref_sys", "srid", srid))
-                    {
-                        await TryExecuteAsync(command, $"SELECT InsertEpsgSrid({srid})");
-                    }
-
-                    command.CommandText =
-                        $"SELECT AddGeometryColumn('{Escape(fcname)}', 'geom', {srid}, '{geometryType}', 'XY')";
-                    await command.ExecuteNonQueryAsync();
-
-                    command.CommandText = $"SELECT CreateSpatialIndex('{Escape(fcname)}', 'geom')";
-                    await command.ExecuteNonQueryAsync();
+                    GeoPackageSchema.EnsureSrs(connection, srid);
+                    GeoPackageSchema.RegisterFeatureTable(
+                        connection, fcname, geomColumn, geomDef.GeometryType, srid, hasZ: false, hasM: false);
+                    GeoPackageSchema.CreateRTree(connection, fcname, geomColumn);
                 }
 
                 _layers = null;
@@ -336,15 +386,13 @@ namespace gView.DataSources.SpatiaLite
         {
             try
             {
-                using (var connection = await OpenConnectionAsync())
+                using (var connection = (SQLiteConnection)await OpenConnectionAsync())
                 using (var command = connection.CreateCommand())
                 {
-                    foreach (var geomColumn in await GeometryColumnNamesAsync(connection, name))
-                    {
-                        await TryExecuteAsync(command, $"SELECT DisableSpatialIndex('{Escape(name)}', '{Escape(geomColumn)}')");
-                        await TryExecuteAsync(command, $"DROP TABLE IF EXISTS \"idx_{name}_{geomColumn}\"");
-                        await TryExecuteAsync(command, $"SELECT DiscardGeometryColumn('{Escape(name)}', '{Escape(geomColumn)}')");
-                    }
+                    string geomColumn = await ResolveGeometryColumnAsync(connection, name);
+
+                    GeoPackageSchema.DropRTree(connection, name, geomColumn);
+                    GeoPackageSchema.Unregister(connection, name, geomColumn);
 
                     command.CommandText = $"DROP TABLE IF EXISTS {DbTableName(name)}";
                     await command.ExecuteNonQueryAsync();
@@ -360,56 +408,25 @@ namespace gView.DataSources.SpatiaLite
             }
         }
 
-        private static async Task<List<string>> GeometryColumnNamesAsync(DbConnection connection, string tableName)
+        private async Task<string> ResolveGeometryColumnAsync(DbConnection connection, string tableName)
         {
-            var names = new List<string>();
+            if (_geometryColumns.TryGetValue(tableName, out var cached) && !String.IsNullOrEmpty(cached))
+            {
+                return cached;
+            }
 
             using (var command = connection.CreateCommand())
             {
                 command.CommandText =
-                    $"SELECT f_geometry_column FROM geometry_columns WHERE lower(f_table_name) = lower('{Escape(tableName)}')";
-
-                using (var reader = await command.ExecuteReaderAsync())
+                    $"SELECT column_name FROM gpkg_geometry_columns WHERE lower(table_name) = lower('{Escape(tableName)}') LIMIT 1";
+                var result = await command.ExecuteScalarAsync();
+                if (result is string s && !String.IsNullOrEmpty(s))
                 {
-                    while (await reader.ReadAsync())
-                    {
-                        names.Add(reader.GetString(0));
-                    }
+                    return s;
                 }
             }
 
-            if (names.Count == 0)
-            {
-                names.Add("geom");
-            }
-
-            return names;
-        }
-
-        private static async Task TryExecuteAsync(DbCommand command, string sql)
-        {
-            try
-            {
-                command.CommandText = sql;
-                await command.ExecuteNonQueryAsync();
-            }
-            catch
-            {
-                // best effort cleanup step
-            }
-        }
-
-        private static async Task<bool> SridExistsAsync(DbCommand command, string table, string column, int srid)
-        {
-            try
-            {
-                command.CommandText = $"SELECT count(*) FROM {table} WHERE {column} = {srid}";
-                return Convert.ToInt64(await command.ExecuteScalarAsync()) > 0;
-            }
-            catch
-            {
-                return false;
-            }
+            return "geom";
         }
 
         private static string Escape(string value) => (value ?? String.Empty).Replace("'", "''");
@@ -424,13 +441,6 @@ namespace gView.DataSources.SpatiaLite
         public override string SelectReadSchema(string tableName)
             => base.SelectReadSchema(tableName) + " LIMIT 0";
 
-        /// <summary>
-        /// Bind-parameter name for a field. Field names may contain characters that are
-        /// invalid in a SQLite parameter token - notably <c>:</c> (OSM-style keys like
-        /// <c>mtb:scale:uphill</c>), spaces or <c>-</c>. They get collapsed to <c>_</c>;
-        /// the real (quoted) column name is still used on the column side, and the base
-        /// Insert/Update path uses this same token on both sides so they stay in sync.
-        /// </summary>
         protected override string DbParameterName(string name)
         {
             var builder = new StringBuilder(name.Length + 1);
@@ -480,11 +490,7 @@ namespace gView.DataSources.SpatiaLite
         }
 
         protected override string InsertReturnRowIdStatement(OgcSpatialFeatureclass featureClass)
-        {
-            // the id column is always an INTEGER PRIMARY KEY (rowid alias) - SpatiaLite tables
-            // as well as GeoPackage "fid" - so last_insert_rowid() is exact and connection-local.
-            return "; SELECT last_insert_rowid()";
-        }
+            => "; SELECT last_insert_rowid()";
 
         public override string CaseInsensitivLikeOperator => "like";
 
@@ -492,7 +498,10 @@ namespace gView.DataSources.SpatiaLite
 
         #endregion
 
-        #region Geometry serialization
+        #region Geometry serialization (managed GPB, no mod_spatialite)
+
+        protected override IGeometry DecodeShape(byte[] raw)
+            => OGC.WKBToGeometry(GpkgGeometry.ToWkb(raw));
 
         protected override object ShapeParameterValue(OgcSpatialFeatureclass fClass,
                                                       IGeometry shape,
@@ -507,40 +516,16 @@ namespace gView.DataSources.SpatiaLite
                 return null;
             }
 
-            // Plain OGC WKB (srid 0 -> no PostGIS EWKB header); the SRID is applied by
-            // GeomFromWKB(?, srid) in InsertShapeParameterExpression.
-            return OGC.GeometryToWKB(shape, 0, OGC.WkbByteOrder.Ndr);
+            var wkb = OGC.GeometryToWKB(shape, 0, OGC.WkbByteOrder.Ndr);
+            return GpkgGeometry.ToGpb(wkb, srid, shape.Envelope);
         }
 
+        /// <summary>
+        /// The GPB blob is bound ready-made by <see cref="ShapeParameterValue"/>; the column value
+        /// is just the parameter (no <c>GeomFromWKB</c> / <c>AsGPB</c> - those need mod_spatialite).
+        /// </summary>
         protected override string InsertShapeParameterExpression(OgcSpatialFeatureclass featureClass, IGeometry shape)
-        {
-            int srid = featureClass?.SpatialReference?.EpsgCode ?? 0;
-
-            string expression = $"GeomFromWKB({{0}}, {srid})";
-
-            if (shape is IPolygon)
-            {
-                expression = $"ST_MakeValid({expression})";
-            }
-
-            // SpatiaLite / GeoPackage geometry columns are strictly typed - promote to the
-            // declared multi-type so a single-part geometry is accepted.
-            string declared = (featureClass?.GeometryTypeString ?? String.Empty).ToUpperInvariant();
-            if (declared.StartsWith("MULTIPOLYGON"))
-            {
-                expression = $"CastToMultiPolygon({expression})";
-            }
-            else if (declared.StartsWith("MULTILINESTRING"))
-            {
-                expression = $"CastToMultiLineString({expression})";
-            }
-            else if (declared.StartsWith("MULTIPOINT"))
-            {
-                expression = $"CastToMultiPoint({expression})";
-            }
-
-            return expression;
-        }
+            => String.Empty;
 
         public override async Task<IEnvelope> FeatureClassEnvelope(IFeatureClass fc)
         {
@@ -555,15 +540,36 @@ namespace gView.DataSources.SpatiaLite
                 using (var command = connection.CreateCommand())
                 {
                     command.CommandText =
-                        $"SELECT ST_AsBinary(Extent({DbColumnName(fc.ShapeFieldName)})) FROM {DbTableName(fc.Name)}";
+                        $"SELECT min_x, min_y, max_x, max_y FROM gpkg_contents WHERE lower(table_name) = lower('{Escape(fc.Name)}')";
 
-                    var result = await command.ExecuteScalarAsync();
-                    if (result is byte[] wkb && wkb.Length > 0)
+                    using (var reader = await command.ExecuteReaderAsync())
                     {
-                        var envelope = OGC.WKBToGeometry(wkb)?.Envelope;
-                        if (envelope != null)
+                        if (await reader.ReadAsync() && !reader.IsDBNull(0) && !reader.IsDBNull(3))
                         {
-                            return envelope;
+                            double minX = reader.GetDouble(0), minY = reader.GetDouble(1);
+                            double maxX = reader.GetDouble(2), maxY = reader.GetDouble(3);
+                            if (maxX >= minX && maxY >= minY)
+                            {
+                                return new Envelope(minX, minY, maxX, maxY);
+                            }
+                        }
+                    }
+
+                    // fall back to the R-Tree extent
+                    string geomColumn = await ResolveGeometryColumnAsync(connection, fc.Name);
+                    string rtree = GeoPackageSchema.RTreeTable(fc.Name, geomColumn);
+                    if (await TableExistsAsync(connection, rtree))
+                    {
+                        command.CommandText =
+                            $"SELECT min(minx), min(miny), max(maxx), max(maxy) FROM {DbTableName(rtree)}";
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            if (await reader.ReadAsync() && !reader.IsDBNull(0))
+                            {
+                                return new Envelope(
+                                    reader.GetDouble(0), reader.GetDouble(1),
+                                    reader.GetDouble(2), reader.GetDouble(3));
+                            }
                         }
                     }
                 }
@@ -600,7 +606,101 @@ namespace gView.DataSources.SpatiaLite
 
         #endregion
 
-        #region SelectCommand (SpatiaLite spatial SQL)
+        #region R-Tree maintenance (gView-owned, no SQL triggers)
+
+        private bool RTreeManaged(string tableName)
+            => _rtreeManaged.TryGetValue(tableName, out var managed) && managed;
+
+        protected override async Task AfterInsertAsync(OgcSpatialFeatureclass fClass, IFeature feature,
+                                                       DbConnection connection, DbTransaction transaction)
+        {
+            if (feature?.Shape == null || !RTreeManaged(fClass.Name))
+            {
+                return;
+            }
+
+            string geomColumn = _geometryColumns.TryGetValue(fClass.Name, out var gc) ? gc : fClass.ShapeFieldName;
+            var env = feature.Shape.Envelope;
+
+            using (var command = connection.CreateCommand())
+            {
+                command.Transaction = transaction;
+                command.CommandText = "SELECT last_insert_rowid()";
+                long id = Convert.ToInt64(await command.ExecuteScalarAsync());
+
+                command.CommandText =
+                    $"INSERT INTO {DbTableName(GeoPackageSchema.RTreeTable(fClass.Name, geomColumn))} " +
+                    "(id, minx, maxx, miny, maxy) VALUES (@id, @minx, @maxx, @miny, @maxy)";
+                AddEnvelopeParameters(command, id, env);
+                await command.ExecuteNonQueryAsync();
+            }
+        }
+
+        protected override async Task AfterUpdateAsync(OgcSpatialFeatureclass fClass, IFeature feature,
+                                                       DbConnection connection, DbTransaction transaction)
+        {
+            if (feature?.Shape == null || !RTreeManaged(fClass.Name))
+            {
+                return;
+            }
+
+            string geomColumn = _geometryColumns.TryGetValue(fClass.Name, out var gc) ? gc : fClass.ShapeFieldName;
+            var env = feature.Shape.Envelope;
+            string rtree = DbTableName(GeoPackageSchema.RTreeTable(fClass.Name, geomColumn));
+
+            using (var command = connection.CreateCommand())
+            {
+                command.Transaction = transaction;
+                command.CommandText =
+                    $"DELETE FROM {rtree} WHERE id = @id; " +
+                    $"INSERT INTO {rtree} (id, minx, maxx, miny, maxy) VALUES (@id, @minx, @maxx, @miny, @maxy)";
+                AddEnvelopeParameters(command, feature.OID, env);
+                await command.ExecuteNonQueryAsync();
+            }
+        }
+
+        protected override async Task BeforeDeleteAsync(OgcSpatialFeatureclass fClass, string where,
+                                                        DbConnection connection, DbTransaction transaction)
+        {
+            if (!RTreeManaged(fClass.Name))
+            {
+                return;
+            }
+
+            string geomColumn = _geometryColumns.TryGetValue(fClass.Name, out var gc) ? gc : fClass.ShapeFieldName;
+            string rtree = DbTableName(GeoPackageSchema.RTreeTable(fClass.Name, geomColumn));
+
+            using (var command = connection.CreateCommand())
+            {
+                command.Transaction = transaction;
+                command.CommandText =
+                    $"DELETE FROM {rtree} WHERE id IN (" +
+                    $"SELECT {DbColumnName(fClass.IDFieldName)} FROM {DbTableName(fClass.Name)}" +
+                    (String.IsNullOrEmpty(where) ? "" : $" WHERE {where}") + ")";
+                await command.ExecuteNonQueryAsync();
+            }
+        }
+
+        private static void AddEnvelopeParameters(DbCommand command, long id, IEnvelope env)
+        {
+            void Add(string name, object value)
+            {
+                var p = command.CreateParameter();
+                p.ParameterName = name;
+                p.Value = value;
+                command.Parameters.Add(p);
+            }
+
+            Add("@id", id);
+            Add("@minx", env.MinX);
+            Add("@maxx", env.MaxX);
+            Add("@miny", env.MinY);
+            Add("@maxy", env.MaxY);
+        }
+
+        #endregion
+
+        #region SelectCommand (GeoPackage - raw GPB blob + R-Tree MBR pre-filter)
 
         public override DbCommand SelectCommand(OgcSpatialFeatureclass fc,
                                                 IQueryFilter filter,
@@ -633,21 +733,24 @@ namespace gView.DataSources.SpatiaLite
 
             if (filter is ISpatialFilter spatialFilter && spatialFilter.Geometry != null)
             {
-                int srid = fc.SpatialReference?.EpsgCode ?? 0;
                 string geomColumn = DbColumnName(fc.ShapeFieldName);
                 IEnvelope env = spatialFilter.Geometry.Envelope;
 
-                string mbr = $"BuildMbr(" +
-                             $"{env.MinX.ToString(_inv)},{env.MinY.ToString(_inv)}," +
-                             $"{env.MaxX.ToString(_inv)},{env.MaxY.ToString(_inv)},{srid})";
+                where.Append($"{geomColumn} IS NOT NULL");
 
-                where.Append($"{geomColumn} IS NOT NULL AND MbrIntersects({geomColumn}, {mbr}) = 1");
-
-                if (spatialFilter.SpatialRelation != spatialRelation.SpatialRelationMapEnvelopeIntersects)
+                if (_rtreeTables.Contains(fc.Name))
                 {
-                    string wkt = WKT.ToWKT(spatialFilter.Geometry);
-                    where.Append($" AND ST_Intersects({geomColumn}, GeomFromText('{wkt}', {srid})) = 1");
+                    string rtreeGeomColumn = _geometryColumns.TryGetValue(fc.Name, out var gc) ? gc : fc.ShapeFieldName;
+                    string rtree = DbTableName(GeoPackageSchema.RTreeTable(fc.Name, rtreeGeomColumn));
+                    where.Append(
+                        $" AND {DbColumnName(fc.IDFieldName)} IN (SELECT id FROM {rtree} WHERE " +
+                        $"minx <= {env.MaxX.ToString(_inv)} AND maxx >= {env.MinX.ToString(_inv)} AND " +
+                        $"miny <= {env.MaxY.ToString(_inv)} AND maxy >= {env.MinY.ToString(_inv)})");
                 }
+
+                // The precise spatial relation (Intersects, Within, ...) is re-checked per row in
+                // managed code by OgcSpatialFeatureCursor - there is no in-database ST_Intersects
+                // without mod_spatialite.
 
                 filter.AddField(fc.ShapeFieldName);
             }
@@ -681,9 +784,6 @@ namespace gView.DataSources.SpatiaLite
             }
             else
             {
-                // QuerySubFields yields one entry per field (each already quoted); unlike
-                // filter.SubFields.Split(' ') it does not fall apart on field names that
-                // contain a space, e.g. "some name".
                 foreach (string fieldName in filter.QuerySubFields)
                 {
                     if (String.IsNullOrEmpty(fieldName))
@@ -698,7 +798,9 @@ namespace gView.DataSources.SpatiaLite
 
                     if (fieldName == "\"" + fc.ShapeFieldName + "\"")
                     {
-                        fieldNames.Append($"ST_AsBinary({DbColumnName(fc.ShapeFieldName)}) as temp_geometry");
+                        // raw GeoPackage geometry (GPB) blob - decoded in managed code
+                        // (see DecodeShape / GpkgGeometry.ToWkb)
+                        fieldNames.Append($"{DbColumnName(fc.ShapeFieldName)} as temp_geometry");
                         shapeFieldName = "temp_geometry";
                     }
                     else
@@ -755,41 +857,30 @@ namespace gView.DataSources.SpatiaLite
 
         public bool HasUnsolvedDependencies() => HasUnsolvedDependenciesStatic;
 
-        public static bool HasUnsolvedDependenciesStatic
-            => SQLiteFactory.Instance == null || !SpatiaLiteNative.EnsureAvailable(out _);
+        // A GeoPackage needs no native library - only the managed SQLite provider.
+        public static bool HasUnsolvedDependenciesStatic => SQLiteFactory.Instance == null;
 
         #endregion
 
         #region IFileFeatureDatabase
 
-        public string DatabaseName => "SpatiaLite";
+        public string DatabaseName => "GeoPackage";
 
-        public int MaxFieldNameLength => 0; // SQLite has no practical identifier-length limit
+        public int MaxFieldNameLength => 0;
 
-        public bool IsFolderBased => false; // single file, not a directory of files
+        public bool IsFolderBased => false;
 
-        public bool Flush(IFeatureClass fc) => true; // SQLite commits per transaction
+        public bool Flush(IFeatureClass fc) => true;
 
         public override Task<int> CreateDataset(string name, ISpatialReference sRef)
             => Task.FromResult(Create(FilePathOf(name)) ? 0 : -1);
 
-        /// <summary>
-        /// <see cref="IDatabase.Open"/> overload used by the command parameter builders for
-        /// an <see cref="IFileFeatureDatabase"/>: <paramref name="name"/> is a file path or a
-        /// <c>Data Source=…</c> connection string.
-        /// </summary>
         public override async Task<bool> Open(string name)
         {
             await SetConnectionString(name);
             return await Open();
         }
 
-        /// <summary>
-        /// Re-implemented for <see cref="IFileFeatureDatabase"/>: <paramref name="name"/> is a
-        /// file path or a <c>Data Source=…</c> connection string. Opens it (creating an empty
-        /// SpatiaLite / GeoPackage first if the file is missing) and returns a dataset bound
-        /// to that file.
-        /// </summary>
         async Task<IFeatureDataset> IFeatureDatabase.GetDataset(string name)
         {
             var path = FilePathOf(name);
@@ -799,13 +890,12 @@ namespace gView.DataSources.SpatiaLite
                 return null;
             }
 
-            var dataset = new SpatiaLiteDataset();
+            var dataset = new GeoPackageDataset();
             await dataset.SetConnectionString(name);
 
             return await dataset.Open() ? dataset : null;
         }
 
-        /// <summary>Extracts the file path from a bare path or a <c>Data Source=…</c> string.</summary>
         private static string FilePathOf(string nameOrConnectionString)
         {
             if (String.IsNullOrWhiteSpace(nameOrConnectionString))
@@ -833,17 +923,14 @@ namespace gView.DataSources.SpatiaLite
 
         #region Helper
 
-        private static bool HasColumn(DataRow row, string name)
+        private static async Task<bool> TableExistsAsync(DbConnection connection, string name)
         {
-            foreach (DataColumn column in row.Table.Columns)
+            using (var command = connection.CreateCommand())
             {
-                if (String.Equals(column.ColumnName, name, StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
+                command.CommandText =
+                    $"SELECT count(*) FROM sqlite_master WHERE type IN ('table','view') AND lower(name) = lower('{Escape(name)}')";
+                return Convert.ToInt64(await command.ExecuteScalarAsync()) > 0;
             }
-
-            return false;
         }
 
         private static object GetValue(DataRow row, string name)
@@ -877,47 +964,6 @@ namespace gView.DataSources.SpatiaLite
             catch
             {
                 return int.TryParse(value.ToString(), NumberStyles.Integer, _inv, out int parsed) ? parsed : 0;
-            }
-        }
-
-        private static int CoordDimension(object value)
-        {
-            if (value == null)
-            {
-                return 2;
-            }
-
-            if (value is string text)
-            {
-                return text.ToUpperInvariant().Contains("Z") ? 3 : 2;
-            }
-
-            return ToInt(value) >= 3 ? 3 : 2;
-        }
-
-        private static string SpatiaLiteGeometryTypeName(object value)
-        {
-            if (value == null)
-            {
-                return "GEOMETRY";
-            }
-
-            if (value is string text)
-            {
-                return text.Trim().ToUpperInvariant();
-            }
-
-            long code = Convert.ToInt64(value, _inv) % 1000;
-            switch (code)
-            {
-                case 1: return "POINT";
-                case 2: return "LINESTRING";
-                case 3: return "POLYGON";
-                case 4: return "MULTIPOINT";
-                case 5: return "MULTILINESTRING";
-                case 6: return "MULTIPOLYGON";
-                case 7: return "GEOMETRYCOLLECTION";
-                default: return "GEOMETRY";
             }
         }
 

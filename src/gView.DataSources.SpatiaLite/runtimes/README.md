@@ -1,10 +1,16 @@
 # Bundled `mod_spatialite` native binaries
 
+> **GeoPackage no longer uses these binaries.** The standalone GeoPackage datasource
+> (`gView.DataSources.GeoPackage`) and the GeoPackage FDB storage type read / write the
+> GeoPackage geometry (GPB) blob in managed code and maintain the R-Tree themselves, so a
+> `*.gpkg` / `*.fdb.gpkg` file opens with **no native library at all**. Only the
+> **SpatiaLite** flavor (`*.fdb.sqlite`) and this `gView.DataSources.SpatiaLite` project
+> still need `mod_spatialite`.
+
 `gView.DataSources.SpatiaLite` talks to SQLite through the repo's existing
 `System.Data.SQLite` / `SourceGear.sqlite3` stack and loads the **`mod_spatialite`**
 extension at connection open time to get the spatial SQL functions
-(`GeomFromWKB`, `ST_AsBinary`, `ST_Intersects`, `CreateSpatialIndex`,
-`EnableGpkgAmphibiousMode`, …).
+(`GeomFromWKB`, `ST_AsBinary`, `ST_Intersects`, `CreateSpatialIndex`, …).
 
 The native extension is **not** on NuGet in a usable cross‑platform form, so it is
 vendored here, one folder per runtime identifier:

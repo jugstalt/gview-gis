@@ -35,7 +35,8 @@ static internal class ApplicationScopeServiceExtensions
         {
             SqlFdbExplorerObject => new[] { GeometryStorageType.SqlServerGeometry, GeometryStorageType.SqlServerGeography, GeometryStorageType.Classic },
             PostgreSqlExplorerObject => new[] { GeometryStorageType.PostGis, GeometryStorageType.Classic },
-            SqLiteFdbExplorerObject => new[] { GeometryStorageType.GeoPackage, GeometryStorageType.SpatiaLite, GeometryStorageType.Classic },
+            // a SQLite FDB has one storage flavor for the whole file, fixed by its extension
+            SqLiteFdbExplorerObject sqliteEx => new[] { gView.DataSources.Fdb.SQLite.SqliteFdbFile.StorageFromFileName(sqliteEx.FullName) },
             _ => new[] { GeometryStorageType.Classic }
         };
 

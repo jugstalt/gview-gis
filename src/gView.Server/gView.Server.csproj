@@ -70,6 +70,7 @@
     <ProjectReference Include="..\gView.DataSources.PostGIS\gView.DataSources.PostGIS.csproj" />
     <ProjectReference Include="..\gView.DataSources.Raster\gView.DataSources.Raster.csproj" />
     <ProjectReference Include="..\gView.DataSources.Shape\gView.DataSources.Shape.csproj" />
+    <ProjectReference Include="..\gView.DataSources.GeoPackage\gView.DataSources.GeoPackage.csproj" />
     <ProjectReference Include="..\gView.DataSources.SpatiaLite\gView.DataSources.SpatiaLite.csproj" />
     <ProjectReference Include="..\gView.DataSources.TileCache\gView.DataSources.TileCache.csproj" />
     <ProjectReference Include="..\gView.DataSources.VectorTileCache\gView.DataSources.VectorTileCache.csproj" />

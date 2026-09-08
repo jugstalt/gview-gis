@@ -1,5 +1,7 @@
 ﻿@using gView.Cmd.MxlUtil.Lib
 @using gView.Cmd.MxlUtil.Lib.Abstraction
+@using gView.Cmd.MxlUtil.Lib.Utilities
+@using gView.Framework.Core.Data
 @inherits ModalDialogFormBase<MxlUtilToolModel>
 
 <ModalDialogFormBase T="MxlUtilToolModel"
@@ -65,10 +67,21 @@
                                   HelperText="Connection string of the target fdb, eg. Data Source=C:\data\my.fdb;dsname=MyDs"
                                   @bind-Value="Model.MxlToFdb_TargetConnectionString" />
 
-                    <MudSelect T="string" Label="Target database" @bind-Value="Model.MxlToFdb_TargetGuid">
+                    <MudSelect T="string" Label="Target database"
+                               @bind-Value="Model.MxlToFdb_TargetGuid"
+                               @bind-Value:after="OnTargetDbChanged">
                         <MudSelectItem Value="@("sqlite")">sqlite</MudSelectItem>
                         <MudSelectItem Value="@("postgres")">postgres</MudSelectItem>
                         <MudSelectItem Value="@("sqlserver")">sqlserver</MudSelectItem>
+                    </MudSelect>
+
+                    <MudSelect T="string" Label="Geometry storage"
+                               HelperText="Only applied when the target dataset does not exist yet"
+                               @bind-Value="Model.MxlToFdb_GeometryStorage">
+                        @foreach (var storage in MxlToFdbStorage.CompatibleStorages(Model.MxlToFdb_TargetGuid))
+                        {
+                            <MudSelectItem Value="@storage.ToString()">@StorageLabel(storage)</MudSelectItem>
+                        }
                     </MudSelect>
 
                     <SelectFileControl Filter="*.mxl" NewFile="true" @bind-File="Model.MxlToFdb_OutMxl"
@@ -171,4 +184,26 @@
 
     private IMxlUtility? _selectedUtility
         => _utilities.FirstOrDefault(u => u.Name.Equals(Model.Utility, StringComparison.OrdinalIgnoreCase));
+
+    private void OnTargetDbChanged()
+    {
+        // keep the geometry-storage selection valid for the chosen target database
+        if (!MxlToFdbStorage.IsCompatible(Model.MxlToFdb_TargetGuid, ParseStorage(Model.MxlToFdb_GeometryStorage)))
+        {
+            Model.MxlToFdb_GeometryStorage = nameof(GeometryStorageType.Classic);
+        }
+    }
+
+    private static GeometryStorageType ParseStorage(string value)
+        => Enum.TryParse<GeometryStorageType>(value, ignoreCase: true, out var s) ? s : GeometryStorageType.Classic;
+
+    private static string StorageLabel(GeometryStorageType storage) => storage switch
+    {
+        GeometryStorageType.GeoPackage => "GeoPackage - native geometry + R-Tree",
+        GeometryStorageType.SpatiaLite => "SpatiaLite - native geometry + R-Tree",
+        GeometryStorageType.PostGis => "PostGIS - native geometry + GiST",
+        GeometryStorageType.SqlServerGeometry => "SQL Server geometry - native + GEOMETRY_GRID",
+        GeometryStorageType.SqlServerGeography => "SQL Server geography - native + GEOGRAPHY_GRID",
+        _ => "Classic - gView proprietary blob + BinaryTree",
+    };
 }

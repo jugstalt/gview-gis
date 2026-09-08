@@ -1,0 +1,89 @@
+@inherits ModalDialogFormBase<NewSqliteFdbModel>
+@inject IconService Icons
+
+<ModalDialogFormBase T="NewSqliteFdbModel"
+                     OnDialogClose="base.OnDialogClose"
+                     Model="base.Model">
+    <FormContent>
+        <div style="display: flex; align-items: center;">
+            <MudIcon Icon="@Icons.FromString("basic:database")" Style="margin-right: 6px;" />
+            <MudText>SQLite Feature Database</MudText>
+        </div>
+
+        <MudTextField @bind-Value="Model.Name"
+                      Label="Name"
+                      HelperText="@($"File: {FileName()}")"
+                      Required="true"
+                      Immediate="true"
+                      Validation="@(new Func<string, IEnumerable<string>>(ValidateName))" />
+
+        <MudSelect Label="Storage"
+                   @bind-Value="Model.Storage"
+                   Variant="Variant.Text">
+            @foreach (var storage in Model.AllowedStorages)
+            {
+                <MudSelectItem Value="storage" Disabled="@IsDisabled(storage)">@Label(storage)</MudSelectItem>
+            }
+        </MudSelect>
+        <MudText Typo="Typo.caption">@Hint(Model.Storage)</MudText>
+    </FormContent>
+</ModalDialogFormBase>
+
+@code {
+    private string Extension() => Model.Storage switch
+    {
+        gView.Framework.Core.Data.GeometryStorageType.GeoPackage => ".fdb.gpkg",
+        gView.Framework.Core.Data.GeometryStorageType.SpatiaLite => ".fdb.sqlite",
+        _ => ".fdb",
+    };
+
+    private string FileName()
+        => string.IsNullOrWhiteSpace(Model.Name) ? "-" : Model.Name.Trim() + Extension();
+
+    private bool IsDisabled(gView.Framework.Core.Data.GeometryStorageType s)
+        => s == gView.Framework.Core.Data.GeometryStorageType.SpatiaLite && !Model.SpatiaLiteAvailable;
+
+    private IEnumerable<string> ValidateName(string name)
+    {
+        name = name?.Trim() ?? "";
+
+        if (name.Length == 0)
+        {
+            yield return "Name is required.";
+            yield break;
+        }
+
+        if (name.IndexOfAny(System.IO.Path.GetInvalidFileNameChars()) >= 0)
+        {
+            yield return "Name contains invalid characters.";
+            yield break;
+        }
+
+        if (!string.IsNullOrEmpty(Model.Directory))
+        {
+            var target = System.IO.Path.Combine(Model.Directory, name + Extension());
+            if (System.IO.File.Exists(target))
+            {
+                yield return $"'{name}{Extension()}' already exists in this folder.";
+            }
+        }
+    }
+
+    private static string Label(gView.Framework.Core.Data.GeometryStorageType s) => s switch
+    {
+        gView.Framework.Core.Data.GeometryStorageType.GeoPackage => "GeoPackage  (*.fdb.gpkg)",
+        gView.Framework.Core.Data.GeometryStorageType.SpatiaLite => "SpatiaLite  (*.fdb.sqlite)",
+        _ => "Classic  (*.fdb)",
+    };
+
+    private static string Hint(gView.Framework.Core.Data.GeometryStorageType s) => s switch
+    {
+        gView.Framework.Core.Data.GeometryStorageType.GeoPackage
+            => "Every dataset stores geometry as GeoPackage (native geometry + R-Tree, no native library). "
+               + "QGIS / GDAL open the file as a GeoPackage.",
+        gView.Framework.Core.Data.GeometryStorageType.SpatiaLite
+            => "Every dataset stores geometry as SpatiaLite. Requires a deployed mod_spatialite "
+               + "(optional; GeoPackage needs none).",
+        _ => "gView proprietary blob + BinaryTree spatial index (as before).",
+    };
+}

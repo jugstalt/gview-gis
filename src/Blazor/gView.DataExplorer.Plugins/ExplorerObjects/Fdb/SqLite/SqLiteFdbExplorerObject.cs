@@ -37,7 +37,8 @@ internal class SqLiteFdbExplorerObject : ExplorerParentObject<IExplorerObject>,
 
     public string Filter
     {
-        get { return "*.fdb"; }
+        // classic *.fdb plus the GeoPackage / SpatiaLite flavored FDB files
+        get { return "*.fdb|*.fdb.gpkg|*.fdb.sqlite"; }
     }
 
     public string Name
@@ -76,7 +77,7 @@ internal class SqLiteFdbExplorerObject : ExplorerParentObject<IExplorerObject>,
     async public Task<IExplorerFileObject?> CreateInstance(IExplorerObject parent, string filename)
     {
         string f = filename.ToLower();
-        if (!f.ToLower().EndsWith(".fdb"))
+        if (!SqliteFdbFile.IsFdbFileName(f))
         {
             return null;
         }
@@ -229,31 +230,32 @@ internal class SqLiteFdbExplorerObject : ExplorerParentObject<IExplorerObject>,
         }
 
         var model = await scope.ShowModalDialog(
-            typeof(gView.DataExplorer.Razor.Components.Dialogs.InputBoxDialog),
+            typeof(gView.DataExplorer.Razor.Components.Dialogs.NewSqliteFdbDialog),
             "Create",
-            new InputBoxModel()
+            new NewSqliteFdbModel()
             {
-                Value = "",
-                Icon = this.Icon,
-                Name = this.Type ?? String.Empty,
-                Label = "Name",
-                Prompt = "Enter new database name"
+                Name = "",
+                Directory = parentExObject.FullName,
+                SpatiaLiteAvailable = SqliteFdbFile.SpatiaLiteAvailable,
             });
 
-        if (!String.IsNullOrEmpty(model?.Value))
+        if (!String.IsNullOrWhiteSpace(model?.Name))
         {
-            var name = model.Value;
-            if (!name.EndsWith(".fdb", StringComparison.OrdinalIgnoreCase))
+            var name = SqliteFdbFile.EnsureExtension(model.Name.Trim(), model.Storage);
+            var filename = Path.Combine(parentExObject.FullName, name);
+
+            if (File.Exists(filename))
             {
-                name = $"{name}.fdb";
+                throw new GeneralException($"'{name}' already exists in this folder.");
             }
 
-            var filename = Path.Combine(parentExObject.FullName, name);
             var fdb = new SQLiteFDB();
-
             if (!fdb.Create(filename))
             {
-                throw new GeneralException(fdb.LastErrorMessage);
+                throw new GeneralException(
+                    String.IsNullOrEmpty(fdb.LastErrorMessage)
+                        ? $"Could not create '{name}'."
+                        : fdb.LastErrorMessage);
             }
 
             return new SqLiteFdbExplorerObject(parentExObject, filename);
@@ -270,20 +272,27 @@ internal class SqLiteFdbExplorerObject : ExplorerParentObject<IExplorerObject>,
 
     public Task<bool> DeleteExplorerObject(ExplorerObjectEventArgs e)
     {
+        // release any pooled SQLite / mod_spatialite handle that would keep the file locked
+        SQLiteFDB.ReleaseFileHandles();
+
         try
         {
-            FileInfo fi = new FileInfo(_filename);
-            fi.Delete();
-            if (ExplorerObjectDeleted != null)
+            foreach (var path in new[] { _filename, _filename + "-wal", _filename + "-shm", _filename + "-journal" })
             {
-                ExplorerObjectDeleted(this);
+                if (File.Exists(path))
+                {
+                    File.Delete(path);
+                }
             }
 
+            ExplorerObjectDeleted?.Invoke(this);
             return Task.FromResult(true);
         }
-        catch
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            throw;
+            throw new GeneralException(
+                $"Cannot delete '{Name}' - the file is still open. " +
+                "Close every dataset / map that uses it (in gView or another program such as QGIS), then try again.");
         }
     }
 
