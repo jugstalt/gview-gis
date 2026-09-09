@@ -11,6 +11,7 @@ using gView.Framework.Data.Filters;
 using gView.Framework.Db;
 using gView.Framework.Db.Extensions;
 using gView.Framework.Geometry;
+using gView.Framework.Geometry.Extensions;
 using gView.Framework.Offline;
 using gView.Framework.OGC.WKT;
 using Microsoft.Data.SqlClient;
@@ -1450,7 +1451,7 @@ namespace gView.DataSources.Fdb.MSSql
 
                         StringBuilder fields = new StringBuilder(), parameters = new StringBuilder();
                         command.Parameters.Clear();
-                        if (feature.Shape != null)
+                        if (!feature.Shape.IsNullGeometry())
                         {
                             var shape = fClass.ConvertTo(feature.Shape);
                             GeometryDef.VerifyGeometryType(shape, fClass);
@@ -1729,7 +1730,7 @@ namespace gView.DataSources.Fdb.MSSql
 
                         StringBuilder fields = new StringBuilder();
                         command.Parameters.Clear();
-                        if (feature.Shape != null)
+                        if (!feature.Shape.IsNullGeometry())
                         {
                             GeometryDef.VerifyGeometryType(feature.Shape, fClass);
 

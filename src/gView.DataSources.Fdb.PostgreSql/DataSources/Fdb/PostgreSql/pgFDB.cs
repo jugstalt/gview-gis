@@ -1,16 +1,17 @@
-﻿using gView.Framework.Core.Data;
+﻿using gView.Framework.Common;
+using gView.Framework.Core.Common;
+using gView.Framework.Core.Data;
 using gView.Framework.Core.Data.Cursors;
 using gView.Framework.Core.Data.Filters;
 using gView.Framework.Core.FDB;
 using gView.Framework.Core.Geometry;
-using gView.Framework.Core.Common;
 using gView.Framework.Data;
 using gView.Framework.Data.Filters;
 using gView.Framework.Db;
 using gView.Framework.Db.Extensions;
 using gView.Framework.Geometry;
+using gView.Framework.Geometry.Extensions;
 using gView.Framework.Offline;
-using gView.Framework.Common;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -1178,7 +1179,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                                 : shapeParameter.ParameterName);
                             command.Parameters.Add(shapeParameter);
 
-                            if (feature.Shape != null)
+                            if (!feature.Shape.IsNullGeometry())
                             {
                                 var shape = fClass.ConvertTo(feature.Shape);
                                 GeometryDef.VerifyGeometryType(shape, fClass);
@@ -1353,7 +1354,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
 
                             StringBuilder fields = new StringBuilder(), parameters = new StringBuilder();
                             command.Parameters.Clear();
-                            if (feature.Shape != null)
+                            if (!feature.Shape.IsNullGeometry())
                             {
                                 var shape = fClass.ConvertTo(feature.Shape);
                                 GeometryDef.VerifyGeometryType(shape, fClass);
@@ -1559,7 +1560,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
 
                             StringBuilder fields = new StringBuilder();
                             command.Parameters.Clear();
-                            if (feature.Shape != null)
+                            if (!feature.Shape.IsNullGeometry())
                             {
                                 var shape = fClass.ConvertTo(feature.Shape);
                                 GeometryDef.VerifyGeometryType(shape, fClass);

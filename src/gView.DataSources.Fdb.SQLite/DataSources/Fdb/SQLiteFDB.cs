@@ -18,6 +18,7 @@ using System.Data.SQLite;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using gView.Framework.Geometry.Extensions;
 
 namespace gView.DataSources.Fdb.SQLite
 {
@@ -682,7 +683,7 @@ namespace gView.DataSources.Fdb.SQLite
                             StringBuilder fields = new StringBuilder(), parameters = new StringBuilder();
                             command.Parameters.Clear();
                             IEnvelope rtreeEnv = null;
-                            if (feature.Shape != null)
+                            if (!feature.Shape.IsNullGeometry())
                             {
                                 var shape = fClass.ConvertTo(feature.Shape);
                                 GeometryDef.VerifyGeometryType(shape, fClass);
@@ -1001,7 +1002,7 @@ namespace gView.DataSources.Fdb.SQLite
                             StringBuilder fields = new StringBuilder();
                             command.Parameters.Clear();
                             IEnvelope rtreeEnv = null;
-                            if (feature.Shape != null)
+                            if (!feature.Shape.IsNullGeometry())
                             {
                                 var shape = fClass.ConvertTo(feature.Shape);
                                 GeometryDef.VerifyGeometryType(shape, fClass);
