@@ -71,7 +71,7 @@ if (interactive)
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Exception: {ex.Message}");
+            WriteException(ex);
         }
     }
 }
@@ -88,10 +88,26 @@ else
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"Exception: {ex.Message}");
+        WriteException(ex);
 
         return 2;
     }
 }
 
 return 0;
+
+static void WriteException(Exception ex)
+{
+    var previousColor = Console.ForegroundColor;
+    Console.ForegroundColor = ConsoleColor.Red;
+
+    try
+    {
+        Console.WriteLine();
+        Console.WriteLine($"Exception: {ex.Message}");
+    }
+    finally
+    {
+        Console.ForegroundColor = previousColor;
+    }
+}
