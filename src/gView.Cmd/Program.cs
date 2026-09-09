@@ -79,13 +79,19 @@ else
 {
     try
     {
-        await worker!.Run();
+        var result = await worker!.Run();
 
         Console.WriteLine();
-        Console.WriteLine("finished");
+        Console.WriteLine(result ? "finished" : "finished with errors");
+
+        return result ? 0 : 1;
     }
     catch (Exception ex)
     {
         Console.WriteLine($"Exception: {ex.Message}");
+
+        return 2;
     }
 }
+
+return 0;
