@@ -7,6 +7,7 @@ using gView.Framework.Core.Geometry;
 using gView.Framework.Core.Network;
 using gView.Framework.Core.Common;
 using gView.Framework.Core.UI;
+using gView.DataSources.Fdb.Extensions;
 using gView.Framework.Data;
 using gView.Framework.Data.Filters;
 using gView.Framework.Db;
@@ -1705,12 +1706,12 @@ namespace gView.DataSources.Fdb.MSAccess
                     GeometryStorageType storage = ReadGeometryStorage(row);
                     if ((GeometryFieldType)row["GeometryType"] == GeometryFieldType.Default)
                     {
-                        var bounds = new Envelope((double)row["SIMinX"], (double)row["SIMinY"], (double)row["SIMaxX"], (double)row["SIMaxY"]);
-                        int maxLevels = Convert.ToInt32(row["MaxLevels"]);
+                        var bounds = ReadSpatialIndexBounds(row);
+                        int maxLevels = row.GetInt32("MaxLevels", 30);
 
                         gViewSpatialIndexDef gvIndex = storage == GeometryStorageType.PostGis
                             ? new PostGisSpatialIndexDef(bounds, maxLevels)
-                            : new gViewSpatialIndexDef(bounds, maxLevels, Convert.ToInt32(row["MaxPerNode"]), (double)row["SIRATIO"])
+                            : new gViewSpatialIndexDef(bounds, maxLevels, row.GetInt32("MaxPerNode", 200), row.GetDouble("SIRATIO", 0.55))
                             {
                                 StorageType = storage
                             };
@@ -1721,9 +1722,9 @@ namespace gView.DataSources.Fdb.MSAccess
                     {
                         MSSpatialIndex msIndex = new MSSpatialIndex();
                         msIndex.GeometryType = GeometryFieldType.MsGeometry;
-                        msIndex.SpatialIndexBounds = new Envelope((double)row["SIMinX"], (double)row["SIMinY"], (double)row["SIMaxX"], (double)row["SIMaxY"]);
-                        msIndex.CellsPerObject = Convert.ToInt32(row["MaxPerNode"]);
-                        msIndex.Levels = Convert.ToInt32(row["MaxLevels"]);
+                        msIndex.SpatialIndexBounds = ReadSpatialIndexBounds(row);
+                        msIndex.CellsPerObject = row.GetInt32("MaxPerNode", 200);
+                        msIndex.Levels = row.GetInt32("MaxLevels", 30);
                         msIndex.SpatialReference = await this.SpatialReference(dsID);
                         return msIndex;
                     }
@@ -1732,8 +1733,8 @@ namespace gView.DataSources.Fdb.MSAccess
                         MSSpatialIndex msIndex = new MSSpatialIndex();
                         msIndex.GeometryType = GeometryFieldType.MsGeography;
                         msIndex.SpatialIndexBounds = new Envelope();
-                        msIndex.CellsPerObject = Convert.ToInt32(row["MaxPerNode"]);
-                        msIndex.Levels = Convert.ToInt32(row["MaxLevels"]);
+                        msIndex.CellsPerObject = row.GetInt32("MaxPerNode", 200);
+                        msIndex.Levels = row.GetInt32("MaxLevels", 30);
                         msIndex.SpatialReference = await this.SpatialReference(dsID);
                         return msIndex;
                     }
@@ -1756,29 +1757,34 @@ namespace gView.DataSources.Fdb.MSAccess
                     string si = row["SI"].ToString().ToLower();
                     GeometryStorageType storage = ReadGeometryStorage(row);
 
+                    var bounds = ReadSpatialIndexBounds(row);
+                    int maxLevels = row.GetInt32("MaxLevels", 30);
+
                     if (si == "postgis" || storage == GeometryStorageType.PostGis)
                     {
-                        return new PostGisSpatialIndexDef(
-                            new Envelope((double)row["SIMinX"], (double)row["SIMinY"], (double)row["SIMaxX"], (double)row["SIMaxY"]),
-                            Convert.ToInt32(row["MaxLevels"]));
+                        return new PostGisSpatialIndexDef(bounds, maxLevels);
                     }
                     else if (si == "spatialite" || si == "geopackage"
                              || storage == GeometryStorageType.SpatiaLite || storage == GeometryStorageType.GeoPackage)
                     {
-                        return new gViewSpatialIndexDef(
-                            new Envelope((double)row["SIMinX"], (double)row["SIMinY"], (double)row["SIMaxX"], (double)row["SIMaxY"]),
-                            Convert.ToInt32(row["MaxLevels"]))
+                        return new gViewSpatialIndexDef(bounds, maxLevels)
                         {
-                            StorageType = storage == GeometryStorageType.Classic ? GeometryStorageType.SpatiaLite : storage
+                            // The GeometryStorage column is authoritative when it carries a
+                            // concrete native value; only fall back to the textual SI marker
+                            // for legacy rows where GeometryStorage was never written (reads
+                            // back as Classic).
+                            StorageType = storage != GeometryStorageType.Classic
+                                ? storage
+                                : (si == "geopackage" ? GeometryStorageType.GeoPackage : GeometryStorageType.SpatiaLite)
                         };
                     }
                     else if (si == "binarytree" || si == "binarytree2")
                     {
                         return new gViewSpatialIndexDef(
-                            new Envelope((double)row["SIMinX"], (double)row["SIMinY"], (double)row["SIMaxX"], (double)row["SIMaxY"]),
-                            Convert.ToInt32(row["MaxLevels"]),
-                            Convert.ToInt32(row["MaxPerNode"]),
-                            (double)row["SIRATIO"])
+                            bounds,
+                            maxLevels,
+                            row.GetInt32("MaxPerNode", 200),
+                            row.GetDouble("SIRATIO", 0.55))
                         {
                             StorageType = storage
                         };
@@ -1787,9 +1793,9 @@ namespace gView.DataSources.Fdb.MSAccess
                     {
                         MSSpatialIndex msIndex = new MSSpatialIndex();
                         msIndex.GeometryType = GeometryFieldType.MsGeometry;
-                        msIndex.SpatialIndexBounds = new Envelope((double)row["SIMinX"], (double)row["SIMinY"], (double)row["SIMaxX"], (double)row["SIMaxY"]);
-                        msIndex.CellsPerObject = Convert.ToInt32(row["MaxPerNode"]);
-                        msIndex.Levels = Convert.ToInt32(row["MaxLevels"]);
+                        msIndex.SpatialIndexBounds = bounds;
+                        msIndex.CellsPerObject = row.GetInt32("MaxPerNode", 200);
+                        msIndex.Levels = maxLevels;
                         return msIndex;
                     }
                     else if (si == "msgeography")
@@ -1797,8 +1803,8 @@ namespace gView.DataSources.Fdb.MSAccess
                         MSSpatialIndex msIndex = new MSSpatialIndex();
                         msIndex.GeometryType = GeometryFieldType.MsGeography;
                         msIndex.SpatialIndexBounds = new Envelope();
-                        msIndex.CellsPerObject = Convert.ToInt32(row["MaxPerNode"]);
-                        msIndex.Levels = Convert.ToInt32(row["MaxLevels"]);
+                        msIndex.CellsPerObject = row.GetInt32("MaxPerNode", 200);
+                        msIndex.Levels = maxLevels;
                         return msIndex;
                     }
                 }
@@ -3963,6 +3969,23 @@ namespace gView.DataSources.Fdb.MSAccess
             catch { }
 
             return GeometryStorageType.Classic;
+        }
+
+        /// <summary>
+        /// Reads the SIMinX/SIMinY/SIMaxX/SIMaxY spatial-index bounds from an
+        /// FDB_FeatureClasses / FDB_DatasetGeometryType row. Returns an empty envelope when
+        /// any of them is missing or NULL: a database-native spatial index (PostGIS GiST,
+        /// SpatiaLite / GeoPackage R-Tree, SQL Server grid) is maintained by the DB itself,
+        /// so gView never writes these columns for it.
+        /// </summary>
+        private static IEnvelope ReadSpatialIndexBounds(DataRow row)
+        {
+            bool complete = row.TryGetDouble("SIMinX", out double minX);
+            complete &= row.TryGetDouble("SIMinY", out double minY);
+            complete &= row.TryGetDouble("SIMaxX", out double maxX);
+            complete &= row.TryGetDouble("SIMaxY", out double maxY);
+
+            return complete ? new Envelope(minX, minY, maxX, maxY) : new Envelope();
         }
 
         /// <summary>

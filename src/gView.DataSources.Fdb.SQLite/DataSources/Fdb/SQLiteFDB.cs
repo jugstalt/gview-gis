@@ -220,6 +220,10 @@ namespace gView.DataSources.Fdb.SQLite
             return Task.CompletedTask;
         }
 
+        /// <summary>
+        /// (Re)builds the native R-Tree of a feature class - the hook behind
+        /// <c>FDB.RepairNativeSpatialIndex</c> and image-dataset creation.
+        /// </summary>
         protected override Task<bool> CreateNativeSpatialIndexAsync(string fcName, ISpatialIndexDef sIndexDef)
         {
             var storage = sIndexDef?.StorageType ?? GeometryStorageType.Classic;
@@ -227,7 +231,16 @@ namespace gView.DataSources.Fdb.SQLite
             {
                 var flavor = gView.DataSources.SpatiaLite.SpatiaLiteSchema.FlavorFor(storage);
                 using var connection = OpenSpatialConnection(flavor);
+
                 gView.DataSources.SpatiaLite.SpatiaLiteSchema.AddSpatialIndex(connection, flavor, "FC_" + fcName, "FDB_SHAPE");
+
+                if (IsGeoPackageStorage(storage))
+                {
+                    // AddSpatialIndex just dropped and recreated an *empty* GeoPackage R-Tree
+                    // (it has no SQL triggers) - refill it from the existing rows. SpatiaLite's
+                    // CreateSpatialIndex populates itself, so this is GeoPackage-only.
+                    PopulateGeoPackageRTree(connection, fcName);
+                }
             }
 
             return Task.FromResult(true);
@@ -252,30 +265,6 @@ namespace gView.DataSources.Fdb.SQLite
             catch { /* best effort - continue with the normal drop */ }
 
             return await base.DeleteFeatureClass(fcName, deleteFeatureClassesRow);
-        }
-
-        /// <summary>Rebuilds the SpatiaLite / GeoPackage R-Tree of a feature class (FDB.RepairNativeSpatialIndex).</summary>
-        public async Task<bool> RebuildNativeSpatialIndex(string fcName)
-        {
-            var sIndexDef = await FcSpatialIndexDef(fcName);
-            var storage = sIndexDef?.StorageType ?? GeometryStorageType.Classic;
-            if (!IsSpatiaLiteStorage(storage))
-            {
-                _errMsg = $"'{fcName}' is not a SpatiaLite / GeoPackage feature class.";
-                return false;
-            }
-
-            var flavor = gView.DataSources.SpatiaLite.SpatiaLiteSchema.FlavorFor(storage);
-            using var connection = OpenSpatialConnection(flavor);
-            gView.DataSources.SpatiaLite.SpatiaLiteSchema.AddSpatialIndex(connection, flavor, "FC_" + fcName, "FDB_SHAPE");
-
-            if (IsGeoPackageStorage(storage))
-            {
-                // GeoPackage R-Tree has no SQL triggers - populate it from the existing rows.
-                PopulateGeoPackageRTree(connection, fcName);
-            }
-
-            return true;
         }
 
         /// <summary>Fills the (empty) GeoPackage R-Tree of a feature class from the GPB envelopes of its rows.</summary>
@@ -683,7 +672,7 @@ namespace gView.DataSources.Fdb.SQLite
                             StringBuilder fields = new StringBuilder(), parameters = new StringBuilder();
                             command.Parameters.Clear();
                             IEnvelope rtreeEnv = null;
-                            if (!feature.Shape.IsNullGeometry())
+                            if (!feature.Shape.IsNullOrEmptyGeometry())
                             {
                                 var shape = fClass.ConvertTo(feature.Shape);
                                 GeometryDef.VerifyGeometryType(shape, fClass);
@@ -1002,7 +991,7 @@ namespace gView.DataSources.Fdb.SQLite
                             StringBuilder fields = new StringBuilder();
                             command.Parameters.Clear();
                             IEnvelope rtreeEnv = null;
-                            if (!feature.Shape.IsNullGeometry())
+                            if (!feature.Shape.IsNullOrEmptyGeometry())
                             {
                                 var shape = fClass.ConvertTo(feature.Shape);
                                 GeometryDef.VerifyGeometryType(shape, fClass);

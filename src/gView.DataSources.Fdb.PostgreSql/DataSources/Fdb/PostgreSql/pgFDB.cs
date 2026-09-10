@@ -1179,7 +1179,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                                 : shapeParameter.ParameterName);
                             command.Parameters.Add(shapeParameter);
 
-                            if (!feature.Shape.IsNullGeometry())
+                            if (!feature.Shape.IsNullOrEmptyGeometry())
                             {
                                 var shape = fClass.ConvertTo(feature.Shape);
                                 GeometryDef.VerifyGeometryType(shape, fClass);
@@ -1354,7 +1354,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
 
                             StringBuilder fields = new StringBuilder(), parameters = new StringBuilder();
                             command.Parameters.Clear();
-                            if (!feature.Shape.IsNullGeometry())
+                            if (!feature.Shape.IsNullOrEmptyGeometry())
                             {
                                 var shape = fClass.ConvertTo(feature.Shape);
                                 GeometryDef.VerifyGeometryType(shape, fClass);
@@ -1560,7 +1560,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
 
                             StringBuilder fields = new StringBuilder();
                             command.Parameters.Clear();
-                            if (!feature.Shape.IsNullGeometry())
+                            if (!feature.Shape.IsNullOrEmptyGeometry())
                             {
                                 var shape = fClass.ConvertTo(feature.Shape);
                                 GeometryDef.VerifyGeometryType(shape, fClass);

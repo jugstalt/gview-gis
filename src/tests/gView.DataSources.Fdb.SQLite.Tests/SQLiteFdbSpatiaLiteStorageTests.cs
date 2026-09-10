@@ -232,6 +232,51 @@ public class SQLiteFdbSpatiaLiteStorageTests : IDisposable
     }
 
     [Fact]
+    public async Task RebuildNativeSpatialIndex_GeoPackage_RefillsTheRTree()
+    {
+        var fdb = await CreateFdbAsync(GeometryStorageType.GeoPackage, GeometryType.Point);
+        var fc = await GetFcAsync(fdb);
+
+        Assert.True(await fdb.Insert(fc, new List<IFeature>
+        {
+            PointFeature(100, 100, "a"),
+            PointFeature(500, 500, "b"),
+            PointFeature(9000, 9000, "c"),
+        }), fdb.LastErrorMessage);
+
+        // simulate a corrupt / stale index: empty the R-Tree behind gView's back
+        using (var conn = new SQLiteConnection("Data Source=" + _dbPath))
+        {
+            conn.Open();
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = "DELETE FROM rtree_FC_geo_FDB_SHAPE";
+            cmd.ExecuteNonQuery();
+            cmd.CommandText = "SELECT count(*) FROM rtree_FC_geo_FDB_SHAPE";
+            Assert.Equal(0, Convert.ToInt32(cmd.ExecuteScalar()));
+        }
+
+        Assert.True(await fdb.RebuildNativeSpatialIndexAsync("geo"), fdb.LastErrorMessage);
+
+        using (var conn = new SQLiteConnection("Data Source=" + _dbPath))
+        {
+            conn.Open();
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = "SELECT count(*) FROM rtree_FC_geo_FDB_SHAPE";
+            Assert.Equal(3, Convert.ToInt32(cmd.ExecuteScalar()));
+        }
+
+        // and the rebuilt index actually filters
+        var hits = await DrainAsync(await fdb.Query(fc, new SpatialFilter
+        {
+            SubFields = "*",
+            SpatialRelation = spatialRelation.SpatialRelationMapEnvelopeIntersects,
+            Geometry = new Envelope(0, 0, 600, 600),
+        }));
+        Assert.Equal(new[] { "a", "b" },
+            hits.Select(f => f.FindField("NAME")!.Value!.ToString()).OrderBy(x => x).ToArray());
+    }
+
+    [Fact]
     public async Task SpatiaLiteFile_OpensAsSpatiaLiteDataset()
     {
         if (!ModSpatialiteAvailable()) return;

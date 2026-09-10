@@ -1451,7 +1451,7 @@ namespace gView.DataSources.Fdb.MSSql
 
                         StringBuilder fields = new StringBuilder(), parameters = new StringBuilder();
                         command.Parameters.Clear();
-                        if (!feature.Shape.IsNullGeometry())
+                        if (!feature.Shape.IsNullOrEmptyGeometry())
                         {
                             var shape = fClass.ConvertTo(feature.Shape);
                             GeometryDef.VerifyGeometryType(shape, fClass);
@@ -1730,7 +1730,7 @@ namespace gView.DataSources.Fdb.MSSql
 
                         StringBuilder fields = new StringBuilder();
                         command.Parameters.Clear();
-                        if (!feature.Shape.IsNullGeometry())
+                        if (!feature.Shape.IsNullOrEmptyGeometry())
                         {
                             GeometryDef.VerifyGeometryType(feature.Shape, fClass);
 
