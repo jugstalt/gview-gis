@@ -169,7 +169,12 @@ namespace gView.DataSources.SpatiaLite
 
             if (geometryType == GeometryType.Polygon)
             {
-                expr = $"ST_MakeValid({expr})";
+                // ST_MakeValid can return a GEOMETRYCOLLECTION (polygon parts + dangling
+                // edges/points) for self-touching input or a "hole outside the shell";
+                // keep only the polygon parts so the CastToMultiPolygon below never
+                // collapses the whole row to NULL. The RTTOPO stderr warning it emits for
+                // such input is harmless - the geometry is still repaired.
+                expr = $"ST_CollectionExtract(ST_MakeValid({expr}), 3)";
             }
 
             expr = GeometryTypeName(geometryType) switch

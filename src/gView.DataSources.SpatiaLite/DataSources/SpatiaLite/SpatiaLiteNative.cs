@@ -188,13 +188,13 @@ namespace gView.DataSources.SpatiaLite
             }
 
             // 3) a local GIS install (QGIS / OSGeo4W on Windows) or a system package
-            //foreach (var candidate in SystemProbeCandidates())
-            //{
-            //    if (File.Exists(candidate))
-            //    {
-            //        return candidate;
-            //    }
-            //}
+            foreach (var candidate in SystemProbeCandidates())
+            {
+                if (File.Exists(candidate))
+                {
+                    return candidate;
+                }
+            }
 
             // 4) last resort: hand the bare name to SQLite and let the OS loader find it
             //    (PATH / LD_LIBRARY_PATH)

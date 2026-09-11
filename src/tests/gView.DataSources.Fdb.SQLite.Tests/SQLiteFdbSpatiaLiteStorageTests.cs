@@ -232,6 +232,49 @@ public class SQLiteFdbSpatiaLiteStorageTests : IDisposable
     }
 
     [Fact]
+    public async Task Insert_SpatiaLite_PolygonWithHoleOutsideShell_IsRepairedNotNulled()
+    {
+        if (!ModSpatialiteAvailable()) return;
+
+        var fdb = await CreateFdbAsync(GeometryStorageType.SpatiaLite, GeometryType.Polygon);
+        var fc = await GetFcAsync(fdb);
+
+        // outer 10x10 shell, inner "hole" ring that pokes out to x=15 -> ST_MakeValid hands
+        // back a collection; ST_CollectionExtract(...,3) must keep it a MULTIPOLYGON so the
+        // row is not stored as NULL.
+        var poly = new Polygon();
+        var shell = new Ring();
+        shell.AddPoint(new Point(0, 0)); shell.AddPoint(new Point(10, 0));
+        shell.AddPoint(new Point(10, 10)); shell.AddPoint(new Point(0, 10));
+        poly.AddRing(shell);
+        var hole = new Ring();
+        hole.AddPoint(new Point(5, 4)); hole.AddPoint(new Point(15, 4));
+        hole.AddPoint(new Point(15, 8)); hole.AddPoint(new Point(5, 8));
+        poly.AddRing(hole);
+
+        var pf = new Feature { Shape = poly };
+        pf.Fields.Add(new FieldValue("NAME", "bad"));
+        Assert.True(await fdb.Insert(fc, new List<IFeature> { pf }), fdb.LastErrorMessage);
+
+        // the row must exist with a non-NULL blob (before the fix ST_MakeValid returned a
+        // GEOMETRYCOLLECTION -> CastToMultiPolygon -> NULL)
+        using (var conn = new SQLiteConnection("Data Source=" + _dbPath))
+        {
+            conn.Open();
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = "SELECT count(*) FROM FC_geo WHERE FDB_SHAPE IS NULL";
+            Assert.Equal(0, Convert.ToInt32(cmd.ExecuteScalar()));
+        }
+
+        // and it round-trips as a polygon geometry
+        var read = await DrainAsync(await fdb.Query(fc, new QueryFilter { SubFields = "*" }));
+        var f = Assert.Single(read);
+        Assert.Equal("bad", f.FindField("NAME")!.Value!.ToString());
+        Assert.IsAssignableFrom<IPolygon>(f.Shape);
+        Assert.False(f.Shape.IsEmpty());
+    }
+
+    [Fact]
     public async Task RebuildNativeSpatialIndex_GeoPackage_RefillsTheRTree()
     {
         var fdb = await CreateFdbAsync(GeometryStorageType.GeoPackage, GeometryType.Point);

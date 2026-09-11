@@ -520,7 +520,10 @@ namespace gView.DataSources.SpatiaLite
 
             if (shape is IPolygon)
             {
-                expression = $"ST_MakeValid({expression})";
+                // keep only the polygon parts - ST_MakeValid can hand back a
+                // GEOMETRYCOLLECTION for self-touching rings / "hole outside shell", which
+                // would make the CastToMultiPolygon below return NULL.
+                expression = $"ST_CollectionExtract(ST_MakeValid({expression}), 3)";
             }
 
             // SpatiaLite / GeoPackage geometry columns are strictly typed - promote to the
