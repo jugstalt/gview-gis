@@ -76,31 +76,51 @@ namespace gView.Server.AppCode.Extensions
         static public IEnvelope FullExtent(this IServiceMap map)
         {
             Envelope fullExtent = null;
+            var displaySRef = map?.Display?.SpatialReference;
 
             if (map?.MapElements != null)
             {
                 foreach (var layer in map.MapElements)
                 {
                     IEnvelope envelope = null;
-                    if (layer.Class is IFeatureClass && ((IFeatureClass)layer.Class).Envelope != null)
+                    ISpatialReference layerSRef = null;
+
+                    if (layer.Class is IFeatureClass featureClass && featureClass.Envelope != null)
                     {
-                        envelope = ((IFeatureClass)layer.Class).Envelope;
+                        envelope = featureClass.Envelope;
+                        layerSRef = featureClass.SpatialReference;
                     }
-                    else if (layer.Class is IRasterClass && ((IRasterClass)layer.Class).Polygon != null)
+                    else if (layer.Class is IRasterClass rasterClass && rasterClass.Polygon != null)
                     {
-                        envelope = ((IRasterClass)layer.Class).Polygon.Envelope;
+                        envelope = rasterClass.Polygon.Envelope;
+                        layerSRef = rasterClass.SpatialReference;
                     }
 
-                    if (envelope != null)
+                    if (envelope == null)
                     {
-                        if (fullExtent == null)
-                        {
-                            fullExtent = new Framework.Geometry.Envelope(envelope);
-                        }
-                        else
-                        {
-                            fullExtent.Union(envelope);
-                        }
+                        continue;
+                    }
+
+                    // A layer's envelope is stored in its own (native) spatial reference, which
+                    // can differ from the map's display spatial reference (eg. Web Mercator display
+                    // over natively projected source data). Without reprojecting here, the returned
+                    // extent ends up with coordinate values from the native SRef mislabeled as being
+                    // in the display SRef - which then misleads clients (ArcGIS REST/GeoJSON capabilities)
+                    // relying on this extent for a spatial reference it doesn't actually match.
+                    if (displaySRef != null && layerSRef != null && !layerSRef.Equals(displaySRef))
+                    {
+                        envelope = GeometricTransformerFactory
+                            .Transform2D(envelope, layerSRef, displaySRef, map.Display?.DatumTransformations)?
+                            .Envelope ?? envelope;
+                    }
+
+                    if (fullExtent == null)
+                    {
+                        fullExtent = new Framework.Geometry.Envelope(envelope);
+                    }
+                    else
+                    {
+                        fullExtent.Union(envelope);
                     }
                 }
             }

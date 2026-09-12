@@ -256,8 +256,10 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
                                 Xmin = serviceMap.Display.Envelope.MinX,
                                 Ymin = serviceMap.Display.Envelope.MinY,
                                 Xmax = serviceMap.Display.Envelope.MaxX,
-                                Ymax = serviceMap.Display.Envelope.MaxY
-                                // ToDo: SpatialReference
+                                Ymax = serviceMap.Display.Envelope.MaxY,
+                                SpatialReference = serviceMap.Display.SpatialReference?.EpsgCode > 0 ?
+                                    new JsonSpatialReferenceDTO(serviceMap.Display.SpatialReference.EpsgCode) :
+                                    null
                             },
                             IdleMilliseconds = ContextVariables.UseMetrics ? serviceMap.Metrics : null,
                             Error = serviceMap is IMap && ((IMap)serviceMap).HasRequestExceptions ?
@@ -295,7 +297,7 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
         IServiceRequestContext context,
         List<ILayer> layers)
     {
-        var mapLayersString = _exportMap?.Layers.Trim();
+        var mapLayersString = _exportMap?.Layers?.Trim();
 
         if (!String.IsNullOrWhiteSpace(mapLayersString) &&
             mapLayersString.Contains(":") &&
@@ -531,7 +533,13 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
                         ((SpatialFilter)filter).Geometry = filterGeometry;
                         ((SpatialFilter)filter).FilterSpatialReference =
                             SRef(query.InSRef) ??
-                            (filterGeometry.Srs > 0 ? SpatialReference.FromID($"epsg:{filterGeometry.Srs}") : null);
+                            (filterGeometry.Srs > 0 ? SpatialReference.FromID($"epsg:{filterGeometry.Srs}") : null) ??
+                            // ArcGIS REST spec: "If inSR is not specified, the geometry is assumed
+                            // to be in the spatial reference of the map." Without this fallback the
+                            // filter geometry is left without a spatial reference and is compared
+                            // as-is against the feature class' native SRS, silently returning zero
+                            // features whenever the map's display SRS differs from the data's.
+                            serviceMap.Display?.SpatialReference;
                     }
                     else if (query.ReturnDistinctValues)
                     {
