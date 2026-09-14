@@ -887,6 +887,34 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
 
         }
 
+        /// <summary>
+        /// Exact <c>SELECT count(...)</c> for PostGIS-native storage - used by
+        /// <see cref="pgFeatureClass.ExecuteCount"/> (<see cref="ITableClass2"/>) instead of
+        /// materializing every feature just to count rows. PostGIS evaluates every spatial relation
+        /// exactly in SQL, so unlike the SQLite FDB's GeoPackage storage there is no precise-relation
+        /// caveat here.
+        /// </summary>
+        internal async Task<int> ExecuteNativeCountAsync(IFeatureClass fc, IQueryFilter filter)
+        {
+            string commandText = Cursors.PgNativeFeatureCursor.BuildCountCommandText(
+                fc, filter, fc.SpatialReference?.EpsgCode ?? 0);
+
+            using (DbConnection connection = _dbProviderFactory.CreateConnection())
+            {
+                connection.ConnectionString = _conn.ConnectionString;
+                await connection.OpenAsync();
+
+                using (DbCommand command = _dbProviderFactory.CreateCommand())
+                {
+                    command.Connection = connection;
+                    command.CommandText = commandText;
+
+                    object result = await command.ExecuteScalarAsync();
+                    return Convert.ToInt32(result);
+                }
+            }
+        }
+
         async override public Task<IFeatureCursor> QueryIDs(IFeatureClass fc, string subFields, List<int> IDs, ISpatialReference toSRef, IDatumTransformations datumTransformations)
         {
             if (fc.Dataset is IFDBDataset fdbDs && fdbDs.SpatialIndexDef?.StorageType == GeometryStorageType.PostGis)

@@ -5,6 +5,7 @@ using gView.Framework.Core.FDB;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Core.Common;
 using gView.Framework.Data;
+using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
 using System;
 using System.Collections.Generic;
@@ -12,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace gView.DataSources.Fdb.SQLite
 {
-    public class SQLiteFDBFeatureClass : IFeatureClass, IRefreshable, IFeatureCursorRequiresWrapperForOrdering
+    public class SQLiteFDBFeatureClass : IFeatureClass2, IRefreshable, IFeatureCursorRequiresWrapperForOrdering
     {
         private SQLiteFDB _fdb;
         private IDataset _dataset;
@@ -120,6 +121,67 @@ namespace gView.DataSources.Fdb.SQLite
         {
             return await GetFeatures(filter);
         }
+
+        #region ITableClass2
+
+        /// <summary>
+        /// Fast count for <c>returnCountOnly</c> queries (see <see cref="ITableClass2"/>).
+        /// <list type="bullet">
+        ///   <item><b>Classic</b> storage: no SQL spatial index to push a count into - counts by
+        ///     iterating, same as before this interface existed, just without materializing
+        ///     unrequested attribute fields.</item>
+        ///   <item><b>SpatiaLite</b> storage: <c>SELECT count(...) WHERE ...</c> straight in SQL - the
+        ///     precise relation (<c>ST_Intersects</c> etc.) is exact there too, so this is always exact
+        ///     and never touches a single row of geometry.</item>
+        ///   <item><b>GeoPackage</b> storage: same SQL shortcut when there is no spatial filter or it
+        ///     is a plain bbox test (no in-database <c>ST_Intersects</c> without mod_spatialite); a
+        ///     precise relation (Intersects/Within/...) falls back to iterating, since only the R-Tree
+        ///     bbox candidates are known in SQL and the exact test needs the decoded geometry.</item>
+        /// </list>
+        /// </summary>
+        async public Task<int> ExecuteCount(IQueryFilter filter)
+        {
+            filter ??= new QueryFilter();
+
+            if (_fdb == null)
+            {
+                return -1;
+            }
+
+            var storage = (_dataset as IFDBDataset)?.SpatialIndexDef?.StorageType ?? GeometryStorageType.Classic;
+
+            if (SQLiteFDB.IsSpatiaLiteStorage(storage))
+            {
+                var flavor = gView.DataSources.SpatiaLite.SpatiaLiteSchema.FlavorFor(storage);
+
+                if (!Cursors.SQLiteNativeFeatureCursor.NeedsPreciseRowFilter(flavor, filter))
+                {
+                    return await _fdb.ExecuteNativeCountAsync(this, filter, flavor);
+                }
+                // GeoPackage + a precise spatial relation: no in-DB ST_Intersects - fall through
+                // to the per-row count below (still cheaper than the caller's own full feature scan,
+                // no attribute fields other than the id are fetched).
+            }
+
+            var countFilter = (IQueryFilter)filter.Clone();
+            countFilter.SubFields = !String.IsNullOrEmpty(_idField) ? _idField : "*";
+
+            int count = 0;
+            using (IFeatureCursor cursor = await GetFeatures(countFilter))
+            {
+                if (cursor != null)
+                {
+                    while (await cursor.NextFeature() != null)
+                    {
+                        count++;
+                    }
+                }
+            }
+
+            return count;
+        }
+
+        #endregion
 
         async public Task<ISelectionSet> Select(IQueryFilter filter)
         {

@@ -79,6 +79,29 @@ namespace gView.DataSources.Fdb.MSSql.Cursors
 
         public override Task<IFeature> NextFeature() => NextRawFeatureAsync();
 
+        /// <summary>
+        /// <c>SELECT count([idColumn]) FROM ... WHERE ...</c> - SQL Server evaluates every spatial
+        /// relation exactly in SQL (<c>.Filter(...)</c> / <c>.STIntersects(...)</c>, both backed by
+        /// the GEOMETRY_GRID / GEOGRAPHY_GRID index), so unlike the GeoPackage FDB storage this is
+        /// always exact, no per-row fallback needed.
+        /// </summary>
+        internal static string BuildCountCommandText(IFeatureClass fc, IQueryFilter filter, GeometryFieldType geometryType)
+        {
+            int srid = geometryType == GeometryFieldType.MsGeography
+                ? 4326
+                : (fc.SpatialReference?.EpsgCode ?? 0);
+
+            string tabName = fc is SqlFDBFeatureClass sqlFc ? sqlFc.DbTableName : "FC_" + fc.Name;
+            string spatialWhere = BuildSpatialWhere(filter as ISpatialFilter, fc.ShapeFieldName, geometryType, srid);
+            string userWhere = (filter is IRowIDFilter ridf) ? ridf.RowIDWhereClause : filter?.WhereClause;
+
+            string selectFrom = $"SELECT count([{fc.IDFieldName}]) FROM {tabName}";
+
+            return new SqlServerSelectBuilder(selectFrom)
+                .WhereAnd(spatialWhere, userWhere)
+                .Build();
+        }
+
         private static string BuildFieldList(string subFields, string shapeFieldName)
         {
             var fieldNames = new StringBuilder();

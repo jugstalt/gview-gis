@@ -1498,6 +1498,35 @@ namespace gView.DataSources.Fdb.SQLite
                         filter?.DatumTransformations);
         }
 
+        /// <summary>
+        /// Exact <c>SELECT count(...)</c> for native (SpatiaLite/GeoPackage) storage - used by
+        /// <see cref="SQLiteFDBFeatureClass.ExecuteCount"/> (<see cref="ITableClass2"/>) instead of
+        /// materializing every feature just to count rows. Only correct when
+        /// <see cref="Cursors.SQLiteNativeFeatureCursor.NeedsPreciseRowFilter"/> is <c>false</c> for
+        /// <paramref name="filter"/> - the caller is expected to have checked that (GeoPackage with a
+        /// precise spatial relation needs the per-row managed check and must count via the cursor).
+        /// </summary>
+        internal async Task<int> ExecuteNativeCountAsync(IFeatureClass fc, IQueryFilter filter, gView.DataSources.SpatiaLite.SpatiaLiteFlavor flavor)
+        {
+            if (filter is ISpatialFilter sf)
+            {
+                filter = SpatialFilter.Project(sf, fc.SpatialReference);
+            }
+
+            string commandText = Cursors.SQLiteNativeFeatureCursor.BuildCountCommandText(
+                FcTableName(fc), "FC_" + fc.Name, filter, flavor, fc.SpatialReference?.EpsgCode ?? 0, fc.IDFieldName);
+
+            using (var connection = OpenSpatialConnection(flavor))
+            using (var command = connection.CreateCommand())
+            {
+                command.CommandText = commandText;
+                command.SetCustomCursorTimeout();
+
+                var result = await command.ExecuteScalarAsync();
+                return Convert.ToInt32(result);
+            }
+        }
+
         async public override Task<IFeatureCursor> QueryIDs(IFeatureClass fc, string subFields, List<int> IDs, ISpatialReference toSRef, IDatumTransformations datumTransformations)
         {
             var storage = (fc.Dataset as IFDBDataset)?.SpatialIndexDef?.StorageType ?? GeometryStorageType.Classic;

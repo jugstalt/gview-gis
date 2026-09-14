@@ -85,13 +85,7 @@ namespace gView.DataSources.Fdb.SQLite.Cursors
             filter ??= new QueryFilter();
 
             // GeoPackage cannot run ST_Intersects in SQL -> keep the filter for the per-row check
-            ISpatialFilter preciseFilter = null;
-            if (flavor == SpatiaLiteFlavor.GeoPackage
-                && filter is ISpatialFilter sf && sf.Geometry != null
-                && sf.SpatialRelation != spatialRelation.SpatialRelationMapEnvelopeIntersects)
-            {
-                preciseFilter = sf;
-            }
+            ISpatialFilter preciseFilter = NeedsPreciseRowFilter(flavor, filter) ? (ISpatialFilter)filter : null;
 
             var cursor = new SQLiteNativeFeatureCursor(
                 fc, toSRef, datumTransformations, flavor, preciseFilter, filter.Limit, filter.BeginRecord);
@@ -201,6 +195,37 @@ namespace gView.DataSources.Fdb.SQLite.Cursors
             }
 
             return fieldNames.ToString();
+        }
+
+        /// <summary>
+        /// True when <paramref name="filter"/>'s spatial relation needs the per-row managed check
+        /// (<see cref="PassesGeometryFilter"/>) because it cannot be evaluated exactly in SQL:
+        /// GeoPackage has no in-database <c>ST_Intersects</c>, only the R-Tree bbox pre-filter, so
+        /// any relation other than a plain bbox test (<c>MapEnvelopeIntersects</c>) - or "no spatial
+        /// filter at all" - needs it. SpatiaLite (mod_spatialite) evaluates every relation in SQL.
+        /// </summary>
+        internal static bool NeedsPreciseRowFilter(SpatiaLiteFlavor flavor, IQueryFilter filter)
+            => flavor == SpatiaLiteFlavor.GeoPackage
+               && filter is ISpatialFilter sf && sf.Geometry != null
+               && sf.SpatialRelation != spatialRelation.SpatialRelationMapEnvelopeIntersects;
+
+        /// <summary>
+        /// <c>SELECT count(&lt;idColumn&gt;) FROM &lt;tableName&gt; WHERE ...</c> for a filter whose
+        /// spatial relation (if any) <see cref="NeedsPreciseRowFilter"/> says can be evaluated fully
+        /// in SQL - so the caller can COUNT directly instead of paying for a full cursor scan that
+        /// decodes and discards every geometry.
+        /// </summary>
+        internal static string BuildCountCommandText(
+            string tableName, string rtreeTableName, IQueryFilter filter, SpatiaLiteFlavor flavor, int srid, string idColumn)
+        {
+            string spatialWhere = BuildSpatialWhere(filter as ISpatialFilter, flavor, rtreeTableName, srid);
+            string userWhere = (filter is IRowIDFilter ridf) ? ridf.RowIDWhereClause : filter?.WhereClause;
+
+            string selectFrom = $"SELECT count([{idColumn}]) FROM {tableName}";
+
+            return new SqliteSelectBuilder(selectFrom)
+                .WhereAnd(spatialWhere, userWhere)
+                .Build();
         }
 
         private static string BuildSpatialWhere(ISpatialFilter sFilter, SpatiaLiteFlavor flavor, string rtreeTableName, int srid)

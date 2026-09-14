@@ -230,6 +230,91 @@ public class SQLiteFdbSpatiaLiteStorageTests : IDisposable
         Assert.All(read, f => Assert.Equal("true", f.FindField("NAME")!.Value!.ToString()));
     }
 
+    [Theory]
+    [InlineData(GeometryStorageType.Classic)]
+    [InlineData(GeometryStorageType.GeoPackage)]
+    [InlineData(GeometryStorageType.SpatiaLite)]
+    public async Task ExecuteCount_ITableClass2_NoSpatialFilter_ReturnsExactCount(GeometryStorageType storage)
+    {
+        if (storage == GeometryStorageType.SpatiaLite && !ModSpatialiteAvailable()) return;
+
+        var fdb = await CreateFdbAsync(storage, GeometryType.Point);
+        var fc = await GetFcAsync(fdb);
+
+        await fdb.Insert(fc, new List<IFeature>
+        {
+            PointFeature(100, 100, "a"),
+            PointFeature(250.5, 400.25, "b"),
+            PointFeature(900, 900, "c"),
+        });
+
+        var tableClass2 = Assert.IsAssignableFrom<ITableClass2>(fc);
+        Assert.Equal(3, await tableClass2.ExecuteCount(new QueryFilter()));
+    }
+
+    [Theory]
+    [InlineData(GeometryStorageType.GeoPackage)]
+    [InlineData(GeometryStorageType.SpatiaLite)]
+    public async Task ExecuteCount_ITableClass2_MapEnvelopeFilter_UsesSqlFastPath(GeometryStorageType storage)
+    {
+        if (storage == GeometryStorageType.SpatiaLite && !ModSpatialiteAvailable()) return;
+
+        var fdb = await CreateFdbAsync(storage, GeometryType.Point);
+        var fc = await GetFcAsync(fdb);
+
+        await fdb.Insert(fc, new List<IFeature>
+        {
+            PointFeature(100, 100, "in"),
+            PointFeature(500, 500, "in2"),
+            PointFeature(9000, 9000, "out"),
+        });
+
+        var filter = new SpatialFilter
+        {
+            SpatialRelation = spatialRelation.SpatialRelationMapEnvelopeIntersects,
+            Geometry = new Envelope(0, 0, 600, 600),
+        };
+
+        var tableClass2 = Assert.IsAssignableFrom<ITableClass2>(fc);
+        Assert.Equal(2, await tableClass2.ExecuteCount(filter));
+    }
+
+    /// <summary>
+    /// GeoPackage has no in-database ST_Intersects: a precise relation (anything but
+    /// MapEnvelopeIntersects) must fall back from the SQL COUNT fast path to a per-row count,
+    /// otherwise R-Tree bbox-only candidates that don't truly intersect would be over-counted.
+    /// </summary>
+    [Fact]
+    public async Task ExecuteCount_ITableClass2_GeoPackage_PreciseRelation_ExcludesBboxOnlyMatches()
+    {
+        var fdb = await CreateFdbAsync(GeometryStorageType.GeoPackage, GeometryType.Point);
+        var fc = await GetFcAsync(fdb);
+
+        // Right triangle (0,0)-(100,0)-(0,100): points with x+y<=100 are inside. The others sit
+        // in the triangle's bounding envelope (R-Tree bbox candidates) but not inside it.
+        var falsePositives = new (double x, double y)[] { (90, 90), (95, 50), (50, 95) };
+        var truePositives = new (double x, double y)[] { (10, 10), (20, 20) };
+
+        var features = new List<IFeature>();
+        foreach (var (x, y) in falsePositives) features.Add(PointFeature(x, y, "false"));
+        foreach (var (x, y) in truePositives) features.Add(PointFeature(x, y, "true"));
+        Assert.True(await fdb.Insert(fc, features), fdb.LastErrorMessage);
+
+        var triangleRing = new Ring();
+        triangleRing.AddPoint(new Point(0, 0));
+        triangleRing.AddPoint(new Point(100, 0));
+        triangleRing.AddPoint(new Point(0, 100));
+
+        var filter = new SpatialFilter
+        {
+            SpatialRelation = spatialRelation.SpatialRelationIntersects,
+            Geometry = new Polygon(triangleRing),
+        };
+
+        var tableClass2 = Assert.IsAssignableFrom<ITableClass2>(fc);
+        Assert.Equal(2, await tableClass2.ExecuteCount(filter));
+    }
+
     [Fact]
     public async Task GeoPackageFile_HasValidGpkgMetadata_WithoutModSpatialite()
     {

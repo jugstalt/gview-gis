@@ -5,6 +5,7 @@ using gView.Framework.Core.FDB;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Core.Common;
 using gView.Framework.Data;
+using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
 using System;
 using System.Collections.Generic;
@@ -12,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace gView.DataSources.Fdb.PostgreSql
 {
-    public class pgFeatureClass : IFeatureClass, IRefreshable, IFeatureCursorRequiresWrapperForOrdering
+    public class pgFeatureClass : IFeatureClass2, IRefreshable, IFeatureCursorRequiresWrapperForOrdering
     {
         private pgFDB _fdb;
         private IDataset _dataset;
@@ -127,6 +128,54 @@ namespace gView.DataSources.Fdb.PostgreSql
         {
             return await GetFeatures(filter);
         }
+
+        #region ITableClass2
+
+        /// <summary>
+        /// Fast count for <c>returnCountOnly</c> queries (see <see cref="ITableClass2"/>). For
+        /// PostGIS-native storage this is an exact <c>SELECT count(...)</c> straight in SQL (PostGIS
+        /// evaluates every spatial relation exactly, backed by the GiST index) - never touches a
+        /// row of geometry. Classic storage has no SQL spatial index to push a count into and counts
+        /// by iterating instead, just without materializing unrequested attribute fields.
+        /// </summary>
+        async public Task<int> ExecuteCount(IQueryFilter filter)
+        {
+            filter ??= new QueryFilter();
+
+            if (_fdb == null)
+            {
+                return -1;
+            }
+
+            if (_dataset is IFDBDataset fdbDataset && fdbDataset.SpatialIndexDef?.StorageType == GeometryStorageType.PostGis)
+            {
+                if (filter is ISpatialFilter sf)
+                {
+                    filter = SpatialFilter.Project(sf, this.SpatialReference);
+                }
+
+                return await _fdb.ExecuteNativeCountAsync(this, filter);
+            }
+
+            var countFilter = (IQueryFilter)filter.Clone();
+            countFilter.SubFields = !String.IsNullOrEmpty(m_idfield) ? m_idfield : "*";
+
+            int count = 0;
+            using (IFeatureCursor cursor = await GetFeatures(countFilter))
+            {
+                if (cursor != null)
+                {
+                    while (await cursor.NextFeature() != null)
+                    {
+                        count++;
+                    }
+                }
+            }
+
+            return count;
+        }
+
+        #endregion
 
         async public Task<ISelectionSet> Select(IQueryFilter filter)
         {

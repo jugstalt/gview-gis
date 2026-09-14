@@ -478,6 +478,29 @@ namespace gView.DataSources.Fdb.MSSql
                                 filter?.DatumTransformations);
             }
         }
+        /// <summary>
+        /// Exact <c>SELECT count(...)</c> for SQL Server geometry/geography native storage - used by
+        /// <see cref="SqlFDBFeatureClass.ExecuteCount"/> (<see cref="ITableClass2"/>) instead of
+        /// materializing every feature just to count rows. SQL Server evaluates every spatial
+        /// relation exactly in SQL, so unlike the SQLite FDB's GeoPackage storage there is no
+        /// precise-relation caveat here.
+        /// </summary>
+        internal async Task<int> ExecuteNativeCountAsync(IFeatureClass fc, IQueryFilter filter, GeometryFieldType geometryType)
+        {
+            string commandText = Cursors.SqlNativeFeatureCursor.BuildCountCommandText(fc, filter, geometryType);
+
+            using (SqlConnection connection = new SqlConnection(_conn.ConnectionString))
+            {
+                await connection.OpenAsync();
+
+                using (SqlCommand command = new SqlCommand(commandText, connection))
+                {
+                    object result = await command.ExecuteScalarAsync();
+                    return Convert.ToInt32(result);
+                }
+            }
+        }
+
         async override public Task<IFeatureCursor> QueryIDs(IFeatureClass fc, string subFields, List<int> IDs, ISpatialReference toSRef, IDatumTransformations datumTransformations)
         {
             if (fc.Dataset is IFDBDataset fdbDs && fdbDs.SpatialIndexDef is MSSpatialIndex msIndex)

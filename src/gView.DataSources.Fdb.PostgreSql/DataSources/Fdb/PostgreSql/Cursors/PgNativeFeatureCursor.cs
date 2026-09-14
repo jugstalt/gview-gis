@@ -75,6 +75,25 @@ namespace gView.DataSources.Fdb.PostgreSql.Cursors
 
         public override Task<IFeature> NextFeature() => NextRawFeatureAsync();
 
+        /// <summary>
+        /// <c>SELECT count("idColumn") FROM ... WHERE ...</c> - PostGIS evaluates every spatial
+        /// relation exactly in SQL (<c>&amp;&amp;</c> / <c>ST_Intersects</c>, both backed by the GiST
+        /// index), so unlike the GeoPackage FDB storage this is always exact, no per-row fallback
+        /// needed.
+        /// </summary>
+        internal static string BuildCountCommandText(IFeatureClass fc, IQueryFilter filter, int srid)
+        {
+            string tabName = fc is pgFeatureClass pgFc ? pgFc.DbTableName : "FC_" + fc.Name;
+            string spatialWhere = BuildSpatialWhere(filter as ISpatialFilter, srid);
+            string userWhere = (filter is IRowIDFilter ridf) ? ridf.RowIDWhereClause : filter?.WhereClause;
+
+            string selectFrom = $"SELECT count(\"{fc.IDFieldName}\") FROM {tabName}";
+
+            return new PostgreSqlSelectBuilder(selectFrom)
+                .WhereAnd(spatialWhere, userWhere)
+                .Build();
+        }
+
         private static string BuildFieldList(string subFields)
         {
             var fieldNames = new StringBuilder();
