@@ -36,13 +36,25 @@ namespace gView.DataSources.Fdb.SQLite.Cursors
         private readonly SpatiaLiteFlavor _flavor;
         private readonly ISpatialFilter _preciseFilter;   // GeoPackage: exact relation checked per row
 
+        // When _preciseFilter is set, LIMIT/OFFSET cannot be pushed to SQL - the R-Tree only
+        // narrows to bbox candidates, so a SQL-level LIMIT would truncate the candidate set
+        // before the geometry post-filter drops the false positives, silently under-returning
+        // (and never signalling "more results available"). Enforced here instead, same as
+        // SQLiteSpatialFeatureCursor does for the classic BinaryTree index.
+        private readonly int _limit;
+        private readonly int _beginRecord;
+        private int _returned;
+        private int _skipped;
+
         private SQLiteNativeFeatureCursor(
             IGeometryDef geomDef, ISpatialReference toSRef, IDatumTransformations datumTransformations,
-            SpatiaLiteFlavor flavor, ISpatialFilter preciseFilter)
+            SpatiaLiteFlavor flavor, ISpatialFilter preciseFilter, int limit, int beginRecord)
             : base(geomDef, toSRef, datumTransformations)
         {
             _flavor = flavor;
             _preciseFilter = preciseFilter;
+            _limit = limit;
+            _beginRecord = beginRecord;
         }
 
         private bool GeoPackage => _flavor == SpatiaLiteFlavor.GeoPackage;
@@ -81,7 +93,8 @@ namespace gView.DataSources.Fdb.SQLite.Cursors
                 preciseFilter = sf;
             }
 
-            var cursor = new SQLiteNativeFeatureCursor(fc, toSRef, datumTransformations, flavor, preciseFilter);
+            var cursor = new SQLiteNativeFeatureCursor(
+                fc, toSRef, datumTransformations, flavor, preciseFilter, filter.Limit, filter.BeginRecord);
 
             if (String.IsNullOrEmpty(filter.SubFields) || filter.SubFields == "*")
             {
@@ -103,17 +116,55 @@ namespace gView.DataSources.Fdb.SQLite.Cursors
             string spatialWhere = BuildSpatialWhere(filter as ISpatialFilter, flavor, rtreeTableName, srid);
             string userWhere = (filter is IRowIDFilter ridf) ? ridf.RowIDWhereClause : filter.WhereClause;
 
-            string commandText = new SqliteSelectBuilder(selectFrom)
+            var builder = new SqliteSelectBuilder(selectFrom)
                 .WhereAnd(spatialWhere, userWhere)
-                .OrderBy(filter.OrderBy)
-                .Page(filter.Limit, filter.BeginRecord)
-                .Build();
+                .OrderBy(filter.OrderBy);
+
+            // Paging can only be pushed to SQL when no row is dropped afterwards by the precise
+            // geometry test (see the field comments above) - otherwise it is enforced in NextFeature.
+            if (preciseFilter == null)
+            {
+                builder.Page(filter.Limit, filter.BeginRecord);
+            }
+
+            string commandText = builder.Build();
 
             await cursor.OpenReaderAsync(connectionString, commandText);
             return cursor;
         }
 
-        public override Task<IFeature> NextFeature() => NextRawFeatureAsync();
+        public override async Task<IFeature> NextFeature()
+        {
+            // No precise post-filter -> SQL already applied ORDER BY / LIMIT / OFFSET.
+            if (_preciseFilter == null || (_limit <= 0 && _beginRecord <= 1))
+            {
+                return await NextRawFeatureAsync();
+            }
+
+            while (true)
+            {
+                IFeature feature = await NextRawFeatureAsync();
+                if (feature == null)
+                {
+                    return null;
+                }
+
+                if (_beginRecord > 1 && _skipped < _beginRecord - 1)
+                {
+                    _skipped++;
+                    continue;
+                }
+
+                if (_limit > 0 && _returned >= _limit)
+                {
+                    Dispose();
+                    return null;
+                }
+
+                _returned++;
+                return feature;
+            }
+        }
 
         private static string BuildFieldList(string subFields, SpatiaLiteFlavor flavor)
         {

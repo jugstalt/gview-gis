@@ -483,6 +483,7 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
             Envelope extent = null;
 
             int maxRecordCount;
+            int effectiveLimit;   // the limit actually applied to the query (<= maxRecordCount)
 
             #endregion
 
@@ -491,6 +492,10 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
                 maxRecordCount = query.ReturnIdsOnly == true ?   // return all Ids!
                                 int.MaxValue :
                                 serviceMap.MapServiceProperties.MaxRecordCount;
+
+                effectiveLimit = query.ResultRecordCount > 0 ?
+                    Math.Min(query.ResultRecordCount, maxRecordCount) :
+                    maxRecordCount;
                 string filterQuery;
 
                 var tableClasses = FindTableClass(serviceMap, query.LayerId.ToString(), out filterQuery);
@@ -650,9 +655,7 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
 
                     filter.Limit = query.ReturnCountOnly ?
                         int.MaxValue :                                 // count queries always consider all matching features
-                        query.ResultRecordCount > 0 ?
-                            Math.Min(query.ResultRecordCount, maxRecordCount) :
-                            maxRecordCount;
+                        effectiveLimit;
 
                     filter.BeginRecord = query.ReturnCountOnly ?
                         1 :
@@ -850,7 +853,7 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
                     SpatialReference = featureSref,
                     Fields = jsonFields.ToArray(),
                     Features = jsonFeatures.ToArray(),
-                    ExceededTransferLimit = jsonFeatures.Count() >= maxRecordCount
+                    ExceededTransferLimit = jsonFeatures.Count() >= effectiveLimit
                 };
             }
             else
@@ -861,7 +864,7 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
                     SpatialReference = featureSref,
                     Fields = jsonFields.ToArray(),
                     Features = jsonFeatures.ToArray(),
-                    ExceededTransferLimit = jsonFeatures.Count() >= maxRecordCount,
+                    ExceededTransferLimit = jsonFeatures.Count() >= effectiveLimit,
                     IdleMilliseconds = SystemVariables.UseDiagnostic ?
                             new Dictionary<string, double> { ["0"] = idleMilliseconds } :
                             null

@@ -184,6 +184,52 @@ public class SQLiteFdbSpatiaLiteStorageTests : IDisposable
         Assert.Equal(new[] { "in", "in2" }, names);
     }
 
+    /// <summary>
+    /// Regression test: GeoPackage has no in-database ST_Intersects, only the R-Tree bbox
+    /// pre-filter - the precise relation is re-checked per row in managed code. A SQL-level
+    /// LIMIT applied before that check would truncate the candidate set to bbox-only matches,
+    /// so true matches beyond the (false-positive-laden) LIMIT window would silently be lost.
+    /// </summary>
+    [Fact]
+    public async Task SpatialFilter_Intersects_WithLimitSmallerThanBboxCandidates_GeoPackage_StillFindsTrueMatches()
+    {
+        var fdb = await CreateFdbAsync(GeometryStorageType.GeoPackage, GeometryType.Point);
+        var fc = await GetFcAsync(fdb);
+
+        // Right triangle (0,0)-(100,0)-(0,100): points with x+y<=100 are inside. The other
+        // points sit inside the triangle's bounding envelope (0,0)-(100,100) - so the R-Tree
+        // bbox pre-filter accepts them as candidates - but are outside the triangle itself.
+        var falsePositives = new (double x, double y)[] { (90, 90), (95, 50), (50, 95), (80, 80), (99, 99) };
+        var truePositives = new (double x, double y)[] { (10, 10), (20, 20), (30, 10) };
+
+        var features = new List<IFeature>();
+        foreach (var (x, y) in falsePositives) features.Add(PointFeature(x, y, "false"));
+        foreach (var (x, y) in truePositives) features.Add(PointFeature(x, y, "true"));
+
+        Assert.True(await fdb.Insert(fc, features), fdb.LastErrorMessage);
+
+        var triangleRing = new Ring();
+        triangleRing.AddPoint(new Point(0, 0));
+        triangleRing.AddPoint(new Point(100, 0));
+        triangleRing.AddPoint(new Point(0, 100));
+
+        var filter = new SpatialFilter
+        {
+            SubFields = "*",
+            SpatialRelation = spatialRelation.SpatialRelationIntersects,
+            Geometry = new Polygon(triangleRing),
+            Limit = 2,
+        };
+
+        // Insertion order puts the 5 false positives first (lower FDB_OID), so a SQL-level
+        // "LIMIT 2" on the bbox candidates would grab only false positives and, after the
+        // precise check discards them, return zero features.
+        var read = await DrainAsync(await fdb.Query(fc, filter));
+
+        Assert.Equal(2, read.Count);
+        Assert.All(read, f => Assert.Equal("true", f.FindField("NAME")!.Value!.ToString()));
+    }
+
     [Fact]
     public async Task GeoPackageFile_HasValidGpkgMetadata_WithoutModSpatialite()
     {
