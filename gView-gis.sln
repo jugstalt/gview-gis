@@ -231,6 +231,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{99EB51DE
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.DataSources.GeoPackage.Tests", "src\tests\gView.DataSources.GeoPackage.Tests\gView.DataSources.GeoPackage.Tests.csproj", "{380C3D65-0FEE-4A07-88CD-B25A51826122}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.DataSources.PostGIS.Tests", "src\tests\gView.DataSources.PostGIS.Tests\gView.DataSources.PostGIS.Tests.csproj", "{0E45C9A7-97C4-4A64-9F11-95C4896E1AC5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Interoperability.GeoServices.Tests", "src\tests\gView.Interoperability.GeoServices.Tests\gView.Interoperability.GeoServices.Tests.csproj", "{219B6608-BF08-48E7-91BB-CEDA1714DB74}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1441,6 +1445,30 @@ Global
 		{380C3D65-0FEE-4A07-88CD-B25A51826122}.Release|x64.Build.0 = Release|Any CPU
 		{380C3D65-0FEE-4A07-88CD-B25A51826122}.Release|x86.ActiveCfg = Release|Any CPU
 		{380C3D65-0FEE-4A07-88CD-B25A51826122}.Release|x86.Build.0 = Release|Any CPU
+		{0E45C9A7-97C4-4A64-9F11-95C4896E1AC5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0E45C9A7-97C4-4A64-9F11-95C4896E1AC5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0E45C9A7-97C4-4A64-9F11-95C4896E1AC5}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{0E45C9A7-97C4-4A64-9F11-95C4896E1AC5}.Debug|x64.Build.0 = Debug|Any CPU
+		{0E45C9A7-97C4-4A64-9F11-95C4896E1AC5}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{0E45C9A7-97C4-4A64-9F11-95C4896E1AC5}.Debug|x86.Build.0 = Debug|Any CPU
+		{0E45C9A7-97C4-4A64-9F11-95C4896E1AC5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0E45C9A7-97C4-4A64-9F11-95C4896E1AC5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0E45C9A7-97C4-4A64-9F11-95C4896E1AC5}.Release|x64.ActiveCfg = Release|Any CPU
+		{0E45C9A7-97C4-4A64-9F11-95C4896E1AC5}.Release|x64.Build.0 = Release|Any CPU
+		{0E45C9A7-97C4-4A64-9F11-95C4896E1AC5}.Release|x86.ActiveCfg = Release|Any CPU
+		{0E45C9A7-97C4-4A64-9F11-95C4896E1AC5}.Release|x86.Build.0 = Release|Any CPU
+		{219B6608-BF08-48E7-91BB-CEDA1714DB74}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{219B6608-BF08-48E7-91BB-CEDA1714DB74}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{219B6608-BF08-48E7-91BB-CEDA1714DB74}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{219B6608-BF08-48E7-91BB-CEDA1714DB74}.Debug|x64.Build.0 = Debug|Any CPU
+		{219B6608-BF08-48E7-91BB-CEDA1714DB74}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{219B6608-BF08-48E7-91BB-CEDA1714DB74}.Debug|x86.Build.0 = Debug|Any CPU
+		{219B6608-BF08-48E7-91BB-CEDA1714DB74}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{219B6608-BF08-48E7-91BB-CEDA1714DB74}.Release|Any CPU.Build.0 = Release|Any CPU
+		{219B6608-BF08-48E7-91BB-CEDA1714DB74}.Release|x64.ActiveCfg = Release|Any CPU
+		{219B6608-BF08-48E7-91BB-CEDA1714DB74}.Release|x64.Build.0 = Release|Any CPU
+		{219B6608-BF08-48E7-91BB-CEDA1714DB74}.Release|x86.ActiveCfg = Release|Any CPU
+		{219B6608-BF08-48E7-91BB-CEDA1714DB74}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1558,6 +1586,8 @@ Global
 		{BD0DCC2C-FB87-4FE2-B62D-50DC7720D9CE} = {84A4527B-D47D-4E2A-80F0-31C6569B1ED2}
 		{99EB51DE-8955-38EC-877F-A3DFE85F1030} = {F92CCD65-1D06-475F-8FFB-3F912C7BBE7E}
 		{380C3D65-0FEE-4A07-88CD-B25A51826122} = {99EB51DE-8955-38EC-877F-A3DFE85F1030}
+		{0E45C9A7-97C4-4A64-9F11-95C4896E1AC5} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
+		{219B6608-BF08-48E7-91BB-CEDA1714DB74} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {11C25FC0-EB32-4DE1-9CBB-CF2D68D1AA9B}

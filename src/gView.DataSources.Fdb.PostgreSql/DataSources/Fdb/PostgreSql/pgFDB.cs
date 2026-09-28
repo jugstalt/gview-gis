@@ -757,7 +757,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                 case FieldType.Double:
                     return "float8 NULL";
                 case FieldType.Date:
-                    return "datetime NULL";
+                    return "timestamp NULL";
                 case FieldType.ID:
                     return "int";
                 case FieldType.Shape:

@@ -757,14 +757,7 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
                                         {
                                             foreach (var field in feature.Fields)
                                             {
-                                                object val = field.Value;
-
-                                                if (val is DateTime)
-                                                {
-                                                    val = Convert.ToInt64(((DateTime)val - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalMilliseconds);
-                                                }
-
-                                                attributesDict[field.Name] = val;
+                                                attributesDict[field.Name] = field.Value.ToEsriDateValue();
 
                                                 if (firstFeature)
                                                 {

@@ -109,7 +109,8 @@ namespace gView.Interoperability.GeoServices.Rest.DTOs
                 {
                     return EsriFieldType.esriFieldTypeDouble;
                 }
-                if (type == typeof(DateTime))
+                if (type == typeof(DateTime) || type == typeof(DateTimeOffset) ||
+                    type == typeof(DateOnly) || type == typeof(TimeOnly) || type == typeof(TimeSpan))
                 {
                     return EsriFieldType.esriFieldTypeDate;
                 }

@@ -770,7 +770,7 @@ namespace gView.Framework.OGC.DB
                                 parameter.ParameterName = DbParameterName(fvName);
                                 try
                                 {
-                                    parameter.Value = field.TryConvertType(val) ?? this.NullDbValue();
+                                    parameter.Value = ToDbParameterValue(fClass as OgcSpatialFeatureclass, field, field.TryConvertType(val)) ?? this.NullDbValue();
                                 }
                                 catch
                                 {
@@ -949,7 +949,7 @@ namespace gView.Framework.OGC.DB
 
                                 DbParameter parameter = this.ProviderFactory.CreateParameter();
                                 parameter.ParameterName = DbParameterName(fv.Name);
-                                parameter.Value = field.TryConvertType(val) ?? this.NullDbValue();
+                                parameter.Value = ToDbParameterValue(fClass as OgcSpatialFeatureclass, field, field.TryConvertType(val)) ?? this.NullDbValue();
                                 fields.Append($"{DbColumnName(fv.Name)}={DbParameterName(fv.Name)}");
                                 command.Parameters.Add(parameter);
                             }
@@ -1160,7 +1160,7 @@ namespace gView.Framework.OGC.DB
                 case FieldType.character:
                     return "nvarchar(1)";
                 case FieldType.Date:
-                    return "time";
+                    return "timestamp";
                 case FieldType.String:
                     return "nvarchar(" + ((field.size > 0) ? field.size : 256).ToString() + ")";
                 default:
@@ -1207,6 +1207,9 @@ namespace gView.Framework.OGC.DB
         }
 
         virtual protected object NullDbValue() => DBNull.Value;
+
+        // Hook to adapt a (non-null) field value to the provider specific column type before writing
+        virtual protected object ToDbParameterValue(OgcSpatialFeatureclass featureClass, IField field, object value) => value;
 
         virtual protected IGeometry ValidateGeometry(IFeatureClass fc, IGeometry geometry)
         {

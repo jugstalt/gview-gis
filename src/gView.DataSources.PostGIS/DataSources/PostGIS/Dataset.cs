@@ -11,6 +11,7 @@ using System.Data.Common;
 using System.Text;
 using System.Threading.Tasks;
 using gView.Framework.Db.Extensions;
+using gView.DataSources.PostGIS.Extensions;
 
 namespace gView.DataSources.PostGIS
 {
@@ -61,7 +62,7 @@ namespace gView.DataSources.PostGIS
                 case FieldType.character:
                     return "varchar(1)";
                 case FieldType.Date:
-                    return "time";
+                    return "timestamp";
                 case FieldType.String:
                     return "varchar(" + ((field.size > 0) ? field.size : 256).ToString() + ")";
                 default:
@@ -81,6 +82,11 @@ namespace gView.DataSources.PostGIS
         {
             return base.SelectReadSchema(tableName) + " limit 0";
         }
+
+        protected override object ToDbParameterValue(OgcSpatialFeatureclass featureClass, IField field, object value)
+            => field?.type == FieldType.Date
+                ? value.ToPostgresDateValue(featureClass?.ColumnDbTypeName(field.name))
+                : value;
 
         // Npgsql reads AllowDBNull (pg_attribute.attnotnull) only with KeyInfo
         public override System.Data.CommandBehavior ReadSchemaCommandBehavior

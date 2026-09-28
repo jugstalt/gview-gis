@@ -133,6 +133,8 @@ namespace gView.Framework.OGC.DB
         }
 
         private Exception _lastException = null;
+        private readonly System.Collections.Generic.Dictionary<string, string> _columnDbTypeNames =
+            new System.Collections.Generic.Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         async protected Task ReadSchema()
         {
@@ -158,6 +160,11 @@ namespace gView.Framework.OGC.DB
                         bool foundId = false, foundShape = false;
                         foreach (DataRow row in schema.Rows)
                         {
+                            if (schema.Columns.Contains("DataTypeName") && row["DataTypeName"] is string dataTypeName)
+                            {
+                                _columnDbTypeNames[row["ColumnName"].ToString()] = dataTypeName;
+                            }
+
                             // Only trust the configured id field as the feature OID source if it is
                             // actually an integer/oid column. A varchar/uuid "gid" (seen in the wild,
                             // e.g. when the real primary key is a differently named oid/int column)
@@ -215,13 +222,17 @@ namespace gView.Framework.OGC.DB
                                 {
                                     field.type = FieldType.biginteger;
                                 }
-                                else if ((Type)row["DataType"] == typeof(System.DateTime))
+                                else if (IsDateColumnType((Type)row["DataType"]))
                                 {
                                     field.type = FieldType.Date;
                                 }
                                 else if ((Type)row["DataType"] == typeof(System.Double))
                                 {
                                     field.type = FieldType.Double;
+                                }
+                                else if ((Type)row["DataType"] == typeof(System.Single))
+                                {
+                                    field.type = FieldType.Float;
                                 }
                                 else if ((Type)row["DataType"] == typeof(System.Decimal))
                                 {
@@ -295,6 +306,23 @@ namespace gView.Framework.OGC.DB
                    type == typeof(long) ||
                    type == typeof(uint);
         }
+
+        // date, timestamp(tz), datetimeoffset, time(tz) columns -> FieldType.Date
+        private static bool IsDateColumnType(Type type)
+        {
+            return type == typeof(DateTime) ||
+                   type == typeof(DateTimeOffset) ||
+                   type == typeof(DateOnly) ||
+                   type == typeof(TimeOnly) ||
+                   type == typeof(TimeSpan);
+        }
+
+        /// <summary>
+        /// The provider specific column type (GetSchemaTable "DataTypeName"), e.g. "timestamp with time zone".
+        /// Null if unknown.
+        /// </summary>
+        public string ColumnDbTypeName(string columnName)
+            => columnName != null && _columnDbTypeNames.TryGetValue(columnName, out var typeName) ? typeName : null;
 
         public string GeometryTypeString
         {
