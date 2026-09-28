@@ -19,6 +19,9 @@ namespace gView.Interoperability.GeoServices.Rest.DTOs
         [JsonPropertyName("domain")]
         public JsonDomainDTO Domain { get; set; }
 
+        [JsonPropertyName("nullable")]
+        public bool Nullable { get; set; } = true;
+
         public FieldType GetFieldType()
         {
             switch (Type)

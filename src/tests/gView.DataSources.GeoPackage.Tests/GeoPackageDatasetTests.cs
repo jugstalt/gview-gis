@@ -109,6 +109,33 @@ public class GeoPackageDatasetTests : IDisposable
     }
 
     [Fact]
+    public async Task Fields_ReportNullabilityFromTableSchema()
+    {
+        using (var created = await CreateAsync(GeometryType.Point))
+        {
+        }
+        SQLiteConnection.ClearAllPools();
+
+        using (var connection = new SQLiteConnection($"Data Source={_path}"))
+        {
+            connection.Open();
+            using var command = connection.CreateCommand();
+            command.CommandText = "ALTER TABLE geo ADD COLUMN code TEXT NOT NULL DEFAULT ''";
+            command.ExecuteNonQuery();
+        }
+        SQLiteConnection.ClearAllPools();
+
+        using var dataset = new GeoPackageDataset();
+        await dataset.SetConnectionString(_path);
+        Assert.True(await dataset.Open(), dataset.LastErrorMessage);
+
+        var fc = await FcAsync(dataset);
+        Assert.True(fc.FindField("name")!.IsNullable);
+        Assert.False(fc.FindField("code")!.IsNullable);
+        Assert.False(fc.FindField(fc.IDFieldName)!.IsNullable);
+    }
+
+    [Fact]
     public async Task Elements_ListsFeatureClassWithGeometryTypeAndSrid()
     {
         using var dataset = await CreateAsync(GeometryType.Polygon, "areas");

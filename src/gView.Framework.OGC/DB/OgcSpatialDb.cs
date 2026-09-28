@@ -1448,6 +1448,8 @@ namespace gView.Framework.OGC.DB
         {
             return "select * from " + DbTableName(tableName);
         }
+        // Some providers (e.g. Npgsql) only fill AllowDBNull, IsKey, ... in GetSchemaTable() with CommandBehavior.KeyInfo
+        virtual public System.Data.CommandBehavior ReadSchemaCommandBehavior => System.Data.CommandBehavior.SchemaOnly;
         virtual public DbCommand SelectSpatialReferenceIds(OgcSpatialFeatureclass fc)
         {
             return null;

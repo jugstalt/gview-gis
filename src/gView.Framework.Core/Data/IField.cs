@@ -26,6 +26,7 @@
 
         bool visible { get; set; }
         bool IsRequired { get; }
+        bool IsNullable { get; }
         bool IsEditable { get; }
         object DefautValue { get; }
 

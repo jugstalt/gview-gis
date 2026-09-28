@@ -1,6 +1,7 @@
 using gView.Framework.Core.Data;
 using gView.Framework.Core.IO;
 using gView.Framework.Core.Common;
+using gView.Framework.Data.Extensions;
 using gView.Framework.Data.Metadata;
 using System;
 using System.ComponentModel;
@@ -13,7 +14,7 @@ namespace gView.Framework.Data
         protected string m_name, m_aliasname = "";
         protected FieldType m_type;
         protected int m_precision, m_size;
-        protected bool m_visible = true, m_isRequired = false, m_isEditable = true, _save_type = false;
+        protected bool m_visible = true, m_isRequired = false, m_isNullable = true, m_isEditable = true, _save_type = false;
         protected object m_defaultValue = null;
         protected IFieldDomain _domain = null;
         protected int _priority = -1;
@@ -53,6 +54,7 @@ namespace gView.Framework.Data
             m_precision = field.precision;
             m_size = field.size;
             m_isRequired = field.IsRequired;
+            m_isNullable = field.IsNullable;
             m_isEditable = field.IsEditable;
             m_defaultValue = field.DefautValue;
             _domain = field.Domain;
@@ -168,6 +170,7 @@ namespace gView.Framework.Data
 
             this.size = Convert.ToInt32(schemaRow["ColumnSize"]);
             this.precision = Convert.ToInt32(schemaRow["NumericPrecision"]);
+            this.IsNullable = schemaRow.IsNullableColumn();
         }
 
         // Sometimes is good to save the type. i.e Database Joins Fields
@@ -281,6 +284,14 @@ namespace gView.Framework.Data
         {
             get { return m_isRequired; }
             set { m_isRequired = value; }
+        }
+
+        // Column nullability from the database schema (not persisted, always read from the source)
+        [Browsable(false)]
+        public bool IsNullable
+        {
+            get { return m_isNullable; }
+            set { m_isNullable = value; }
         }
 
         [Browsable(false)]

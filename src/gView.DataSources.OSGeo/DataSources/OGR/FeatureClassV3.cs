@@ -42,7 +42,10 @@ namespace gView.DataSources.OGR
                 for (int i = 0; i < defn.GetFieldCount(); i++)
                 {
                     OSGeo_v3.OGR.FieldDefn fdefn = defn.GetFieldDefn(i);
-                    Field field = new Field(fdefn.GetName());
+                    Field field = new Field(fdefn.GetName())
+                    {
+                        IsNullable = fdefn.IsNullable() != 0
+                    };
 
                     switch (fdefn.GetFieldTypeName(fdefn.GetFieldType()).ToLower())
                     {

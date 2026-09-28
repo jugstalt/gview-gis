@@ -8,9 +8,6 @@ namespace gView.Interoperability.GeoServices.Rest.DTOs
         [JsonPropertyName("editable")]
         public bool Editable { get; set; }
 
-        [JsonPropertyName("nullable")]
-        public bool Nullable { get; set; }
-
         [JsonPropertyName("length")]
         public int Length { get; set; }
     }

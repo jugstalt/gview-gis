@@ -41,14 +41,16 @@ namespace gView.Interoperability.GeoServices.Dataset
                     {
                         fields.Add(new Field(jsonField.Name, fieldType, 1024)
                         {
-                            aliasname = jsonField.Alias ?? jsonField.Name
+                            aliasname = jsonField.Alias ?? jsonField.Name,
+                            IsNullable = jsonField.Nullable
                         });
                     }
                     else
                     {
                         fields.Add(new Field(jsonField.Name, fieldType)
                         {
-                            aliasname = jsonField.Alias ?? jsonField.Name
+                            aliasname = jsonField.Alias ?? jsonField.Name,
+                            IsNullable = jsonField.Nullable
                         });
                     }
 

@@ -1288,6 +1288,8 @@ public class GeoServicesRestController : BaseController
                     .Where(f => isJsonFeatureServiceLayer && f.name.EndsWith("()") ? false : true)  // FeatureServer => don't show functions line STArea, STLength, ... only supported with MapServer
                     .Select(f =>
                     {
+                        bool nullable = f.type != FieldType.ID && f.IsNullable && !f.IsRequired;
+
                         if (isJsonFeatureServiceLayer)
                         {
                             return new JsonFeatureLayerFieldDTO()
@@ -1296,7 +1298,7 @@ public class GeoServicesRestController : BaseController
                                 Alias = f.aliasname,
                                 Type = JsonFieldDTO.ToType(f.type).ToString(),
                                 Editable = f.type != FieldType.ID,
-                                Nullable = f.type != FieldType.ID,
+                                Nullable = nullable,
                                 Length = f.size
                             };
                         }
@@ -1306,7 +1308,8 @@ public class GeoServicesRestController : BaseController
                             {
                                 Name = f.name,
                                 Alias = f.aliasname,
-                                Type = JsonFieldDTO.ToType(f.type).ToString()
+                                Type = JsonFieldDTO.ToType(f.type).ToString(),
+                                Nullable = nullable
                             };
                         }
                     })

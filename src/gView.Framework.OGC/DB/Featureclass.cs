@@ -151,7 +151,7 @@ namespace gView.Framework.OGC.DB
                     command.Connection = dbConnection;
 
                     //NpgsqlCommand command = new NpgsqlCommand("select * from " + this.Name, connection);
-                    using (DbDataReader schemareader = await command.ExecuteReaderAsync(CommandBehavior.SchemaOnly))
+                    using (DbDataReader schemareader = await command.ExecuteReaderAsync(_dataset.ReadSchemaCommandBehavior))
                     {
                         DataTable schema = schemareader.GetSchemaTable();
 
@@ -168,7 +168,10 @@ namespace gView.Framework.OGC.DB
                                 foundId = true;
                                 _fields.Add(new Field(_idfield, FieldType.ID,
                                     Convert.ToInt32(row["ColumnSize"]),
-                                    Convert.ToInt32(row["NumericPrecision"])));
+                                    Convert.ToInt32(row["NumericPrecision"]))
+                                {
+                                    IsNullable = false
+                                });
                                 continue;
                             }
                             else if (row["ColumnName"].ToString() == _shapefield && foundShape == false)
@@ -178,22 +181,26 @@ namespace gView.Framework.OGC.DB
                                 continue;
                             }
 
-                            if (schema.Columns["IsIdentity"] != null && row["IsIdentity"] != null && (bool)row["IsIdentity"] == true)
+                            // An identity column only becomes the id field if none was found yet - otherwise
+                            // it is added as a regular field (not as a second ID field)
+                            if (foundId == false && schema.Columns["IsIdentity"] != null && row["IsIdentity"] is bool isIdentity && isIdentity)
                             {
-                                if (foundId == false)
-                                {
-                                    _idfield = row["ColumnName"].ToString();
-                                }
-
+                                _idfield = row["ColumnName"].ToString();
                                 foundId = true;
 
                                 _fields.Add(new Field(_idfield, FieldType.ID,
                                     Convert.ToInt32(row["ColumnSize"]),
-                                    Convert.ToInt32(row["NumericPrecision"])));
+                                    Convert.ToInt32(row["NumericPrecision"]))
+                                {
+                                    IsNullable = false
+                                });
                                 continue;
                             }
 
-                            Field field = new Field(row["ColumnName"].ToString());
+                            Field field = new Field(row["ColumnName"].ToString())
+                            {
+                                IsNullable = row.IsNullableColumn()
+                            };
                             if (row["DataType"] is Type)
                             {
                                 if ((Type)row["DataType"] == typeof(System.Int32))

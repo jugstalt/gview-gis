@@ -82,6 +82,10 @@ namespace gView.DataSources.PostGIS
             return base.SelectReadSchema(tableName) + " limit 0";
         }
 
+        // Npgsql reads AllowDBNull (pg_attribute.attnotnull) only with KeyInfo
+        public override System.Data.CommandBehavior ReadSchemaCommandBehavior
+            => System.Data.CommandBehavior.SchemaOnly | System.Data.CommandBehavior.KeyInfo;
+
         protected override object ShapeParameterValue(OgcSpatialFeatureclass fClass, 
                                                       IGeometry shape, 
                                                       int srid,
