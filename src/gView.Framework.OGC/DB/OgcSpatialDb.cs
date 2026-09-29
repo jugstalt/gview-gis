@@ -376,28 +376,11 @@ namespace gView.Framework.OGC.DB
 
         async virtual public Task<int> CreateFeatureClass(string dsname, string fcname, IGeometryDef geomDef, IFieldCollection Fields)
         {
-            DatasetNameCase nameCase = DatasetNameCase.ignore;
-            foreach (System.Attribute attribute in System.Attribute.GetCustomAttributes(this.GetType()))
-            {
-                if (attribute is UseDatasetNameCaseAttribute)
-                {
-                    nameCase = ((UseDatasetNameCaseAttribute)attribute).Value;
-                }
-            }
-            switch (nameCase)
-            {
-                case DatasetNameCase.lower:
-                case DatasetNameCase.classNameLower:
-                    fcname = fcname.ToLower();
-                    break;
-                case DatasetNameCase.upper:
-                case DatasetNameCase.classNameUpper:
-                    fcname = fcname.ToUpper();
-                    break;
-            }
+            DatasetNameCase nameCase = this.GetType().GetDatasetNameCase();
+            fcname = nameCase.ToClassName(fcname);
 
             StringBuilder sb = new StringBuilder();
-            sb.Append("CREATE TABLE " + fcname + " \n(\n");
+            sb.Append("CREATE TABLE " + DbTableName(fcname) + " \n(\n");
 
             Field idField = new Field(OgcDictionary("gid"), FieldType.ID);
             sb.Append(OgcDictionary("gid") + " ");
@@ -419,18 +402,7 @@ namespace gView.Framework.OGC.DB
                     continue;
                 }
 
-                string fieldName = field.name;
-                switch (nameCase)
-                {
-                    case DatasetNameCase.lower:
-                    case DatasetNameCase.classNameLower:
-                        fieldName = fieldName.ToLower();
-                        break;
-                    case DatasetNameCase.upper:
-                    case DatasetNameCase.classNameUpper:
-                        fieldName = fieldName.ToUpper();
-                        break;
-                }
+                string fieldName = nameCase.ToFieldName(field.name);
 
                 sb.Append(",\n");
                 sb.Append(DbColumnName(fieldName) + " ");
@@ -478,8 +450,8 @@ namespace gView.Framework.OGC.DB
                         await command.ExecuteNonQueryAsync();
                     }
 
-                    command.CommandText = AddGeometryColumn("",
-                                                            fcname,
+                    command.CommandText = AddGeometryColumn(GetTableDbSchemaName(fcname),
+                                                            GetTableDbName(fcname),
                                                             OgcDictionary("the_geom"),
                                                             geomDef,
                                                             geomTypeString);

@@ -276,11 +276,7 @@ namespace gView.DataSources.PostGIS
                         return schema;
                     }
 
-                    try
-                    {
-                        _tableDbSchema.Add(tableName, String.Empty);
-                    }
-                    catch { }
+                    // don't cache "not found": the table may be created later (CreateFeatureClass)
                     return String.Empty;
                 }
             }
