@@ -449,7 +449,7 @@ internal class LabelEngine2 : ILabelEngine, IDisposable
         try
         {
 
-            display.Canvas.DrawBitmap(_bitmap, new GraphicsEngine.CanvasPoint(0, 0));
+            display.Canvas.DrawBitmap(_bitmap!, new GraphicsEngine.CanvasPoint(0, 0));
 
             //_bm.Save(@"c:\temp\label.png", System.Drawing.Imaging.ImageFormat.Png);
         }

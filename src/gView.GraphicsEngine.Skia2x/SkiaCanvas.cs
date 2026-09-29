@@ -293,7 +293,7 @@ class SkiaCanvas : ICanvas
         return size;
     }
 
-    public float GetBaselineOffest(IFont font, string text, IDrawTextFormat? format)
+    public float GetBaselineOffest(IFont font, string text, IDrawTextFormat format)
     {
         if (format is null) return 0;
 

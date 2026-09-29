@@ -1,4 +1,4 @@
-#nullable enable
+﻿#nullable enable
 
 using gView.Framework.Core.Carto;
 using gView.Framework.Core.Common;
@@ -184,7 +184,7 @@ namespace gView.Framework.Symbology
 
         public bool SupportsGeometryType(GeometryType geomType) => geomType == GeometryType.Point || geomType == GeometryType.Multipoint;
 
-        public void Draw(IDisplay display, IGeometry geometry)
+        public void Draw(IDisplay? display, IGeometry geometry)
         {
             if (display != null && geometry is IPoint)
             {

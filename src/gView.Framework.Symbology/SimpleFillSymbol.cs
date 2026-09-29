@@ -77,7 +77,7 @@ namespace gView.Framework.Symbology
                 display.Canvas.SmoothingMode = (SmoothingMode)this.SmoothingMode;
             }
 
-            if (!_color.IsTransparent)
+            if (!_color.IsTransparent && _brush is not null)
             {
                 display.Canvas.FillPath(_brush, path);
             }

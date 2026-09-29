@@ -139,7 +139,7 @@ namespace gView.Framework.Symbology
 
         public void DrawPath(IDisplay display, IGraphicsPath path)
         {
-            if (path != null)
+            if (path is not null && _pen is not null)
             {
                 display.Canvas.SmoothingMode = (SmoothingMode)this.Smoothingmode;
                 display.Canvas.DrawPath(_pen, path);

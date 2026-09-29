@@ -124,6 +124,10 @@ namespace gView.Framework.Symbology
 
         public void FillPath(IDisplay display, IGraphicsPath path)
         {
+            if(_brush is null) 
+            {
+                return;
+            }
             if (_forecolor.A > 0 || _backcolor.A > 0)
             {
                 display.Canvas.FillPath(_brush, path);

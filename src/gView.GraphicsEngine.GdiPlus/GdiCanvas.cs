@@ -291,28 +291,28 @@ internal class GdiCanvas : ICanvas
     {
         CheckUsability();
 
-        _graphics.DrawString(text, (Font)font.EngineElement, (Brush)brush.EngineElement, point.ToGdiPoint(), (StringFormat)format?.EngineElement);
+        _graphics.DrawString(text, (Font)font.EngineElement, (Brush)brush.EngineElement, point.ToGdiPoint(), (StringFormat?)format?.EngineElement);
     }
 
     public void DrawText(string text, IFont font, IBrush brush, CanvasPointF pointF, IDrawTextFormat format)
     {
         CheckUsability();
 
-        _graphics.DrawString(text, (Font)font.EngineElement, (Brush)brush.EngineElement, pointF.ToGdiPointF(), (StringFormat)format?.EngineElement);
+        _graphics.DrawString(text, (Font)font.EngineElement, (Brush)brush.EngineElement, pointF.ToGdiPointF(), (StringFormat?)format?.EngineElement);
     }
 
     public void DrawText(string text, IFont font, IBrush brush, int x, int y, IDrawTextFormat format)
     {
         CheckUsability();
 
-        _graphics.DrawString(text, (Font)font.EngineElement, (Brush)brush.EngineElement, x, y, (StringFormat)format?.EngineElement);
+        _graphics.DrawString(text, (Font)font.EngineElement, (Brush)brush.EngineElement, x, y, (StringFormat?)format?.EngineElement);
     }
 
     public void DrawText(string text, IFont font, IBrush brush, float x, float y, IDrawTextFormat format)
     {
         CheckUsability();
 
-        _graphics.DrawString(text, (Font)font.EngineElement, (Brush)brush.EngineElement, x, y, (StringFormat)format?.EngineElement);
+        _graphics.DrawString(text, (Font)font.EngineElement, (Brush)brush.EngineElement, x, y, (StringFormat?)format?.EngineElement);
     }
 
     public CanvasSizeF MeasureText(string text, IFont font)
@@ -423,7 +423,7 @@ internal class GdiCanvas : ICanvas
         if (_graphics != null)
         {
             _graphics.Dispose();
-            _graphics = null;
+            _graphics = null!;
         }
     }
 
@@ -451,7 +451,7 @@ internal class GdiCanvas : ICanvas
         }
     }
 
-    private System.Drawing.Imaging.ImageAttributes CreateImageAttributes(float opacity)
+    private System.Drawing.Imaging.ImageAttributes? CreateImageAttributes(float opacity)
     {
         if (opacity >= 0 && opacity < 1f)
         {
