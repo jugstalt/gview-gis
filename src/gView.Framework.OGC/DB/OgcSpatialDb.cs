@@ -6,6 +6,7 @@ using gView.Framework.Core.FDB;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Core.IO;
 using gView.Framework.Data;
+using gView.Framework.Data.Extensions;
 using gView.Framework.Data.Filters;
 using gView.Framework.Data.Metadata;
 using gView.Framework.Db;
@@ -602,15 +603,6 @@ namespace gView.Framework.OGC.DB
         internal async Task<bool> InsertInternal(IFeatureClass fClass, List<IFeature> features, bool returnIds,
                                                  DbConnection sharedConnection, DbTransaction sharedTransaction)
         {
-            DatasetNameCase nameCase = DatasetNameCase.ignore;
-            foreach (System.Attribute attribute in System.Attribute.GetCustomAttributes(this.GetType()))
-            {
-                if (attribute is UseDatasetNameCaseAttribute)
-                {
-                    nameCase = ((UseDatasetNameCaseAttribute)attribute).Value;
-                }
-            }
-
             if (fClass == null)
             {
                 return false;
@@ -721,30 +713,21 @@ namespace gView.Framework.OGC.DB
 
                             foreach (IFieldValue fv in feature.Fields)
                             {
-                                string fvName = fv.Name;
-                                switch (nameCase)
-                                {
-                                    case DatasetNameCase.lower:
-                                    case DatasetNameCase.classNameLower:
-                                        fvName = fvName.ToLower();
-                                        break;
-                                    case DatasetNameCase.upper:
-                                    case DatasetNameCase.classNameUpper:
-                                        fvName = fvName.ToUpper();
-                                        break;
-                                }
-
-                                if (fvName == fClass.IDFieldName && HasManagedRowIds(fClass))
-                                {
-                                    continue;
-                                }
-                                if (fvName == fClass.ShapeFieldName)
-                                {
-                                    continue;
-                                }
-
-                                IField field = fClass.FindField(fvName);
+                                // resolve the real column name from the schema (feature field names may differ in case,
+                                // e.g. "NAME" for a column "name" created with DatasetNameCase.lower)
+                                IField field = fClass.FindFieldIgnoreCase(fv.Name);
                                 if (field == null)
+                                {
+                                    continue;
+                                }
+
+                                string fvName = field.name;
+
+                                if (fvName.Equals(fClass.IDFieldName, StringComparison.OrdinalIgnoreCase) && HasManagedRowIds(fClass))
+                                {
+                                    continue;
+                                }
+                                if (fvName.Equals(fClass.ShapeFieldName, StringComparison.OrdinalIgnoreCase))
                                 {
                                     continue;
                                 }
@@ -924,13 +907,16 @@ namespace gView.Framework.OGC.DB
 
                             foreach (IFieldValue fv in feature.Fields)
                             {
-                                if (fv.Name == fClass.IDFieldName || fv.Name == fClass.ShapeFieldName)
+                                IField field = fClass.FindFieldIgnoreCase(fv.Name);
+                                if (field == null)
                                 {
                                     continue;
                                 }
 
-                                IField field = fClass.FindField(fv.Name);
-                                if (field == null)
+                                string fvName = field.name;
+
+                                if (fvName.Equals(fClass.IDFieldName, StringComparison.OrdinalIgnoreCase) ||
+                                    fvName.Equals(fClass.ShapeFieldName, StringComparison.OrdinalIgnoreCase))
                                 {
                                     continue;
                                 }
@@ -948,9 +934,9 @@ namespace gView.Framework.OGC.DB
                                 object val = fv.Value;
 
                                 DbParameter parameter = this.ProviderFactory.CreateParameter();
-                                parameter.ParameterName = DbParameterName(fv.Name);
+                                parameter.ParameterName = DbParameterName(fvName);
                                 parameter.Value = ToDbParameterValue(fClass as OgcSpatialFeatureclass, field, field.TryConvertType(val)) ?? this.NullDbValue();
-                                fields.Append($"{DbColumnName(fv.Name)}={DbParameterName(fv.Name)}");
+                                fields.Append($"{DbColumnName(fvName)}={DbParameterName(fvName)}");
                                 command.Parameters.Add(parameter);
                             }
 

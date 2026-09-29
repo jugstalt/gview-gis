@@ -247,6 +247,41 @@ public class GeoPackageDatasetTests : IDisposable
         Assert.Equal("a", hits[0].FindField("name")!.Value!.ToString());
     }
 
+    [Theory]
+    [InlineData("A_TEXT")]
+    [InlineData("a_text")]
+    public async Task InsertUpdate_FieldNameCaseDiffersFromColumn_ValueIsWritten(string featureFieldName)
+    {
+        var dataset = new GeoPackageDataset();
+        Assert.True(dataset.Create(_path), dataset.LastErrorMessage);
+        await dataset.SetConnectionString(_path);
+        Assert.True(await dataset.Open(), dataset.LastErrorMessage);
+
+        var fields = new FieldCollection();
+        fields.Add(new Field("A_TEXT", FieldType.String) { size = 50 });
+        var geomDef = new GeometryDef(GeometryType.Point) { SpatialReference = SpatialReference.FromID("epsg:25832") };
+        Assert.Equal(0, await dataset.CreateFeatureClass("", "geo", geomDef, fields));
+
+        using (dataset)
+        {
+            var fc = await FcAsync(dataset);
+
+            var insert = new Feature { Shape = new Point(1, 2) };
+            insert.Fields.Add(new FieldValue(featureFieldName, "inserted"));
+            Assert.True(await dataset.Insert(fc, new List<IFeature> { insert }, returnIds: true), dataset.LastErrorMessage);
+
+            var read = (await DrainAsync(await dataset.Query(fc, new QueryFilter { SubFields = "*" }))).Single();
+            Assert.Equal("inserted", read.FindField("A_TEXT")!.Value!.ToString());
+
+            var update = new Feature { OID = insert.OID };
+            update.Fields.Add(new FieldValue(featureFieldName, "updated"));
+            Assert.True(await dataset.Update(fc, update), dataset.LastErrorMessage);
+
+            read = (await DrainAsync(await dataset.Query(fc, new QueryFilter { SubFields = "*" }))).Single();
+            Assert.Equal("updated", read.FindField("A_TEXT")!.Value!.ToString());
+        }
+    }
+
     [Fact]
     public async Task InsertUpdateDelete_KeepsRTreeInSync()
     {

@@ -2026,33 +2026,9 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
                         break;
                     case FieldType.Date:
                         object val = attributes[field.name];
-                        if (val is string)
+                        if (val is string dateString)
                         {
-                            if (val.ToString().Contains(" "))
-                            {
-                                val = DateTime.ParseExact(val.ToString(),
-                                    new string[]{
-                                        "dd.MM.yyyy HH:mm:ss",
-                                        "dd.MM.yyyy HH:mm",
-                                        "yyyy.MM.dd HH:mm:ss",
-                                        "yyyy.MM.dd HH:mm",
-                                        "yyyy-MM-dd HH:mm:ss",
-                                        "yyyy-MM-dd HH:mm"
-                                    },
-                                    System.Globalization.CultureInfo.InvariantCulture,
-                                    System.Globalization.DateTimeStyles.None);
-                            }
-                            else
-                            {
-                                val = DateTime.ParseExact(val.ToString(),
-                                    new string[]{
-                                        "dd.MM.yyyy",
-                                        "yyyy.MM.dd",
-                                        "yyyy-MM-dd"
-                                        },
-                                    System.Globalization.CultureInfo.InvariantCulture,
-                                    System.Globalization.DateTimeStyles.None);
-                            }
+                            val = dateString.ToEsriDateTime();
                         }
                         else if (val is long || val is int)
                         {
