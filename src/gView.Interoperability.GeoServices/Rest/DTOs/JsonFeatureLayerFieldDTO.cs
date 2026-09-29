@@ -5,9 +5,6 @@ namespace gView.Interoperability.GeoServices.Rest.DTOs
 {
     public class JsonFeatureLayerFieldDTO : JsonFieldDTO
     {
-        [JsonPropertyName("editable")]
-        public bool Editable { get; set; }
-
         [JsonPropertyName("length")]
         public int Length { get; set; }
     }

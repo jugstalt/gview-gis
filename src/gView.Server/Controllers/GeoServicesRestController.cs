@@ -1281,6 +1281,13 @@ public class GeoServicesRestController : BaseController
         }
         else // Featurelayer, Rasterlayer
         {
+            // statements allowed by the map's editor module for this layer
+            var editStatements = map.GetModule<gView.Plugins.Modules.EditorModule>()?
+                                    .GetEditLayer(datasetElement.ID)?
+                                    .Statements ?? Framework.Editor.Core.EditStatements.NONE;
+            bool classEditable = editStatements.HasFlag(Framework.Editor.Core.EditStatements.INSERT) ||
+                                 editStatements.HasFlag(Framework.Editor.Core.EditStatements.UPDATE);
+
             JsonFieldDTO[] fields = new JsonFieldDTO[0];
             if (datasetElement.Class is ITableClass)
             {
@@ -1289,6 +1296,7 @@ public class GeoServicesRestController : BaseController
                     .Select(f =>
                     {
                         bool nullable = f.type != FieldType.ID && f.IsNullable && !f.IsRequired;
+                        bool editable = classEditable && f.type != FieldType.ID && f.IsEditable && !f.name.Contains("(");
 
                         if (isJsonFeatureServiceLayer)
                         {
@@ -1297,7 +1305,7 @@ public class GeoServicesRestController : BaseController
                                 Name = f.name,
                                 Alias = f.aliasname,
                                 Type = JsonFieldDTO.ToType(f.type).ToString(),
-                                Editable = f.type != FieldType.ID,
+                                Editable = editable,
                                 Nullable = nullable,
                                 Length = f.size
                             };
@@ -1309,6 +1317,7 @@ public class GeoServicesRestController : BaseController
                                 Name = f.name,
                                 Alias = f.aliasname,
                                 Type = JsonFieldDTO.ToType(f.type).ToString(),
+                                Editable = editable,
                                 Nullable = nullable
                             };
                         }
@@ -1391,47 +1400,39 @@ public class GeoServicesRestController : BaseController
 
             if (result is JsonFeatureServerLayerDTO)
             {
-                var editorModule = map.GetModule<gView.Plugins.Modules.EditorModule>();
-                if (editorModule != null)
+                List<string> editOperations = new List<string>();
+                foreach (Framework.Editor.Core.EditStatements statement in Enum.GetValues(typeof(Framework.Editor.Core.EditStatements)))
                 {
-                    var editLayer = editorModule.GetEditLayer(result.Id);
-                    if (editLayer != null)
+                    if (statement != Framework.Editor.Core.EditStatements.NONE && editStatements.HasFlag(statement))
                     {
-                        List<string> editOperations = new List<string>();
-                        foreach (Framework.Editor.Core.EditStatements statement in Enum.GetValues(typeof(Framework.Editor.Core.EditStatements)))
-                        {
-                            if (statement != Framework.Editor.Core.EditStatements.NONE && editLayer.Statements.HasFlag(statement))
-                            {
-                                editOperations.Add(statement.ToString());
-                            }
-                        }
-
-                        if (editOperations.Count > 0)
-                        {
-                            var featureServerLayer = (JsonFeatureServerLayerDTO)result;
-                            featureServerLayer.IsEditable = true;
-                            featureServerLayer.EditOperations = editOperations.ToArray();
-                            featureServerLayer.SupportsRollbackOnFailureParameter = true;
-
-                            // ArcGIS style capabilities string, so clients (QGIS, ArcGIS Pro)
-                            // recognize the editing operations incl. applyEdits
-                            var caps = new List<string>() { "Query" };
-                            if (editLayer.Statements.HasFlag(Framework.Editor.Core.EditStatements.INSERT))
-                            {
-                                caps.Add("Create");
-                            }
-                            if (editLayer.Statements.HasFlag(Framework.Editor.Core.EditStatements.UPDATE))
-                            {
-                                caps.Add("Update");
-                            }
-                            if (editLayer.Statements.HasFlag(Framework.Editor.Core.EditStatements.DELETE))
-                            {
-                                caps.Add("Delete");
-                            }
-                            caps.Add("Editing");
-                            featureServerLayer.Capabilities = String.Join(",", caps);
-                        }
+                        editOperations.Add(statement.ToString());
                     }
+                }
+
+                if (editOperations.Count > 0)
+                {
+                    var featureServerLayer = (JsonFeatureServerLayerDTO)result;
+                    featureServerLayer.IsEditable = true;
+                    featureServerLayer.EditOperations = editOperations.ToArray();
+                    featureServerLayer.SupportsRollbackOnFailureParameter = true;
+
+                    // ArcGIS style capabilities string, so clients (QGIS, ArcGIS Pro)
+                    // recognize the editing operations incl. applyEdits
+                    var caps = new List<string>() { "Query" };
+                    if (editStatements.HasFlag(Framework.Editor.Core.EditStatements.INSERT))
+                    {
+                        caps.Add("Create");
+                    }
+                    if (editStatements.HasFlag(Framework.Editor.Core.EditStatements.UPDATE))
+                    {
+                        caps.Add("Update");
+                    }
+                    if (editStatements.HasFlag(Framework.Editor.Core.EditStatements.DELETE))
+                    {
+                        caps.Add("Delete");
+                    }
+                    caps.Add("Editing");
+                    featureServerLayer.Capabilities = String.Join(",", caps);
                 }
             }
 
