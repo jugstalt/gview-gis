@@ -5,6 +5,66 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 8.26.4001
+
+## Added
+
+- FDB SQLite: native SpatiaLite / GeoPackage geometry storage. A SQLite FDB file is then
+  also a valid SpatiaLite / GeoPackage (opens directly in QGIS / GDAL): `FDB_SHAPE` geometry
+  blob + SQLite R-Tree instead of the gView BinaryTree. The New-Dataset dialog offers
+  GeoPackage (default) / SpatiaLite / Classic, `CreateDatasetCommand -geometry_storage`
+  accepts `SpatiaLite | GeoPackage`, and DataExplorer shows the storage type plus a
+  "Rebuild spatial index" tool. The never-released WKB storage type was removed.
+- New project `gView.DataSources.GeoPackage`: GeoPackage datasource without `mod_spatialite`
+  (GPB geometry + gView-maintained R-Tree).
+- FDB: fast `ITableClass2.ExecuteCount` (SQL `COUNT`) for SpatiaLite / GeoPackage / PostGIS /
+  SqlServer storage, used by `returnCountOnly` queries.
+- GeoServices REST: layer fields report `nullable` (from the database schema, new
+  `IField.IsNullable`) and `editable` (layer allows INSERT/UPDATE in the editor module), for
+  MapServer and FeatureServer layers.
+- GeoServices REST: insert/update accept ISO 8601 date strings (`2024-05-17T10:30:15Z`,
+  `…+02:00`) in addition to epoch milliseconds and the existing text formats.
+- New test projects `gView.DataSources.PostGIS.Tests` and
+  `gView.Interoperability.GeoServices.Tests`.
+
+## Fixed
+
+- PostGIS / GeoServices REST: inserts dropped all attributes of tables with upper-case columns.
+  Insert/Update now resolve field names from the table schema (case-insensitive fallback)
+  instead of rewriting them per `UseDatasetNameCase`.
+- PostGIS / GeoServices REST: date columns.
+  - `time`, `timetz`, `datetimeoffset`, `DateOnly` columns are read as date fields (`real` as
+    float), all date/time values are returned as epoch milliseconds.
+  - Writing dates no longer fails with Npgsql's strict `DateTime.Kind` checks: values are
+    adapted to `timestamp` / `timestamptz` / `date` / `time` / `timetz` columns.
+  - New PostGIS date fields are created as `timestamp` (was `time`); pgFDB add/alter field
+    used the invalid type `datetime`.
+- PostGIS: `nullable` is read with `CommandBehavior.KeyInfo` (Npgsql only fills `AllowDBNull`
+  then); OGC DB schema reader tolerates `DBNull` in `IsIdentity` and no longer adds a second
+  ID field.
+- OGC DB `CreateFeatureClass`: `classNameLower/Upper` only changes the table name (columns
+  keep their case), `fieldNamesUpper/Lower` is applied; `CREATE TABLE` uses the quoted
+  `DbTableName`, `AddGeometryColumn` gets schema and table separately.
+- GeoServices REST (QGIS): FeatureServer spatial queries without `inSR` use the map's
+  display SRef (returned zero features before); MapServer `fullExtent` is reprojected into
+  the display SRef; ExportMap returns `extent.spatialReference` and no longer throws without
+  a `layers` parameter.
+- FDB SQLite: GeoPackage spatial queries were truncated under `LIMIT`;
+  `RepairNativeSpatialIndex` now refills the GeoPackage R-Tree.
+- SpatiaLite import: polygons repaired by `ST_MakeValid` keep only their polygon parts (were
+  dropped as `GEOMETRYCOLLECTION`).
+- FDB import: null geometry checks for PostgreSQL / SQLite / SqlServer.
+- DataExplorer: a newly created object appears without a manual refresh.
+- Carto: in the Scale Dependent (Label) Renderer and Feature Group Renderer property pages,
+  changes made through a modal dialog (e.g. symbol, rotation, label expression) were not
+  applied. The renderer items are now only rebuilt when the renderer instance changes, not on
+  every re-render. [Issue #45](https://github.com/jugstalt/gview-gis/issues/45)
+
+## Changed
+
+- `gView.Cmd`: exits with `2` on exception and `1` when the command fails (was always `0`);
+  exceptions are printed in red.
+
 ## 8.26.3602
 
 ## Added

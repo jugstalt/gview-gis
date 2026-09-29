@@ -20,6 +20,7 @@
 
     private IFeatureLayer? _layer;
     private FeatureGroupRenderer? _renderer;
+    private FeatureGroupRenderer? _initializedRenderer;
     private List<RendererGroupItem> _rendererItems = [];
 
     protected override Task OnParametersSetAsync() => HandleAsync(async () =>
@@ -35,6 +36,19 @@
         {
             _renderer = Instance as FeatureGroupRenderer;
         }
+
+        //
+        // Only (re)build the items when the renderer instance changes.
+        // OnParametersSet is also called on every re-render of the parent
+        // (eg. after closing a modal symbol dialog). Rebuilding here would
+        // replace the items with clones and edits on the currently
+        // edited item would get lost on Apply()
+        //
+        if (_renderer is null || _renderer == _initializedRenderer)
+        {
+            return;
+        }
+        _initializedRenderer = _renderer;
 
         if (_renderer?.RendererItems is not null)
         {
