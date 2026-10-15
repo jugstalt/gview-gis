@@ -88,6 +88,7 @@
     <ProjectReference Include="..\gView.Interoperability.ArcXML\gView.Interoperability.ArcXML.csproj" />
     <ProjectReference Include="..\gView.Interoperability.GeoServices\gView.Interoperability.GeoServices.csproj" />
     <ProjectReference Include="..\gView.Interoperability.OGC\gView.Interoperability.OGC.csproj" />
+    <ProjectReference Include="..\gView.Interoperability.OgcApi\gView.Interoperability.OgcApi.csproj" />
     <ProjectReference Include="..\gView.Interoperability.Server\gView.Interoperability.Server.csproj" />
     <ProjectReference Include="..\gView.Framework.Logging\gView.Framework.Logging.csproj" />
     <ProjectReference Include="..\gView.Framework.Calc\gView.Framework.Calc.csproj" />

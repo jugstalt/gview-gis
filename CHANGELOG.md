@@ -26,6 +26,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   `…+02:00`) in addition to epoch milliseconds and the existing text formats.
 - New test projects `gView.DataSources.PostGIS.Tests` and
   `gView.Interoperability.GeoServices.Tests`.
+- gView Server: OGC API - Features (read access) for every map service, new project
+  `gView.Interoperability.OgcApi` (docs: `src/docs/*/server/ogcapi.md`).
+  - Part 1 Core, Part 2 CRS by Reference, Part 3 Queryables + queryables as query parameters,
+    JSON/GeoJSON and HTML, OpenAPI 3.0 definition per service (`/api`, Swagger UI with `?f=html`).
+  - URLs `/ogcapi/{folder}/{service}/...` (`_` for the root folder), `/ogcapi` lists all
+    services. Feature layers are collections `c{layerId}`, the feature id is the OID.
+  - New access rule interface `_ogcapi` (+ `query` for features). Missing rights return real
+    `401` (with `WWW-Authenticate: Basic`) / `403` status codes.
+  - New marker interface `ISupportsQueryPaging` for feature classes that page natively
+    (PostGIS, SpatiaLite, GeoPackage, MSSql, FDB, MongoDb); other sources (e.g. Shape) are
+    paged by skipping records.
+- New test project `gView.Interoperability.OgcApi.Tests`.
 
 ## Fixed
 

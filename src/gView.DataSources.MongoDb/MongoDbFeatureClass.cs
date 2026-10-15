@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace gView.DataSources.MongoDb
 {
     [ImportFeaturesBufferSize(50)]
-    class MongoDbFeatureClass : IFeatureClass
+    class MongoDbFeatureClass : IFeatureClass, ISupportsQueryPaging
     {
         private MongoDbFeatureClass()
         {

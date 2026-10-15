@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace gView.Framework.OGC.DB
 {
-    public class OgcSpatialFeatureclass : IFeatureClass2, IDebugging
+    public class OgcSpatialFeatureclass : IFeatureClass2, IDebugging, ISupportsQueryPaging
     {
         protected string _name, _shapefield, _idfield;
         protected GeometryType _geomType;

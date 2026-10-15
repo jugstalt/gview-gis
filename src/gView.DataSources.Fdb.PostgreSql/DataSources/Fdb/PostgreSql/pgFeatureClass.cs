@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace gView.DataSources.Fdb.PostgreSql
 {
-    public class pgFeatureClass : IFeatureClass2, IRefreshable, IFeatureCursorRequiresWrapperForOrdering
+    public class pgFeatureClass : IFeatureClass2, IRefreshable, IFeatureCursorRequiresWrapperForOrdering, ISupportsQueryPaging
     {
         private pgFDB _fdb;
         private IDataset _dataset;

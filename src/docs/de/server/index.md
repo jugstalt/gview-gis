@@ -12,6 +12,7 @@ publiziert. Die Kartendienste bieten je nach Schnittstelle folgende Funktionalit
 **Inhalt**
 
    * [Konfiguration](config.md)
+   * [OGC API - Features](ogcapi.md)
    * [Installation](inst/installation.md)
 
 
