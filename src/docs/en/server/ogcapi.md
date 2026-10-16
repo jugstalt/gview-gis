@@ -1,11 +1,15 @@
-OGC API - Features
-==================
+OGC API
+=======
 
-gView Server publishes every map service as an *OGC API - Features* dataset as well
-(Part 1 Core, Part 2 CRS by Reference, Part 3 Queryables). Clients like QGIS, GDAL/OGR,
-ArcGIS Pro, OpenLayers or Leaflet can read the features without WMS/WFS or GeoServices REST.
+gView Server publishes every map service as an *OGC API* dataset as well:
 
-> Currently read access only. Editing (Part 4) and map images (OGC API - Maps) will follow.
+* *OGC API - Features* (Part 1 Core, Part 2 CRS by Reference, Part 3 Filtering/Queryables)
+* *OGC API - Maps* (Part 1: map images of the service and of single layers)
+
+Clients like QGIS, GDAL/OGR, ArcGIS Pro, OpenLayers or Leaflet can use the services without
+WMS/WFS or GeoServices REST.
+
+> Currently read access only. Editing (Features Part 4) will follow.
 
 URLs
 ----
@@ -22,6 +26,8 @@ URLs
 | Queryables | `.../collections/{collectionId}/queryables` |
 | Features | `.../collections/{collectionId}/items` |
 | Feature | `.../collections/{collectionId}/items/{featureId}` |
+| Map image of the service | `.../map` |
+| Map image of a layer | `.../collections/{collectionId}/map` |
 
 `{server}` is the configured `onlineresource-url`. Every resource is available as JSON
 (`?f=json`, GeoJSON for features) and HTML (`?f=html`). Without `f`, browsers get HTML.
@@ -29,9 +35,10 @@ URLs
 Collections
 -----------
 
-* Every visible feature layer of the map becomes a collection. The collection id is
+* Every visible feature and raster layer of the map becomes a collection. The collection id is
   `c{layerId}` (as in WMS/WFS), the title is the layer name in the table of contents.
-* Group layers, raster layers and layers inside *checkbox* group layers are not collections.
+* Feature layers have items and a map, raster layers only a map.
+* Group layers and layers inside *checkbox* group layers are not collections.
 * The feature id is the object id (OID) of the feature.
 * The properties are the visible fields of the layer (without OID and geometry).
 
@@ -74,6 +81,29 @@ Timestamps are compared in UTC. Comparisons with `DATE(...)` compare the date on
 Spatial and temporal operators (`S_INTERSECTS`, `T_AFTER`, ...), functions and `cql2-json`
 are not supported yet.
 
+Map images (OGC API - Maps)
+---------------------------
+
+`.../map` returns a map image of the service with the layers visible by default,
+`.../collections/{collectionId}/map` only that one layer. Scale limits of the layers apply as in WMS.
+
+| Parameter | Description |
+|---|---|
+| `bbox` | Map extent `minx,miny,maxx,maxy` in the axis order of `bbox-crs`. Default: extent of the service or layer |
+| `bbox-crs` | CRS of the `bbox`, default CRS84 (lon/lat) |
+| `crs` | CRS of the image, default: the CRS of the map |
+| `width`, `height` | Image size in pixels. A missing value is calculated from the aspect ratio. Without both: max. 1024 x 768 |
+| `scale-denominator` | Scale (instead of `width`/`height`, projected CRS only) |
+| `mm-per-pixel` | Display resolution, default 0.28 (about 90 dpi) |
+| `transparent` | `true`/`false`, default `false` |
+| `bgcolor` | Background color `0xRRGGBB`, default white |
+| `collections` | Only for `.../map`: the layers shown, e.g. `collections=c1,c4` |
+| `f` | `png` (default) or `jpg`, or via the `Accept` header |
+
+The image size is limited by `MaxImageWidth`/`MaxImageHeight` of the service. The response
+contains the headers `Content-Crs` and `Content-Bbox`. Supported CRS are the CRS of the map,
+the EPSG codes configured for the *WMS export* and CRS84.
+
 Coordinate reference systems
 ----------------------------
 
@@ -90,6 +120,7 @@ in the access rules of a service/folder, and additionally:
 
 * metadata (landing page, collections, ...): the interface only
 * features (`items`): `query`
+* map images (`map`): `map`
 
 Users can authenticate with HTTP Basic authentication (gView token users), a bearer token
 or `?token=...`. Requests without the required rights get `401` (with `WWW-Authenticate`)

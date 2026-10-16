@@ -1,5 +1,6 @@
 using gView.Interoperability.OgcApi.Extensions;
 using gView.Interoperability.OgcApi.Features;
+using gView.Interoperability.OgcApi.Maps;
 using System.Text.Json.Nodes;
 
 namespace gView.Interoperability.OgcApi.OpenApi;
@@ -13,13 +14,16 @@ internal static class OpenApiDocumentBuilder
     public static JsonObject Build(OgcApiFeatureService service)
     {
         var crsList = service.Map.SupportedCrs().Select(c => c.Uri).ToArray();
+        var mapCrsList = service.Map.SupportedMapCrs().Select(c => c.Uri).ToArray();
 
         var paths = new JsonObject()
         {
             ["/"] = Get("getLandingPage", "Landing page", "Landing page of the service", [Ref("f")], JsonOrHtml("landingPage")),
             ["/conformance"] = Get("getConformance", "Capabilities", "Conformance classes implemented by the server", [Ref("f")], JsonOrHtml("confClasses")),
             ["/api"] = Get("getApi", "Capabilities", "The API definition (OpenAPI 3.0)", [Ref("f")], OpenApiOrHtml()),
-            ["/collections"] = Get("getCollections", "Capabilities", "The feature collections of the service", [Ref("f")], JsonOrHtml("collections"))
+            ["/collections"] = Get("getCollections", "Capabilities", "The collections of the service", [Ref("f")], JsonOrHtml("collections")),
+            ["/map"] = Get("getDatasetMap", "Map", "Map image of the service",
+                MapParameters(datasetMap: true), ImageResponse())
         };
 
         foreach (var collection in service.CollectionLayers)
@@ -27,7 +31,14 @@ internal static class OpenApiDocumentBuilder
             string id = collection.Id;
             string path = $"/collections/{id}";
 
-            paths[path] = Get($"describe{id}Collection", collection.Title, $"Metadata of the feature collection '{collection.Title}'", [Ref("f")], JsonOrHtml("collection"));
+            paths[path] = Get($"describe{id}Collection", collection.Title, $"Metadata of the collection '{collection.Title}'", [Ref("f")], JsonOrHtml("collection"));
+            paths[$"{path}/map"] = Get($"get{id}Map", collection.Title, $"Map image of '{collection.Title}'", MapParameters(datasetMap: false), ImageResponse());
+
+            if (!collection.HasItems)
+            {
+                continue;
+            }
+
             paths[$"{path}/queryables"] = Get($"get{id}Queryables", collection.Title, $"Queryables of '{collection.Title}'", [Ref("f")], SchemaResponse());
 
             var itemsParameters = new JsonArray(Ref("limit"), Ref("offset"), Ref("bbox"), Ref("bbox-crs"), Ref("crs"), Ref("datetime"),
@@ -75,7 +86,7 @@ internal static class OpenApiDocumentBuilder
             ["paths"] = paths,
             ["components"] = new JsonObject()
             {
-                ["parameters"] = Parameters(crsList),
+                ["parameters"] = Parameters(crsList, mapCrsList),
                 ["schemas"] = Schemas()
             }
         };
@@ -123,6 +134,26 @@ internal static class OpenApiDocumentBuilder
             [OgcApiMediaTypes.Html] = new JsonObject() { ["schema"] = new JsonObject() { ["type"] = "string" } }
         });
 
+    private static JsonArray MapParameters(bool datasetMap)
+    {
+        var parameters = new JsonArray(Ref("map-bbox"), Ref("map-bbox-crs"), Ref("map-crs"), Ref("width"), Ref("height"),
+                                       Ref("scale-denominator"), Ref("mm-per-pixel"), Ref("transparent"), Ref("bgcolor"));
+        if (datasetMap)
+        {
+            parameters.Add(Ref("collections"));
+        }
+        parameters.Add(Ref("map-f"));
+
+        return parameters;
+    }
+
+    private static JsonObject ImageResponse()
+        => Responses(new JsonObject()
+        {
+            [OgcApiMediaTypes.Png] = new JsonObject() { ["schema"] = new JsonObject() { ["type"] = "string", ["format"] = "binary" } },
+            [OgcApiMediaTypes.Jpeg] = new JsonObject() { ["schema"] = new JsonObject() { ["type"] = "string", ["format"] = "binary" } }
+        });
+
     private static JsonObject SchemaResponse()
         => Responses(new JsonObject()
         {
@@ -159,9 +190,10 @@ internal static class OpenApiDocumentBuilder
 
     #region Components
 
-    private static JsonObject Parameters(string[] crsList)
+    private static JsonObject Parameters(string[] crsList, string[] mapCrsList)
     {
         JsonArray CrsEnum() => new JsonArray(crsList.Select(c => (JsonNode)JsonValue.Create(c)!).ToArray());
+        JsonArray MapCrsEnum() => new JsonArray(mapCrsList.Select(c => (JsonNode)JsonValue.Create(c)!).ToArray());
 
         return new JsonObject()
         {
@@ -223,6 +255,43 @@ internal static class OpenApiDocumentBuilder
                 ["format"] = "uri",
                 ["enum"] = CrsEnum(),
                 ["default"] = CrsReference.Crs84Uri
+            }),
+            ["map-bbox"] = QueryParameter("bbox", "The extent of the map (minx,miny,maxx,maxy in the axis order of bbox-crs), default: the extent of the data", new JsonObject()
+            {
+                ["type"] = "array",
+                ["minItems"] = 4,
+                ["maxItems"] = 6,
+                ["items"] = new JsonObject() { ["type"] = "number" }
+            }, explode: false),
+            ["map-bbox-crs"] = QueryParameter("bbox-crs", "The CRS of the bbox parameter", new JsonObject()
+            {
+                ["type"] = "string",
+                ["format"] = "uri",
+                ["enum"] = MapCrsEnum(),
+                ["default"] = CrsReference.Crs84Uri
+            }),
+            ["map-crs"] = QueryParameter("crs", "The CRS of the map, default: the CRS of the map service", new JsonObject()
+            {
+                ["type"] = "string",
+                ["format"] = "uri",
+                ["enum"] = MapCrsEnum()
+            }),
+            ["width"] = QueryParameter("width", "Width of the map in pixels", new JsonObject() { ["type"] = "integer", ["minimum"] = 1 }),
+            ["height"] = QueryParameter("height", "Height of the map in pixels", new JsonObject() { ["type"] = "integer", ["minimum"] = 1 }),
+            ["scale-denominator"] = QueryParameter("scale-denominator", "Scale of the map (without width/height, projected CRS only)", new JsonObject() { ["type"] = "number", ["exclusiveMinimum"] = 0 }),
+            ["mm-per-pixel"] = QueryParameter("mm-per-pixel", "Display resolution", new JsonObject() { ["type"] = "number", ["default"] = MapQuery.DefaultMmPerPixel }),
+            ["transparent"] = QueryParameter("transparent", "Transparent background", new JsonObject() { ["type"] = "boolean", ["default"] = false }),
+            ["bgcolor"] = QueryParameter("bgcolor", "Background color (0xRRGGBB)", new JsonObject() { ["type"] = "string", ["default"] = "0xFFFFFF" }),
+            ["collections"] = QueryParameter("collections", "The collections (layers) shown on the map, default: the default visible layers", new JsonObject()
+            {
+                ["type"] = "array",
+                ["items"] = new JsonObject() { ["type"] = "string" }
+            }, explode: false),
+            ["map-f"] = QueryParameter("f", "The image format", new JsonObject()
+            {
+                ["type"] = "string",
+                ["enum"] = new JsonArray("png", "jpg"),
+                ["default"] = "png"
             }),
             ["featureId"] = new JsonObject()
             {

@@ -64,7 +64,7 @@ public static class HtmlRenderer
         AppendBreadcrumb(sb, (serviceUrl, "Landing page"));
         AppendHeader(sb, "Collections", null);
 
-        sb.Append("<table class='table'><tr><th>Id</th><th>Title</th><th>Description</th><th>Items</th></tr>");
+        sb.Append("<table class='table'><tr><th>Id</th><th>Title</th><th>Description</th><th>Items</th><th>Map</th></tr>");
         foreach (var collection in collections.Items)
         {
             string collectionUrl = $"{serviceUrl}/collections/{Uri.EscapeDataString(collection.Id)}?f=html";
@@ -74,7 +74,8 @@ public static class HtmlRenderer
             sb.Append($"<td>{A(collectionUrl, collection.Id)}</td>");
             sb.Append($"<td>{E(collection.Title)}</td>");
             sb.Append($"<td>{E(collection.Description)}</td>");
-            sb.Append($"<td>{A(itemsLink?.Href, "items")}</td>");
+            sb.Append($"<td>{(itemsLink is null ? "" : A(itemsLink.Href, "items"))}</td>");
+            sb.Append($"<td>{A(collection.Links.FirstOrDefault(l => l.Rel == OgcApiRelations.Map)?.Href, "map")}</td>");
             sb.Append("</tr>");
         }
         sb.Append("</table>");
@@ -91,7 +92,7 @@ public static class HtmlRenderer
 
         sb.Append("<table class='table'>");
         sb.Append($"<tr><td>Id</td><td>{E(collection.Id)}</td></tr>");
-        sb.Append($"<tr><td>Item type</td><td>{E(collection.ItemType)}</td></tr>");
+        sb.Append($"<tr><td>Item type</td><td>{E(collection.ItemType ?? "map only")}</td></tr>");
         if (collection.Extent?.Spatial?.BBox?.FirstOrDefault() is double[] bbox)
         {
             sb.Append($"<tr><td>Extent (CRS84)</td><td>{E(String.Join(", ", bbox.Select(v => v.ToString("0.######", CultureInfo.InvariantCulture))))}</td></tr>");
@@ -99,6 +100,11 @@ public static class HtmlRenderer
         sb.Append($"<tr><td>Storage CRS</td><td>{E(collection.StorageCrs)}</td></tr>");
         sb.Append($"<tr><td>CRS</td><td>{String.Join("<br/>", (collection.Crs ?? []).Select(E))}</td></tr>");
         sb.Append("</table>");
+
+        if (collection.Links.FirstOrDefault(l => l.Rel == OgcApiRelations.Map) is Link mapLink)
+        {
+            sb.Append($"<p><img src='{E(mapLink.Href)}&width=800' alt='map' style='max-width:100%;border:1px solid #888' /></p>");
+        }
 
         AppendLinks(sb, collection.Links);
         return sb.ToString();

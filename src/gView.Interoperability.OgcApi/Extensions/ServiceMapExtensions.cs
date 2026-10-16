@@ -11,8 +11,10 @@ internal static class ServiceMapExtensions
 {
     private static readonly Guid WfsExportMetadataGuid = new Guid("A2342AC5-9FD6-47a4-A25A-F684C375C895");
 
+    private static readonly Guid WmsExportMetadataGuid = new Guid("0F6317BC-38FD-41d3-8E1A-82AB1873C526");
+
     /// <summary>
-    /// Every visible TOC layer element with exactly one feature class becomes a collection.
+    /// Every visible TOC layer element with exactly one feature or raster layer becomes a collection.
     /// Layers inside checkbox-style group layers are hidden (same rule as the GeoJsonService).
     /// </summary>
     public static IEnumerable<OgcCollectionLayer> OgcCollectionLayers(this IServiceMap map)
@@ -33,16 +35,28 @@ internal static class ServiceMapExtensions
                 continue;
             }
 
-            if (tocElement.Layers[0] is IFeatureLayer featureLayer
+            var layer = tocElement.Layers[0];
+            string title = String.IsNullOrWhiteSpace(tocElement.Name) ? layer.Title : tocElement.Name;
+
+            if (layer is IFeatureLayer featureLayer
                 && featureLayer.Class is IFeatureClass featureClass)
             {
                 yield return new OgcCollectionLayer(
-                    featureLayer.ID,
-                    String.IsNullOrWhiteSpace(tocElement.Name) ? featureLayer.Title : tocElement.Name,
-                    map.GetLayerDescription(featureLayer.ID),
                     featureLayer,
-                    featureClass,
+                    title,
+                    map.GetLayerDescription(featureLayer.ID),
+                    featureClass.Envelope,
                     featureClass.SpatialReference ?? map.LayerDefaultSpatialReference);
+            }
+            else if (layer is IRasterLayer rasterLayer
+                     && rasterLayer.Class is IRasterClass rasterClass)
+            {
+                yield return new OgcCollectionLayer(
+                    rasterLayer,
+                    title,
+                    map.GetLayerDescription(rasterLayer.ID),
+                    rasterClass.Polygon?.Envelope,
+                    rasterClass.SpatialReference ?? map.LayerDefaultSpatialReference);
             }
         }
     }
@@ -50,6 +64,47 @@ internal static class ServiceMapExtensions
     public static OgcCollectionLayer GetOgcCollectionLayer(this IServiceMap map, string collectionId)
         => map.OgcCollectionLayers().FirstOrDefault(c => c.Id == collectionId)
            ?? throw OgcApiException.NotFound($"Unknown collection '{collectionId}'");
+
+    /// <summary>
+    /// Items, queryables, ... only exist for feature collections
+    /// </summary>
+    public static OgcCollectionLayer GetOgcFeatureCollectionLayer(this IServiceMap map, string collectionId)
+    {
+        var collection = map.GetOgcCollectionLayer(collectionId);
+        return collection.HasItems
+            ? collection
+            : throw OgcApiException.NotFound($"Collection '{collectionId}' has no features");
+    }
+
+    /// <summary>
+    /// The map CRS + the EPSG codes configured for the WMS export of the service
+    /// </summary>
+    public static IReadOnlyList<CrsReference> SupportedMapCrs(this IServiceMap map)
+    {
+        var result = new List<CrsReference>();
+
+        void Add(CrsReference crs)
+        {
+            if (!result.Contains(crs))
+            {
+                result.Add(crs);
+            }
+        }
+
+        if (map.Display?.SpatialReference?.EpsgCode > 0)
+        {
+            Add(CrsReference.FromEpsg(map.Display.SpatialReference.EpsgCode));
+        }
+
+        foreach (var epsgCode in map.ExportEpsgCodes(WmsExportMetadataGuid))
+        {
+            Add(CrsReference.FromEpsg(epsgCode));
+        }
+
+        Add(CrsReference.Crs84);
+
+        return result;
+    }
 
     /// <summary>
     /// CRS84 + the storage CRS + the EPSG codes configured for the WFS export of the service
@@ -71,7 +126,7 @@ internal static class ServiceMapExtensions
             Add(CrsReference.FromEpsg(collection.SpatialReference.EpsgCode));
         }
 
-        foreach (var epsgCode in map.WfsExportEpsgCodes())
+        foreach (var epsgCode in map.ExportEpsgCodes(WfsExportMetadataGuid))
         {
             Add(CrsReference.FromEpsg(epsgCode));
         }
@@ -79,9 +134,9 @@ internal static class ServiceMapExtensions
         return result;
     }
 
-    public static IEnumerable<int> WfsExportEpsgCodes(this IServiceMap map)
+    public static IEnumerable<int> ExportEpsgCodes(this IServiceMap map, Guid exportMetadataGuid)
     {
-        var codes = (map.MetadataProvider(WfsExportMetadataGuid) as IEpsgMetadata)?.EpsgCodes;
+        var codes = (map.MetadataProvider(exportMetadataGuid) as IEpsgMetadata)?.EpsgCodes;
 
         if (codes is null || codes.Length == 0)
         {

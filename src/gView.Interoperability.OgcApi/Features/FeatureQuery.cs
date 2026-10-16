@@ -71,7 +71,8 @@ internal static class FeatureQuery
 
     public static async Task<OgcFeature> QueryItemAsync(IServiceMap map, OgcCollectionLayer collection, string featureId, CrsReference crs)
     {
-        var featureClass = collection.FeatureClass;
+        var featureClass = collection.FeatureClass
+            ?? throw OgcApiException.NotFound($"Collection '{collection.Id}' has no features");
 
         if (String.IsNullOrEmpty(featureClass.IDFieldName)
             || !long.TryParse(featureId, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out long oid))
@@ -102,7 +103,8 @@ internal static class FeatureQuery
                 int offset,
                 int take)
     {
-        var featureClass = collection.FeatureClass;
+        var featureClass = collection.FeatureClass
+            ?? throw OgcApiException.NotFound($"Collection '{collection.Id}' has no features");
         var propertyFields = collection.PropertyFields.ToList();
         var datumTransformations = map.Display?.DatumTransformations;
         var outSref = outCrs.ToSpatialReference();

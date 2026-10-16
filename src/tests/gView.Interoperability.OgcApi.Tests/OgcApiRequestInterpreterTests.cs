@@ -23,6 +23,12 @@ public class OgcApiRequestInterpreterTests
         Assert.Equal(AccessTypes.Query, await RequiredAccessTypes(operation));
     }
 
+    [Fact]
+    public async Task RequiredAccessTypes_MapRequests_RequireMap()
+    {
+        Assert.Equal(AccessTypes.Map, await RequiredAccessTypes(OgcApiOperations.Map));
+    }
+
     [Theory]
     [InlineData(OgcApiOperations.LandingPage)]
     [InlineData(OgcApiOperations.Conformance)]

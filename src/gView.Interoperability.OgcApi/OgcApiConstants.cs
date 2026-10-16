@@ -7,6 +7,8 @@ public static class OgcApiMediaTypes
     public const string Html = "text/html";
     public const string OpenApiJson = "application/vnd.oai.openapi+json;version=3.0";
     public const string SchemaJson = "application/schema+json";
+    public const string Png = "image/png";
+    public const string Jpeg = "image/jpeg";
 }
 
 public static class OgcApiRelations
@@ -22,6 +24,7 @@ public static class OgcApiRelations
     public const string Next = "next";
     public const string Prev = "prev";
     public const string Queryables = "http://www.opengis.net/def/rel/ogc/1.0/queryables";
+    public const string Map = "http://www.opengis.net/def/rel/ogc/1.0/map";
 }
 
 public static class OgcApiConformance
@@ -49,6 +52,18 @@ public static class OgcApiConformance
     public const string Cql2CaseInsensitiveComparison = "http://www.opengis.net/spec/cql2/1.0/conf/case-insensitive-comparison";
     public const string Cql2PropertyProperty = "http://www.opengis.net/spec/cql2/1.0/conf/property-property";
 
+    public const string MapsCore = "http://www.opengis.net/spec/ogcapi-maps-1/1.0/conf/core";
+    public const string MapsDatasetMap = "http://www.opengis.net/spec/ogcapi-maps-1/1.0/conf/dataset-map";
+    public const string MapsCollectionMap = "http://www.opengis.net/spec/ogcapi-maps-1/1.0/conf/collection-map";
+    public const string MapsBackground = "http://www.opengis.net/spec/ogcapi-maps-1/1.0/conf/background";
+    public const string MapsCollectionsSelection = "http://www.opengis.net/spec/ogcapi-maps-1/1.0/conf/collections-selection";
+    public const string MapsScaling = "http://www.opengis.net/spec/ogcapi-maps-1/1.0/conf/scaling";
+    public const string MapsDisplayResolution = "http://www.opengis.net/spec/ogcapi-maps-1/1.0/conf/display-resolution";
+    public const string MapsSpatialSubsetting = "http://www.opengis.net/spec/ogcapi-maps-1/1.0/conf/spatial-subsetting";
+    public const string MapsCrs = "http://www.opengis.net/spec/ogcapi-maps-1/1.0/conf/crs";
+    public const string MapsPng = "http://www.opengis.net/spec/ogcapi-maps-1/1.0/conf/png";
+    public const string MapsJpeg = "http://www.opengis.net/spec/ogcapi-maps-1/1.0/conf/jpeg";
+
     public static readonly string[] All =
     [
         CommonCore,
@@ -70,6 +85,17 @@ public static class OgcApiConformance
         Cql2Basic,
         Cql2AdvancedComparisonOperators,
         Cql2CaseInsensitiveComparison,
-        Cql2PropertyProperty
+        Cql2PropertyProperty,
+        MapsCore,
+        MapsDatasetMap,
+        MapsCollectionMap,
+        MapsBackground,
+        MapsCollectionsSelection,
+        MapsScaling,
+        MapsDisplayResolution,
+        MapsSpatialSubsetting,
+        MapsCrs,
+        MapsPng,
+        MapsJpeg
     ];
 }

@@ -78,7 +78,7 @@ public class Collection
     public Extent? Extent { get; set; }
 
     [JsonPropertyName("itemType")]
-    public string ItemType { get; set; } = "feature";
+    public string? ItemType { get; set; } = "feature";
 
     [JsonPropertyName("crs")]
     public string[]? Crs { get; set; }

@@ -42,6 +42,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   property-property), `AND`/`OR`/`NOT`, `IS NULL`, `LIKE`, `BETWEEN`, `IN`, `CASEI`,
   `DATE(...)`/`TIMESTAMP(...)` and boolean literals. Property filter query parameters use the
   same translation and now also support date and boolean fields.
+- OGC API - Maps (Part 1): `/map` (service, `collections=` selects layers) and
+  `/collections/{id}/map` with `bbox`/`bbox-crs`, `crs`, `width`/`height`, `scale-denominator`,
+  `mm-per-pixel`, `transparent`, `bgcolor`, PNG/JPEG and `Content-Crs`/`Content-Bbox` headers.
+  Raster layers are now collections too (map only). New access type `map` for the `_ogcapi` interface.
+- New `MapImageRenderer` (`gView.Interoperability.Extensions`): the map image rendering of
+  WMS GetMap, now shared by WMS and OGC API - Maps.
 - New interface `ISupportsSqlDialect` (`SqlDialect` PostgreSql / SqlServer / SQLite) on PostGIS,
   MSSql, SpatiaLite, GeoPackage and FDB feature classes, used to write dialect specific date and
   boolean literals.

@@ -12,7 +12,7 @@ Depending on the interface, the card services offer the following functionality:
 **Table of contents**
 
    * [Configuration](config.md)
-   * [OGC API - Features](ogcapi.md)
+   * [OGC API](ogcapi.md)
    * [Installation](inst/installation.md)
 
 

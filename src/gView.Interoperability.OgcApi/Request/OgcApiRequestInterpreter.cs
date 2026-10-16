@@ -37,6 +37,7 @@ public class OgcApiRequestInterpreter : IServiceRequestInterpreter
         {
             OgcApiOperations.Items => AccessTypes.Query,
             OgcApiOperations.Item => AccessTypes.Query,
+            OgcApiOperations.Map => AccessTypes.Map,
             _ => AccessTypes.None   // metadata resources only require the interface itself
         };
 }

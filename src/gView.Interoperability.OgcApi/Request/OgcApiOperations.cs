@@ -14,4 +14,5 @@ public static class OgcApiOperations
     public const string Queryables = "queryables";
     public const string Items = "items";
     public const string Item = "item";
+    public const string Map = "map";
 }

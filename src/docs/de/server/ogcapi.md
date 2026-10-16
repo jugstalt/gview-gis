@@ -1,11 +1,15 @@
-OGC API - Features
-==================
+OGC API
+=======
 
-Der gView Server stellt jeden Kartendienst zusätzlich als *OGC API - Features* Datensatz
-bereit (Part 1 Core, Part 2 CRS by Reference, Part 3 Queryables). Clients wie QGIS, GDAL/OGR,
-ArcGIS Pro, OpenLayers oder Leaflet können die Features damit ohne WMS/WFS oder GeoServices REST lesen.
+Der gView Server stellt jeden Kartendienst zusätzlich als *OGC API* Datensatz bereit:
 
-> Derzeit nur lesender Zugriff. Editieren (Part 4) und Kartenbilder (OGC API - Maps) folgen.
+* *OGC API - Features* (Part 1 Core, Part 2 CRS by Reference, Part 3 Filtering/Queryables)
+* *OGC API - Maps* (Part 1: Kartenbilder des Dienstes und einzelner Layer)
+
+Clients wie QGIS, GDAL/OGR, ArcGIS Pro, OpenLayers oder Leaflet können die Dienste damit ohne
+WMS/WFS oder GeoServices REST nutzen.
+
+> Derzeit nur lesender Zugriff. Editieren (Features Part 4) folgt.
 
 URLs
 ----
@@ -22,6 +26,8 @@ URLs
 | Queryables | `.../collections/{collectionId}/queryables` |
 | Features | `.../collections/{collectionId}/items` |
 | Feature | `.../collections/{collectionId}/items/{featureId}` |
+| Kartenbild des Dienstes | `.../map` |
+| Kartenbild eines Layers | `.../collections/{collectionId}/map` |
 
 `{server}` ist die konfigurierte `onlineresource-url`. Alle Ressourcen gibt es als JSON
 (`?f=json`, für Features GeoJSON) und HTML (`?f=html`). Ohne `f` bekommen Browser HTML.
@@ -29,9 +35,10 @@ URLs
 Collections
 -----------
 
-* Jeder sichtbare Feature-Layer der Karte wird eine Collection. Die Collection-Id ist
+* Jeder sichtbare Feature- und Rasterlayer der Karte wird eine Collection. Die Collection-Id ist
   `c{layerId}` (wie bei WMS/WFS), der Titel ist der Layername im Inhaltsverzeichnis.
-* Gruppenlayer, Rasterlayer und Layer in *Checkbox*-Gruppenlayern sind keine Collections.
+* Feature-Layer haben Items und ein Kartenbild, Rasterlayer nur ein Kartenbild.
+* Gruppenlayer und Layer in *Checkbox*-Gruppenlayern sind keine Collections.
 * Die Feature-Id ist die Objekt-Id (OID) des Features.
 * Die Properties sind die sichtbaren Felder des Layers (ohne OID und Geometrie).
 
@@ -74,6 +81,29 @@ Zeitstempel werden in UTC verglichen. Vergleiche mit `DATE(...)` vergleichen nur
 Räumliche und zeitliche Operatoren (`S_INTERSECTS`, `T_AFTER`, ...), Funktionen und
 `cql2-json` werden noch nicht unterstützt.
 
+Kartenbilder (OGC API - Maps)
+-----------------------------
+
+`.../map` liefert ein Kartenbild des Dienstes mit den standardmäßig sichtbaren Layern,
+`.../collections/{collectionId}/map` nur den einen Layer. Maßstabsgrenzen der Layer gelten wie beim WMS.
+
+| Parameter | Beschreibung |
+|---|---|
+| `bbox` | Kartenausschnitt `minx,miny,maxx,maxy` in der Achsenreihenfolge von `bbox-crs`. Standard: Ausdehnung des Dienstes bzw. Layers |
+| `bbox-crs` | Koordinatensystem der `bbox`, Standard CRS84 (lon/lat) |
+| `crs` | Koordinatensystem des Bildes, Standard: Koordinatensystem der Karte |
+| `width`, `height` | Bildgröße in Pixel. Fehlt ein Wert, wird er aus dem Seitenverhältnis berechnet. Ohne beide: max. 1024 x 768 |
+| `scale-denominator` | Maßstab (statt `width`/`height`, nur projizierte Koordinatensysteme) |
+| `mm-per-pixel` | Darstellungsauflösung, Standard 0.28 (ca. 90 dpi) |
+| `transparent` | `true`/`false`, Standard `false` |
+| `bgcolor` | Hintergrundfarbe `0xRRGGBB`, Standard weiß |
+| `collections` | Nur für `.../map`: die angezeigten Layer, z.B. `collections=c1,c4` |
+| `f` | `png` (Standard) oder `jpg`, alternativ über den `Accept`-Header |
+
+Die Bildgröße wird durch `MaxImageWidth`/`MaxImageHeight` des Dienstes begrenzt. Die Antwort
+enthält die Header `Content-Crs` und `Content-Bbox`. Unterstützte Koordinatensysteme sind das
+der Karte, die für den *WMS-Export* eingestellten EPSG-Codes und CRS84.
+
 Koordinatensysteme
 ------------------
 
@@ -90,6 +120,7 @@ Dienstes/Ordners die Schnittstelle `_ogcapi` (oder `_all`) und zusätzlich:
 
 * Metadaten (Landing Page, Collections, ...): nur die Schnittstelle
 * Features (`items`): `query`
+* Kartenbilder (`map`): `map`
 
 Anmelden können sich Benutzer mit HTTP Basic Authentication (gView Token-User), einem
 Bearer-Token oder `?token=...`. Anfragen ohne ausreichende Rechte bekommen `401`

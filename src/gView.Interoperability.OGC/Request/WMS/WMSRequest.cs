@@ -31,6 +31,7 @@ using System.Xml.Serialization;
 using System.Xml.XPath;
 using System.Xml.Xsl;
 using gView.Interoperability.Extensions;
+using gView.Interoperability.Extensions.Rendering;
 
 namespace gView.Interoperability.OGC
 {
@@ -618,86 +619,34 @@ namespace gView.Interoperability.OGC
                     }
 
                     ISpatialReference sRef = SpatialReference.FromID("epsg:" + _parameters.SRS);
-                    map.Display.SpatialReference = sRef;
 
-                    if (_parameters.Version == "1.3.0" && map.Display.SpatialReference != null)
+                    if (_parameters.Version == "1.3.0" && sRef != null)
                     {
                         IPoint ll = _parameters.BBOX.LowerLeft;
                         IPoint ur = _parameters.BBOX.UpperRight;
 
-                        ll = gView.Framework.OGC.GML.GeometryTranslator.Gml3Point(ll, map.Display.SpatialReference);
-                        ur = gView.Framework.OGC.GML.GeometryTranslator.Gml3Point(ur, map.Display.SpatialReference);
+                        ll = gView.Framework.OGC.GML.GeometryTranslator.Gml3Point(ll, sRef);
+                        ur = gView.Framework.OGC.GML.GeometryTranslator.Gml3Point(ur, sRef);
 
                         _parameters.BBOX = new Envelope(ll, ur);
                     }
 
-                    map.Display.Dpi = _parameters.Dpi;
-                    map.Display.ImageWidth = _parameters.Width;
-                    map.Display.ImageHeight = _parameters.Height;
-                    map.ResizeImageSizeToMapServiceLimits();
-
-                    map.Display.Limit = _parameters.BBOX;
-                    map.Display.ZoomTo(_parameters.BBOX);
-
-                    if (_parameters.Transparent)
+                    var image = await map.RenderImageAsync(new MapImageRequest()
                     {
-                        map.Display.MakeTransparent = true;
-                        map.Display.TransparentColor = GraphicsEngine.ArgbColor.White;
-                    } 
-                    else
-                    {
-                        map.Display.MakeTransparent = false;
-                        map.Display.BackgroundColor = _parameters.BgColor;
-                    }
-                    
-                    map.BeforeRenderLayers += new BeforeRenderLayersEvent(map_BeforeRenderLayers);
-                    await map.Render();
+                        SpatialReference = sRef,
+                        BBox = _parameters.BBOX,
+                        Width = _parameters.Width,
+                        Height = _parameters.Height,
+                        Dpi = _parameters.Dpi,
+                        Transparent = _parameters.Transparent,
+                        BackgroundColor = _parameters.BgColor,
+                        Format = _parameters.GetImageFormat(),
+                        BeforeRenderLayers = map_BeforeRenderLayers
+                    });
 
-                    if (map.MapImage != null)
-                    {
-                        //
-                        // Zurück in das richtige Koordinatenfenster verzerren
-                        //
-                        double minx, miny, maxx, maxy;
-                        minx = _parameters.BBOX.MinX; miny = _parameters.BBOX.MinY;
-                        maxx = _parameters.BBOX.MaxX; maxy = _parameters.BBOX.MaxY;
-
-                        map.Display.World2Image(ref minx, ref miny);
-                        map.Display.World2Image(ref maxx, ref maxy);
-
-                        if ((int)Math.Round(minx) != 0 || (int)Math.Round(maxy) != 0 ||
-                            (int)Math.Round(maxx) != _parameters.Width || (int)Math.Round(miny) != _parameters.Height)
-                        {
-                            using (var bitmap = GraphicsEngine.Current.Engine.CreateBitmap(_parameters.Width, _parameters.Height))
-                            {
-                                using (var canvas = bitmap.CreateCanvas())
-                                {
-                                    var sourceRect = new GraphicsEngine.CanvasRectangleF((float)minx, (float)maxy, (float)Math.Abs(maxx - minx), (float)Math.Abs(miny - maxy));
-                                    canvas.DrawBitmap(map.MapImage,
-                                        new GraphicsEngine.CanvasRectangleF(0f, 0f, bitmap.Width, bitmap.Height),
-                                        sourceRect);
-                                }
-
-                                if (_parameters.Transparent)
-                                {
-                                    bitmap.MakeTransparent(GraphicsEngine.ArgbColor.White);
-                                }
-
-                                MemoryStream ms = new MemoryStream();
-                                bitmap.Save(ms, _parameters.GetImageFormat());
-                                return (ms.ToArray(), _parameters.GetContentType());
-                            }
-                        }
-                        else
-                        {
-                            MemoryStream ms = new MemoryStream();
-                            if (await map.SaveImage(ms, _parameters.GetImageFormat()) >= 0)
-                            {
-                                return (ms.ToArray(), _parameters.GetContentType());
-                            }
-                        }
-                    }
-                    return (null, String.Empty);
+                    return image != null
+                        ? (image, _parameters.GetContentType())
+                        : (null, String.Empty);
                 }
             }
 

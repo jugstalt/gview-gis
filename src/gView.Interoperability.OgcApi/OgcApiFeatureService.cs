@@ -12,7 +12,7 @@ namespace gView.Interoperability.OgcApi;
 /// OGC API - Features (Part 1, 2 and queryables of Part 3) resources of one map service.
 /// The service url is the landing page url, e.g. https://server/gview-server/ogcapi/folder/service
 /// </summary>
-public sealed class OgcApiFeatureService
+public sealed partial class OgcApiFeatureService
 {
     private const int MapDescriptionId = -1;  // gView.Framework.Cartography.Map.MapDescriptionId
 
@@ -38,6 +38,8 @@ public sealed class OgcApiFeatureService
 
     public OgcCollectionLayer GetCollectionLayer(string collectionId) => Map.GetOgcCollectionLayer(collectionId);
 
+    public OgcCollectionLayer GetFeatureCollectionLayer(string collectionId) => Map.GetOgcFeatureCollectionLayer(collectionId);
+
     public LandingPage GetLandingPage()
         => new LandingPage()
         {
@@ -50,7 +52,8 @@ public sealed class OgcApiFeatureService
                 new Link(ApiUrl.WithFormat("json"), OgcApiRelations.ServiceDesc, OgcApiMediaTypes.OpenApiJson, "The API definition"),
                 new Link(ApiUrl.WithFormat("html"), OgcApiRelations.ServiceDoc, OgcApiMediaTypes.Html, "The API documentation"),
                 new Link(ConformanceUrl.WithFormat("json"), OgcApiRelations.Conformance, OgcApiMediaTypes.Json, "Conformance classes"),
-                new Link(CollectionsUrl.WithFormat("json"), OgcApiRelations.Data, OgcApiMediaTypes.Json, "Feature collections")
+                new Link(CollectionsUrl.WithFormat("json"), OgcApiRelations.Data, OgcApiMediaTypes.Json, "Collections"),
+                new Link(MapUrl.WithFormat("png"), OgcApiRelations.Map, OgcApiMediaTypes.Png, "Map")
             ]
         };
 
@@ -90,7 +93,7 @@ public sealed class OgcApiFeatureService
     /// </summary>
     public JsonObject GetQueryables(string collectionId)
     {
-        var collection = GetCollectionLayer(collectionId);
+        var collection = GetFeatureCollectionLayer(collectionId);
         var properties = new JsonObject();
 
         foreach (var field in collection.Queryables)
@@ -121,7 +124,7 @@ public sealed class OgcApiFeatureService
 
     public async Task<ItemsResult> GetItemsAsync(string collectionId, IReadOnlyDictionary<string, string> parameters)
     {
-        var collection = GetCollectionLayer(collectionId);
+        var collection = GetFeatureCollectionLayer(collectionId);
         var query = ItemsQuery.Parse(
                         parameters,
                         collection,
@@ -171,7 +174,7 @@ public sealed class OgcApiFeatureService
 
     public async Task<ItemResult> GetItemAsync(string collectionId, string featureId, IReadOnlyDictionary<string, string> parameters)
     {
-        var collection = GetCollectionLayer(collectionId);
+        var collection = GetFeatureCollectionLayer(collectionId);
         var crs = CrsReference.Crs84;
 
         foreach (var parameter in parameters.Keys)
@@ -212,6 +215,15 @@ public sealed class OgcApiFeatureService
         string collectionId = collectionLayer.Id;
         var bbox = Crs84Extent(collectionLayer);
 
+        var links = new List<Link>();
+        if (collectionLayer.HasItems)
+        {
+            links.Add(new Link(ItemsUrl(collectionId).WithFormat("json"), OgcApiRelations.Items, OgcApiMediaTypes.GeoJson, "Items"));
+            links.Add(new Link(ItemsUrl(collectionId).WithFormat("html"), OgcApiRelations.Items, OgcApiMediaTypes.Html, "Items as HTML"));
+            links.Add(new Link(QueryablesUrl(collectionId).WithFormat("json"), OgcApiRelations.Queryables, OgcApiMediaTypes.SchemaJson, "Queryables"));
+        }
+        links.Add(new Link(CollectionMapUrl(collectionId).WithFormat("png"), OgcApiRelations.Map, OgcApiMediaTypes.Png, "Map"));
+
         return new Collection()
         {
             Id = collectionId,
@@ -220,45 +232,58 @@ public sealed class OgcApiFeatureService
             Extent = bbox is null
                 ? null
                 : new Extent() { Spatial = new SpatialExtent() { BBox = [bbox] } },
-            Crs = Map.SupportedCrs(collectionLayer).Select(c => c.Uri).ToArray(),
+            ItemType = collectionLayer.HasItems ? "feature" : null,
+            Crs = collectionLayer.HasItems
+                ? Map.SupportedCrs(collectionLayer).Select(c => c.Uri).ToArray()
+                : null,
             StorageCrs = collectionLayer.SpatialReference?.EpsgCode > 0
                 ? CrsReference.FromEpsg(collectionLayer.SpatialReference.EpsgCode).Uri
                 : null,
-            Links =
-            [
-                new Link(ItemsUrl(collectionId).WithFormat("json"), OgcApiRelations.Items, OgcApiMediaTypes.GeoJson, "Items"),
-                new Link(ItemsUrl(collectionId).WithFormat("html"), OgcApiRelations.Items, OgcApiMediaTypes.Html, "Items as HTML"),
-                new Link(QueryablesUrl(collectionId).WithFormat("json"), OgcApiRelations.Queryables, OgcApiMediaTypes.SchemaJson, "Queryables")
-            ]
+            Links = links
         };
     }
 
     private double[]? Crs84Extent(OgcCollectionLayer collectionLayer)
     {
+        var crs84Envelope = TransformExtent(
+                    collectionLayer.NativeExtent,
+                    collectionLayer.SpatialReference,
+                    CrsReference.Crs84.ToSpatialReference());
+
+        return crs84Envelope is null
+            ? null
+            : [crs84Envelope.MinX, crs84Envelope.MinY, crs84Envelope.MaxX, crs84Envelope.MaxY];
+    }
+
+    internal IEnvelope? TransformExtent(IEnvelope? envelope, ISpatialReference? from, ISpatialReference? to)
+    {
         try
         {
-            var envelope = collectionLayer.FeatureClass.Envelope;
-            if (envelope is null || collectionLayer.SpatialReference is null)
+            if (envelope is null || from is null || to is null)
             {
                 return null;
             }
 
-            using var transformer = GeometricTransformerFactory.Create(Map.Display?.DatumTransformations);
-            transformer.SetSpatialReferences(collectionLayer.SpatialReference, CrsReference.Crs84.ToSpatialReference());
+            IEnvelope? result = envelope;
+            if (from.EpsgCode != to.EpsgCode || from.EpsgCode == 0)
+            {
+                using var transformer = GeometricTransformerFactory.Create(Map.Display?.DatumTransformations);
+                transformer.SetSpatialReferences(from, to);
+                result = (transformer.Transform2D(envelope) as IGeometry)?.Envelope;
+            }
 
-            var crs84Envelope = (transformer.Transform2D(envelope) as IGeometry)?.Envelope;
-            if (crs84Envelope is null
-                || !double.IsFinite(crs84Envelope.MinX) || !double.IsFinite(crs84Envelope.MinY)
-                || !double.IsFinite(crs84Envelope.MaxX) || !double.IsFinite(crs84Envelope.MaxY))
+            if (result is null
+                || !double.IsFinite(result.MinX) || !double.IsFinite(result.MinY)
+                || !double.IsFinite(result.MaxX) || !double.IsFinite(result.MaxY))
             {
                 return null;
             }
 
-            return [crs84Envelope.MinX, crs84Envelope.MinY, crs84Envelope.MaxX, crs84Envelope.MaxY];
+            return result;
         }
         catch
         {
-            return null;  // the extent is optional
+            return null;  // extents are optional
         }
     }
 

@@ -5,43 +5,54 @@ using gView.Interoperability.OgcApi.Extensions;
 namespace gView.Interoperability.OgcApi.Features;
 
 /// <summary>
-/// A feature layer of a map service exposed as OGC API collection ("c{layerId}").
+/// A layer of a map service exposed as OGC API collection ("c{layerId}").
+/// Feature layers have items and a map, raster layers only a map.
 /// </summary>
 public sealed class OgcCollectionLayer
 {
     public const string IdPrefix = "c";
 
     public OgcCollectionLayer(
-                int layerId,
+                ILayer layer,
                 string title,
                 string? description,
-                IFeatureLayer featureLayer,
-                IFeatureClass featureClass,
+                IEnvelope? nativeExtent,
                 ISpatialReference? spatialReference)
     {
-        LayerId = layerId;
+        Layer = layer;
         Title = title;
         Description = description;
-        FeatureLayer = featureLayer;
-        FeatureClass = featureClass;
+        NativeExtent = nativeExtent;
         SpatialReference = spatialReference;
     }
 
     public static string ToCollectionId(int layerId) => $"{IdPrefix}{layerId}";
 
     public string Id => ToCollectionId(LayerId);
-    public int LayerId { get; }
+    public int LayerId => Layer.ID;
     public string Title { get; }
     public string? Description { get; }
-    public IFeatureLayer FeatureLayer { get; }
-    public IFeatureClass FeatureClass { get; }
+
+    public ILayer Layer { get; }
+    public IFeatureLayer? FeatureLayer => Layer as IFeatureLayer;
+    public IFeatureClass? FeatureClass => FeatureLayer?.Class as IFeatureClass;
 
     /// <summary>
-    /// The native spatial reference of the data (feature class or the map's layer default)
+    /// Feature collections have items, raster collections only a map
+    /// </summary>
+    public bool HasItems => FeatureClass is not null;
+
+    /// <summary>
+    /// The extent of the data in <see cref="SpatialReference"/>
+    /// </summary>
+    public IEnvelope? NativeExtent { get; }
+
+    /// <summary>
+    /// The native spatial reference of the data (layer class or the map's layer default)
     /// </summary>
     public ISpatialReference? SpatialReference { get; }
 
-    public string? FilterWhereClause => FeatureLayer.FilterQuery?.WhereClause;
+    public string? FilterWhereClause => FeatureLayer?.FilterQuery?.WhereClause;
 
     /// <summary>
     /// The visible attribute fields of the layer (no id, no geometry)
@@ -50,6 +61,11 @@ public sealed class OgcCollectionLayer
     {
         get
         {
+            if (FeatureLayer is null || FeatureClass is null)
+            {
+                return [];
+            }
+
             var fields = FeatureLayer.Fields is not null && FeatureLayer.Fields.Count > 0
                 ? FeatureLayer.Fields
                 : FeatureClass.Fields;

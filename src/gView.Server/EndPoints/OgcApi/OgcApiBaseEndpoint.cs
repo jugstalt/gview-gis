@@ -7,6 +7,7 @@ using gView.Framework.Core.Exceptions;
 using gView.Framework.Core.MapServer;
 using gView.Framework.Data.Extensions;
 using gView.Interoperability.OgcApi;
+using gView.Interoperability.OgcApi.Maps;
 using gView.Interoperability.OgcApi.Models;
 using gView.Interoperability.OgcApi.Request;
 using gView.Server.Services.MapServer;
@@ -97,11 +98,13 @@ public class OgcApiBaseEndpoint : IApiEndpoint
                 string folder,
                 string service,
                 string operation,
-                Func<OgcApiRequest, Task<IResult>> action)
+                Func<OgcApiRequest, Task<IResult>> action,
+                bool imageResponse = false)
     {
         try
         {
-            var format = GetFormat(httpContext.Request);
+            // image resources (map) parse f=png|jpg themselves
+            var format = imageResponse ? OgcApiFormat.Json : GetFormat(httpContext.Request);
 
             if (folder == Routes.RootFolder)
             {
@@ -177,6 +180,13 @@ public class OgcApiBaseEndpoint : IApiEndpoint
             request.HttpContext.Response.Headers["Content-Crs"] = $"<{contentCrs.Uri}>";
         }
         return Results.Bytes(content, contentType);
+    }
+
+    protected static IResult Image(OgcApiRequest request, MapResult map)
+    {
+        request.HttpContext.Response.Headers["Content-Crs"] = $"<{map.Crs.Uri}>";
+        request.HttpContext.Response.Headers["Content-Bbox"] = map.ContentBboxHeader;
+        return Results.Bytes(map.Image, map.ContentType);
     }
 
     protected static IResult Html(OgcApiRequest request, string title, string body, CrsReference? contentCrs = null)

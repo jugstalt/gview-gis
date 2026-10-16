@@ -17,4 +17,6 @@ internal class Routes
     public const string Queryables = $"{Collection}/queryables";
     public const string Items = $"{Collection}/items";
     public const string Item = $"{Items}/{{featureId}}";
+    public const string Map = $"{Service}/map";
+    public const string CollectionMap = $"{Collection}/map";
 }
