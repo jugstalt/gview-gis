@@ -415,6 +415,8 @@ namespace gView.DataSources.PostGIS
 
         public override string CaseInsensitivLikeOperator => "ilike";
 
+        public override SqlDialect SqlDialect => SqlDialect.PostgreSql;
+
         #endregion
     }
 }

@@ -62,10 +62,16 @@ public sealed class OgcCollectionLayer
     }
 
     /// <summary>
-    /// Fields usable as property filter query parameters (Part 3 queryables)
+    /// The SQL dialect of the where clauses (date/boolean literals)
+    /// </summary>
+    public SqlDialect SqlDialect
+        => (FeatureClass as ISupportsSqlDialect)?.SqlDialect ?? SqlDialect.Unknown;
+
+    /// <summary>
+    /// Fields usable in property filter query parameters and CQL2 filters (Part 3 queryables)
     /// </summary>
     public IEnumerable<IField> Queryables
-        => PropertyFields.Where(f => f.IsQueryableType());
+        => PropertyFields.Where(f => f.IsQueryableType(SqlDialect));
 
     public IField? FindQueryable(string name)
         => Queryables.FirstOrDefault(f => f.name == name);

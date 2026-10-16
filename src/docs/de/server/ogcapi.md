@@ -46,11 +46,33 @@ Abfrageparameter für Items
 | `bbox-crs` | Koordinatensystem der `bbox`, Standard CRS84 (lon/lat) |
 | `crs` | Koordinatensystem der Geometrien in der Antwort, Standard CRS84 (lon/lat) |
 | `datetime` | Wird akzeptiert, aber ignoriert (Layer haben noch keine Zeiteigenschaft) |
-| `{feld}={wert}` | Filter auf ein Queryable-Feld. `*` ist bei Textfeldern ein Platzhalter, z.B. `NAME=Gra*` |
+| `{feld}={wert}` | Filter auf ein Queryable-Feld. `*` ist bei Textfeldern ein Platzhalter, z.B. `NAME=Gra*`. Datum als `yyyy-MM-dd`, Boolean als `true`/`false` |
+| `filter` | CQL2-Text-Filter (siehe unten) |
+| `filter-lang` | Nur `cql2-text` (Standard) |
 
-Queryables sind alle sichtbaren Text- und Zahlenfelder des Layers. Datums- und
-Boolean-Felder können noch nicht gefiltert werden. Unbekannte Abfrageparameter führen
-zu `400 Bad Request`.
+Queryables sind alle sichtbaren Text- und Zahlenfelder des Layers. Datums- und Boolean-Felder
+sind nur Queryables, wenn der SQL-Dialekt der Datenquelle bekannt ist (PostGIS, MSSQL,
+SpatiaLite, GeoPackage, FDB). Unbekannte Abfrageparameter führen zu `400 Bad Request`.
+
+CQL2-Filter
+-----------
+
+Mit `filter` können Features über einen CQL2-Text-Ausdruck gefiltert werden (Part 3 Filtering), z.B.
+
+```
+filter=GEMEINDE LIKE 'Klagen%' OR (EINWOHNER > 10000 AND BEZIRK IN ('Villach', 'Spittal'))
+```
+
+Unterstützt werden:
+
+* Vergleiche `= <> < > <= >=` (auch zwischen zwei Feldern), `AND`, `OR`, `NOT`, Klammern
+* `IS [NOT] NULL`, `[NOT] LIKE` (`%`, `_`, Escape mit `\`), `[NOT] BETWEEN`, `[NOT] IN (...)`
+* Literale: Text `'...'`, Zahlen, `TRUE`/`FALSE`, `DATE('2024-05-17')`, `TIMESTAMP('2024-05-17T10:30:00Z')`
+* `CASEI(...)` für Vergleiche ohne Groß-/Kleinschreibung, z.B. `CASEI(NAME) LIKE CASEI('graz%')`
+
+Zeitstempel werden in UTC verglichen. Vergleiche mit `DATE(...)` vergleichen nur das Datum.
+Räumliche und zeitliche Operatoren (`S_INTERSECTS`, `T_AFTER`, ...), Funktionen und
+`cql2-json` werden noch nicht unterstützt.
 
 Koordinatensysteme
 ------------------

@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace gView.DataSources.Fdb.PostgreSql
 {
-    public class pgFeatureClass : IFeatureClass2, IRefreshable, IFeatureCursorRequiresWrapperForOrdering, ISupportsQueryPaging
+    public class pgFeatureClass : IFeatureClass2, IRefreshable, IFeatureCursorRequiresWrapperForOrdering, ISupportsQueryPaging, ISupportsSqlDialect
     {
         private pgFDB _fdb;
         private IDataset _dataset;
@@ -244,6 +244,8 @@ namespace gView.DataSources.Fdb.PostgreSql
         {
             get { return _dataset; }
         }
+
+        public SqlDialect SqlDialect => SqlDialect.PostgreSql;
         #endregion
 
         #region IGeometryDef Member

@@ -19,11 +19,12 @@ internal static class FieldExtensions
         => field.type is FieldType.Float or FieldType.Double;
 
     /// <summary>
-    /// Types that can be filtered with a provider independent SQL literal.
-    /// Date/boolean literals differ between the data sources and are not supported (yet).
+    /// Types that can be filtered. Date/boolean literals differ between the databases,
+    /// so these fields are only queryable if the SQL dialect of the data source is known.
     /// </summary>
-    public static bool IsQueryableType(this IField field)
-        => field.IsStringType() || field.IsIntegerType() || field.IsFloatingPointType();
+    public static bool IsQueryableType(this IField field, SqlDialect dialect)
+        => field.IsStringType() || field.IsIntegerType() || field.IsFloatingPointType()
+           || (dialect != SqlDialect.Unknown && field.type is FieldType.Date or FieldType.boolean);
 
     /// <summary>
     /// JSON schema type and format of a field, used for queryables and the OpenAPI schemas

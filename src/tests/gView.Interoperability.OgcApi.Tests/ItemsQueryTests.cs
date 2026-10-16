@@ -1,5 +1,6 @@
 using gView.Framework.Core.Data;
 using gView.Framework.Data;
+using gView.Interoperability.OgcApi.Cql2;
 using gView.Interoperability.OgcApi.Features;
 
 namespace gView.Interoperability.OgcApi.Tests;
@@ -34,42 +35,60 @@ public class ItemsQueryTests
         Assert.Equal(400, ex.StatusCode);
     }
 
+    private static string PropertyFilterSql(IField field, string value, SqlDialect dialect = SqlDialect.PostgreSql)
+        => new CqlSqlTranslator(name => name == field.name ? field : null, dialect)
+            .Translate(ItemsQuery.PropertyFilterPredicate(field, value));
+
     [Theory]
-    [InlineData("Graz", "NAME='Graz'")]
-    [InlineData("O'Brien", "NAME='O''Brien'")]
+    [InlineData("Graz", "NAME = 'Graz'")]
+    [InlineData("O'Brien", "NAME = 'O''Brien'")]
     [InlineData("Gr*", "NAME LIKE 'Gr%'")]
-    public void BuildFieldClause_StringField_EscapesAndSupportsWildcard(string value, string expected)
+    [InlineData("50%*", @"NAME LIKE '50\%%' ESCAPE '\'")]
+    public void PropertyFilter_StringField_EscapesAndSupportsWildcard(string value, string expected)
     {
         var field = new Field("NAME", FieldType.String);
 
-        Assert.Equal(expected, ItemsQuery.BuildFieldClause(field, value));
+        Assert.Equal(expected, PropertyFilterSql(field, value));
     }
 
     [Fact]
-    public void BuildFieldClause_IntegerField_WritesNumber()
+    public void PropertyFilter_IntegerField_WritesNumber()
     {
-        var field = new Field("EW", FieldType.integer);
-
-        Assert.Equal("EW=1200", ItemsQuery.BuildFieldClause(field, "1200"));
+        Assert.Equal("EW = 1200", PropertyFilterSql(new Field("EW", FieldType.integer), "1200"));
     }
 
     [Fact]
-    public void BuildFieldClause_DoubleField_WritesInvariantNumber()
+    public void PropertyFilter_DoubleField_WritesInvariantNumber()
     {
-        var field = new Field("AREA", FieldType.Double);
+        Assert.Equal("AREA = 12.5", PropertyFilterSql(new Field("AREA", FieldType.Double), "12.5"));
+    }
 
-        Assert.Equal("AREA=12.5", ItemsQuery.BuildFieldClause(field, "12.5"));
+    [Theory]
+    [InlineData(SqlDialect.PostgreSql, "ACTIVE = TRUE")]
+    [InlineData(SqlDialect.SqlServer, "ACTIVE = 1")]
+    [InlineData(SqlDialect.SQLite, "ACTIVE = 1")]
+    public void PropertyFilter_BooleanField_WritesDialectLiteral(SqlDialect dialect, string expected)
+    {
+        Assert.Equal(expected, PropertyFilterSql(new Field("ACTIVE", FieldType.boolean), "true", dialect));
+    }
+
+    [Fact]
+    public void PropertyFilter_DateField_ComparesDates()
+    {
+        Assert.Equal("date(D) = date('2024-05-17')", PropertyFilterSql(new Field("D", FieldType.Date), "2024-05-17", SqlDialect.SQLite));
     }
 
     [Theory]
     [InlineData(FieldType.integer, "12 or 1=1")]
     [InlineData(FieldType.integer, "1.5")]
     [InlineData(FieldType.Double, "abc")]
-    public void BuildFieldClause_InvalidNumber_ThrowsBadRequest(FieldType fieldType, string value)
+    [InlineData(FieldType.boolean, "yes")]
+    [InlineData(FieldType.Date, "17.05.2024")]
+    public void PropertyFilter_InvalidValue_ThrowsBadRequest(FieldType fieldType, string value)
     {
         var field = new Field("F", fieldType);
 
-        var ex = Assert.Throws<OgcApiException>(() => ItemsQuery.BuildFieldClause(field, value));
+        var ex = Assert.Throws<OgcApiException>(() => ItemsQuery.PropertyFilterPredicate(field, value));
         Assert.Equal(400, ex.StatusCode);
     }
 

@@ -38,6 +38,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     (PostGIS, SpatiaLite, GeoPackage, MSSql, FDB, MongoDb); other sources (e.g. Shape) are
     paged by skipping records.
 - New test project `gView.Interoperability.OgcApi.Tests`.
+- OGC API - Features: CQL2-Text filter (`filter`, Part 3 Filtering): comparisons (also
+  property-property), `AND`/`OR`/`NOT`, `IS NULL`, `LIKE`, `BETWEEN`, `IN`, `CASEI`,
+  `DATE(...)`/`TIMESTAMP(...)` and boolean literals. Property filter query parameters use the
+  same translation and now also support date and boolean fields.
+- New interface `ISupportsSqlDialect` (`SqlDialect` PostgreSql / SqlServer / SQLite) on PostGIS,
+  MSSql, SpatiaLite, GeoPackage and FDB feature classes, used to write dialect specific date and
+  boolean literals.
 
 ## Fixed
 

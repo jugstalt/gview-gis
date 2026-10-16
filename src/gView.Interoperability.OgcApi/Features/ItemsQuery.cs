@@ -1,7 +1,7 @@
 using gView.Framework.Core.Data;
+using gView.Interoperability.OgcApi.Cql2;
 using gView.Interoperability.OgcApi.Extensions;
 using System.Globalization;
-using System.Text;
 
 namespace gView.Interoperability.OgcApi.Features;
 
@@ -17,7 +17,9 @@ public sealed class ItemsQuery
     /// </summary>
     private static readonly string[] IgnoredParameters = ["token", "f"];
 
-    private static readonly string[] KnownParameters = ["limit", "offset", "bbox", "bbox-crs", "crs", "datetime"];
+    private static readonly string[] KnownParameters = ["limit", "offset", "bbox", "bbox-crs", "crs", "datetime", "filter", "filter-lang", "filter-crs"];
+
+    public const string FilterLanguage = "cql2-text";
 
     public int Limit { get; private set; } = DefaultLimit;
     public int Offset { get; private set; }
@@ -34,6 +36,11 @@ public sealed class ItemsQuery
     /// Property filters (queryable field name, raw value) - all combined with AND
     /// </summary>
     public IReadOnlyList<KeyValuePair<string, string>> PropertyFilters { get; private set; } = [];
+
+    /// <summary>
+    /// The CQL2 filter (Part 3), combined with the property filters by AND
+    /// </summary>
+    public CqlPredicate? Filter { get; private set; }
 
     public static ItemsQuery Parse(
                 IReadOnlyDictionary<string, string> parameters,
@@ -104,43 +111,70 @@ public sealed class ItemsQuery
             query.Datetime = datetime;  // accepted, but ignored: gView layers have no temporal property (yet)
         }
 
+        if (parameters.TryGetValue("filter-lang", out var filterLang) && filterLang != FilterLanguage)
+        {
+            throw OgcApiException.BadRequest($"Unsupported filter-lang '{filterLang}', only {FilterLanguage} is supported");
+        }
+
+        if (parameters.TryGetValue("filter-crs", out var filterCrs))
+        {
+            ParseSupportedCrs(filterCrs, supportedCrs, "filter-crs");  // no spatial predicates (yet) => only validated
+        }
+
+        if (parameters.TryGetValue("filter", out var filter))
+        {
+            query.Filter = CqlTextParser.Parse(filter);
+        }
+
         return query;
     }
 
     /// <summary>
-    /// Builds the SQL where clause for the property filters. Values are escaped, '*' is a wildcard for strings.
+    /// Builds the SQL where clause for the property filters and the CQL2 filter
     /// </summary>
-    public string BuildPropertyFilterWhereClause(OgcCollectionLayer collection)
+    public string BuildWhereClause(OgcCollectionLayer collection)
     {
-        var sb = new StringBuilder();
+        var predicates = PropertyFilters
+            .Select(p => PropertyFilterPredicate(
+                collection.FindQueryable(p.Key) ?? throw OgcApiException.BadRequest($"Unknown query parameter '{p.Key}'"),
+                p.Value))
+            .ToList();
 
-        foreach (var propertyFilter in PropertyFilters)
+        if (Filter is not null)
         {
-            var field = collection.FindQueryable(propertyFilter.Key)
-                ?? throw OgcApiException.BadRequest($"Unknown query parameter '{propertyFilter.Key}'");
-
-            if (sb.Length > 0)
-            {
-                sb.Append(" AND ");
-            }
-
-            sb.Append(BuildFieldClause(field, propertyFilter.Value));
+            predicates.Add(Filter);
         }
 
-        return sb.ToString();
+        if (predicates.Count == 0)
+        {
+            return "";
+        }
+
+        var translator = new CqlSqlTranslator(collection.FindQueryable, collection.SqlDialect);
+        return translator.Translate(predicates.Aggregate((left, right) => new CqlAnd(left, right)));
     }
 
     #region Helper
 
-    internal static string BuildFieldClause(IField field, string value)
+    /// <summary>
+    /// A property filter query parameter (?field=value) as CQL2 predicate. '*' is a wildcard for strings.
+    /// </summary>
+    internal static CqlPredicate PropertyFilterPredicate(IField field, string value)
     {
+        var property = new CqlProperty(field.name);
+
         if (field.IsStringType())
         {
-            string escaped = value.Replace("'", "''");
-
-            return escaped.Contains('*')
-                ? $"{field.name} LIKE '{escaped.Replace('*', '%')}'"
-                : $"{field.name}='{escaped}'";
+            if (value.Contains('*'))
+            {
+                string pattern = value
+                    .Replace("\\", "\\\\")
+                    .Replace("%", "\\%")
+                    .Replace("_", "\\_")
+                    .Replace('*', '%');
+                return new CqlLike(property, new CqlString(pattern), false);
+            }
+            return new CqlComparison("=", property, new CqlString(value));
         }
 
         if (field.IsIntegerType())
@@ -149,7 +183,7 @@ public sealed class ItemsQuery
             {
                 throw OgcApiException.BadRequest($"Value of '{field.name}' must be an integer");
             }
-            return $"{field.name}={longValue.ToString(CultureInfo.InvariantCulture)}";
+            return new CqlComparison("=", property, new CqlNumber(longValue));
         }
 
         if (field.IsFloatingPointType())
@@ -159,7 +193,29 @@ public sealed class ItemsQuery
             {
                 throw OgcApiException.BadRequest($"Value of '{field.name}' must be a number");
             }
-            return $"{field.name}={doubleValue.ToString("R", CultureInfo.InvariantCulture)}";
+            return new CqlComparison("=", property, new CqlNumber(doubleValue));
+        }
+
+        if (field.type == FieldType.boolean)
+        {
+            if (!bool.TryParse(value, out bool boolValue))
+            {
+                throw OgcApiException.BadRequest($"Value of '{field.name}' must be true or false");
+            }
+            return new CqlComparison("=", property, new CqlBoolean(boolValue));
+        }
+
+        if (field.type == FieldType.Date)
+        {
+            if (DateOnly.TryParseExact(value, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
+            {
+                return new CqlComparison("=", property, new CqlDate(date));
+            }
+            if (value.Contains('T') && DateTimeOffset.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var timestamp))
+            {
+                return new CqlComparison("=", property, new CqlTimestamp(timestamp.UtcDateTime));
+            }
+            throw OgcApiException.BadRequest($"Value of '{field.name}' must be a date (yyyy-MM-dd) or timestamp (RFC 3339)");
         }
 
         throw OgcApiException.BadRequest($"Property '{field.name}' can't be used as a filter");

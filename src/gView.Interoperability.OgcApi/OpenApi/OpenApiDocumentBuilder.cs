@@ -30,7 +30,8 @@ internal static class OpenApiDocumentBuilder
             paths[path] = Get($"describe{id}Collection", collection.Title, $"Metadata of the feature collection '{collection.Title}'", [Ref("f")], JsonOrHtml("collection"));
             paths[$"{path}/queryables"] = Get($"get{id}Queryables", collection.Title, $"Queryables of '{collection.Title}'", [Ref("f")], SchemaResponse());
 
-            var itemsParameters = new JsonArray(Ref("limit"), Ref("offset"), Ref("bbox"), Ref("bbox-crs"), Ref("crs"), Ref("datetime"), Ref("f"));
+            var itemsParameters = new JsonArray(Ref("limit"), Ref("offset"), Ref("bbox"), Ref("bbox-crs"), Ref("crs"), Ref("datetime"),
+                                                Ref("filter"), Ref("filter-lang"), Ref("filter-crs"), Ref("f"));
             foreach (var field in collection.Queryables)
             {
                 var (type, format) = field.ToJsonSchemaType();
@@ -205,6 +206,23 @@ internal static class OpenApiDocumentBuilder
             ["datetime"] = QueryParameter("datetime", "Temporal filter (accepted, but the collections have no temporal property)", new JsonObject()
             {
                 ["type"] = "string"
+            }),
+            ["filter"] = QueryParameter("filter", "CQL2-Text filter expression on the queryables, e.g. NAME LIKE 'Gr%' AND EW > 1000", new JsonObject()
+            {
+                ["type"] = "string"
+            }),
+            ["filter-lang"] = QueryParameter("filter-lang", "The language of the filter parameter", new JsonObject()
+            {
+                ["type"] = "string",
+                ["enum"] = new JsonArray(ItemsQuery.FilterLanguage),
+                ["default"] = ItemsQuery.FilterLanguage
+            }),
+            ["filter-crs"] = QueryParameter("filter-crs", "The CRS of geometries in the filter (no spatial predicates supported yet)", new JsonObject()
+            {
+                ["type"] = "string",
+                ["format"] = "uri",
+                ["enum"] = CrsEnum(),
+                ["default"] = CrsReference.Crs84Uri
             }),
             ["featureId"] = new JsonObject()
             {

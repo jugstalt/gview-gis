@@ -50,16 +50,12 @@ internal static class FeatureQuery
             filter = new QueryFilter();
         }
 
-        // only the request part is checked, the layer filter comes from the service configuration
-        string propertyFilterWhereClause = query.BuildPropertyFilterWhereClause(collection);
-        if (!String.IsNullOrEmpty(propertyFilterWhereClause))
-        {
-            propertyFilterWhereClause = propertyFilterWhereClause.CheckWhereClauseForSqlInjection();
-        }
-
+        // The request part is generated from the CQL2 syntax tree (queryable field names and
+        // literals written by the translator), so no further SQL injection check is needed.
+        // CheckWhereClauseForSqlInjection would also reject valid filters like "FLAG=TRUE" or "A=B".
         filter.WhereClause = CombineWhereClauses(
                     collection.FilterWhereClause,
-                    propertyFilterWhereClause);
+                    query.BuildWhereClause(collection));
 
         // fetch one more feature to know whether there is a next page
         var features = await QueryAsync(map, collection, filter, query.Crs, query.Offset, query.Limit + 1);

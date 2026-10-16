@@ -40,6 +40,14 @@ public static class OgcApiConformance
     public const string FeaturesCrs = "http://www.opengis.net/spec/ogcapi-features-2/1.0/conf/crs";
     public const string FeaturesQueryables = "http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/queryables";
     public const string FeaturesQueryablesQueryParameters = "http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/queryables-query-parameters";
+    public const string FeaturesFilter = "http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/filter";
+    public const string FeaturesFeaturesFilter = "http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/features-filter";
+
+    public const string Cql2Text = "http://www.opengis.net/spec/cql2/1.0/conf/cql2-text";
+    public const string Cql2Basic = "http://www.opengis.net/spec/cql2/1.0/conf/basic-cql2";
+    public const string Cql2AdvancedComparisonOperators = "http://www.opengis.net/spec/cql2/1.0/conf/advanced-comparison-operators";
+    public const string Cql2CaseInsensitiveComparison = "http://www.opengis.net/spec/cql2/1.0/conf/case-insensitive-comparison";
+    public const string Cql2PropertyProperty = "http://www.opengis.net/spec/cql2/1.0/conf/property-property";
 
     public static readonly string[] All =
     [
@@ -55,6 +63,13 @@ public static class OgcApiConformance
         FeaturesOas30,
         FeaturesCrs,
         FeaturesQueryables,
-        FeaturesQueryablesQueryParameters
+        FeaturesQueryablesQueryParameters,
+        FeaturesFilter,
+        FeaturesFeaturesFilter,
+        Cql2Text,
+        Cql2Basic,
+        Cql2AdvancedComparisonOperators,
+        Cql2CaseInsensitiveComparison,
+        Cql2PropertyProperty
     ];
 }

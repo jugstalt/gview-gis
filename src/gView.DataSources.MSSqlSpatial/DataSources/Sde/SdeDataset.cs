@@ -23,6 +23,8 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
     [RegisterPlugIn("F7394B37-1397-4914-B1D0-5A03B11D2949")]
     public class SdeDataset : gView.Framework.OGC.DB.OgcSpatialDataset
     {
+        public override SqlDialect SqlDialect => SqlDialect.SqlServer;
+
         protected DbProviderFactory _factory = null;
         protected IFormatProvider _nhi = System.Globalization.CultureInfo.InvariantCulture.NumberFormat;
 
