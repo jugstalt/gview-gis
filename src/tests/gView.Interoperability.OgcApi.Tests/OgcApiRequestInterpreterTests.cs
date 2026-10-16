@@ -23,6 +23,16 @@ public class OgcApiRequestInterpreterTests
         Assert.Equal(AccessTypes.Query, await RequiredAccessTypes(operation));
     }
 
+    [Theory]
+    [InlineData(OgcApiOperations.CreateItem)]
+    [InlineData(OgcApiOperations.ReplaceItem)]
+    [InlineData(OgcApiOperations.UpdateItem)]
+    [InlineData(OgcApiOperations.DeleteItem)]
+    public async Task RequiredAccessTypes_EditRequests_RequireEdit(string operation)
+    {
+        Assert.Equal(AccessTypes.Edit, await RequiredAccessTypes(operation));
+    }
+
     [Fact]
     public async Task RequiredAccessTypes_MapRequests_RequireMap()
     {
@@ -36,6 +46,7 @@ public class OgcApiRequestInterpreterTests
     [InlineData(OgcApiOperations.Collections)]
     [InlineData(OgcApiOperations.Collection)]
     [InlineData(OgcApiOperations.Queryables)]
+    [InlineData(OgcApiOperations.Options)]
     public async Task RequiredAccessTypes_MetadataRequests_RequireInterfaceOnly(string operation)
     {
         Assert.Equal(AccessTypes.None, await RequiredAccessTypes(operation));

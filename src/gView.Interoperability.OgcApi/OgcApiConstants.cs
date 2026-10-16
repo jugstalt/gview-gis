@@ -46,7 +46,11 @@ public static class OgcApiConformance
     public const string FeaturesFilter = "http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/filter";
     public const string FeaturesFeaturesFilter = "http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/features-filter";
 
-    public const string Cql2Text = "http://www.opengis.net/spec/cql2/1.0/conf/cql2-text";
+    public const string FeaturesCreateReplaceDelete = "http://www.opengis.net/spec/ogcapi-features-4/1.0/conf/create-replace-delete";
+    public const string FeaturesUpdate = "http://www.opengis.net/spec/ogcapi-features-4/1.0/conf/update";
+    public const string FeaturesFeatures = "http://www.opengis.net/spec/ogcapi-features-4/1.0/conf/features";
+
+    public const string Cql2Text ="http://www.opengis.net/spec/cql2/1.0/conf/cql2-text";
     public const string Cql2Basic = "http://www.opengis.net/spec/cql2/1.0/conf/basic-cql2";
     public const string Cql2AdvancedComparisonOperators = "http://www.opengis.net/spec/cql2/1.0/conf/advanced-comparison-operators";
     public const string Cql2CaseInsensitiveComparison = "http://www.opengis.net/spec/cql2/1.0/conf/case-insensitive-comparison";
@@ -81,6 +85,9 @@ public static class OgcApiConformance
         FeaturesQueryablesQueryParameters,
         FeaturesFilter,
         FeaturesFeaturesFilter,
+        FeaturesCreateReplaceDelete,
+        FeaturesUpdate,
+        FeaturesFeatures,
         Cql2Text,
         Cql2Basic,
         Cql2AdvancedComparisonOperators,

@@ -15,4 +15,9 @@ public static class OgcApiOperations
     public const string Items = "items";
     public const string Item = "item";
     public const string Map = "map";
+    public const string Options = "options";
+    public const string CreateItem = "createitem";
+    public const string ReplaceItem = "replaceitem";
+    public const string UpdateItem = "updateitem";
+    public const string DeleteItem = "deleteitem";
 }

@@ -15,7 +15,7 @@ namespace gView.Server.EndPoints.OgcApi;
 public class Items : OgcApiBaseEndpoint
 {
     public Items()
-        : base(Routes.Items, Handler, allowOptions: true)
+        : base(Routes.Items, Handler)
     {
     }
 

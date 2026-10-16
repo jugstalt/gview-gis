@@ -32,5 +32,5 @@ public class CollectionMap : OgcApiBaseEndpoint
 
                 return Image(request, map);
             },
-            imageResponse: true);
+            negotiateFormat: false);
 }

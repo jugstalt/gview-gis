@@ -37,11 +37,12 @@ public enum OgcApiFormat
 /// </summary>
 public class OgcApiRequest
 {
-    public OgcApiRequest(HttpContext httpContext, OgcApiFeatureService service, OgcApiFormat format)
+    public OgcApiRequest(HttpContext httpContext, OgcApiFeatureService service, OgcApiFormat format, AccessTypes accessTypes)
     {
         HttpContext = httpContext;
         Service = service;
         Format = format;
+        AccessTypes = accessTypes;
         Parameters = httpContext.Request.Query
             .ToDictionary(q => q.Key, q => q.Value.ToString());
     }
@@ -50,6 +51,27 @@ public class OgcApiRequest
     public OgcApiFeatureService Service { get; }
     public OgcApiFormat Format { get; }
     public IReadOnlyDictionary<string, string> Parameters { get; }
+
+    /// <summary>
+    /// The access types (map, query, edit) of the user for this service
+    /// </summary>
+    public AccessTypes AccessTypes { get; }
+
+    /// <summary>
+    /// Reads the GeoJSON body of a Part 4 request. Other content types (e.g. form data, which the
+    /// token middleware would consume) are rejected with 415.
+    /// </summary>
+    public async Task<string> ReadBodyAsync()
+    {
+        string contentType = HttpContext.Request.ContentType ?? "";
+        if (!contentType.Contains("json", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new OgcApiException(415, "UnsupportedMediaType", $"Content-Type '{contentType}' is not supported, use {OgcApiMediaTypes.GeoJson}");
+        }
+
+        using var reader = new System.IO.StreamReader(HttpContext.Request.Body);
+        return await reader.ReadToEndAsync();
+    }
 }
 
 public class OgcApiBaseEndpoint : IApiEndpoint
@@ -65,29 +87,18 @@ public class OgcApiBaseEndpoint : IApiEndpoint
 
     private readonly string _route;
     private readonly Delegate _delegate;
-    private readonly bool _allowOptions;
+    private readonly string _httpMethod;
 
-    protected OgcApiBaseEndpoint(string route, Delegate @delegate, bool allowOptions = false)
+    protected OgcApiBaseEndpoint(string route, Delegate @delegate, string httpMethod = "GET")
     {
         _route = route;
         _delegate = @delegate;
-        _allowOptions = allowOptions;
+        _httpMethod = httpMethod;
     }
 
     public void Register(IEndpointRouteBuilder app)
     {
-        app.MapGet(_route, _delegate);
-
-        if (_allowOptions)
-        {
-            // QGIS asks with OPTIONS which methods are allowed on items (Part 4).
-            // Read-only for now; CORS preflights are answered by the CORS middleware before.
-            app.MapMethods(_route, ["OPTIONS"], (HttpContext httpContext) =>
-            {
-                httpContext.Response.Headers.Allow = "GET, OPTIONS";
-                return Results.Ok();
-            });
-        }
+        app.MapMethods(_route, [_httpMethod], _delegate);
     }
 
     async static protected Task<IResult> HandleSecureAsync(
@@ -99,12 +110,12 @@ public class OgcApiBaseEndpoint : IApiEndpoint
                 string service,
                 string operation,
                 Func<OgcApiRequest, Task<IResult>> action,
-                bool imageResponse = false)
+                bool negotiateFormat = true)
     {
         try
         {
-            // image resources (map) parse f=png|jpg themselves
-            var format = imageResponse ? OgcApiFormat.Json : GetFormat(httpContext.Request);
+            // image (map) and edit resources don't negotiate json/html
+            var format = negotiateFormat ? GetFormat(httpContext.Request) : OgcApiFormat.Json;
 
             if (folder == Routes.RootFolder)
             {
@@ -132,6 +143,7 @@ public class OgcApiBaseEndpoint : IApiEndpoint
                 checkSecurity: false);
 
             await mapService.CheckAccess(serviceRequestContext);  // may also set the folder's online resource
+            var accessTypes = await mapService.GetAccessTypes(identity);
 
             IResult? result = null;
             Exception? error = null;
@@ -147,7 +159,7 @@ public class OgcApiBaseEndpoint : IApiEndpoint
                         serviceMap,
                         ServiceUrl(httpContext, serviceRequest.OnlineResource, folder, service));
 
-                    result = await action(new OgcApiRequest(httpContext, ogcApiService, format));
+                    result = await action(new OgcApiRequest(httpContext, ogcApiService, format, accessTypes));
                 }
                 catch (Exception ex)
                 {

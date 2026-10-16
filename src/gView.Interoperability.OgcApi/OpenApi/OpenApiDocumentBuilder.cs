@@ -1,3 +1,4 @@
+using gView.Framework.Editor.Core;
 using gView.Interoperability.OgcApi.Extensions;
 using gView.Interoperability.OgcApi.Features;
 using gView.Interoperability.OgcApi.Maps;
@@ -68,9 +69,31 @@ internal static class OpenApiDocumentBuilder
                 });
             }
 
-            paths[$"{path}/items"] = Get($"get{id}Features", collection.Title, $"Features of '{collection.Title}'", itemsParameters, GeoJsonOrHtml("featureCollectionGeoJSON"));
-            paths[$"{path}/items/{{featureId}}"] = Get($"get{id}Feature", collection.Title, $"A feature of '{collection.Title}'",
+            var itemsPath = Get($"get{id}Features", collection.Title, $"Features of '{collection.Title}'", itemsParameters, GeoJsonOrHtml("featureCollectionGeoJSON"));
+            var itemPath = Get($"get{id}Feature", collection.Title, $"A feature of '{collection.Title}'",
                 [Ref("featureId"), Ref("crs"), Ref("f")], GeoJsonOrHtml("featureGeoJSON", notFound: true));
+
+            #region Part 4
+
+            var statements = service.EditStatements(id);
+            if (statements.HasFlag(EditStatements.INSERT))
+            {
+                itemsPath["post"] = Edit($"create{id}Feature", collection.Title, $"Add a feature to '{collection.Title}'", [], true, "201", "Created, the Location header contains the url of the new feature");
+            }
+            if (statements.HasFlag(EditStatements.UPDATE))
+            {
+                itemPath["put"] = Edit($"replace{id}Feature", collection.Title, "Replace a feature (missing properties are set to null)", [Ref("featureId")], true, "204", "Replaced");
+                itemPath["patch"] = Edit($"update{id}Feature", collection.Title, "Update the properties/geometry of a feature (JSON merge patch)", [Ref("featureId")], true, "204", "Updated");
+            }
+            if (statements.HasFlag(EditStatements.DELETE))
+            {
+                itemPath["delete"] = Edit($"delete{id}Feature", collection.Title, "Delete a feature", [Ref("featureId")], false, "204", "Deleted");
+            }
+
+            #endregion
+
+            paths[$"{path}/items"] = itemsPath;
+            paths[$"{path}/items/{{featureId}}"] = itemPath;
         }
 
         return new JsonObject()
@@ -93,6 +116,48 @@ internal static class OpenApiDocumentBuilder
     }
 
     #region Paths
+
+    private static JsonObject Edit(string operationId, string tag, string summary, JsonArray parameters, bool withBody, string successCode, string successDescription)
+    {
+        parameters.Add(new JsonObject()
+        {
+            ["name"] = "Content-Crs",
+            ["in"] = "header",
+            ["description"] = "The CRS of the geometry in the body, e.g. <http://www.opengis.net/def/crs/EPSG/0/31256>. Default: CRS84",
+            ["required"] = false,
+            ["schema"] = new JsonObject() { ["type"] = "string" }
+        });
+
+        var operation = new JsonObject()
+        {
+            ["operationId"] = operationId,
+            ["tags"] = new JsonArray(tag),
+            ["summary"] = summary,
+            ["parameters"] = parameters,
+            ["responses"] = new JsonObject()
+            {
+                [successCode] = new JsonObject() { ["description"] = successDescription },
+                ["400"] = Error("Invalid feature"),
+                ["404"] = Error("The feature does not exist"),
+                ["405"] = Error("The operation is not allowed for this collection"),
+                ["500"] = Error("A server error occurred")
+            }
+        };
+
+        if (withBody)
+        {
+            operation["requestBody"] = new JsonObject()
+            {
+                ["required"] = true,
+                ["content"] = new JsonObject()
+                {
+                    [OgcApiMediaTypes.GeoJson] = new JsonObject() { ["schema"] = SchemaRef("featureGeoJSON") }
+                }
+            };
+        }
+
+        return operation;
+    }
 
     private static JsonObject Get(string operationId, string tag, string summary, JsonArray parameters, JsonObject responses)
         => new JsonObject()

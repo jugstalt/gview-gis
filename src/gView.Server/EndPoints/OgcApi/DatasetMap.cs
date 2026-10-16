@@ -31,5 +31,5 @@ public class DatasetMap : OgcApiBaseEndpoint
 
                 return Image(request, map);
             },
-            imageResponse: true);
+            negotiateFormat: false);
 }

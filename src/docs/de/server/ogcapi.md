@@ -3,13 +3,12 @@ OGC API
 
 Der gView Server stellt jeden Kartendienst zusätzlich als *OGC API* Datensatz bereit:
 
-* *OGC API - Features* (Part 1 Core, Part 2 CRS by Reference, Part 3 Filtering/Queryables)
+* *OGC API - Features* (Part 1 Core, Part 2 CRS by Reference, Part 3 Filtering/Queryables, Part 4 Editieren)
 * *OGC API - Maps* (Part 1: Kartenbilder des Dienstes und einzelner Layer)
 
 Clients wie QGIS, GDAL/OGR, ArcGIS Pro, OpenLayers oder Leaflet können die Dienste damit ohne
 WMS/WFS oder GeoServices REST nutzen.
 
-> Derzeit nur lesender Zugriff. Editieren (Features Part 4) folgt.
 
 URLs
 ----
@@ -104,6 +103,29 @@ Die Bildgröße wird durch `MaxImageWidth`/`MaxImageHeight` des Dienstes begrenz
 enthält die Header `Content-Crs` und `Content-Bbox`. Unterstützte Koordinatensysteme sind das
 der Karte, die für den *WMS-Export* eingestellten EPSG-Codes und CRS84.
 
+Features editieren (Part 4)
+---------------------------
+
+Feature-Layer, die im *Editor-Modul* der Karte (gView Carto) als editierbar eingetragen sind,
+können über OGC API bearbeitet werden. Es gelten dieselben Regeln wie für den GeoServices
+FeatureServer (ArcGIS Pro):
+
+| Methode | URL | Edit-Statement | Antwort |
+|---|---|---|---|
+| `POST` | `.../collections/{collectionId}/items` | INSERT | `201` + `Location` des neuen Features |
+| `PUT` | `.../collections/{collectionId}/items/{featureId}` | UPDATE | `204`, fehlende Properties werden `null` |
+| `PATCH` | `.../collections/{collectionId}/items/{featureId}` | UPDATE | `204`, nur übergebene Properties/Geometrie werden geändert |
+| `DELETE` | `.../collections/{collectionId}/items/{featureId}` | DELETE | `204` |
+
+* Der Body ist ein GeoJSON-Feature (`Content-Type: application/geo+json`).
+* Das Koordinatensystem der Geometrie kann mit dem Header `Content-Crs` angegeben werden
+  (z.B. `<http://www.opengis.net/def/crs/EPSG/0/31256>`), Standard ist CRS84.
+* Unbekannte und nicht editierbare Properties werden ignoriert. Ein falscher Geometrietyp führt zu `400`.
+* `OPTIONS` auf `items` bzw. `items/{featureId}` liefert im `Allow`-Header die erlaubten Methoden
+  (abhängig von den Edit-Statements des Layers und dem `edit`-Recht des Benutzers). QGIS nutzt das,
+  um den Layer editierbar zu machen.
+* Jede Änderung läuft (wenn die Datenquelle das unterstützt) in einer Transaktion.
+
 Koordinatensysteme
 ------------------
 
@@ -121,6 +143,7 @@ Dienstes/Ordners die Schnittstelle `_ogcapi` (oder `_all`) und zusätzlich:
 * Metadaten (Landing Page, Collections, ...): nur die Schnittstelle
 * Features (`items`): `query`
 * Kartenbilder (`map`): `map`
+* Editieren (`POST`, `PUT`, `PATCH`, `DELETE`): `edit`
 
 Anmelden können sich Benutzer mit HTTP Basic Authentication (gView Token-User), einem
 Bearer-Token oder `?token=...`. Anfragen ohne ausreichende Rechte bekommen `401`
@@ -132,3 +155,4 @@ QGIS
 *Layer > Layer hinzufügen > WFS / OGC API - Features Layer hinzufügen*, eine neue Verbindung
 mit der Landing-Page-URL anlegen, z.B. `https://my.server.com/gview-server/ogcapi/_/meindienst`,
 und *Version: OGC API - Features* wählen. Für geschützte Dienste eine *Basic*-Authentifizierung hinterlegen.
+Editierbare Collections können in QGIS direkt bearbeitet werden (*Bearbeitungsmodus umschalten*).

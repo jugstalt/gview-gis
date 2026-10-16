@@ -46,6 +46,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   `/collections/{id}/map` with `bbox`/`bbox-crs`, `crs`, `width`/`height`, `scale-denominator`,
   `mm-per-pixel`, `transparent`, `bgcolor`, PNG/JPEG and `Content-Crs`/`Content-Bbox` headers.
   Raster layers are now collections too (map only). New access type `map` for the `_ogcapi` interface.
+- OGC API - Features Part 4 (editing): `POST` items (`201` + `Location`), `PUT` (replace),
+  `PATCH` (JSON merge patch) and `DELETE` item, `Content-Crs` for the body geometry, `OPTIONS`
+  with an `Allow` header from the layer's edit statements and the user's `edit` right (used by
+  QGIS). Edits run in an edit session (transaction) if the data source supports it.
+- New `FeatureEditService` (`gView.Interoperability.Extensions`): the edit rules of GeoServices
+  REST FeatureServer (edit statements, insert/update validation, projection into the feature
+  class CRS, geometry cleaning, edit sessions), now shared by GeoServices REST and OGC API.
+- New test project `gView.Interoperability.Extensions.Tests`.
 - New `MapImageRenderer` (`gView.Interoperability.Extensions`): the map image rendering of
   WMS GetMap, now shared by WMS and OGC API - Maps.
 - New interface `ISupportsSqlDialect` (`SqlDialect` PostgreSql / SqlServer / SQLite) on PostGIS,

@@ -19,6 +19,7 @@ using gView.Framework.Geometry;
 using gView.Framework.IO;
 using gView.Framework.OGC.GeoJson;
 using gView.Interoperability.Extensions;
+using gView.Interoperability.Extensions.Editing;
 using gView.Interoperability.GeoServices.Exceptions;
 using gView.Interoperability.GeoServices.Extensions;
 using gView.Interoperability.GeoServices.Request.Extensions;
@@ -1331,37 +1332,19 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
 
             using (var serviceMap = await context.CreateServiceMapInstance())
             {
-                CheckEditableStatement(serviceMap, editRequest, EditStatements.INSERT);
+                var editService = CreateEditService(serviceMap, editRequest.LayerId, EditStatements.INSERT);
 
-                var featureClass = GetFeatureClass(serviceMap, editRequest);
-                var dataset = featureClass.Dataset;
-                var database = dataset?.Database as IFeatureUpdater;
-                if (database == null)
-                {
-                    throw new MapServerException("Featureclass is not editable");
-                }
-
-                List<IFeature> features = GetFeatures(featureClass, editRequest, true, serviceMap.Display?.DatumTransformations);
+                List<IFeature> features = GetFeatures(editService.FeatureClass, editRequest.Features);
                 if (features.Count == 0)
                 {
                     throw new MapServerException("No features to add");
                 }
 
-                if (features.Count(f => f.OID > 0) > 0)
-                {
-                    throw new MapServerException("Can't insert features with existing ObjectId");
-                }
+                editService.PrepareInserts(features);
 
-                if (features.Count(f => f.Shape is null) > 0)
+                if (!await editService.Insert(features))
                 {
-                    throw new MapServerException("Insert features without geometry are not allowed");
-                }
-
-                features.GeometryMakeValid(serviceMap, featureClass);
-
-                if (!await database.Insert(featureClass, features, returnIds: true))
-                {
-                    throw new Exception(database.LastErrorMessage);
+                    throw new Exception(editService.LastErrorMessage());
                 }
 
                 context.ServiceRequest.Succeeded = true;
@@ -1386,32 +1369,19 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
 
             using (var serviceMap = await context.CreateServiceMapInstance())
             {
-                CheckEditableStatement(serviceMap, editRequest, EditStatements.UPDATE);
+                var editService = CreateEditService(serviceMap, editRequest.LayerId, EditStatements.UPDATE);
 
-                var featureClass = GetFeatureClass(serviceMap, editRequest);
-                var dataset = featureClass.Dataset;
-                var database = dataset?.Database as IFeatureUpdater;
-                if (database == null)
-                {
-                    throw new MapServerException("Featureclass is not editable");
-                }
-
-                List<IFeature> features = GetFeatures(featureClass, editRequest, true, serviceMap.Display?.DatumTransformations);
+                List<IFeature> features = GetFeatures(editService.FeatureClass, editRequest.Features);
                 if (features.Count == 0)
                 {
                     throw new MapServerException("No features to add");
                 }
 
-                if (features.Where(f => f.OID <= 0).Count() > 0)
-                {
-                    throw new MapServerException("Can't update features without existing ObjectId");
-                }
+                editService.PrepareUpdates(features);
 
-                features.GeometryMakeValid(serviceMap, featureClass);
-
-                if (!await database.Update(featureClass, features))
+                if (!await editService.Update(features))
                 {
-                    throw new Exception(database.LastErrorMessage);
+                    throw new Exception(editService.LastErrorMessage());
                 }
 
                 context.ServiceRequest.Succeeded = true;
@@ -1436,22 +1406,14 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
 
             using (var serviceMap = await context.CreateServiceMapInstance())
             {
-                CheckEditableStatement(serviceMap, editRequest, EditStatements.DELETE);
-
-                var featureClass = GetFeatureClass(serviceMap, editRequest);
-                var dataset = featureClass.Dataset;
-                var database = dataset?.Database as IFeatureUpdater;
-                if (database == null)
-                {
-                    throw new MapServerException("Featureclass is not editable");
-                }
+                var editService = CreateEditService(serviceMap, editRequest.LayerId, EditStatements.DELETE);
 
                 var objectIds = editRequest.ObjectIds.Split(',').Select(s => int.Parse(s));
                 foreach (int objectId in objectIds)
                 {
-                    if (!await database.Delete(featureClass, objectId))
+                    if (!await editService.Delete(objectId))
                     {
-                        throw new Exception(database.LastErrorMessage);
+                        throw new Exception(editService.LastErrorMessage());
                     }
                 }
 
@@ -1481,7 +1443,7 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
 
             using (var serviceMap = await context.CreateServiceMapInstance())
             {
-                var database = GetFeatureClass(serviceMap, editRequest.LayerId)?.Dataset?.Database as IFeatureUpdater;
+                var database = FeatureEditService.FindFeatureClass(serviceMap, editRequest.LayerId, _useTOC)?.Dataset?.Database as IFeatureUpdater;
 
                 var results = await ApplyEditsBatch(
                     serviceMap,
@@ -1572,7 +1534,7 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
                 // group by the database instance the layers target, so a session (when used)
                 // spans every layer of one dataset in a single transaction
                 var groups = editRequest.Edits
-                    .GroupBy(le => GetFeatureClass(serviceMap, le.Id)?.Dataset?.Database as IFeatureUpdater);
+                    .GroupBy(le => FeatureEditService.FindFeatureClass(serviceMap, le.Id, _useTOC)?.Dataset?.Database as IFeatureUpdater);
 
                 foreach (var group in groups)
                 {
@@ -1650,25 +1612,13 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
         bool rollbackOnFailure,
         IFeatureEditSession session = null)
     {
-        var featureClass = GetFeatureClass(serviceMap, layerId);
-        var database = featureClass?.Dataset?.Database as IFeatureUpdater;
-        if (database == null)
-        {
-            throw new MapServerException("Featureclass is not editable");
-        }
+        var editService = FeatureEditService.Create(serviceMap, layerId, _useTOC);
+        _ = editService.Database;  // throws, if the feature class is not editable
 
-        Task<bool> InsertFeatures(List<IFeature> features)
-            => session != null
-                ? session.Insert(featureClass, features, returnIds: true)
-                : database.Insert(featureClass, features, returnIds: true);
-        Task<bool> UpdateFeatures(List<IFeature> features)
-            => session != null ? session.Update(featureClass, features) : database.Update(featureClass, features);
-        Task<bool> DeleteFeature(int objectId)
-            => session != null ? session.Delete(featureClass, objectId) : database.Delete(featureClass, objectId);
-        string LastError()
-            => session != null ? session.LastErrorMessage : database.LastErrorMessage;
-
-        var datumTransformations = serviceMap.Display?.DatumTransformations;
+        Task<bool> InsertFeatures(List<IFeature> features) => editService.Insert(features, session);
+        Task<bool> UpdateFeatures(List<IFeature> features) => editService.Update(features, session);
+        Task<bool> DeleteFeature(int objectId) => editService.Delete(objectId, session);
+        string LastError() => editService.LastErrorMessage(session);
 
         bool hasAdds = adds is { Length: > 0 };
         bool hasUpdates = updates is { Length: > 0 };
@@ -1685,20 +1635,10 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
 
         if (hasAdds)
         {
-            CheckEditableStatement(serviceMap, layerId, EditStatements.INSERT);
+            editService.CheckStatement(EditStatements.INSERT);
 
-            var addFeatures = GetFeatures(featureClass, adds, true, datumTransformations);
-
-            if (addFeatures.Any(f => f.OID > 0))
-            {
-                throw new MapServerException("Can't insert features with existing ObjectId");
-            }
-            if (addFeatures.Any(f => f.Shape is null))
-            {
-                throw new MapServerException("Insert features without geometry are not allowed");
-            }
-
-            addFeatures.GeometryMakeValid(serviceMap, featureClass);
+            var addFeatures = GetFeatures(editService.FeatureClass, adds);
+            editService.PrepareInserts(addFeatures);
 
             if (!await InsertFeatures(addFeatures))
             {
@@ -1728,16 +1668,10 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
 
         if (hasUpdates)
         {
-            CheckEditableStatement(serviceMap, layerId, EditStatements.UPDATE);
+            editService.CheckStatement(EditStatements.UPDATE);
 
-            var updateFeatures = GetFeatures(featureClass, updates, true, datumTransformations);
-
-            if (updateFeatures.Any(f => f.OID <= 0))
-            {
-                throw new MapServerException("Can't update features without existing ObjectId");
-            }
-
-            updateFeatures.GeometryMakeValid(serviceMap, featureClass);
+            var updateFeatures = GetFeatures(editService.FeatureClass, updates);
+            editService.PrepareUpdates(updateFeatures);
 
             if (!await UpdateFeatures(updateFeatures))
             {
@@ -1765,7 +1699,7 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
 
         if (hasDeletes)
         {
-            CheckEditableStatement(serviceMap, layerId, EditStatements.DELETE);
+            editService.CheckStatement(EditStatements.DELETE);
 
             var deleteResults = new List<JsonFeatureServerResponseDTO.JsonResponse>(deleteObjectIds.Count);
 
@@ -1904,92 +1838,27 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
 
     #region Helper
 
-    private IFeatureLayer GetFeatureLayer(IServiceMap serviceMap, JsonFeatureServerEditRequesDTO editRequest)
+    /// <summary>
+    /// The shared edit rules (OGC API - Features uses the same): checks the edit statement first,
+    /// then that the feature class is editable
+    /// </summary>
+    private FeatureEditService CreateEditService(IServiceMap serviceMap, int layerId, EditStatements statement)
     {
-        return serviceMap.MapElements.Where(e => e.ID == editRequest.LayerId).FirstOrDefault() as IFeatureLayer;
+        FeatureEditService.CheckEditableStatement(serviceMap, layerId, statement);
+
+        var editService = FeatureEditService.Create(serviceMap, layerId, _useTOC);
+        _ = editService.Database;  // throws, if the feature class is not editable
+
+        return editService;
     }
 
-    private IFeatureClass GetFeatureClass(IServiceMap serviceMap, JsonFeatureServerEditRequesDTO editRequest)
-        => GetFeatureClass(serviceMap, editRequest.LayerId);
-
-    private IFeatureClass GetFeatureClass(IServiceMap serviceMap, int layerId)
-    {
-        string filterQuery;
-
-        var tableClasses = FindTableClass(serviceMap, layerId.ToString(), out filterQuery);
-        if (tableClasses.Count > 1)
-        {
-            throw new MapServerException("FeatureService can't be used with aggregated feature classes");
-        }
-        if (tableClasses.Count == 0 || !(tableClasses[0] is IFeatureClass))
-        {
-            throw new MapServerException("FeatureService can only used with feature classes");
-        }
-
-        var featureClass = (IFeatureClass)tableClasses[0];
-
-        return featureClass;
-    }
-
-    private List<IFeature> GetFeatures(IFeatureClass featureClass, JsonFeatureServerUpdateRequestDTO editRequest, bool projetToFeatureClassSpatialReference, IDatumTransformations datumTransformations)
-        => GetFeatures(featureClass, editRequest.Features, projetToFeatureClassSpatialReference, datumTransformations);
-
-    private List<IFeature> GetFeatures(IFeatureClass featureClass, IEnumerable<JsonFeatureDTO> jsonFeatures, bool projetToFeatureClassSpatialReference, IDatumTransformations datumTransformations)
-    {
-        int? fcSrs = featureClass?.SpatialReference?.EpsgCode;
-
-        List<IFeature> features = new List<IFeature>();
-        foreach (var jsonFeature in jsonFeatures ?? Enumerable.Empty<JsonFeatureDTO>())
-        {
-            var feature = ToFeature(featureClass, jsonFeature);
-
-            if (projetToFeatureClassSpatialReference == true)
-            {
-                if (feature.Shape != null && feature.Shape.Srs.HasValue && !feature.Shape.Srs.Equals(fcSrs))
-                {
-                    using (var transformer = GeometricTransformerFactory.Create(datumTransformations))
-                    {
-                        var fromSrs = SpatialReference.FromID("epsg:" + feature.Shape.Srs.ToString());
-                        var toSrs = SpatialReference.FromID("epsg:" + fcSrs.ToString());
-
-                        transformer.SetSpatialReferences(fromSrs, toSrs);
-
-                        var transformedShape = transformer.Transform2D(feature.Shape) as IGeometry;
-                        transformedShape.Srs = fcSrs;
-
-                        feature.Shape = transformedShape;
-                    }
-                }
-            }
-
-            features.Add(feature);
-        }
-
-        return features;
-    }
-
-    private void CheckEditableStatement(IServiceMap serviceMap, JsonFeatureServerEditRequesDTO editRequest, EditStatements statement)
-        => CheckEditableStatement(serviceMap, editRequest.LayerId, statement);
-
-    private void CheckEditableStatement(IServiceMap serviceMap, int layerId, EditStatements statement)
-    {
-        var editModule = serviceMap.GetModule<gView.Plugins.Modules.EditorModule>();
-        if (editModule == null)
-        {
-            throw new MapServerException("No editor module available for service");
-        }
-
-        var editLayer = editModule.GetEditLayer(layerId);
-        if (editLayer == null)
-        {
-            throw new MapServerException($"No editable layer found with id={layerId}");
-        }
-
-        if (!editLayer.Statements.HasFlag(statement))
-        {
-            throw new MapServerException($"Editoperation {statement} not allowed for layer with id={layerId}");
-        }
-    }
+    /// <summary>
+    /// Json features => gView features. Projection and validation is done by the <see cref="FeatureEditService"/>.
+    /// </summary>
+    private List<IFeature> GetFeatures(IFeatureClass featureClass, IEnumerable<JsonFeatureDTO> jsonFeatures)
+        => (jsonFeatures ?? Enumerable.Empty<JsonFeatureDTO>())
+            .Select(jsonFeature => (IFeature)ToFeature(featureClass, jsonFeature))
+            .ToList();
 
     #endregion
 
