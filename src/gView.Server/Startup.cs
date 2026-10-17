@@ -106,6 +106,18 @@ public class Startup
 
         #endregion
 
+        #region RasterNet
+
+        // Block cache and threads per request of the RasterNet raster data source (section "rasternet").
+        var rasterNet = gView.DataSources.RasterNet.RasterNetSettings.Configure(key => Configuration.Value($"rasternet:{key}"));
+
+        Console.WriteLine("RasterNet:");
+        Console.WriteLine("==========");
+        Console.WriteLine(rasterNet);
+        Console.WriteLine();
+
+        #endregion
+
         #region Globals
 
         if (Configuration.Value("globals:CustomCursorTimeoutSeconds") != null)

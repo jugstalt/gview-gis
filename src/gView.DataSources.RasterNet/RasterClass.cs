@@ -21,7 +21,8 @@ namespace gView.DataSources.RasterNet
 {
     /// <summary>
     /// One raster file read with RasterNet.Core. The raster is opened once and shared by all requests:
-    /// RasterNet rasters are immutable after opening and can be read from any number of threads.
+    /// RasterNet rasters are immutable after opening and can be read from any number of threads. Reads use the
+    /// process-wide <see cref="RasterNetSettings"/> (block cache, threads per request).
     /// Rendering, identify and the grid settings behave like the GDAL raster class, so maps look the same.
     /// </summary>
     public class RasterClass : IRasterClass, IRasterFile, IPointIdentify, IGridIdentify, IGridClass, IPersistable, IDisposable
@@ -29,15 +30,6 @@ namespace gView.DataSources.RasterNet
         private static readonly ColorClass[] AllWhite =
         {
             new ColorClass(double.NegativeInfinity, double.PositiveInfinity, new RgbaColor(255, 255, 255)),
-        };
-
-        /// <summary>
-        /// Threads one map request may use for decoding. JPEG2000 code-blocks and GeoTIFF blocks are decoded in
-        /// parallel; half of the cores leaves room for the other requests of the server.
-        /// </summary>
-        private static readonly ReadOptions RenderReadOptions = new()
-        {
-            MaxDegreeOfParallelism = Math.Clamp(Environment.ProcessorCount / 2, 1, 8),
         };
 
         private readonly Raster _raster;
@@ -155,7 +147,7 @@ namespace gView.DataSources.RasterNet
 
             if (!_isGrid)
             {
-                RasterRenderer.Render(plan, pixels, stride, new RenderOptions { ReadOptions = RenderReadOptions });
+                RasterRenderer.Render(plan, pixels, stride, new RenderOptions { ReadOptions = RasterNetSettings.ReadOptions });
             }
             else if (_renderRawGridValues)
             {
@@ -168,7 +160,7 @@ namespace gView.DataSources.RasterNet
                     GridRenderer = new ColorClassRenderer(ToColorClasses(_colorClasses)),
                     Hillshade = _useHillShade && HasDirection(_hillShade) ? new Hillshade(_hillShade[0], _hillShade[1], _hillShade[2]) : null,
                     IgnoreValue = _useIgnoreValue ? _ignoreValue : null,
-                    ReadOptions = RenderReadOptions,
+                    ReadOptions = RasterNetSettings.ReadOptions,
                 });
             }
         }
@@ -182,7 +174,7 @@ namespace gView.DataSources.RasterNet
             var values = ArrayPool<float>.Shared.Rent(plan.Width * plan.Height);
             try
             {
-                RasterRenderer.RenderValues(plan, 0, values, new RenderOptions { ReadOptions = RenderReadOptions });
+                RasterRenderer.RenderValues(plan, 0, values, new RenderOptions { ReadOptions = RasterNetSettings.ReadOptions });
                 for (int y = 0; y < plan.Height; y++)
                 {
                     var row = pixels.Slice(y * stride, plan.Width * 4);
@@ -357,7 +349,7 @@ namespace gView.DataSources.RasterNet
         private T ReadCell<T>(int band, int column, int row) where T : unmanaged
         {
             Span<T> value = stackalloc T[1];
-            _raster.Read<T>(band, 0, new Window(column, row, 1, 1), value);
+            _raster.Read<T>(band, 0, new Window(column, row, 1, 1), value, RasterNetSettings.ReadOptions);
             return value[0];
         }
 

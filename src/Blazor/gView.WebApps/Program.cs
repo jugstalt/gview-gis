@@ -20,6 +20,13 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.AddJsonFile("_config/gview-webapps.config", true);
 
+#region RasterNet
+
+// Block cache and threads per request of the RasterNet raster data source (section "rasternet").
+Console.WriteLine($"RasterNet: {gView.DataSources.RasterNet.RasterNetSettings.Configure(key => builder.Configuration[$"rasternet:{key}"])}");
+
+#endregion
+
 #region SqlServer
 
 builder.Configuration

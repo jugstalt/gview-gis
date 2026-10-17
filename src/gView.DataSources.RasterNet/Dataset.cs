@@ -49,7 +49,7 @@ namespace gView.DataSources.RasterNet
 
         #region IRasterFileDataset
 
-        public string SupportedFileFilter => "*.tif|*.tiff|*.jp2|*.j2k|w001001.adf";
+        public string SupportedFileFilter => "*.tif|*.tiff|*.jp2|*.j2k|*.jpg|*.jpeg|*.png|*.gif|*.bmp|w001001.adf";
 
         public int SupportsFormat(string extension)
         {
@@ -59,6 +59,11 @@ namespace gView.DataSources.RasterNet
                 case ".tiff":
                 case ".jp2":
                 case ".j2k":
+                case ".jpg":
+                case ".jpeg":
+                case ".png":
+                case ".gif":
+                case ".bmp":
                 case ".adf":
                     return Priority;
                 default:

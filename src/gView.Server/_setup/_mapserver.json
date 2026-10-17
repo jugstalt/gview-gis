@@ -30,6 +30,13 @@
     "engine": "ManageProj4Parallel" // ManagedProj4, NativeProj4
   },
 
+  // RasterNet raster data source (GeoTIFF, Arc/Info grids, JPEG2000)
+  "rasternet": {
+    "blockcache-mb": 256,               // cache of decoded JPEG2000 code-blocks; 0 disables it
+    "blockcache-maxidle-minutes": 10,   // release blocks not used for this long; 0 keeps them until the budget is needed
+    "max-threads": 4                    // decoding threads per request; 0 = half of the cores, at most 8
+  },
+
   "CriticalErrorLevel": {
     "ErrorType": "error"
   }
