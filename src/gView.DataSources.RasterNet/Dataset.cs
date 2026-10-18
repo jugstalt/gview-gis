@@ -49,7 +49,7 @@ namespace gView.DataSources.RasterNet
 
         #region IRasterFileDataset
 
-        public string SupportedFileFilter => "*.tif|*.tiff|*.jp2|*.j2k|*.jpg|*.jpeg|*.png|*.gif|*.bmp|*.webp|w001001.adf";
+        public string SupportedFileFilter => "*.tif|*.tiff|*.jp2|*.j2k|*.jpg|*.jpeg|*.png|*.gif|*.bmp|*.webp|*.bil|*.bip|*.bsq|*.flt|*.asc|*.xyz|*.hgt|w001001.adf";
 
         public int SupportsFormat(string extension)
         {
@@ -65,6 +65,13 @@ namespace gView.DataSources.RasterNet
                 case ".gif":
                 case ".bmp":
                 case ".webp":
+                case ".bil":
+                case ".bip":
+                case ".bsq":
+                case ".flt":
+                case ".asc":
+                case ".xyz":
+                case ".hgt":
                 case ".adf":
                     return Priority;
                 default:
