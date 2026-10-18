@@ -1,8 +1,9 @@
 using System;
+using System.Diagnostics;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 using Nuke.Common;
 using Nuke.Common.IO;
@@ -170,39 +171,39 @@ class Build : NukeBuild
         {
             DownloadDirectory.CreateDirectory();
 
-            foreach (var platform in Platform)
+            var packages = Platform.SelectMany(platform => DeployApps.Select(app => (platform, app)));
+
+            // the ZIP files are independent => create them in parallel
+            Parallel.ForEach(packages, package =>
             {
-                foreach (var app in DeployApps)
+                var (platform, app) = package;
+                var zipFile = DownloadDirectory / $"{app.ZipName}{EditionSuffix}-{platform}-{Version}.zip";
+
+                // ZIP content as entry path => source file (no staging copy)
+                var content = new ZipContent();
+                var appPrefix = $"{Version}/{app.Name}/";
+
+                content.AddDirectory(Artifacts(app, platform), appPrefix, overwrite: true);
+                if (app.IncludeCmd)
                 {
-                    var stagingDirectory = DeployRoot / Version;
-                    var appDirectory = stagingDirectory / app.Name;
-
-                    stagingDirectory.CreateOrCleanDirectory();
-
-                    CopyDirectory(Artifacts(app, platform), appDirectory, overwrite: true);
-                    if (app.IncludeCmd)
-                    {
-                        // gView.Cmd tools: only add files, never replace the app's own files
-                        CopyDirectory(Artifacts(Cmd, platform), appDirectory, overwrite: false);
-                    }
-                    CopyDirectory(AssetsDirectory / app.Name / "override", appDirectory, overwrite: true);
-                    CopyDirectory(AssetsDirectory / app.Name / platform / "override", appDirectory, overwrite: true);
-
-                    // start scripts
-                    foreach (var script in (AssetsDirectory / app.Name / platform).GlobFiles("*.bat", "*.sh"))
-                    {
-                        script.Copy(stagingDirectory / script.Name, ExistsPolicy.FileOverwrite);
-                    }
-
-                    var zipFile = DownloadDirectory / $"{app.ZipName}{EditionSuffix}-{platform}-{Version}.zip";
-                    zipFile.DeleteFile();
-
-                    Log.Information("Zip {ZipFile}", zipFile);
-                    CreateZip(stagingDirectory, zipFile);
-
-                    stagingDirectory.DeleteDirectory();
+                    // gView.Cmd tools: only add files, never replace the app's own files
+                    content.AddDirectory(Artifacts(Cmd, platform), appPrefix, overwrite: false);
                 }
-            }
+                content.AddDirectory(AssetsDirectory / app.Name / "override", appPrefix, overwrite: true);
+                content.AddDirectory(AssetsDirectory / app.Name / platform / "override", appPrefix, overwrite: true);
+
+                // start scripts
+                foreach (var script in (AssetsDirectory / app.Name / platform).GlobFiles("*.bat", "*.sh"))
+                {
+                    content.AddFile(script, $"{Version}/{script.Name}", overwrite: true);
+                }
+
+                var stopwatch = Stopwatch.StartNew();
+                zipFile.DeleteFile();
+                content.WriteZip(zipFile, $"{Version}/");
+
+                Log.Information("Zip {ZipFile} ({Seconds:0.0}s)", zipFile, stopwatch.Elapsed.TotalSeconds);
+            });
         });
 
     Target Docker => _ => _
@@ -267,31 +268,6 @@ class Build : NukeBuild
                 workingDirectory: workingDirectory,
                 logger: (_, text) => Log.Information(text))
             .AssertZeroExitCode();
-    }
-
-    // Same layout as the former 7z archives: the base directory is the root entry
-    // ({version}/) and every directory has its own entry ("{version}/server/") written
-    // before its content. gView.Deploy looks up these directory entries (ZipArchive.GetEntry).
-    static void CreateZip(AbsolutePath sourceDirectory, AbsolutePath zipFile)
-    {
-        using var archive = ZipFile.Open(zipFile, ZipArchiveMode.Create);
-
-        void AddDirectory(string directory, string entryPrefix)
-        {
-            archive.CreateEntry(entryPrefix).ExternalAttributes = (int)FileAttributes.Directory;
-
-            foreach (var file in Directory.GetFiles(directory).Order(StringComparer.OrdinalIgnoreCase))
-            {
-                archive.CreateEntryFromFile(file, entryPrefix + Path.GetFileName(file), CompressionLevel.SmallestSize)
-                    .ExternalAttributes = (int)FileAttributes.Archive;
-            }
-            foreach (var subDirectory in Directory.GetDirectories(directory).Order(StringComparer.OrdinalIgnoreCase))
-            {
-                AddDirectory(subDirectory, $"{entryPrefix}{Path.GetFileName(subDirectory)}/");
-            }
-        }
-
-        AddDirectory(sourceDirectory, $"{sourceDirectory.Name}/");
     }
 
     static void CopyDirectory(AbsolutePath source, AbsolutePath target, bool overwrite)
