@@ -33,7 +33,7 @@ public class RasterNetFileExplorerObject :
 
     #region IExplorerFileObject Members
 
-    public string Filter => "*.tif|*.tiff|*.jp2|*.j2k|*.jpg|*.jpeg|*.png|*.gif|*.bmp|w001001.adf";
+    public string Filter => "*.tif|*.tiff|*.jp2|*.j2k|*.jpg|*.jpeg|*.png|*.gif|*.bmp|*.webp|w001001.adf";
 
     public string Icon => "webgis:georef-image";
 
