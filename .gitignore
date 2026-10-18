@@ -137,6 +137,8 @@ DocProject/Help/html
 
 # Click-Once directory
 publish/
+# ...except the deploy assets used by the nuke build (build/Build.cs)
+!/publish/
 
 # Publish Web Output
 *.[Pp]ublish.xml
@@ -267,3 +269,6 @@ __pycache__/
 _config/gview-web.config
 /src/Blazor/gView.Web/_config/gview-web.config
 /src/gView.Server/_config/mapserver.json
+
+# nuke
+.nuke/temp/

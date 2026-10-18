@@ -235,6 +235,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.DataSources.PostGIS.T
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Interoperability.GeoServices.Tests", "src\tests\gView.Interoperability.GeoServices.Tests\gView.Interoperability.GeoServices.Tests.csproj", "{219B6608-BF08-48E7-91BB-CEDA1714DB74}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "_build", "build\_build.csproj", "{F62560C9-CBB8-4EC9-A5AA-71007B078AFB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -245,6 +247,12 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F62560C9-CBB8-4EC9-A5AA-71007B078AFB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F62560C9-CBB8-4EC9-A5AA-71007B078AFB}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F62560C9-CBB8-4EC9-A5AA-71007B078AFB}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F62560C9-CBB8-4EC9-A5AA-71007B078AFB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F62560C9-CBB8-4EC9-A5AA-71007B078AFB}.Release|x64.ActiveCfg = Release|Any CPU
+		{F62560C9-CBB8-4EC9-A5AA-71007B078AFB}.Release|x86.ActiveCfg = Release|Any CPU
 		{E50D8014-0FB8-4B67-8291-0ABEE04A1403}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E50D8014-0FB8-4B67-8291-0ABEE04A1403}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E50D8014-0FB8-4B67-8291-0ABEE04A1403}.Debug|x64.ActiveCfg = Debug|Any CPU
