@@ -1420,6 +1420,13 @@ namespace gView.Framework.OGC.DB
             return tableName;
         }
 
+        /// <summary>
+        /// Table (or view) a <c>SELECT ... GROUP BY</c> for statistics queries reads from, quoted for
+        /// <see cref="SqlDialect"/>. <c>null</c> (default) = the dataset is not verified for it and statistics
+        /// are aggregated in memory.
+        /// </summary>
+        virtual public string StatisticsTableName(OgcSpatialFeatureclass fc) => null;
+
         public enum EditCommands { Insert = 0, Update = 1, Delete = 2 }
         virtual public bool CanEditFeatureClass(IFeatureClass fc, EditCommands command)
         {

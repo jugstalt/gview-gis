@@ -6,6 +6,7 @@ using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Data.Cursors;
 using gView.Framework.Core.Data.Filters;
+using gView.Framework.Core.Data.Statistics;
 using gView.Framework.Core.Exceptions;
 using gView.Framework.Core.FDB;
 using gView.Framework.Core.Geometry;
@@ -14,6 +15,7 @@ using gView.Framework.Core.UI;
 using gView.Framework.Data;
 using gView.Framework.Data.Extensions;
 using gView.Framework.Data.Filters;
+using gView.Framework.Data.Statistics;
 using gView.Framework.Editor.Core;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
@@ -455,6 +457,8 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
 
     #region Query
 
+    private const int DefaultMaxStatisticsRecordScan = 1_000_000;
+
     async private Task Query(IServiceRequestContext context, bool isFeatureServer = false)
     {
         try
@@ -483,6 +487,10 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
 
             Envelope extent = null;
 
+            StatisticsResult statisticsResult = null;
+            JsonQueryLayerDTO statisticsRequest = query.IsStatisticsQuery() ? query : null;
+            statisticsRequest?.CheckStatisticsParameters();
+
             int maxRecordCount;
             int effectiveLimit;   // the limit actually applied to the query (<= maxRecordCount)
 
@@ -503,6 +511,11 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
                 if (isFeatureServer == true && tableClasses.Count > 1)
                 {
                     throw new MapServerException("FeatureService can't be used with aggregated feature classes");
+                }
+
+                if (statisticsRequest != null && tableClasses.Count > 1)
+                {
+                    throw new MapServerException("Statistics can't be used with aggregated feature classes");
                 }
 
                 if (!String.IsNullOrWhiteSpace(query.Where))
@@ -574,7 +587,18 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
 
                     #endregion
 
-                    if (query.ReturnCountOnly == true)
+                    StatisticsQuery statisticsQuery = null;
+                    if (statisticsRequest != null)
+                    {
+                        // the sub fields, begin and limit of the filter are set by the statistics execution
+                        statisticsQuery = statisticsRequest.ToStatisticsQuery(
+                            tableClass,
+                            effectiveLimit == int.MaxValue ? 0 : effectiveLimit,
+                            serviceMap.MapServiceProperties.MaxStatisticsRecordScan > 0 ?
+                                serviceMap.MapServiceProperties.MaxStatisticsRecordScan :
+                                DefaultMaxStatisticsRecordScan);
+                    }
+                    else if (query.ReturnCountOnly == true)
                     {
                         if (tableClass is ITableClass2 && !String.IsNullOrWhiteSpace(tableClass.IDFieldName))
                         {
@@ -654,15 +678,18 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
 
                     #region Limit/Begin/Order
 
-                    filter.Limit = query.ReturnCountOnly ?
-                        int.MaxValue :                                 // count queries always consider all matching features
-                        effectiveLimit;
+                    if (statisticsQuery == null)
+                    {
+                        filter.Limit = query.ReturnCountOnly ?
+                            int.MaxValue :                                 // count queries always consider all matching features
+                            effectiveLimit;
 
-                    filter.BeginRecord = query.ReturnCountOnly ?
-                        1 :
-                        query.ResultOffset + 1;  // Start is 1 by IQueryFilter definition
+                        filter.BeginRecord = query.ReturnCountOnly ?
+                            1 :
+                            query.ResultOffset + 1;  // Start is 1 by IQueryFilter definition
 
-                    filter.OrderBy = query.OrderByFields;
+                        filter.OrderBy = query.OrderByFields;
+                    }
 
                     #endregion
 
@@ -694,6 +721,14 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
                             }
 
                             #endregion
+                        }
+
+                        if (statisticsQuery != null)
+                        {
+                            statisticsResult = tableClass is IStatisticsTableClass statisticsTableClass ?
+                                await statisticsTableClass.ExecuteStatistics(filter, statisticsQuery) :
+                                await StatisticsAggregator.ExecuteAsync(tableClass, filter, statisticsQuery);
+                            continue;
                         }
 
                         using (var cursor = await tableClass.Search(filter))
@@ -796,7 +831,50 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
 
             context.ServiceRequest.Succeeded = true;
 
-            if (query.ReturnCountOnly == true)
+            if (statisticsResult != null)
+            {
+                var statisticsFields = statisticsResult.Columns.Select(c => new JsonFeatureResponseDTO.Field()
+                {
+                    Name = c.Name,
+                    Alias = String.IsNullOrEmpty(c.Alias) ? c.Name : c.Alias,
+                    Type = JsonFieldDTO.ToType(c.Type).ToString()
+                }).ToArray();
+
+                var statisticsFeatures = statisticsResult.Rows.Select(row =>
+                {
+                    var jsonFeature = new JsonFeatureDTO();
+                    var attributesDict = (IDictionary<string, object>)jsonFeature.Attributes;
+                    foreach (var column in statisticsResult.Columns)
+                    {
+                        row.TryGetValue(column.Name, out var value);
+                        attributesDict[column.Name] = value.ToEsriDateValue();
+                    }
+                    return jsonFeature;
+                }).ToArray();
+
+                if (isFeatureServer)
+                {
+                    context.ServiceRequest.Response = new JsonFeatureServiceQueryResponseDTO()
+                    {
+                        Fields = statisticsFields,
+                        Features = statisticsFeatures,
+                        ExceededTransferLimit = statisticsResult.ExceededLimit
+                    };
+                }
+                else
+                {
+                    context.ServiceRequest.Response = new JsonFeatureResponseDTO()
+                    {
+                        Fields = statisticsFields,
+                        Features = statisticsFeatures,
+                        ExceededTransferLimit = statisticsResult.ExceededLimit,
+                        IdleMilliseconds = SystemVariables.UseDiagnostic ?
+                                new Dictionary<string, double> { ["0"] = idleMilliseconds } :
+                                null
+                    };
+                }
+            }
+            else if (query.ReturnCountOnly == true)
             {
                 context.ServiceRequest.Response = new JsonFeatureCountResponseDTO()
                 {

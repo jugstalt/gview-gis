@@ -915,6 +915,23 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
             }
         }
 
+        /// <summary>
+        /// <c>SELECT ... GROUP BY</c> for <see cref="pgFeatureClass.ExecuteStatistics"/> (plain attribute filters only).
+        /// </summary>
+        internal async Task<gView.Framework.Core.Data.Statistics.StatisticsResult> ExecuteStatisticsAsync(
+            IFeatureClass fc, IQueryFilter filter, gView.Framework.Core.Data.Statistics.StatisticsQuery query)
+        {
+            string tabName = ((fc is pgFeatureClass) ? ((pgFeatureClass)fc).DbTableName : "fc_" + fc.Name);
+
+            using (DbConnection connection = _dbProviderFactory.CreateConnection())
+            {
+                connection.ConnectionString = _conn.ConnectionString;
+                await connection.OpenAsync();
+
+                return await gView.Framework.Data.Statistics.StatisticsSql.ExecuteAsync(connection, gView.Framework.Core.Data.SqlDialect.PostgreSql, tabName, filter, query);
+            }
+        }
+
         async override public Task<IFeatureCursor> QueryIDs(IFeatureClass fc, string subFields, List<int> IDs, ISpatialReference toSRef, IDatumTransformations datumTransformations)
         {
             if (fc.Dataset is IFDBDataset fdbDs && fdbDs.SpatialIndexDef?.StorageType == GeometryStorageType.PostGis)

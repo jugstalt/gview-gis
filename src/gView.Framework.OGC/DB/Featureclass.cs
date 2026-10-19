@@ -1,11 +1,13 @@
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Data.Cursors;
 using gView.Framework.Core.Data.Filters;
+using gView.Framework.Core.Data.Statistics;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Core.Common;
 using gView.Framework.Data;
 using gView.Framework.Data.Extensions;
 using gView.Framework.Data.Filters;
+using gView.Framework.Data.Statistics;
 using System;
 using System.Data;
 using System.Data.Common;
@@ -13,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace gView.Framework.OGC.DB
 {
-    public class OgcSpatialFeatureclass : IFeatureClass2, IDebugging, ISupportsQueryPaging, ISupportsSqlDialect
+    public class OgcSpatialFeatureclass : IFeatureClass2, IDebugging, ISupportsQueryPaging, ISupportsSqlDialect, IStatisticsTableClass
     {
         protected string _name, _shapefield, _idfield;
         protected GeometryType _geomType;
@@ -495,6 +497,34 @@ namespace gView.Framework.OGC.DB
 
                 return Convert.ToInt32(result);
             }
+        }
+
+        #endregion
+
+        #region IStatisticsTableClass
+
+        /// <summary>
+        /// Aggregation for <c>outStatistics</c> / <c>groupByFieldsForStatistics</c> queries: a SQL
+        /// <c>GROUP BY</c> for plain attribute filters on datasets that know their table name and SQL dialect
+        /// (<see cref="OgcSpatialDataset.StatisticsTableName"/>), in memory aggregation for everything else
+        /// (spatial or row id filters, other datasets).
+        /// </summary>
+        async public Task<StatisticsResult> ExecuteStatistics(IQueryFilter filter, StatisticsQuery query)
+        {
+            filter ??= new QueryFilter();
+
+            string tableName = _dataset?.StatisticsTableName(this);
+            if (!String.IsNullOrEmpty(tableName) &&
+                _dataset.SqlDialect != SqlDialect.Unknown &&
+                StatisticsSql.CanExecuteInSql(filter))
+            {
+                using (DbConnection connection = await _dataset.OpenConnectionAsync())
+                {
+                    return await StatisticsSql.ExecuteAsync(connection, _dataset.SqlDialect, tableName, filter, query);
+                }
+            }
+
+            return await StatisticsAggregator.ExecuteAsync(this, filter, query);
         }
 
         #endregion

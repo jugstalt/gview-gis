@@ -417,6 +417,8 @@ namespace gView.DataSources.PostGIS
 
         public override SqlDialect SqlDialect => SqlDialect.PostgreSql;
 
+        public override string StatisticsTableName(OgcSpatialFeatureclass fc) => DbTableName(fc.Name);
+
         #endregion
     }
 }

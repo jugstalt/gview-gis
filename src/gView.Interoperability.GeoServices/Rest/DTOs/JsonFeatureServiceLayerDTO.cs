@@ -56,12 +56,6 @@ namespace gView.Interoperability.GeoServices.Rest.DTOs
         [JsonPropertyName("archivingInfo")]
         public ArchivingInfoClass ArchivingInfo { get; set; }
 
-        [JsonPropertyName("supportsStatistics")]
-        public bool SupportsStatistics { get; set; }
-
-        [JsonPropertyName("supportsAdvancedQueries")]
-        public bool SupportsAdvancedQueries { get; set; }
-
         [JsonPropertyName("supportsValidateSQL")]
         public bool SupportsValidateSQL { get; set; }
 
@@ -70,9 +64,6 @@ namespace gView.Interoperability.GeoServices.Rest.DTOs
 
         [JsonPropertyName("supportsCalculate")]
         public bool SupportsCalculate { get; set; }
-
-        [JsonPropertyName("advancedQueryCapabilities")]
-        public AdvancedQueryCapabilitiesClass AdvancedQueryCapabilities { get; set; }
 
         [JsonPropertyName("maxRecordCount")]
         public int MaxRecordCount { get; set; }
@@ -105,56 +96,6 @@ namespace gView.Interoperability.GeoServices.Rest.DTOs
 
             [JsonPropertyName("startArchivingMoment")]
             public int StartArchivingMoment { get; set; }
-        }
-
-        public class AdvancedQueryCapabilitiesClass
-        {
-            public AdvancedQueryCapabilitiesClass()
-            {
-                this.SupportsPagination = true;
-                this.SupportsReturningQueryExtent = true;
-                this.SupportsDistinct = true;
-                this.SupportsOrderBy = true;
-                this.SupportsQueryWithResultType = true;
-                this.SupportsReturningGeometryCentroid = true;
-                this.SupportsSqlExpression = true;
-            }
-
-            [JsonPropertyName("supportsPagination")]
-            public bool SupportsPagination { get; set; }
-
-            [JsonPropertyName("supportsTrueCurve")]
-            public bool SupportsTrueCurve { get; set; }
-
-            [JsonPropertyName("supportsQueryWithDistance")]
-            public bool SupportsQueryWithDistance { get; set; }
-
-            [JsonPropertyName("supportsReturningQueryExtent")]
-            public bool SupportsReturningQueryExtent { get; set; }
-
-            [JsonPropertyName("supportsStatistics")]
-            public bool SupportsStatistics { get; set; }
-
-            [JsonPropertyName("supportsHavingClause")]
-            public bool SupportsHavingClause { get; set; }
-
-            [JsonPropertyName("supportsCountDistinct")]
-            public bool SupportsCountDistinct { get; set; }
-
-            [JsonPropertyName("supportsOrderBy")]
-            public bool SupportsOrderBy { get; set; }
-
-            [JsonPropertyName("supportsDistinct")]
-            public bool SupportsDistinct { get; set; }
-
-            [JsonPropertyName("supportsQueryWithResultType")]
-            public bool SupportsQueryWithResultType { get; set; }
-
-            [JsonPropertyName("supportsReturningGeometryCentroid")]
-            public bool SupportsReturningGeometryCentroid { get; set; }
-
-            [JsonPropertyName("supportsSqlExpression")]
-            public bool SupportsSqlExpression { get; set; }
         }
 
         #endregion

@@ -28,6 +28,8 @@ namespace gView.DataSources.MSSqlSpatial
     {
         public override SqlDialect SqlDialect => SqlDialect.SqlServer;
 
+        public override string StatisticsTableName(gView.Framework.OGC.DB.OgcSpatialFeatureclass fc) => fc.Name;
+
         protected DbProviderFactory _factory = null;
         protected IFormatProvider _nhi = System.Globalization.CultureInfo.InvariantCulture.NumberFormat;
 

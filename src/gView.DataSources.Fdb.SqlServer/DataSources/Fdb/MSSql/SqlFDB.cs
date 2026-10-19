@@ -501,6 +501,24 @@ namespace gView.DataSources.Fdb.MSSql
             }
         }
 
+        /// <summary>
+        /// <c>SELECT ... GROUP BY</c> for <see cref="SqlFDBFeatureClass.ExecuteStatistics"/> (plain attribute filters only).
+        /// </summary>
+        internal async Task<gView.Framework.Core.Data.Statistics.StatisticsResult> ExecuteStatisticsAsync(
+            IFeatureClass fc, IQueryFilter filter, gView.Framework.Core.Data.Statistics.StatisticsQuery query)
+        {
+            string tabName = ((fc is SqlFDBFeatureClass)
+                ? ((SqlFDBFeatureClass)fc).DbTableName
+                : $"FC_{fc.Name}");
+
+            using (SqlConnection connection = new SqlConnection(_conn.ConnectionString))
+            {
+                await connection.OpenAsync();
+
+                return await gView.Framework.Data.Statistics.StatisticsSql.ExecuteAsync(connection, gView.Framework.Core.Data.SqlDialect.SqlServer, tabName, filter, query);
+            }
+        }
+
         async override public Task<IFeatureCursor> QueryIDs(IFeatureClass fc, string subFields, List<int> IDs, ISpatialReference toSRef, IDatumTransformations datumTransformations)
         {
             if (fc.Dataset is IFDBDataset fdbDs && fdbDs.SpatialIndexDef is MSSpatialIndex msIndex)

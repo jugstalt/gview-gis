@@ -1398,6 +1398,16 @@ public class GeoServicesRestController : BaseController
             result.Description = map.GetLayerDescription(layerId);
             result.CopyrightText = map.GetLayerCopyrightText(layerId);
 
+            if (datasetElement.Class is ITableClass)
+            {
+                // the query operation (MapServer and FeatureServer) of every feature layer / table
+                // supports outStatistics, groupByFieldsForStatistics and orderByFields
+                result.SupportsStatistics = true;
+                result.SupportsAdvancedQueries = true;
+                result.AdvancedQueryCapabilities ??= new JsonLayerDTO.AdvancedQueryCapabilitiesClass();
+                result.AdvancedQueryCapabilities.SupportsStatistics = true;
+            }
+
             if (result is JsonFeatureServerLayerDTO)
             {
                 List<string> editOperations = new List<string>();

@@ -25,6 +25,12 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
     {
         public override SqlDialect SqlDialect => SqlDialect.SqlServer;
 
+        // same table / multi versioned view as SelectCommand
+        public override string StatisticsTableName(gView.Framework.OGC.DB.OgcSpatialFeatureclass fc)
+            => fc is SdeFeatureClass sdeFc && !String.IsNullOrWhiteSpace(sdeFc.MultiVersionedViewName)
+                ? sdeFc.MultiVersionedViewName
+                : fc.Name;
+
         protected DbProviderFactory _factory = null;
         protected IFormatProvider _nhi = System.Globalization.CultureInfo.InvariantCulture.NumberFormat;
 

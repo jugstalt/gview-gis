@@ -1527,6 +1527,21 @@ namespace gView.DataSources.Fdb.SQLite
             }
         }
 
+        /// <summary>
+        /// <c>SELECT ... GROUP BY</c> for <see cref="SQLiteFDBFeatureClass.ExecuteStatistics"/>
+        /// (plain attribute filters only, no geometry involved - a normal SQLite connection is enough
+        /// for classic and for native storage).
+        /// </summary>
+        internal async Task<gView.Framework.Core.Data.Statistics.StatisticsResult> ExecuteStatisticsAsync(
+            IFeatureClass fc, IQueryFilter filter, gView.Framework.Core.Data.Statistics.StatisticsQuery query)
+        {
+            using (var connection = new SQLiteConnection("Data Source=" + _filename))
+            {
+                await connection.OpenAsync();
+                return await gView.Framework.Data.Statistics.StatisticsSql.ExecuteAsync(connection, gView.Framework.Core.Data.SqlDialect.SQLite, FcTableName(fc), filter, query);
+            }
+        }
+
         async public override Task<IFeatureCursor> QueryIDs(IFeatureClass fc, string subFields, List<int> IDs, ISpatialReference toSRef, IDatumTransformations datumTransformations)
         {
             var storage = (fc.Dataset as IFDBDataset)?.SpatialIndexDef?.StorageType ?? GeometryStorageType.Classic;

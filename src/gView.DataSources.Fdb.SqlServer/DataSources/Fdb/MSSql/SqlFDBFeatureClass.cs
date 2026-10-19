@@ -1,6 +1,8 @@
 ﻿using gView.Framework.Core.Data;
 using gView.Framework.Core.Data.Cursors;
 using gView.Framework.Core.Data.Filters;
+using gView.Framework.Core.Data.Statistics;
+using gView.Framework.Data.Statistics;
 using gView.Framework.Core.FDB;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Core.Common;
@@ -13,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace gView.DataSources.Fdb.MSSql
 {
-    public class SqlFDBFeatureClass : IFeatureClass2, IRefreshable, IFeatureCursorRequiresWrapperForOrdering, ISupportsQueryPaging, ISupportsSqlDialect
+    public class SqlFDBFeatureClass : IFeatureClass2, IRefreshable, IFeatureCursorRequiresWrapperForOrdering, ISupportsQueryPaging, ISupportsSqlDialect, IStatisticsTableClass
     {
         private SqlFDB _fdb;
         private IDataset _dataset;
@@ -217,6 +219,27 @@ namespace gView.DataSources.Fdb.MSSql
             }
 
             return count;
+        }
+
+        #endregion
+
+        #region IStatisticsTableClass
+
+        /// <summary>
+        /// Aggregation for <c>outStatistics</c> / <c>groupByFieldsForStatistics</c> queries: a SQL
+        /// <c>GROUP BY</c> for plain attribute filters, in memory aggregation for everything else
+        /// (spatial or row id filters), see <see cref="StatisticsSql.CanExecuteInSql"/>.
+        /// </summary>
+        async public Task<StatisticsResult> ExecuteStatistics(IQueryFilter filter, StatisticsQuery query)
+        {
+            filter ??= new QueryFilter();
+
+            if (_fdb != null && StatisticsSql.CanExecuteInSql(filter))
+            {
+                return await _fdb.ExecuteStatisticsAsync(this, filter, query);
+            }
+
+            return await StatisticsAggregator.ExecuteAsync(this, filter, query);
         }
 
         #endregion
