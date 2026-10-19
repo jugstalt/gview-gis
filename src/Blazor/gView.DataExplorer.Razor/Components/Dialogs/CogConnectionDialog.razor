@@ -1,0 +1,73 @@
+@inherits ModalDialogFormBase<CogConnectionModel>
+
+<ModalDialogFormBase T="CogConnectionModel"
+                       OnDialogClose="base.OnDialogClose"
+                       Model="base.Model">
+    <FormContent>
+        <GvGrid ColumnCount="1">
+            <GvGridItem>
+                <GvCard Title="Cloud Optimized GeoTIFF">
+                    <GvCardContent>
+                        <MudTextField @bind-Value="Model.Urls"
+                                      Label="@(Model.Single ? "URL" : "URLs (one per line)")"
+                                      HelperText="http(s) URLs of GeoTIFF/COG files on a server that supports range requests; presigned or SAS URLs work as well."
+                                      Lines="@(Model.Single ? 1 : 6)"
+                                      Required="true"
+                                      Validation="@(new Func<string, Task<IEnumerable<string>>>(ValidateAsync))" />
+                    </GvCardContent>
+                </GvCard>
+            </GvGridItem>
+
+            @if (Model.Results.Count > 0)
+            {
+                <GvGridItem>
+                    <GvCard Title="Check">
+                        <GvCardContent>
+                            @foreach (var result in Model.Results)
+                            {
+                                <MudText Typo="Typo.body2" Color="@(result.Ok ? Color.Success : Color.Error)">
+                                    @(result.Ok ? "✓" : "✗") @result.Url.Split('?')[0]: @result.Message
+                                </MudText>
+                            }
+                        </GvCardContent>
+                    </GvCard>
+                </GvGridItem>
+            }
+        </GvGrid>
+    </FormContent>
+
+</ModalDialogFormBase>
+
+@code {
+    /// <summary>Opens every line; the form is valid only if all of them can be read.</summary>
+    private async Task<IEnumerable<string>> ValidateAsync(string text)
+    {
+        Model.Urls = text ?? "";
+        var lines = Model.Lines.ToArray();
+        Model.Results.Clear();
+
+        if (lines.Length == 0)
+        {
+            return new[] { "Enter at least one URL." };
+        }
+        if (Model.Single && lines.Length > 1)
+        {
+            return new[] { "Only one URL can be edited here." };
+        }
+        if (Model.Check is null)
+        {
+            return Array.Empty<string>();
+        }
+
+        foreach (var line in lines)
+        {
+            Model.Results.Add(await Model.Check(line));
+        }
+        StateHasChanged();
+
+        int failed = Model.Results.Count(r => !r.Ok);
+        return failed == 0
+            ? Array.Empty<string>()
+            : new[] { $"{failed} of {lines.Length} URL(s) cannot be read; remove or correct them." };
+    }
+}

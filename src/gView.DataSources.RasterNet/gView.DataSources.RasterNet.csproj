@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="RasterNet.Core" Version="0.26.4301" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\gView.Framework.Core\gView.Framework.Core.csproj" />
+    <ProjectReference Include="..\gView.Framework.Data\gView.Framework.Data.csproj" />
+    <ProjectReference Include="..\gView.Framework.Geometry\gView.Framework.Geometry.csproj" />
+    <ProjectReference Include="..\gView.Framework\gView.Framework.csproj" />
+  </ItemGroup>
+
+  <!-- RasterNet.Core as project reference until it is published as NuGet package:
+       the repository rasterLib is expected next to gview-gis. -->
+
+</Project>
