@@ -51,7 +51,7 @@ namespace gView.Interoperability.GeoServices.Rest.DTOs
         public string CopyrightText { get; set; }
 
         [JsonPropertyName("supportsDynamicLayers")]
-        public bool SupportsDynamicLayers => true;
+        public bool SupportsDynamicLayers { get; set; } = true;
 
         [JsonPropertyName("layers")]
         public Layer[] Layers { get; set; }

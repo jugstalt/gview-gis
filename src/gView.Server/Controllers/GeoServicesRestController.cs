@@ -237,7 +237,8 @@ public class GeoServicesRestController : BaseController
                     },
                     MaxImageWidth = map.MapServiceProperties.MaxImageWidth,
                     MaxImageHeight = map.MapServiceProperties.MaxImageHeight,
-                    MaxRecordCount = map.MapServiceProperties.MaxRecordCount
+                    MaxRecordCount = map.MapServiceProperties.MaxRecordCount,
+                    SupportsDynamicLayers = map.MapServiceProperties.IsCapabilityEnabled(RestCapability.DynamicLayers, null, true)
                 });
             }
         });
@@ -1394,18 +1395,33 @@ public class GeoServicesRestController : BaseController
                 : EsriGeometryType.esriGeometryNull.ToString();
             result.HasZ = (datasetElement.Class as IFeatureClass)?.HasZ ?? false;
             result.HasM = (datasetElement.Class as IFeatureClass)?.HasM ?? false;
-            result.SupportsDynamicLegends = tocElement?.Layers?.Any(l => l is IFeatureLayer) ?? false;
+            result.SupportsDynamicLegends = map.MapServiceProperties.IsCapabilityEnabled(
+                RestCapability.DynamicLegends, layerId,
+                tocElement?.Layers?.Any(l => l is IFeatureLayer) ?? false);
             result.Description = map.GetLayerDescription(layerId);
             result.CopyrightText = map.GetLayerCopyrightText(layerId);
 
             if (datasetElement.Class is ITableClass)
             {
                 // the query operation (MapServer and FeatureServer) of every feature layer / table
-                // supports outStatistics, groupByFieldsForStatistics and orderByFields
-                result.SupportsStatistics = true;
-                result.SupportsAdvancedQueries = true;
-                result.AdvancedQueryCapabilities ??= new JsonLayerDTO.AdvancedQueryCapabilitiesClass();
-                result.AdvancedQueryCapabilities.SupportsStatistics = true;
+                // supports outStatistics, groupByFieldsForStatistics and orderByFields.
+                // Each capability can be switched on/off per service and layer in gView Carto.
+                var props = map.MapServiceProperties;
+                bool On(RestCapability capability) => props.IsCapabilityEnabled(capability, layerId, true);
+
+                var advanced = result.AdvancedQueryCapabilities ??= new JsonLayerDTO.AdvancedQueryCapabilitiesClass();
+
+                advanced.SupportsStatistics = result.SupportsStatistics = On(RestCapability.Statistics);
+                advanced.SupportsPagination = On(RestCapability.Pagination);
+                advanced.SupportsOrderBy = On(RestCapability.OrderBy);
+                advanced.SupportsDistinct = On(RestCapability.Distinct);
+                advanced.SupportsReturningQueryExtent = On(RestCapability.ReturningQueryExtent);
+
+                result.SupportsAdvancedQueries = advanced.SupportsStatistics ||
+                                                 advanced.SupportsPagination ||
+                                                 advanced.SupportsOrderBy ||
+                                                 advanced.SupportsDistinct ||
+                                                 advanced.SupportsReturningQueryExtent;
             }
 
             if (result is JsonFeatureServerLayerDTO)

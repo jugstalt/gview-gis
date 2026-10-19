@@ -187,6 +187,61 @@
                                              @bind-Value="mapServiceProperties.MaxRecordCount" />
                         </GvCardContent>
                     </GvCard>
+
+                    <GvCard Title="REST Capabilities (Service)">
+                        <GvCardContent>
+                            @GvUtilities.InfoText("Auto: the capability is derived from the data source (default). On/Off: the setting is applied to all layers, unless a layer overrides it. Capabilities that are switched off are also rejected by the server.")
+
+                            @foreach (var capability in _serviceCapabilities)
+                            {
+                                <MudSelect T="CapabilitySwitch" Label="@CapabilityLabel(capability)"
+                                           Value="mapServiceProperties.GetCapability(capability)"
+                                           ValueChanged="(value) => mapServiceProperties.SetCapability(capability, value)">
+                                    @(GvUtilities.EnumToSelectItems<CapabilitySwitch>())
+                                </MudSelect>
+                            }
+                        </GvCardContent>
+                    </GvCard>
+
+                    <GvCard Title="REST Capabilities (Layers)">
+                        <GvCardContent>
+                            @GvUtilities.InfoText("Click a cell to change: Auto (indeterminate) → On (checked) → Off (unchecked). A layer setting overrides the service setting.")
+
+                            @if (_tableLayers.Length > 0)
+                            {
+                                <GvScrollable>
+                                    <table style="width:100%;text-align:left">
+                                        <tr>
+                                            <th>Layer</th>
+                                            @foreach (var capability in _layerCapabilities)
+                                            {
+                                                <th>
+                                                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="MudBlazor.Size.Small"
+                                                               OnClick="() => CycleAllLayers(mapServiceProperties, capability)">
+                                                        @CapabilityLabel(capability)
+                                                    </MudButton>
+                                                </th>
+                                            }
+                                        </tr>
+                                        @foreach (var layer in _tableLayers)
+                                        {
+                                            <tr>
+                                                <td>@GetLayerTitle(layer)</td>
+                                                @foreach (var capability in _layerCapabilities)
+                                                {
+                                                    <td>
+                                                        <MudIconButton Icon="@SwitchIcon(mapServiceProperties.GetLayerCapability(layer.ID, capability))"
+                                                                       Size="MudBlazor.Size.Small"
+                                                                       OnClick="() => CycleLayer(mapServiceProperties, layer.ID, capability)" />
+                                                    </td>
+                                                }
+                                            </tr>
+                                        }
+                                    </table>
+                                </GvScrollable>
+                            }
+                        </GvCardContent>
+                    </GvCard>
                 }
             }
         </MudContainer>
@@ -219,6 +274,77 @@
     private Page _currentTab = Page.General;
 
     private MudTextField<string>? description, copyright;
+
+    private static readonly RestCapability[] _serviceCapabilities =
+    [
+        RestCapability.Statistics, RestCapability.Pagination, RestCapability.OrderBy,
+        RestCapability.Distinct, RestCapability.ReturningQueryExtent, RestCapability.DynamicLegends,
+        RestCapability.DynamicLayers
+    ];
+
+    private static readonly RestCapability[] _layerCapabilities =
+    [
+        RestCapability.Statistics, RestCapability.Pagination, RestCapability.OrderBy,
+        RestCapability.Distinct, RestCapability.ReturningQueryExtent, RestCapability.DynamicLegends
+    ];
+
+    private ILayer[] _tableLayers = [];
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        _tableLayers = Model.Map?.MapElements?
+            .OfType<ILayer>()
+            .Where(l => l.Class is ITableClass)
+            .ToArray() ?? [];
+    }
+
+    private static string CapabilityLabel(RestCapability capability) => capability switch
+    {
+        RestCapability.Statistics => "Statistics",
+        RestCapability.Pagination => "Pagination",
+        RestCapability.OrderBy => "Order By",
+        RestCapability.Distinct => "Distinct",
+        RestCapability.ReturningQueryExtent => "Query Extent",
+        RestCapability.DynamicLegends => "Dynamic Legends",
+        RestCapability.DynamicLayers => "Dynamic Layers",
+        _ => capability.ToString()
+    };
+
+    private static string SwitchIcon(CapabilitySwitch value) => value switch
+    {
+        CapabilitySwitch.On => MudBlazor.Icons.Material.Filled.CheckBox,
+        CapabilitySwitch.Off => MudBlazor.Icons.Material.Filled.CheckBoxOutlineBlank,
+        _ => MudBlazor.Icons.Material.Filled.IndeterminateCheckBox
+    };
+
+    private static CapabilitySwitch NextSwitch(CapabilitySwitch value) => value switch
+    {
+        CapabilitySwitch.Auto => CapabilitySwitch.On,
+        CapabilitySwitch.On => CapabilitySwitch.Off,
+        _ => CapabilitySwitch.Auto
+    };
+
+    private void CycleLayer(MapServiceProperties properties, int layerId, RestCapability capability)
+        => properties.SetLayerCapability(layerId, capability, NextSwitch(properties.GetLayerCapability(layerId, capability)));
+
+    private void CycleAllLayers(MapServiceProperties properties, RestCapability capability)
+    {
+        // all layers get the next state of the first layer
+        var next = NextSwitch(_tableLayers.Length > 0 ? properties.GetLayerCapability(_tableLayers[0].ID, capability) : CapabilitySwitch.Auto);
+        foreach (var layer in _tableLayers)
+        {
+            properties.SetLayerCapability(layer.ID, capability, next);
+        }
+    }
+
+    private string GetLayerTitle(ILayer layer)
+    {
+        var tocElement = Model.Map?.TOC?.GetTOCElement(layer);
+
+        return tocElement is not null ? $"{tocElement.Name} ({layer.Title})" : layer.Title;
+    }
 
     protected override void OnInitialized()
     {

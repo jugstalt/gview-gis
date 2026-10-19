@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 9.26.4301
+
+## Added
+
+- GeoServices REST: query operation supports `outStatistics` and `groupByFieldsForStatistics`
+  (MapServer and FeatureServer) with `count`, `sum`, `min`, `max`, `avg`, `stddev` and `var`
+  (sample formula), several group-by fields, `orderByFields` on group-by fields / statistic
+  names, `resultOffset` / `resultRecordCount` on the aggregated rows. Field names are checked
+  against the table fields; incompatible parameters (`returnIdsOnly`, `returnCountOnly`,
+  `returnDistinctValues`, `returnExtentOnly`) are rejected.
+  - New interface `IStatisticsTableClass`: FDB SQLite / PostgreSql / SqlServer, PostGIS,
+    SQL Server Spatial and SDE aggregate with a SQL `GROUP BY` (plain attribute filters).
+    All other data sources, and spatial / object id filters, are aggregated in memory
+    (`StatisticsAggregator`).
+  - New map service property `MaxStatisticsRecordScan` (default 1,000,000): max. number of
+    records an in-memory aggregation may read.
+- GeoServices REST: layers of MapServer and FeatureServer report `supportsStatistics` and
+  `supportsAdvancedQueries` (and the same flags in `advancedQueryCapabilities`) for feature
+  layers and tables. `advancedQueryCapabilities` is now also part of MapServer layers.
+- Carto: map settings offer REST capabilities (Statistics, Pagination, Order By, Distinct,
+  Query Extent, Dynamic Legends, Dynamic Layers) per map service and per layer, each
+  Auto / On / Off. A layer setting overrides the service setting; capabilities that are
+  switched off are also rejected by the query operation.
+- New test project `gView.Framework.Data.Tests`.
+
 ## 8.26.4001
 
 ## Added

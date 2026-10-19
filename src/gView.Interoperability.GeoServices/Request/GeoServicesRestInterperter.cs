@@ -379,6 +379,11 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
 
         if (!String.IsNullOrWhiteSpace(_exportMap.DynamicLayers))
         {
+            if (!sender.MapServiceProperties.IsCapabilityEnabled(RestCapability.DynamicLayers, null, true))
+            {
+                throw new MapServerException("Service does not support dynamicLayers");
+            }
+
             #region Apply Dynamic Layers
 
             var jsonDynamicLayers = JSerializer.Deserialize<JsonDynamicLayerDTO[]>(_exportMap.DynamicLayers);
@@ -498,6 +503,8 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
 
             using (var serviceMap = await context.CreateServiceMapInstance())
             {
+                query.CheckQueryCapabilities(serviceMap.MapServiceProperties, query.LayerId);
+
                 maxRecordCount = query.ReturnIdsOnly == true ?   // return all Ids!
                                 int.MaxValue :
                                 serviceMap.MapServiceProperties.MaxRecordCount;

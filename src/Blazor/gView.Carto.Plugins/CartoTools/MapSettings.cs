@@ -106,6 +106,7 @@ internal class MapSettings : ICartoButton
                 properties.MaxImageHeight = clone.MapServiceProperties.MaxImageHeight;
                 properties.MaxRecordCount = clone.MapServiceProperties.MaxRecordCount;
                 properties.MaxStatisticsRecordScan = clone.MapServiceProperties.MaxStatisticsRecordScan;
+                properties.CopyCapabilitiesFrom((MapServiceProperties)clone.MapServiceProperties);
             }
 
             #endregion
