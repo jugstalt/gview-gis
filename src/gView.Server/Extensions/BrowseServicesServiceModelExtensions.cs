@@ -12,6 +12,9 @@ internal static class BrowseServicesServiceModelExtensions
             .Replace("{onlineresource}", model.OnlineResource)
             .Replace("{service}", model.MapService.Name)
             .Replace("{folder}", model.MapService.Folder)
+            .Replace("{folder|_}", String.IsNullOrWhiteSpace(model.MapService.Folder)  // OGC API: "_" is the root folder
+                                            ? "_"
+                                            : model.MapService.Folder)
             .Replace("{folder/service}", $"{(String.IsNullOrWhiteSpace(model.MapService.Folder)
                                             ? ""
                                             : $"{model.MapService.Folder}/")}{model.MapService.Name}")

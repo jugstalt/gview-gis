@@ -1435,6 +1435,8 @@ namespace gView.Framework.OGC.DB
 
         virtual public string CaseInsensitivLikeOperator => "like";
 
+        virtual public SqlDialect SqlDialect => SqlDialect.Unknown;
+
         #endregion
 
         virtual protected string ModifyConnectionString(string connectionString)

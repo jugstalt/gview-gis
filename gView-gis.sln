@@ -239,6 +239,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "_build", "build\_build.cspr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.DataSources.RasterNet", "src\gView.DataSources.RasterNet\gView.DataSources.RasterNet.csproj", "{E3F32F06-6D93-4D0E-94C5-B3380C81F0B6}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Interoperability.OgcApi", "src\gView.Interoperability.OgcApi\gView.Interoperability.OgcApi.csproj", "{BE5960D2-AF20-45ED-BC40-70E060ECEB2B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Interoperability.OgcApi.Tests", "src\tests\gView.Interoperability.OgcApi.Tests\gView.Interoperability.OgcApi.Tests.csproj", "{40DEF0D4-0143-4804-A0FC-35DE957C359C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Interoperability.Extensions.Tests", "src\tests\gView.Interoperability.Extensions.Tests\gView.Interoperability.Extensions.Tests.csproj", "{5FB69706-AD0F-4A2C-A6C2-449D16150174}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1479,18 +1485,6 @@ Global
 		{219B6608-BF08-48E7-91BB-CEDA1714DB74}.Release|x64.Build.0 = Release|Any CPU
 		{219B6608-BF08-48E7-91BB-CEDA1714DB74}.Release|x86.ActiveCfg = Release|Any CPU
 		{219B6608-BF08-48E7-91BB-CEDA1714DB74}.Release|x86.Build.0 = Release|Any CPU
-		{E3F32F06-6D93-4D0E-94C5-B3380C81F0B6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E3F32F06-6D93-4D0E-94C5-B3380C81F0B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E3F32F06-6D93-4D0E-94C5-B3380C81F0B6}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{E3F32F06-6D93-4D0E-94C5-B3380C81F0B6}.Debug|x64.Build.0 = Debug|Any CPU
-		{E3F32F06-6D93-4D0E-94C5-B3380C81F0B6}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{E3F32F06-6D93-4D0E-94C5-B3380C81F0B6}.Debug|x86.Build.0 = Debug|Any CPU
-		{E3F32F06-6D93-4D0E-94C5-B3380C81F0B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E3F32F06-6D93-4D0E-94C5-B3380C81F0B6}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E3F32F06-6D93-4D0E-94C5-B3380C81F0B6}.Release|x64.ActiveCfg = Release|Any CPU
-		{E3F32F06-6D93-4D0E-94C5-B3380C81F0B6}.Release|x64.Build.0 = Release|Any CPU
-		{E3F32F06-6D93-4D0E-94C5-B3380C81F0B6}.Release|x86.ActiveCfg = Release|Any CPU
-		{E3F32F06-6D93-4D0E-94C5-B3380C81F0B6}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1610,7 +1604,6 @@ Global
 		{380C3D65-0FEE-4A07-88CD-B25A51826122} = {99EB51DE-8955-38EC-877F-A3DFE85F1030}
 		{0E45C9A7-97C4-4A64-9F11-95C4896E1AC5} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 		{219B6608-BF08-48E7-91BB-CEDA1714DB74} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
-		{E3F32F06-6D93-4D0E-94C5-B3380C81F0B6} = {84A4527B-D47D-4E2A-80F0-31C6569B1ED2}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {11C25FC0-EB32-4DE1-9CBB-CF2D68D1AA9B}

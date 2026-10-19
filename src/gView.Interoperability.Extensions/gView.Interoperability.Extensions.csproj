@@ -7,6 +7,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\gView.Framework.Core\gView.Framework.Core.csproj" />
+    <ProjectReference Include="..\gView.Framework.Data\gView.Framework.Data.csproj" />
+    <ProjectReference Include="..\gView.Framework.Geometry\gView.Framework.Geometry.csproj" />
+    <ProjectReference Include="..\gView.Editor.Core\gView.Editor.Core.csproj" />
+    <ProjectReference Include="..\gView.Plugins.Modules\gView.Plugins.Modules.csproj" />
   </ItemGroup>
 
 </Project>

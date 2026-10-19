@@ -26,6 +26,39 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   `…+02:00`) in addition to epoch milliseconds and the existing text formats.
 - New test projects `gView.DataSources.PostGIS.Tests` and
   `gView.Interoperability.GeoServices.Tests`.
+- gView Server: OGC API - Features (read access) for every map service, new project
+  `gView.Interoperability.OgcApi` (docs: `src/docs/*/server/ogcapi.md`).
+  - Part 1 Core, Part 2 CRS by Reference, Part 3 Queryables + queryables as query parameters,
+    JSON/GeoJSON and HTML, OpenAPI 3.0 definition per service (`/api`, Swagger UI with `?f=html`).
+  - URLs `/ogcapi/{folder}/{service}/...` (`_` for the root folder), `/ogcapi` lists all
+    services. Feature layers are collections `c{layerId}`, the feature id is the OID.
+  - New access rule interface `_ogcapi` (+ `query` for features). Missing rights return real
+    `401` (with `WWW-Authenticate: Basic`) / `403` status codes.
+  - New marker interface `ISupportsQueryPaging` for feature classes that page natively
+    (PostGIS, SpatiaLite, GeoPackage, MSSql, FDB, MongoDb); other sources (e.g. Shape) are
+    paged by skipping records.
+- New test project `gView.Interoperability.OgcApi.Tests`.
+- OGC API - Features: CQL2-Text filter (`filter`, Part 3 Filtering): comparisons (also
+  property-property), `AND`/`OR`/`NOT`, `IS NULL`, `LIKE`, `BETWEEN`, `IN`, `CASEI`,
+  `DATE(...)`/`TIMESTAMP(...)` and boolean literals. Property filter query parameters use the
+  same translation and now also support date and boolean fields.
+- OGC API - Maps (Part 1): `/map` (service, `collections=` selects layers) and
+  `/collections/{id}/map` with `bbox`/`bbox-crs`, `crs`, `width`/`height`, `scale-denominator`,
+  `mm-per-pixel`, `transparent`, `bgcolor`, PNG/JPEG and `Content-Crs`/`Content-Bbox` headers.
+  Raster layers are now collections too (map only). New access type `map` for the `_ogcapi` interface.
+- OGC API - Features Part 4 (editing): `POST` items (`201` + `Location`), `PUT` (replace),
+  `PATCH` (JSON merge patch) and `DELETE` item, `Content-Crs` for the body geometry, `OPTIONS`
+  with an `Allow` header from the layer's edit statements and the user's `edit` right (used by
+  QGIS). Edits run in an edit session (transaction) if the data source supports it.
+- New `FeatureEditService` (`gView.Interoperability.Extensions`): the edit rules of GeoServices
+  REST FeatureServer (edit statements, insert/update validation, projection into the feature
+  class CRS, geometry cleaning, edit sessions), now shared by GeoServices REST and OGC API.
+- New test project `gView.Interoperability.Extensions.Tests`.
+- New `MapImageRenderer` (`gView.Interoperability.Extensions`): the map image rendering of
+  WMS GetMap, now shared by WMS and OGC API - Maps.
+- New interface `ISupportsSqlDialect` (`SqlDialect` PostgreSql / SqlServer / SQLite) on PostGIS,
+  MSSql, SpatiaLite, GeoPackage and FDB feature classes, used to write dialect specific date and
+  boolean literals.
 
 ## Fixed
 

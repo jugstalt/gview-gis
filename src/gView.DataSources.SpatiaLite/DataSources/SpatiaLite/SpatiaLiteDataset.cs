@@ -488,6 +488,8 @@ namespace gView.DataSources.SpatiaLite
 
         public override string CaseInsensitivLikeOperator => "like";
 
+        public override SqlDialect SqlDialect => SqlDialect.SQLite;
+
         protected override bool DbImplementsTransactions => true;
 
         #endregion

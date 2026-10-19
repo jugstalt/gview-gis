@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace gView.Framework.OGC.DB
 {
-    public class OgcSpatialFeatureclass : IFeatureClass2, IDebugging
+    public class OgcSpatialFeatureclass : IFeatureClass2, IDebugging, ISupportsQueryPaging, ISupportsSqlDialect
     {
         protected string _name, _shapefield, _idfield;
         protected GeometryType _geomType;
@@ -515,6 +515,8 @@ namespace gView.Framework.OGC.DB
         {
             get { return _dataset; }
         }
+
+        public SqlDialect SqlDialect => _dataset?.SqlDialect ?? SqlDialect.Unknown;
 
         #endregion
 

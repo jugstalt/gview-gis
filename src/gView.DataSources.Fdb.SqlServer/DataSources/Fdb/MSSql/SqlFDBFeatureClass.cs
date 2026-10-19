@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace gView.DataSources.Fdb.MSSql
 {
-    public class SqlFDBFeatureClass : IFeatureClass2, IRefreshable, IFeatureCursorRequiresWrapperForOrdering
+    public class SqlFDBFeatureClass : IFeatureClass2, IRefreshable, IFeatureCursorRequiresWrapperForOrdering, ISupportsQueryPaging, ISupportsSqlDialect
     {
         private SqlFDB _fdb;
         private IDataset _dataset;
@@ -296,6 +296,8 @@ namespace gView.DataSources.Fdb.MSSql
         {
             get { return _dataset; }
         }
+
+        public SqlDialect SqlDialect => SqlDialect.SqlServer;
         #endregion
 
         #region IGeometryDef Member

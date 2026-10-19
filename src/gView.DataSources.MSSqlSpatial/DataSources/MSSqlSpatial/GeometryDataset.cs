@@ -26,6 +26,8 @@ namespace gView.DataSources.MSSqlSpatial
     [ImportFeatureClassNameWithSchema]
     public class GeometryDataset : gView.Framework.OGC.DB.OgcSpatialDataset, IFeatureImportEvents
     {
+        public override SqlDialect SqlDialect => SqlDialect.SqlServer;
+
         protected DbProviderFactory _factory = null;
         protected IFormatProvider _nhi = System.Globalization.CultureInfo.InvariantCulture.NumberFormat;
 
