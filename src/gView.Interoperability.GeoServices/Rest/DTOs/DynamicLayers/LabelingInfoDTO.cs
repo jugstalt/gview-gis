@@ -1,4 +1,5 @@
 ﻿using gView.Framework.Cartography.Rendering;
+using gView.Framework.Cartography.Rendering.Abstractions;
 using gView.Framework.Core.Carto;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Core.Symbology;
@@ -71,7 +72,75 @@ namespace gView.Interoperability.GeoServices.Rest.DTOs.DynamicLayers
                 _ => null
             };
 
+            if (labelRenderer.TextSymbol != null
+                && TextAlignmentFromPlacement(LabelPlacement) is TextSymbolAlignment alignment)
+            {
+                labelRenderer.TextSymbol.TextSymbolAlignment = alignment;
+            }
+
+            // ArcGIS: minScale = zoomed out limit, maxScale = zoomed in limit (0 = unlimited).
+            // gView: MinimumScale = zoomed in limit, MaximumScale = zoomed out limit.
+            if (MinScale.GetValueOrDefault() > 0 || MaxScale.GetValueOrDefault() > 0)
+            {
+                var scaleRenderer = new ScaleDependentLabelRenderer();
+                if (scaleRenderer.RendererItems.Create(labelRenderer) is IScaledependent scaleItem)
+                {
+                    scaleItem.MinimumScale = MaxScale.GetValueOrDefault();
+                    scaleItem.MaximumScale = MinScale.GetValueOrDefault();
+                    scaleRenderer.RendererItems.Add((IRendererGroupItem)scaleItem);
+
+                    return scaleRenderer;
+                }
+            }
+
             return labelRenderer;
+        }
+
+        /// <summary>
+        /// Maps esriServer(Point|Line)...Placement values (Above|Below|Center + Left|Center|Right) to a text alignment.
+        /// Returns null for unknown placements (symbol alignment is kept).
+        /// </summary>
+        static public TextSymbolAlignment? TextAlignmentFromPlacement(string placement)
+        {
+            if (String.IsNullOrEmpty(placement))
+            {
+                return null;
+            }
+
+            var vertical = placement.Contains("Above") ? 0 : placement.Contains("Below") ? 2 : placement.Contains("Center") ? 1 : -1;
+
+            if (placement.StartsWith("esriServerPointLabelPlacement"))
+            {
+                var horizontal = placement.EndsWith("Left") ? 0 : placement.EndsWith("Right") ? 2 : placement.EndsWith("Center") ? 1 : -1;
+
+                // placement left of the point: text ends at the point (right aligned), and vice versa
+                return (vertical, horizontal) switch
+                {
+                    (0, 0) => TextSymbolAlignment.rightAlignOver,
+                    (0, 1) => TextSymbolAlignment.Over,
+                    (0, 2) => TextSymbolAlignment.leftAlignOver,
+                    (1, 0) => TextSymbolAlignment.rightAlignCenter,
+                    (1, 1) => TextSymbolAlignment.Center,
+                    (1, 2) => TextSymbolAlignment.leftAlignCenter,
+                    (2, 0) => TextSymbolAlignment.rightAlignUnder,
+                    (2, 1) => TextSymbolAlignment.Under,
+                    (2, 2) => TextSymbolAlignment.leftAlignUnder,
+                    _ => null
+                };
+            }
+
+            if (placement.StartsWith("esriServerLinePlacement"))
+            {
+                return vertical switch
+                {
+                    0 => TextSymbolAlignment.Over,
+                    1 => TextSymbolAlignment.Center,
+                    2 => TextSymbolAlignment.Under,
+                    _ => null
+                };
+            }
+
+            return null;
         }
 
         #endregion

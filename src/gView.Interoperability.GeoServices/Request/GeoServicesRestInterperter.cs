@@ -406,7 +406,11 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
                         {
                             if (jsonDynamicLayer.DrawingInfo?.Renderer != null)
                             {
-                                dynLayer.FeatureRenderer = JsonRendererDTO.FromJsonRenderer(jsonDynamicLayer.DrawingInfo.Renderer);
+                                // unsupported renderer types (heatmap, dotDensity, ...) return null:
+                                // keep the renderer of the layer instead of drawing nothing
+                                dynLayer.FeatureRenderer =
+                                    JsonRendererDTO.FromJsonRenderer(jsonDynamicLayer.DrawingInfo.Renderer)
+                                    ?? dynLayer.FeatureRenderer;
                             }
                             else
                             {

@@ -29,6 +29,22 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   Auto / On / Off. A layer setting overrides the service setting; capabilities that are
   switched off are also rejected by the query operation.
 - New test project `gView.Framework.Data.Tests`.
+- GeoServices REST: `dynamicLayers` of the export operation accept more renderers.
+  - `uniqueValue` (`ValueMapRenderer`, several fields via `ManyValueMapRenderer`) and
+    `classBreaks` (`QuantityRenderer`), both with `defaultSymbol` and legend labels.
+  - Symbols: `esriSFS` hatch styles (`HatchSymbol`) and `esriSFSNull`, `esriSLSNull`,
+    `esriPMS` with `imageData` (png / jpeg / gif, max. 512 KB; `url` is not supported).
+  - `labelingInfo`: `minScale` / `maxScale` (`ScaleDependentLabelRenderer`) and `labelPlacement`
+    for points / lines (text alignment).
+  - Layer drawingInfo (`classBreaks` for `QuantityRenderer`, hatch styles) is written as well.
+  - Unsupported renderer types (`heatmap`, `dotDensity`, ...) no longer hide the layer: the
+    renderer of the layer is used.
+  - New tests in `gView.Interoperability.GeoServices.Tests`.
+
+## Fixed
+
+- GeoServices REST: `uniqueValue` drawingInfo no longer contains the internal
+  "all other values" key as a value.
 
 ## 8.26.4001
 

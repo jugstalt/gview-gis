@@ -109,5 +109,59 @@ namespace gView.Interoperability.GeoServices.Rest.DTOs
             }
             return "esriSLSSolid";
         }
+
+        /// <summary>
+        /// Maps an esriSFS hatch style to a gView hatch style. Returns null for esriSFSSolid, esriSFSNull and unknown styles.
+        /// </summary>
+        static public HatchStyle? ToHatchStyle(this string style)
+        {
+            switch (style)
+            {
+                case "esriSFSBackwardDiagonal":
+                    return HatchStyle.BackwardDiagonal;
+                case "esriSFSForwardDiagonal":
+                    return HatchStyle.ForwardDiagonal;
+                case "esriSFSCross":
+                    return HatchStyle.LargeGrid;
+                case "esriSFSDiagonalCross":
+                    return HatchStyle.DiagonalCross;
+                case "esriSFSHorizontal":
+                    return HatchStyle.Horizontal;
+                case "esriSFSVertical":
+                    return HatchStyle.Vertical;
+            }
+
+            return null;
+        }
+
+        static public string FromHatchStyle(this HatchStyle style)
+        {
+            switch (style)
+            {
+                case HatchStyle.BackwardDiagonal:
+                case HatchStyle.DarkDownwardDiagonal:
+                case HatchStyle.LightDownwardDiagonal:
+                    return "esriSFSBackwardDiagonal";
+                case HatchStyle.ForwardDiagonal:
+                case HatchStyle.DarkUpwardDiagonal:
+                case HatchStyle.LightUpwardDiagonal:
+                    return "esriSFSForwardDiagonal";
+                case HatchStyle.LargeGrid:
+                case HatchStyle.SmallGrid:
+                    return "esriSFSCross";
+                case HatchStyle.DiagonalCross:
+                    return "esriSFSDiagonalCross";
+                case HatchStyle.Horizontal:
+                case HatchStyle.DarkHorizontal:
+                case HatchStyle.LightHorizontal:
+                    return "esriSFSHorizontal";
+                case HatchStyle.Vertical:
+                case HatchStyle.DarkVertical:
+                case HatchStyle.LightVertical:
+                    return "esriSFSVertical";
+            }
+
+            return "esriSFSSolid";
+        }
     }
 }
