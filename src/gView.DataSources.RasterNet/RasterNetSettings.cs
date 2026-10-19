@@ -1,5 +1,6 @@
 using RasterNet;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Numerics;
 using System.Threading;
@@ -19,6 +20,14 @@ namespace gView.DataSources.RasterNet
     /// <item><c>blockcache-maxidle-minutes</c>: blocks not used for this long are released (default 10); 0 keeps them until the budget is needed.</item>
     /// <item><c>max-threads</c>: threads per request (default and 0: half of the cores, at most 8).</item>
     /// </list>
+    /// Rasters given as <c>http://</c> or <c>https://</c> URL (GeoTIFF/COG only) are read with range requests through a client
+    /// shared by the process; these keys configure them:
+    /// <list type="bullet">
+    /// <item><c>http-timeout-seconds</c>: timeout of one request (default 30).</item>
+    /// <item><c>http-retries</c>: retries after network errors, timeouts and HTTP 408/429/5xx (default 3).</item>
+    /// <item><c>http-headers</c>: headers for every request, as <c>Name=Value;Name2=Value2</c> (e.g. an API key).</item>
+    /// <item><c>http-probe-sidecars</c>: <c>true</c> to look for <c>.ovr</c> and <c>.aux.xml</c> next to the URL (default false).</item>
+    /// </list>
     /// </remarks>
     public static class RasterNetSettings
     {
@@ -35,6 +44,27 @@ namespace gView.DataSources.RasterNet
 
         /// <summary>The shared block cache, or null if it is disabled.</summary>
         public static BlockCache BlockCache => ReadOptions.BlockCache;
+
+        private static HttpSourceOptions s_httpOptions = HttpSourceOptions.Default;
+
+        /// <summary>How rasters given as URL are read: client, timeout, retries, headers, sidecar files.</summary>
+        public static HttpSourceOptions HttpOptions => Volatile.Read(ref s_httpOptions);
+
+        /// <summary>Replaces the HTTP settings for rasters opened from now on (e.g. with a client that has a proxy or signs requests).</summary>
+        public static void ConfigureHttp(HttpSourceOptions options)
+        {
+            ArgumentNullException.ThrowIfNull(options);
+            Volatile.Write(ref s_httpOptions, options);
+        }
+
+        /// <summary>True for an absolute <c>http://</c> or <c>https://</c> URL.</summary>
+        public static bool IsUrl(string path, out Uri uri)
+        {
+            uri = null;
+            return path != null &&
+                   (path.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || path.StartsWith("https://", StringComparison.OrdinalIgnoreCase)) &&
+                   Uri.TryCreate(path, UriKind.Absolute, out uri);
+        }
 
         /// <summary>Replaces the settings; the blocks of the previous cache are released.</summary>
         /// <param name="blockCacheMegabytes">Budget of the block cache in MB; 0 disables it.</param>
@@ -62,6 +92,17 @@ namespace gView.DataSources.RasterNet
             int threads = Parse(setting("max-threads"), "max-threads", DefaultMaxThreads) is > 0 and var t ? t : DefaultMaxThreads;
 
             Configure(megabytes, idleMinutes > 0 ? TimeSpan.FromMinutes(idleMinutes) : null, threads);
+
+            var http = HttpSourceOptions.Default;
+            ConfigureHttp(http with
+            {
+                Timeout = TimeSpan.FromSeconds(Parse(setting("http-timeout-seconds"), "http-timeout-seconds", http.Timeout.TotalSeconds) is > 0 and var s
+                    ? s
+                    : http.Timeout.TotalSeconds),
+                MaxRetries = Parse(setting("http-retries"), "http-retries", http.MaxRetries),
+                Headers = ParseHeaders(setting("http-headers")),
+                ProbeSidecars = ParseBool(setting("http-probe-sidecars"), "http-probe-sidecars", http.ProbeSidecars),
+            });
             return Describe();
         }
 
@@ -72,7 +113,42 @@ namespace gView.DataSources.RasterNet
             string cache = options.BlockCache is { } c
                 ? $"block cache {c.MaxBytes / (1024 * 1024)} MB, " + (c.MaxIdle is { } idle ? $"released after {idle.TotalMinutes:0.#} min idle" : "kept until the budget is needed")
                 : "block cache disabled";
-            return $"{cache}, {options.MaxDegreeOfParallelism} thread(s) per request";
+            var http = HttpOptions;
+            string headers = http.Headers is { Count: > 0 } h ? $", {h.Count} header(s)" : "";
+            string sidecars = http.ProbeSidecars ? ", sidecar files" : "";
+            return $"{cache}, {options.MaxDegreeOfParallelism} thread(s) per request; " +
+                   $"URLs: timeout {http.Timeout.TotalSeconds:0.#} s, {http.MaxRetries} retries{headers}{sidecars}";
+        }
+
+        /// <summary><c>Name=Value;Name2=Value2</c>; null if empty.</summary>
+        private static IReadOnlyDictionary<string, string> ParseHeaders(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                return null;
+            }
+            var headers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var part in text.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            {
+                int equals = part.IndexOf('=');
+                if (equals <= 0)
+                {
+                    throw new FormatException($"rasternet:http-headers must be Name=Value pairs separated by ';', not '{part}'.");
+                }
+                headers[part[..equals].Trim()] = part[(equals + 1)..].Trim();
+            }
+            return headers;
+        }
+
+        private static bool ParseBool(string text, string key, bool fallback)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                return fallback;
+            }
+            return bool.TryParse(text.Trim(), out bool value)
+                ? value
+                : throw new FormatException($"rasternet:{key} must be true or false, not '{text}'.");
         }
 
         private static ReadOptions Create(long megabytes, TimeSpan? maxIdle, int maxThreads) => new()

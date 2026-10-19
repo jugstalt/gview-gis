@@ -14,7 +14,7 @@ namespace gView.DataSources.RasterNet
 {
     /// <summary>
     /// Raster files read with RasterNet.Core, a managed and thread-safe raster library: GeoTIFF/COG
-    /// (lossless compressions and JPEG) and Arc/Info Binary Grids. It takes precedence over the GDAL dataset
+    /// (lossless compressions and JPEG) and Arc/Info Binary Grids, and GeoTIFF/COG given by an http(s) URL. It takes precedence over the GDAL dataset
     /// for these formats; files RasterNet cannot read are not added, so the next provider (GDAL) is used.
     /// </summary>
     [RegisterPlugIn("5D52DA35-EA83-4B52-ADD3-4EEF0FAB12AA")]
@@ -42,7 +42,9 @@ namespace gView.DataSources.RasterNet
             catch (Exception ex)
             {
                 // Not supported or not readable: leave the file to the next provider.
-                LastErrorMessage = $"{Path.GetFileName(filename)}: {ex.Message}";
+                // For a URL only the file name: the query may hold credentials.
+                string name = RasterNetSettings.IsUrl(filename, out var uri) ? RasterClass.TitleOf(uri) : Path.GetFileName(filename);
+                LastErrorMessage = $"{name}: {ex.Message}";
                 return null;
             }
         }

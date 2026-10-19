@@ -20,7 +20,7 @@ using RasterEnvelope = RasterNet.Envelope;
 namespace gView.DataSources.RasterNet
 {
     /// <summary>
-    /// One raster file read with RasterNet.Core. The raster is opened once and shared by all requests:
+    /// One raster file (or a GeoTIFF/COG given by its http(s) URL) read with RasterNet.Core. The raster is opened once and shared by all requests:
     /// RasterNet rasters are immutable after opening and can be read from any number of threads. Reads use the
     /// process-wide <see cref="RasterNetSettings"/> (block cache, threads per request).
     /// Rendering, identify and the grid settings behave like the GDAL raster class, so maps look the same.
@@ -39,6 +39,7 @@ namespace gView.DataSources.RasterNet
         private readonly IPolygon _polygon;
         private readonly RasterWorldFile _worldFile;
         private readonly bool _isGrid;
+        private readonly bool _remote;
 
         // Grid settings with the defaults of the GDAL raster class.
         private GridColorClass[] _colorClasses;
@@ -50,19 +51,31 @@ namespace gView.DataSources.RasterNet
 
         public RasterClass(IRasterDataset dataset, string filename, IPolygon polygon)
         {
-            var file = new FileInfo(filename);
-            _filename = file.FullName;
-            _title = file.Name;
             _dataset = dataset;
-            _raster = Raster.Open(_filename);
+            FileInfo file = null;
+            if (RasterNetSettings.IsUrl(filename, out var uri))
+            {
+                // A GeoTIFF/COG on a web server: read with range requests; no world file or .prj next to it.
+                _remote = true;
+                _filename = filename;
+                _title = TitleOf(uri);
+                _raster = Raster.Open(uri, RasterNetSettings.HttpOptions);
+            }
+            else
+            {
+                file = new FileInfo(filename);
+                _filename = file.FullName;
+                _title = file.Name;
+                _raster = Raster.Open(_filename);
+            }
 
             try
             {
                 var band = _raster.Bands[0];
                 _isGrid = _raster.Format == RasterFormat.ArcInfoBinaryGrid ||
                           (_raster.Bands.Count == 1 && band.DataType != RasterDataType.UInt8);
-                _worldFile = new RasterWorldFile(_raster.GeoTransform, FindWorldFile(file));
-                SpatialReference = file.FileSpatialReference() ?? ToSpatialReference(_raster.Crs);
+                _worldFile = new RasterWorldFile(_raster.GeoTransform, file != null ? FindWorldFile(file) : null);
+                SpatialReference = file?.FileSpatialReference() ?? ToSpatialReference(_raster.Crs);
                 _polygon = polygon ?? CreatePolygon();
             }
             catch
@@ -86,11 +99,18 @@ namespace gView.DataSources.RasterNet
 
         public ISpatialReference SpatialReference { get; set; }
 
-        public Task<IRasterPaintContext> BeginPaint(IDisplay display, ICancelTracker cancelTracker)
+        /// <summary>The name of the file in a URL (its last path segment), without the query.</summary>
+        internal static string TitleOf(Uri uri)
+        {
+            string name = Uri.UnescapeDataString(uri.Segments.Length > 0 ? uri.Segments[^1] : "").Trim('/');
+            return name.Length > 0 ? name : uri.Host;
+        }
+
+        public async Task<IRasterPaintContext> BeginPaint(IDisplay display, ICancelTracker cancelTracker)
         {
             if (CancelTracker.Canceled(cancelTracker))
             {
-                return Task.FromResult<IRasterPaintContext>(null);
+                return null;
             }
 
             IEnvelope bounds = display.DisplayTransformation.RotatedBounds();
@@ -100,14 +120,32 @@ namespace gView.DataSources.RasterNet
             }
             if (bounds == null || !(bounds.MaxX > bounds.MinX) || !(bounds.MaxY > bounds.MinY))
             {
-                return Task.FromResult<IRasterPaintContext>(null);
+                return null;
             }
 
             double cellSize = display.MapScale / (display.Dpi / 0.0254); // meters per screen pixel
             var plan = RasterRenderer.Plan(_raster, new RasterEnvelope(bounds.MinX, bounds.MinY, bounds.MaxX, bounds.MaxY), cellSize);
             if (plan.IsEmpty)
             {
-                return Task.FromResult<IRasterPaintContext>(null);
+                return null;
+            }
+
+            // Over HTTP the image is rendered asynchronously into a buffer first, so no thread waits for the network
+            // and the bitmap is not locked across an await; local files render straight into the bitmap.
+            byte[] remotePixels = null;
+            int remoteStride = plan.Width * 4;
+            if (_remote)
+            {
+                remotePixels = ArrayPool<byte>.Shared.Rent(remoteStride * plan.Height);
+                try
+                {
+                    await RenderAsync(plan, remotePixels.AsMemory(0, remoteStride * plan.Height), remoteStride);
+                }
+                catch
+                {
+                    ArrayPool<byte>.Shared.Return(remotePixels);
+                    throw;
+                }
             }
 
             var bitmap = Current.Engine.CreateBitmap(plan.Width, plan.Height, PixelFormat.Rgba32);
@@ -116,24 +154,38 @@ namespace gView.DataSources.RasterNet
                 var data = bitmap.LockBitmapPixelData(BitmapLockMode.WriteOnly, PixelFormat.Rgba32);
                 try
                 {
-                    Render(plan, data.Scan0, data.Stride);
+                    if (remotePixels != null)
+                    {
+                        CopyRows(remotePixels, remoteStride, data.Scan0, data.Stride, plan.Height);
+                    }
+                    else
+                    {
+                        Render(plan, data.Scan0, data.Stride);
+                    }
                 }
                 finally
                 {
                     bitmap.UnlockBitmapPixelData(data);
                 }
 
-                return Task.FromResult<IRasterPaintContext>(new RasterPaintContext2(bitmap)
+                return new RasterPaintContext2(bitmap)
                 {
                     PicPoint1 = new Point(plan.TopLeft.X, plan.TopLeft.Y),
                     PicPoint2 = new Point(plan.TopRight.X, plan.TopRight.Y),
                     PicPoint3 = new Point(plan.BottomLeft.X, plan.BottomLeft.Y),
-                });
+                };
             }
             catch
             {
                 bitmap.Dispose();
                 throw;
+            }
+            finally
+            {
+                if (remotePixels != null)
+                {
+                    ArrayPool<byte>.Shared.Return(remotePixels);
+                }
             }
         }
 
@@ -145,23 +197,63 @@ namespace gView.DataSources.RasterNet
         {
             var pixels = new Span<byte>((void*)scan0, stride * plan.Height);
 
-            if (!_isGrid)
+            if (_isGrid && _renderRawGridValues)
             {
-                RasterRenderer.Render(plan, pixels, stride, new RenderOptions { ReadOptions = RasterNetSettings.ReadOptions });
-            }
-            else if (_renderRawGridValues)
-            {
-                RenderRawValues(plan, pixels, stride);
+                var values = ArrayPool<float>.Shared.Rent(plan.Width * plan.Height);
+                try
+                {
+                    RasterRenderer.RenderValues(plan, 0, values, new RenderOptions { ReadOptions = RasterNetSettings.ReadOptions });
+                    EncodeRawValues(plan, values, pixels, stride);
+                }
+                finally
+                {
+                    ArrayPool<float>.Shared.Return(values);
+                }
             }
             else
             {
-                RasterRenderer.Render(plan, pixels, stride, new RenderOptions
+                RasterRenderer.Render(plan, pixels, stride, CreateRenderOptions());
+            }
+        }
+
+        /// <summary>Like <see cref="Render"/>, asynchronously into a buffer (rasters over HTTP).</summary>
+        private async Task RenderAsync(RenderPlan plan, Memory<byte> pixels, int stride)
+        {
+            if (_isGrid && _renderRawGridValues)
+            {
+                var values = ArrayPool<float>.Shared.Rent(plan.Width * plan.Height);
+                try
                 {
-                    GridRenderer = new ColorClassRenderer(ToColorClasses(_colorClasses)),
-                    Hillshade = _useHillShade && HasDirection(_hillShade) ? new Hillshade(_hillShade[0], _hillShade[1], _hillShade[2]) : null,
-                    IgnoreValue = _useIgnoreValue ? _ignoreValue : null,
-                    ReadOptions = RasterNetSettings.ReadOptions,
-                });
+                    await RasterRenderer.RenderValuesAsync(plan, 0, values, new RenderOptions { ReadOptions = RasterNetSettings.ReadOptions });
+                    EncodeRawValues(plan, values, pixels.Span, stride);
+                }
+                finally
+                {
+                    ArrayPool<float>.Shared.Return(values);
+                }
+            }
+            else
+            {
+                await RasterRenderer.RenderAsync(plan, pixels, stride, CreateRenderOptions());
+            }
+        }
+
+        /// <summary>Images with the defaults; grids with gView's color classes, hillshade and ignore value.</summary>
+        private RenderOptions CreateRenderOptions() => !_isGrid
+            ? new RenderOptions { ReadOptions = RasterNetSettings.ReadOptions }
+            : new RenderOptions
+            {
+                GridRenderer = new ColorClassRenderer(ToColorClasses(_colorClasses)),
+                Hillshade = _useHillShade && HasDirection(_hillShade) ? new Hillshade(_hillShade[0], _hillShade[1], _hillShade[2]) : null,
+                IgnoreValue = _useIgnoreValue ? _ignoreValue : null,
+                ReadOptions = RasterNetSettings.ReadOptions,
+            };
+
+        private static unsafe void CopyRows(byte[] source, int sourceStride, IntPtr target, int targetStride, int rows)
+        {
+            for (int y = 0; y < rows; y++)
+            {
+                source.AsSpan(y * sourceStride, sourceStride).CopyTo(new Span<byte>((byte*)target + (long)y * targetStride, sourceStride));
             }
         }
 
@@ -169,37 +261,28 @@ namespace gView.DataSources.RasterNet
         /// The values times 100 as 24-bit sign-magnitude integers in B, G, R (alpha 255), as the GDAL raster class
         /// encodes them for clients that read the values from the image; NoData is transparent.
         /// </summary>
-        private void RenderRawValues(RenderPlan plan, Span<byte> pixels, int stride)
+        private static void EncodeRawValues(RenderPlan plan, float[] values, Span<byte> pixels, int stride)
         {
-            var values = ArrayPool<float>.Shared.Rent(plan.Width * plan.Height);
-            try
+            for (int y = 0; y < plan.Height; y++)
             {
-                RasterRenderer.RenderValues(plan, 0, values, new RenderOptions { ReadOptions = RasterNetSettings.ReadOptions });
-                for (int y = 0; y < plan.Height; y++)
+                var row = pixels.Slice(y * stride, plan.Width * 4);
+                for (int x = 0; x < plan.Width; x++)
                 {
-                    var row = pixels.Slice(y * stride, plan.Width * 4);
-                    for (int x = 0; x < plan.Width; x++)
+                    float value = values[y * plan.Width + x];
+                    var pixel = row.Slice(4 * x, 4);
+                    if (float.IsNaN(value))
                     {
-                        float value = values[y * plan.Width + x];
-                        var pixel = row.Slice(4 * x, 4);
-                        if (float.IsNaN(value))
-                        {
-                            pixel.Clear();
-                            continue;
-                        }
-
-                        long scaled = (long)(value * 100f);
-                        long magnitude = Math.Abs(scaled) & 0x7FFFFF;
-                        pixel[0] = (byte)magnitude;
-                        pixel[1] = (byte)(magnitude >> 8);
-                        pixel[2] = (byte)((magnitude >> 16) + (scaled < 0 ? 0x80 : 0));
-                        pixel[3] = 255;
+                        pixel.Clear();
+                        continue;
                     }
+
+                    long scaled = (long)(value * 100f);
+                    long magnitude = Math.Abs(scaled) & 0x7FFFFF;
+                    pixel[0] = (byte)magnitude;
+                    pixel[1] = (byte)(magnitude >> 8);
+                    pixel[2] = (byte)((magnitude >> 16) + (scaled < 0 ? 0x80 : 0));
+                    pixel[3] = 255;
                 }
-            }
-            finally
-            {
-                ArrayPool<float>.Shared.Return(values);
             }
         }
 
