@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Xml;
 
@@ -48,6 +49,15 @@ namespace gView.Framework.Common
     {
         private static Dictionary<Guid, Type> _pluginTypes;
 
+        private static readonly object _initLock = new object();
+        private static volatile bool _initialized = false;
+        private static int _initializingThreadId = 0;
+
+        // original plugin guid => fallback plugin type (only for originals with unsolved dependencies)
+        private static Dictionary<Guid, Type> _fallbackTypes = new Dictionary<Guid, Type>();
+        private static HashSet<Guid> _unsolvedDependencies = new HashSet<Guid>();
+        private static ConditionalWeakTable<object, StrongBox<Guid>> _fallbackInstances = new ConditionalWeakTable<object, StrongBox<Guid>>();
+
         public PlugInManager()
         {
             Init();
@@ -87,11 +97,40 @@ namespace gView.Framework.Common
                 SystemInfo.RegisterDefaultGraphicEngines();
             }
 
-            if (_pluginTypes != null)
+            if (_initialized)
             {
                 return;
             }
 
+            lock (_initLock)
+            {
+                // a call from the initializing thread itself (e.g. from a plugin constructor)
+                // works with the plugins parsed so far; other threads wait for the result
+                if (_initialized || _initializingThreadId == Environment.CurrentManagedThreadId)
+                {
+                    return;
+                }
+
+                _initializingThreadId = Environment.CurrentManagedThreadId;
+                try
+                {
+                    ParsePlugins();
+                    CheckDependencies();
+                }
+                finally
+                {
+                    _initialized = true;
+                    _initializingThreadId = 0;
+                }
+            }
+
+            OnParseAssembly?.Invoke(null);
+
+            GraphicsEngine.Current.Engine = currentEngine;
+        }
+
+        private static void ParsePlugins()
+        {
             string currentDll = string.Empty;
             var error = new StringBuilder();
 
@@ -102,7 +141,9 @@ namespace gView.Framework.Common
 
                 Console.WriteLine($"Init PluginManager: {entryAssembly.Directory.FullName}");
 
-                foreach (FileInfo dll in entryAssembly.Directory.GetFiles("*.dll").Where(f => f.Name.ToLower().StartsWith("gview.")))
+                foreach (FileInfo dll in entryAssembly.Directory.GetFiles("*.dll")
+                                                                .Where(f => f.Name.ToLower().StartsWith("gview."))
+                                                                .OrderBy(f => f.Name, StringComparer.OrdinalIgnoreCase))
                 {
                     if (SkipUiComponentPlugins && IsUiComponentAssembly(dll.Name))
                     {
@@ -187,11 +228,144 @@ namespace gView.Framework.Common
             {
                 Console.WriteLine("Parsing for plugins finished successfully");
             }
-
-            OnParseAssembly?.Invoke(null);
-
-            GraphicsEngine.Current.Engine = currentEngine;
         }
+
+        /// <summary>
+        /// Checks all plugins implementing <see cref="IPlugInDependencies"/> once and
+        /// resolves a fallback plugin (<see cref="PlugInFallbackForAttribute"/>) for each
+        /// original plugin with unsolved dependencies.
+        /// </summary>
+        private static void CheckDependencies()
+        {
+            var result = ResolveFallbacks(_pluginTypes, HasUnsolvedDependencies, Console.WriteLine);
+
+            _unsolvedDependencies = result.unsolved;
+            _fallbackTypes = result.fallbackTypes;
+        }
+
+        private static bool HasUnsolvedDependencies(Type pluginType)
+        {
+            try
+            {
+                var instance = Activator.CreateInstance(pluginType);
+                bool hasUnsolved = ((IPlugInDependencies)instance).HasUnsolvedDependencies();
+                (instance as IDisposable)?.Dispose();
+
+                return hasUnsolved;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"PluginManager: can't check dependencies of {pluginType}: {ex.Message}");
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Determines the plugins with unsolved dependencies and the fallback for each of them:
+        /// the first candidate (in order of pluginTypes) without unsolved dependencies itself, that
+        /// implements all plugin interfaces of the original. No fallback chains.
+        /// </summary>
+        internal static (HashSet<Guid> unsolved, Dictionary<Guid, Type> fallbackTypes) ResolveFallbacks(
+                IEnumerable<KeyValuePair<Guid, Type>> pluginTypes,
+                Func<Type, bool> hasUnsolvedDependencies,
+                Action<string> log)
+        {
+            var plugins = pluginTypes.ToArray();
+            var unsolved = new HashSet<Guid>(plugins
+                .Where(p => typeof(IPlugInDependencies).IsAssignableFrom(p.Value) && hasUnsolvedDependencies(p.Value))
+                .Select(p => p.Key));
+            var fallbackTypes = new Dictionary<Guid, Type>();
+
+            var fallbackCandidates = plugins
+                .SelectMany(p => p.Value.GetCustomAttributes<PlugInFallbackForAttribute>()
+                                        .Select(a => (original: a.OriginalGuid, fallbackGuid: p.Key, fallbackType: p.Value)))
+                .ToArray();
+
+            foreach (var original in plugins.Where(p => unsolved.Contains(p.Key)))
+            {
+                var originalType = original.Value;
+                Type fallbackType = null;
+
+                foreach (var candidate in fallbackCandidates.Where(c => c.original == original.Key))
+                {
+                    if (unsolved.Contains(candidate.fallbackGuid))
+                    {
+                        log($"PluginManager warning: fallback {candidate.fallbackType} for {originalType} has unsolved dependencies itself and is ignored");
+                        continue;
+                    }
+
+                    var missingInterfaces = originalType.PluginInterfaces()
+                        .Where(i => !i.IsAssignableFrom(candidate.fallbackType))
+                        .ToArray();
+                    if (missingInterfaces.Length > 0)
+                    {
+                        log($"PluginManager warning: fallback {candidate.fallbackType} for {originalType} is ignored, it does not implement {String.Join(", ", missingInterfaces.Select(i => i.Name))}");
+                        continue;
+                    }
+
+                    if (fallbackType != null)
+                    {
+                        log($"PluginManager warning: more than one fallback for {originalType}, {candidate.fallbackType} is ignored, using {fallbackType}");
+                        continue;
+                    }
+
+                    fallbackType = candidate.fallbackType;
+                }
+
+                if (fallbackType != null)
+                {
+                    fallbackTypes[original.Key] = fallbackType;
+                    log($"PluginManager warning: {originalType} has unsolved dependencies, using fallback {fallbackType}");
+                }
+                else
+                {
+                    log($"PluginManager warning: {originalType} has unsolved dependencies, no fallback defined");
+                }
+            }
+
+            if (unsolved.Count == 0)
+            {
+                log("PluginManager: all plugin dependencies solved");
+            }
+
+            return (unsolved, fallbackTypes);
+        }
+
+        /// <summary>
+        /// True, if the plugin implements <see cref="IPlugInDependencies"/> and its dependencies
+        /// could not be solved on startup. Use this (not Create(guid) != null) to check whether
+        /// an original plugin is really available, because Create(guid) returns a fallback.
+        /// </summary>
+        public static bool HasUnsolvedDependencies(Guid guid)
+        {
+            Init();
+
+            return _unsolvedDependencies.Contains(guid);
+        }
+
+        /// <summary>
+        /// True, if obj was created by the PlugInManager as fallback for the original plugin originalGuid.
+        /// </summary>
+        public static bool IsFallbackInstance(object obj, out Guid originalGuid)
+        {
+            originalGuid = Guid.Empty;
+
+            if (obj != null && _fallbackInstances.TryGetValue(obj, out var original))
+            {
+                originalGuid = original.Value;
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Registered plugin types, without originals that are replaced by a fallback.
+        /// </summary>
+        private static IEnumerable<Type> AvailablePluginTypes
+            => _pluginTypes
+                .Where(p => !_fallbackTypes.ContainsKey(p.Key))
+                .Select(p => p.Value);
 
         public IEnumerable<Type> GetPlugins(Type interfaceType)
         {
@@ -199,7 +373,7 @@ namespace gView.Framework.Common
 
             List<Type> pluginTypes = new List<Type>();
 
-            foreach (var pluginType in _pluginTypes.Values)
+            foreach (var pluginType in AvailablePluginTypes)
             {
                 if (interfaceType.IsAssignableFrom(pluginType))
                 {
@@ -216,7 +390,7 @@ namespace gView.Framework.Common
 
             List<Type> pluginTypes = new List<Type>();
 
-            foreach (var pluginType in _pluginTypes.Values)
+            foreach (var pluginType in AvailablePluginTypes)
             {
                 foreach (var interfaceType in pluginType.GetInterfaces()
                     .Where(t => t.IsValidPluginInterfaceType()))
@@ -243,7 +417,7 @@ namespace gView.Framework.Common
                 Init();
 
                 List<Type> types = new List<Type>();
-                foreach (var pluginType in _pluginTypes.Values)
+                foreach (var pluginType in AvailablePluginTypes)
                 {
                     foreach (var interfaceType in pluginType.GetInterfaces()
                         .Where(t => t.ToString().ToLower().StartsWith("gview.framework.")))
@@ -331,6 +505,13 @@ namespace gView.Framework.Common
             try
             {
                 Init();
+
+                if (_fallbackTypes.TryGetValue(guid, out var fallbackType))
+                {
+                    var fallback = Activator.CreateInstance(fallbackType);
+                    _fallbackInstances.AddOrUpdate(fallback, new StrongBox<Guid>(guid));
+                    return fallback;
+                }
 
                 if (_pluginTypes.ContainsKey(guid))
                 {

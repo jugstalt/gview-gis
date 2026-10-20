@@ -10,13 +10,14 @@ using gView.Framework.Common;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using gView.Framework.IO;
 
 namespace gView.DataSources.Raster.File
 {
     [RegisterPlugIn("D4812641-3F53-48eb-A66C-FC0203980C79")]
-    public class RasterFileDataset : DatasetMetadata, IRasterFileDataset
+    public class RasterFileDataset : DatasetMetadata, IRasterFileDataset, IPlugInDependencies
     {
         private List<IDatasetElement> _layers = new List<IDatasetElement>();
         private string _directory = "";
@@ -208,7 +209,8 @@ namespace gView.DataSources.Raster.File
         {
             get
             {
-                if (PlugInManager.Create(new Guid("43DFABF1-3D19-438c-84DA-F8BA0B266592")) is IRasterFileDataset)
+                var gdalGuid = new Guid("43DFABF1-3D19-438c-84DA-F8BA0B266592");
+                if (!PlugInManager.HasUnsolvedDependencies(gdalGuid) && PlugInManager.Create(gdalGuid) is IRasterFileDataset)
                 {
                     // GDAL is installed!!
                     return "*.sid|*.jp2";
@@ -293,6 +295,22 @@ namespace gView.DataSources.Raster.File
         {
             stream.Save("Directory", _directory);
         }
+
+        #endregion
+
+        #region IPlugInDependencies
+
+        public bool HasUnsolvedDependencies() => !_mrSidLibAvailable.Value;
+
+        private static readonly Lazy<bool> _mrSidLibAvailable = new Lazy<bool>(() =>
+        {
+            if (NativeLibrary.TryLoad("MrSIDLib.dll", typeof(RasterFileDataset).Assembly, null, out var handle))
+            {
+                NativeLibrary.Free(handle);
+                return true;
+            }
+            return false;
+        });
 
         #endregion
     }

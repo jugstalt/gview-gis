@@ -11,7 +11,7 @@ namespace gView.Framework.Common
 {
     public class SystemInfo
     {
-        public static Version Version = new Version(9, 26, 4301);
+        public static Version Version = new Version(9, 26, 4302);
 
         #region -> Private Variables
 
@@ -50,10 +50,10 @@ namespace gView.Framework.Common
                 //Directory.SetCurrentDirectory(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
                 Console.WriteLine($"Current Directory: {Directory.GetCurrentDirectory()}");
 
-                Console.WriteLine($"SET PATH={Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}");
-                Environment.SetEnvironmentVariable("PATH", $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}");
-                Console.WriteLine($"SET GDAL_DRIVER_PATH={Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\gdalplugins");
-                Environment.SetEnvironmentVariable("GDAL_DRIVER_PATH", $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\gdalplugins");
+                // prepend (don't replace): a GDAL installed on the machine may be found via PATH.
+                // GDAL_DRIVER_PATH is set by the GDAL plugin (OSGeo.Initializer), if not set by the admin
+                Console.WriteLine($"PATH: prepend {Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}");
+                Environment.SetEnvironmentVariable("PATH", $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}{Path.PathSeparator}{Environment.GetEnvironmentVariable("PATH")}");
             }
         }
 

@@ -1124,8 +1124,17 @@ namespace gView.Framework.Cartography
                     _errorMessages.AddErrorMessage(ex.Message);
                 }
 
+                if (PlugInManager.IsFallbackInstance(dataset, out Guid originalGuid))
+                {
+                    _errorMessages.AddInfoMessage($"Dataset plugin {originalGuid} has unsolved dependencies and is replaced by the fallback {dataset.DatasetName}. Saving the map will store {dataset.DatasetName} instead.");
+                }
+
                 _datasets.Add(dataset);
             }
+
+            // Only an error while loading the dataset skips its raster layers. An error of a single
+            // raster file (e.g. not readable by a fallback plugin) is reported for that layer only.
+            var datasetLoadErrors = _datasets.Select(d => !string.IsNullOrEmpty(d?.LastErrorMessage)).ToArray();
 
             GroupLayer gLayer;
             while ((gLayer = (GroupLayer)stream.Load("IGroupLayer", null, new GroupLayer())) != null)
@@ -1220,7 +1229,7 @@ namespace gView.Framework.Cartography
                 string errorMessage = string.Empty;
                 if (rLayer.DatasetID < _datasets.Count)
                 {
-                    if (!string.IsNullOrEmpty(_datasets[rLayer.DatasetID]?.LastErrorMessage))
+                    if (datasetLoadErrors[rLayer.DatasetID])
                     {
                         continue;
                     }

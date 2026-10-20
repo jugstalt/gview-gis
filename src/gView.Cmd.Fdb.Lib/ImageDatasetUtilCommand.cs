@@ -218,6 +218,11 @@ public class ImageDatasetUtilCommand : ICommand
                 rds = PlugInManager.Create(new Guid("D4812641-3F53-48eb-A66C-FC0203980C79")) as IRasterFileDataset;
             }
 
+            if (rds != null && PlugInManager.IsFallbackInstance(rds, out _))
+            {
+                logger?.LogLine($"Provider {providerType} has unsolved dependencies, using fallback {rds.DatasetName}");
+            }
+
 
             if (rds != null)
             {

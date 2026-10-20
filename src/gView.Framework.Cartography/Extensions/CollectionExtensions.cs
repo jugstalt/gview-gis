@@ -19,6 +19,11 @@ internal static class CollectionExtensions
         messages.AddMessage(ErrorMessageLevel.Error, errorMessage);
     }
 
+    static public void AddInfoMessage(this ConcurrentBag<Map.ErrorMessage> messages, string info)
+    {
+        messages.AddMessage(ErrorMessageLevel.Info, info);
+    }
+
     static public void AddWarningMessage(this ConcurrentBag<Map.ErrorMessage> messages, string warning)
     {
         messages.AddMessage(ErrorMessageLevel.Warning, warning);

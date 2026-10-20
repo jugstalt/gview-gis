@@ -120,9 +120,9 @@ Optional arguments:
                 throw new Exception("No map loaded");
             }
 
-            if (map.HasErrorMessages(ErrorMessageLevel.Any))
+            if (map.HasErrorMessages(ErrorMessageLevel.Warning))
             {
-                throw new Exception($"Can't load source mxl {inFile}:{Environment.NewLine}{String.Join('\n', map.ErrorMessages(ErrorMessageLevel.Any))}");
+                throw new Exception($"Can't load source mxl {inFile}:{Environment.NewLine}{String.Join('\n', map.ErrorMessages(ErrorMessageLevel.Warning))}");
             }
 
             bool saveOutput = false;

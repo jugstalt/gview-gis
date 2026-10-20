@@ -58,9 +58,10 @@ namespace gView.Framework.Core.Carto
     public enum ErrorMessageLevel 
     { 
         Any = 0, 
-        Warning = 1,
-        Error = 2,
-        Critical = 3,
+        Info = 1,
+        Warning = 2,
+        Error = 3,
+        Critical = 4,
         Never = 999
     }
 }
