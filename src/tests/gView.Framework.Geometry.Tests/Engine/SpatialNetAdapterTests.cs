@@ -179,14 +179,26 @@ public class SpatialNetAdapterTests
 
     #endregion
 
-    #region Unsupported input
+    #region Envelopes and unsupported input
 
     [Fact]
-    public void Envelope_IsNotSupported()
+    public void Envelope_BecomesRectangularPolygon()
     {
-        var envelope = new Envelope(0, 0, 10, 10);
+        var envelope = new Envelope(0, 0, 10, 5) { Srs = 4326 };
 
-        Assert.Throws<NotSupportedException>(() => SpatialNetBridge.ToSpatial(envelope));
+        var polygon = Assert.IsType<Polygon>(SpatialNetBridge.ToSpatial(envelope));
+
+        Assert.Equal(50, NetArea(polygon), 9);
+        Assert.Equal(4326, polygon.Srs);
+    }
+
+    [Fact]
+    public void AggregateGeometry_IsNotSupported()
+    {
+        var aggregate = new AggregateGeometry();
+        aggregate.AddGeometry(new Point(1, 1));
+
+        Assert.Throws<NotSupportedException>(() => SpatialNetBridge.ToSpatial(aggregate));
     }
 
     #endregion

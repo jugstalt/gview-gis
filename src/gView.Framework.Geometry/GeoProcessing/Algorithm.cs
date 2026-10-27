@@ -3506,16 +3506,38 @@ namespace gView.Framework.Geometry
 
             switch (filter.SpatialRelation)
             {
+                // Envelope relations stay classic: the map envelope relation runs for every feature
+                // of every map draw and label pass, and a box test is all it needs
                 case spatialRelation.SpatialRelationEnvelopeIntersects:
-                    return filter.Geometry.Envelope.Intersects(geom.Envelope);
-                case spatialRelation.SpatialRelationIntersects:
-                    return GeoProcessing.Algorithm.Intersects(filter.Geometry, geom);
-                case spatialRelation.SpatialRelationContains:
-                    return GeoProcessing.Algorithm.Contains(filter.Geometry, geom);
-                case spatialRelation.SpatialRelationWithin:
-                    return GeoProcessing.Algorithm.Contains(geom, filter.Geometry);
                 case spatialRelation.SpatialRelationMapEnvelopeIntersects:
-                    return GeoProcessing.Algorithm.IntersectBox(geom, filter.Geometry.Envelope);
+                    return CheckClassic(filter.SpatialRelation, filter.Geometry, geom);
+            }
+
+            // ADR 0002, phase 2: SpatialNET predicates behind a switch; null = SpatialNET cannot decide
+            if (Engine.GeometryEngineOptions.UseSpatialNetForSpatialRelation
+                && Engine.SpatialNetBridge.Check(filter.SpatialRelation, filter.Geometry, geom) is bool result)
+            {
+                return result;
+            }
+
+            return CheckClassic(filter.SpatialRelation, filter.Geometry, geom);
+        }
+
+        // gView's own implementation, also the reference for the comparison tests
+        internal static bool CheckClassic(spatialRelation relation, IGeometry filterGeometry, IGeometry geom)
+        {
+            switch (relation)
+            {
+                case spatialRelation.SpatialRelationEnvelopeIntersects:
+                    return filterGeometry.Envelope.Intersects(geom.Envelope);
+                case spatialRelation.SpatialRelationIntersects:
+                    return GeoProcessing.Algorithm.Intersects(filterGeometry, geom);
+                case spatialRelation.SpatialRelationContains:
+                    return GeoProcessing.Algorithm.Contains(filterGeometry, geom);
+                case spatialRelation.SpatialRelationWithin:
+                    return GeoProcessing.Algorithm.Contains(geom, filterGeometry);
+                case spatialRelation.SpatialRelationMapEnvelopeIntersects:
+                    return GeoProcessing.Algorithm.IntersectBox(geom, filterGeometry.Envelope);
             }
             return false;
         }

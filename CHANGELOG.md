@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Added
 
+- Geometry: spatial filters (intersects, contains, within) of data sources without native
+  spatial filtering (Shape, GeoJSON, FDB fallback, OGC, event tables, feature cache) can run
+  on SpatialNET predicates ([ADR 0002](docs/adr/0002-spatialnet-as-geometry-engine.md)).
+  The envelope relations, including the map envelope filter of map drawing and labelling,
+  always stay on gView's box test. Opt-in with the environment
+  variable `GVIEW_SPATIALNET=relation` (or `all`) or
+  `GeometryEngineOptions.UseSpatialNetForSpatialRelation`; off by default. Results follow
+  DE-9IM: touching geometries intersect, and a filter polygon whose hole lies inside a
+  feature does not contain it.
+
 - GeoServices REST: query operation supports `outStatistics` and `groupByFieldsForStatistics`
   (MapServer and FeatureServer) with `count`, `sum`, `min`, `max`, `avg`, `stddev` and `var`
   (sample formula), several group-by fields, `orderByFields` on group-by fields / statistic

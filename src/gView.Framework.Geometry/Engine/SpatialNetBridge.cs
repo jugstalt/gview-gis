@@ -1,6 +1,9 @@
+using gView.Framework.Core.Data;
 using gView.Framework.Core.Geometry;
 using SpatialNET;
 using System;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace gView.Framework.Geometry.Engine
 {
@@ -36,17 +39,82 @@ namespace gView.Framework.Geometry.Engine
             return ToGView(Overlays.Union(ToSpatial(a), ToSpatial(b), factory: Factory));
         }
 
+        #region Spatial relations
+
+        // Filter geometries are prepared once and reused for every feature of a cursor. The entry lives as long as
+        // the filter geometry object. A prepared geometry is a snapshot: changing the filter geometry in place
+        // after the first check is not seen.
+        private static readonly ConditionalWeakTable<IGeometry, PreparedGeometry> PreparedFilters = new();
+
+        /// <summary>
+        /// The SpatialNET variant of <c>SpatialRelation.Check</c>: whether <paramref name="geometry"/> passes a
+        /// spatial filter with <paramref name="relation"/> and <paramref name="filterGeometry"/>.
+        /// </summary>
+        /// <returns>
+        /// <c>null</c> if SpatialNET does not decide it: aggregate geometries, degenerate envelopes (width or height 0)
+        /// and the envelope relations. The caller then uses gView's own implementation.
+        /// </returns>
+        internal static bool? Check(spatialRelation relation, IGeometry filterGeometry, IGeometry geometry)
+        {
+            if (!CanCheck(filterGeometry) || !CanCheck(geometry))
+            {
+                return null;
+            }
+
+            var candidate = ToSpatial(geometry);
+            switch (relation)
+            {
+                case spatialRelation.SpatialRelationIntersects:
+                    return PreparedFilter(filterGeometry).Intersects(candidate);
+                case spatialRelation.SpatialRelationContains:
+                    // the filter geometry contains the feature
+                    return PreparedFilter(filterGeometry).Contains(candidate);
+                case spatialRelation.SpatialRelationWithin:
+                    // the filter geometry lies within the feature (as gView's Algorithm.Contains(feature, filter))
+                    return PreparedFilter(filterGeometry).Within(candidate);
+                default:
+                    // The envelope relations stay classic (render path, box tests); SpatialRelation.Check
+                    // does not even call the bridge for them
+                    return null;
+            }
+        }
+
+        private static PreparedGeometry PreparedFilter(IGeometry filterGeometry)
+        {
+            return PreparedFilters.GetValue(filterGeometry, g => Preparation.Prepare(ToSpatial(g)));
+        }
+
+        private static bool CanCheck(IGeometry geometry)
+        {
+            switch (geometry)
+            {
+                case IEnvelope envelope:
+                    return envelope.Width > 0 && envelope.Height > 0;
+                case IPoint:
+                case IMultiPoint:
+                case IPolyline:
+                case IPolygon:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        #endregion
+
         /// <summary>
         /// Passes gView geometries through and copies foreign implementations into gView classes.
+        /// Envelopes become rectangular polygons.
         /// </summary>
-        /// <exception cref="NotSupportedException">Envelopes, aggregate geometries and unknown types.</exception>
+        /// <exception cref="NotSupportedException">Aggregate geometries and unknown types.</exception>
         internal static IGeometry2D ToSpatial(IGeometry geometry)
         {
             switch (geometry)
             {
                 case null:
                     throw new ArgumentNullException(nameof(geometry));
-                case IEnvelope:
+                case IEnvelope envelope:
+                    return EnvelopeToPolygon(envelope);
                 case IAggregateGeometry:
                     throw new NotSupportedException($"{geometry.GetType().Name} is not supported by SpatialNET.");
                 case IGeometry2D spatial:
@@ -66,6 +134,17 @@ namespace gView.Framework.Geometry.Engine
 
         // Results always come from GViewGeometryFactory, so they are gView geometries
         private static IGeometry ToGView(IGeometry2D result) => (IGeometry)result;
+
+        private static Polygon EnvelopeToPolygon(IEnvelope envelope)
+        {
+            var ring = new Ring(new List<IPoint>
+            {
+                new Point(envelope.MinX, envelope.MinY), new Point(envelope.MaxX, envelope.MinY),
+                new Point(envelope.MaxX, envelope.MaxY), new Point(envelope.MinX, envelope.MaxY),
+            });
+
+            return new Polygon(ring) { Srs = envelope.Srs };
+        }
 
         private static Polyline CopyPolyline(IPolyline polyline)
         {
