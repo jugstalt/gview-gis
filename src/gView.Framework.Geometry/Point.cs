@@ -7,7 +7,11 @@ namespace gView.Framework.Geometry
     /// <summary>
     /// A three dimensional point object
     /// </summary>
-    public class Point : IPoint, ITopologicalOperation
+    /// <remarks>
+    /// Implements <see cref="SpatialNET.IPoint3D"/> but not <see cref="SpatialNET.IPointM"/>:
+    /// M is always set (0 = no M), so SpatialNET could not tell a measure from "no M" (ADR 0002).
+    /// </remarks>
+    public class Point : IPoint, ITopologicalOperation, SpatialNET.IPoint3D
     {
         private double m_x, m_y, m_z, m_m;
 

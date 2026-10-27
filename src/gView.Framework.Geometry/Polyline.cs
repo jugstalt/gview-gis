@@ -11,7 +11,7 @@ namespace gView.Framework.Geometry
     /// <summary>
     /// An orderd collection of paths.
     /// </summary>
-    public sealed class Polyline : IPolyline, ITopologicalOperation
+    public sealed class Polyline : IPolyline, ITopologicalOperation, SpatialNET.IPolyline2D
     {
         private List<IPath> _paths;
 
@@ -141,6 +141,16 @@ namespace gView.Framework.Geometry
                 }
 
                 return _paths[pathIndex];
+            }
+        }
+
+        // Foreign IPath implementations are copied, gView paths are passed through
+        SpatialNET.IPath2D SpatialNET.IPolyline2D.this[int index]
+        {
+            get
+            {
+                IPath path = _paths[index];
+                return path as SpatialNET.IPath2D ?? new Path(path);
             }
         }
 

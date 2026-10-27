@@ -10,7 +10,7 @@ namespace gView.Framework.Geometry
     /// <summary>
     /// An ordered collection of points.
     /// </summary>
-    public class PointCollection : IPointCollection
+    public class PointCollection : IPointCollection, SpatialNET.IPointCollection2D
     {
         protected List<IPoint> _points;
         private IEnvelope _cacheEnv = null;
@@ -248,6 +248,16 @@ namespace gView.Framework.Geometry
                 }
 
                 return _points[pointIndex];
+            }
+        }
+
+        // Foreign IPoint implementations are copied, gView points are passed through
+        SpatialNET.IPoint2D SpatialNET.IPointCollection2D.this[int index]
+        {
+            get
+            {
+                IPoint point = _points[index];
+                return point as SpatialNET.IPoint2D ?? new Point(point);
             }
         }
 

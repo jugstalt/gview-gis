@@ -662,6 +662,30 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
+License notice for SpatialNET.Core (v0.8.0-preview.1)
+------------------------------------
+
+https://github.com/jugstalt/SpatialNET.Core at 7f2f869165029640660266ade8ebefb024e78c46
+
+2026, Jürgen Gstaltmaier
+
+Licensed under Apache-2.0
+
+Available at https://licenses.nuget.org/Apache-2.0
+
+
+License notice for SpatialNET.Extensions (v0.8.0-preview.1)
+------------------------------------
+
+https://github.com/jugstalt/SpatialNET.Core at 7f2f869165029640660266ade8ebefb024e78c46
+
+2026, Jürgen Gstaltmaier
+
+Licensed under Apache-2.0
+
+Available at https://licenses.nuget.org/Apache-2.0
+
+
 License notice for Proj4Net.Core (v2.26.2401)
 ------------------------------------
 

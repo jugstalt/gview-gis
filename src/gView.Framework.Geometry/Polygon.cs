@@ -12,7 +12,7 @@ namespace gView.Framework.Geometry
     /// <summary>
     /// An ordered collection of rings.
     /// </summary>
-    public sealed class Polygon : IPolygon, ITopologicalOperation
+    public sealed class Polygon : IPolygon, ITopologicalOperation, SpatialNET.IPolygon2D
     {
         private List<IRing> _rings;
         private int _ringsChecked;
@@ -127,6 +127,16 @@ namespace gView.Framework.Geometry
                 }
 
                 return _rings[ringIndex];
+            }
+        }
+
+        // Foreign IRing implementations are copied, gView rings (incl. holes) are passed through
+        SpatialNET.IRing2D SpatialNET.IPolygon2D.this[int index]
+        {
+            get
+            {
+                IRing ring = _rings[index];
+                return ring as SpatialNET.IRing2D ?? new Ring(ring);
             }
         }
 

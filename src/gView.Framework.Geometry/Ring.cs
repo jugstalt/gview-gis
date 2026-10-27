@@ -7,7 +7,7 @@ namespace gView.Framework.Geometry
     /// <summary>
     /// An area bounded by one, closed sequence of connected segments.
     /// </summary>
-    public class Ring : Path, IRing
+    public class Ring : Path, IRing, SpatialNET.IRing2D
     {
         public Ring()
             : base()

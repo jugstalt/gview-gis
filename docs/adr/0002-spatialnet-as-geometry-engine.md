@@ -10,11 +10,11 @@ So the **concrete classes in `gView.Framework.Geometry`** (`Point`, `Path`, `Rin
 
 ## Rules
 
-- **Only `gView.Framework.Geometry` references SpatialNET.** It references the NuGet packages with a pinned preview version, kept private where possible. Other gView projects use gView's own API (`ITopologicalOperation`, `Algorithm`, `SpatialRelation`) and never `using SpatialNET`. If a feature needs a capability gView does not wrap yet (e.g. TIN), the wrapper is added to `gView.Framework.Geometry`.
+- **Only `gView.Framework.Geometry` references SpatialNET.** It references the NuGet packages with a pinned preview version. The reference cannot be kept private: gView's public geometry classes implement SpatialNET interfaces, so every dependent project needs the assembly to compile. The rule is therefore a convention: other gView projects use gView's own API (`ITopologicalOperation`, `Algorithm`, `SpatialRelation`) and never `using SpatialNET`. If a feature needs a capability gView does not wrap yet (e.g. TIN), the wrapper is added to `gView.Framework.Geometry`.
 - **The factory is passed explicitly** on every call (`GViewGeometryFactory.Instance`). gView sets neither `GeometryFactory.Default` nor `Precision.DefaultGridSize`, so there is no dependency on startup order (Server, Carto, MAUI, tests) and no conflict with other code in the same process.
 - **The factory** copies `Srs` from the `source` geometry, and creates a `Ring` for each shell and a `Hole` for each hole of a `PolygonPart`. Results therefore need no `VerifyHoles()`.
 - **Grid size is automatic.** It is SpatialNET's default, derived from the coordinate magnitude, so it works for degrees and metres without knowing the SRS. A grid derived from `Srs` is only introduced if tests show that the automatic one is too coarse for geographic coordinates.
-- **M is not carried.** Every gView `IPoint` has an `M`, and `M = 0` cannot be told apart from "no M". So only `PointM`/`PointM2`/`PointM3` implement `IPointM`, and the factory reports `SupportsM = false`. Results lose M, as gView's own overlays already do. Z is carried (`IPoint3D` on `Point`).
+- **M is not carried.** Every gView `IPoint` has an `M`, and `M = 0` cannot be told apart from "no M". `PointM`/`PointM2`/`PointM3` are no way out: their `M` is an `object` tag, not a measure. So no gView class implements `IPointM`, and the factory reports `SupportsM = false`. Results lose M, as gView's own overlays already do. Z is carried (`IPoint3D` on `Point`).
 - **Foreign `IGeometry` implementations** that are not gView's concrete classes are copied into gView classes before calling SpatialNET.
 
 ## Phases
@@ -35,7 +35,7 @@ So the **concrete classes in `gView.Framework.Geometry`** (`Point`, `Path`, `Rin
 ## Consequences
 
 - SpatialNET is a pre-release. A breaking change to its interfaces breaks `gView.Framework.Geometry`, but behind the switches it never changes gView's default behaviour.
-- Tests go into a new project `gView.Framework.Geometry.Tests` (net10.0, xUnit). The existing `gView.Test` targets net8.0 and cannot reference SpatialNET. The new project covers:
+- Tests go into a new project `src/tests/gView.Framework.Geometry.Tests` (net10.0, xUnit), next to the other test projects. It covers:
   - The adapter round trip: `Ring`/`Hole`, closing point, `Srs`.
   - The repaired operations.
   - The comparisons old against new for each switched area.
@@ -48,4 +48,3 @@ So the **concrete classes in `gView.Framework.Geometry`** (`Point`, `Path`, `Rin
 - **Wrapper classes or converting into SpatialNET's reference implementation:** rejected, because they cost copies on every call. Implementing the interfaces directly is what SpatialNET is designed for, and gView's model fits it (flat ring list, holes as typed rings).
 - **Setting `GeometryFactory.Default` once at startup:** rejected because of startup order across the hosts. It would also make direct SpatialNET calls from other projects possible, which the rules above exclude.
 - **One global switch:** rejected, because the areas differ in risk and performance and should become the default independently.
-- **Upgrading `gView.Test` to net10.0:** rejected, to keep the change contained.

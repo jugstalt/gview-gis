@@ -9,7 +9,7 @@ namespace gView.Framework.Geometry
     /// <summary>
     /// A sequence of connected segments.
     /// </summary>
-    public class Path : PointCollection, IPath, ICloneable
+    public class Path : PointCollection, IPath, ICloneable, SpatialNET.IPath2D
     {
         public Path()
             : base()

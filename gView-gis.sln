@@ -249,6 +249,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Framework.Data.Tests"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.DataSources.RasterNet.Tests", "src\tests\gView.DataSources.RasterNet.Tests\gView.DataSources.RasterNet.Tests.csproj", "{FFF1E63D-AB9E-4A30-A43B-FA435256D3A4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Framework.Geometry.Tests", "src\tests\gView.Framework.Geometry.Tests\gView.Framework.Geometry.Tests.csproj", "{9C0043D4-52A3-48C4-ABAA-BD894808E690}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1561,6 +1563,18 @@ Global
 		{FFF1E63D-AB9E-4A30-A43B-FA435256D3A4}.Release|x64.Build.0 = Release|Any CPU
 		{FFF1E63D-AB9E-4A30-A43B-FA435256D3A4}.Release|x86.ActiveCfg = Release|Any CPU
 		{FFF1E63D-AB9E-4A30-A43B-FA435256D3A4}.Release|x86.Build.0 = Release|Any CPU
+		{9C0043D4-52A3-48C4-ABAA-BD894808E690}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9C0043D4-52A3-48C4-ABAA-BD894808E690}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9C0043D4-52A3-48C4-ABAA-BD894808E690}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{9C0043D4-52A3-48C4-ABAA-BD894808E690}.Debug|x64.Build.0 = Debug|Any CPU
+		{9C0043D4-52A3-48C4-ABAA-BD894808E690}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{9C0043D4-52A3-48C4-ABAA-BD894808E690}.Debug|x86.Build.0 = Debug|Any CPU
+		{9C0043D4-52A3-48C4-ABAA-BD894808E690}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9C0043D4-52A3-48C4-ABAA-BD894808E690}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9C0043D4-52A3-48C4-ABAA-BD894808E690}.Release|x64.ActiveCfg = Release|Any CPU
+		{9C0043D4-52A3-48C4-ABAA-BD894808E690}.Release|x64.Build.0 = Release|Any CPU
+		{9C0043D4-52A3-48C4-ABAA-BD894808E690}.Release|x86.ActiveCfg = Release|Any CPU
+		{9C0043D4-52A3-48C4-ABAA-BD894808E690}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1686,6 +1700,7 @@ Global
 		{5FB69706-AD0F-4A2C-A6C2-449D16150174} = {99EB51DE-8955-38EC-877F-A3DFE85F1030}
 		{FC7BFF30-92AC-4625-8AD7-8A2821191FE6} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 		{FFF1E63D-AB9E-4A30-A43B-FA435256D3A4} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
+		{9C0043D4-52A3-48C4-ABAA-BD894808E690} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {11C25FC0-EB32-4DE1-9CBB-CF2D68D1AA9B}

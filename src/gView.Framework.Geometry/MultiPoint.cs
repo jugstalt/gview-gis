@@ -7,7 +7,7 @@ namespace gView.Framework.Geometry
     /// <summary>
     /// A orderd collection of points.
     /// </summary>
-    public sealed class MultiPoint : PointCollection, IMultiPoint, ITopologicalOperation
+    public sealed class MultiPoint : PointCollection, IMultiPoint, ITopologicalOperation, SpatialNET.IMultiPoint2D
     {
         public MultiPoint()
             : base()
