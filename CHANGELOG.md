@@ -45,6 +45,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - GeoServices REST: `uniqueValue` drawingInfo no longer contains the internal
   "all other values" key as a value.
+- Geometry: `Polygon.Difference` and `Polygon.SymDifference` compute the difference and the
+  symmetric difference. Before, both computed the intersection. They now run on SpatialNET
+  ([ADR 0002](docs/adr/0002-spatialnet-as-geometry-engine.md)); `SymDifference` with a
+  non-polygon throws `NotSupportedException`.
+- Geometry: `Polyline.Intersect`, `Difference`, `SymDifference` and `Union` are implemented
+  (on SpatialNET) instead of throwing "not implemented". The in-place variants throw
+  `NotSupportedException` when the result is not a polyline (e.g. polyline ∩ point); the
+  variants with an `out` result return it as it is.
 
 ## 8.26.4001
 

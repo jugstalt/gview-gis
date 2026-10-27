@@ -563,18 +563,17 @@ namespace gView.Framework.Geometry
             CopyGeometry((IPolygon)result);
         }
 
+        // Difference/SymDifference run on SpatialNET (ADR 0002, phase 1); they used to compute Intersect
         public void Difference(IGeometry geometry)
         {
-            IGeometry result;
-            Intersect(geometry, out result);
-            CopyGeometry((IPolygon)result);
+            // Polygon minus anything is a polygon
+            CopyGeometry((IPolygon)Engine.SpatialNetBridge.Difference(this, geometry));
         }
 
+        /// <exception cref="NotSupportedException">The geometry is not a polygon: the result would mix dimensions.</exception>
         public void SymDifference(IGeometry geometry)
         {
-            IGeometry result;
-            Intersect(geometry, out result);
-            CopyGeometry((IPolygon)result);
+            CopyGeometry((IPolygon)Engine.SpatialNetBridge.SymDifference(this, geometry));
         }
 
         public void Union(IGeometry geometry)

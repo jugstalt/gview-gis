@@ -19,7 +19,7 @@ So the **concrete classes in `gView.Framework.Geometry`** (`Point`, `Path`, `Rin
 
 ## Phases
 
-1. **Repairs, without a switch.** SpatialNET implements `Polygon.Difference`, `SymDifference` and `Union` and the missing `Polyline` operations of `ITopologicalOperation`. Polygon ∩ Polyline is split by dimension, which covers clipping lines to areas. `AggregateGeometry` keeps its current behaviour. The corrected `Difference` is a behaviour change and is listed in the changelog.
+1. **Repairs, without a switch.** SpatialNET implements `Polygon.Difference` and `SymDifference` (they computed `Intersect`, and no gView code calls them) and the `Polyline` operations of `ITopologicalOperation` (they threw "not implemented"). Polyline ∩ Polygon gives a polyline, which covers clipping lines to areas. An in-place operation whose result has another dimension than the geometry itself (e.g. polyline ∩ point) throws `NotSupportedException`; the `out` variants return such results. `Polygon.Union`, `Polygon.Intersect` and `AggregateGeometry` keep their current behaviour: union of polygons works today (`BufferQueryFilter` uses it) and is replaced only in phase 2, with merge.
 2. **Replacements, behind switches.** Each area has its own switch in a static `GeometryEngineOptions` class in `gView.Framework.Geometry`, set by the hosts from their configuration (e.g. appsettings in gView.Server). The order is:
    1. `SpatialRelation.Check`, the spatial filter fallback: correctness matters most here, and the seam is small.
    2. Buffer (`Algorithm.PolygonBuffer`/`PolylineBuffer`/`PointBuffer`).

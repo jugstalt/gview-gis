@@ -305,24 +305,41 @@ namespace gView.Framework.Geometry
             CopyGeometry((IPolyline)result);
         }
 
+        // Intersect/Difference/SymDifference/Union run on SpatialNET (ADR 0002, phase 1).
+        // The in-place variants need a polyline result; the out variants return whatever the operation yields.
+
+        /// <exception cref="NotSupportedException">The geometry is a point or multipoint: the result would be points.</exception>
         public void Intersect(IGeometry geometry)
         {
-            throw new Exception("The method or operation is not implemented.");
+            Intersect(geometry, out IGeometry result);
+            CopyGeometry(AsPolyline(result, nameof(Intersect)));
         }
 
         public void Difference(IGeometry geometry)
         {
-            throw new Exception("The method or operation is not implemented.");
+            // Polyline minus anything is a polyline
+            Difference(geometry, out IGeometry result);
+            CopyGeometry((IPolyline)result);
         }
 
+        /// <exception cref="NotSupportedException">The geometry is not a polyline: the result would mix dimensions.</exception>
         public void SymDifference(IGeometry geometry)
         {
-            throw new Exception("The method or operation is not implemented.");
+            SymDifference(geometry, out IGeometry result);
+            CopyGeometry((IPolyline)result);
         }
 
+        /// <exception cref="NotSupportedException">The geometry is not a polyline: the result would mix dimensions.</exception>
         public void Union(IGeometry geometry)
         {
-            throw new Exception("The method or operation is not implemented.");
+            Union(geometry, out IGeometry result);
+            CopyGeometry((IPolyline)result);
+        }
+
+        private static IPolyline AsPolyline(IGeometry result, string operation)
+        {
+            return result as IPolyline
+                ?? throw new NotSupportedException($"{operation} yields a {result.GeometryType}, which cannot replace a polyline. Use the overload with an out result.");
         }
 
         public void Clip(IEnvelope clipper, out IGeometry result)
@@ -336,24 +353,27 @@ namespace gView.Framework.Geometry
             result = polyline;
         }
 
+        /// <summary>Polyline with polygon or polyline gives a polyline, with points a multipoint.</summary>
         public void Intersect(IGeometry geometry, out IGeometry result)
         {
-            throw new Exception("The method or operation is not implemented.");
+            result = Engine.SpatialNetBridge.Intersection(this, geometry);
         }
 
         public void Difference(IGeometry geometry, out IGeometry result)
         {
-            throw new Exception("The method or operation is not implemented.");
+            result = Engine.SpatialNetBridge.Difference(this, geometry);
         }
 
+        /// <exception cref="NotSupportedException">The geometry is not a polyline: the result would mix dimensions.</exception>
         public void SymDifference(IGeometry geometry, out IGeometry result)
         {
-            throw new Exception("The method or operation is not implemented.");
+            result = Engine.SpatialNetBridge.SymDifference(this, geometry);
         }
 
+        /// <exception cref="NotSupportedException">The geometry is not a polyline: the result would mix dimensions.</exception>
         public void Union(IGeometry geometry, out IGeometry result)
         {
-            throw new Exception("The method or operation is not implemented.");
+            result = Engine.SpatialNetBridge.Union(this, geometry);
         }
 
         #endregion
