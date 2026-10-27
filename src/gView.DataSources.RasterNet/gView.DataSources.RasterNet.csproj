@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="RasterNet.Core" Version="0.26.4301" />
+    <PackageReference Include="RasterNet.Core" Version="0.26.4302" />
   </ItemGroup>
 
   <ItemGroup>
