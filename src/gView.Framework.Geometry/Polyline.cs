@@ -294,6 +294,12 @@ namespace gView.Framework.Geometry
 
         public IPolygon Buffer(double distance)
         {
+            // SpatialNET buffers all paths in one pass, without merging single path buffers
+            if (Engine.GeometryEngineOptions.UseSpatialNetForBuffer)
+            {
+                return Engine.SpatialNetBridge.Buffer(this, distance);
+            }
+
             IPolygon buffer = Algorithm.PolylineBuffer(this, distance);
             return buffer;
         }

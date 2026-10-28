@@ -10,7 +10,7 @@ namespace gView.Framework.Geometry.Engine
     /// </summary>
     /// <remarks>
     /// The initial values come from the environment variable <see cref="EnvironmentVariable"/>, a comma-separated
-    /// list of areas (<c>relation</c>) or <c>all</c>, e.g. <c>GVIEW_SPATIALNET=relation</c>. It works the same in
+    /// list of areas (<c>relation</c>, <c>buffer</c>) or <c>all</c>, e.g. <c>GVIEW_SPATIALNET=relation,buffer</c>. It works the same in
     /// every host (Server, WebApps, Cmd tools). Hosts and tests may also set the properties directly.
     /// </remarks>
     public static class GeometryEngineOptions
@@ -22,12 +22,18 @@ namespace gView.Framework.Geometry.Engine
             var areas = ParseAreas(Environment.GetEnvironmentVariable(EnvironmentVariable));
 
             UseSpatialNetForSpatialRelation = areas.Contains("all") || areas.Contains("relation");
+            UseSpatialNetForBuffer = areas.Contains("all") || areas.Contains("buffer");
         }
 
         /// <summary>
         /// <c>SpatialRelation.Check</c>, the spatial filter fallback of the data sources, runs on SpatialNET predicates.
         /// </summary>
         public static bool UseSpatialNetForSpatialRelation { get; set; }
+
+        /// <summary>
+        /// <c>Buffer</c> of points, multipoints, polylines and polygons runs on SpatialNET.
+        /// </summary>
+        public static bool UseSpatialNetForBuffer { get; set; }
 
         internal static HashSet<string> ParseAreas(string value)
         {

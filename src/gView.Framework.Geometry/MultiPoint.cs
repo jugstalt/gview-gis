@@ -61,6 +61,12 @@ namespace gView.Framework.Geometry
 
         public IPolygon Buffer(double distance)
         {
+            // SpatialNET buffers all points in one pass, without merging single circles
+            if (Engine.GeometryEngineOptions.UseSpatialNetForBuffer)
+            {
+                return Engine.SpatialNetBridge.Buffer(this, distance);
+            }
+
             if (distance <= 0.0)
             {
                 return null;

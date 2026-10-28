@@ -39,6 +39,36 @@ namespace gView.Framework.Geometry.Engine
             return ToGView(Overlays.Union(ToSpatial(a), ToSpatial(b), factory: Factory));
         }
 
+        #region Buffer
+
+        // 16 segments per quarter circle: about 5.6° per step, close to gView's own 0.1 rad.
+        // An angle works in degrees and metres alike, unlike an arc tolerance in map units.
+        private static readonly BufferOptions BufferSettings = new BufferOptions { QuadrantSegments = 16 };
+
+        /// <summary>
+        /// The SpatialNET variant of <c>ITopologicalOperation.Buffer</c>, with gView's conventions:
+        /// points and lines with a distance ≤ 0 give <c>null</c>, a polygon with distance 0 is returned itself,
+        /// and a polygon shrunk away gives an empty polygon.
+        /// </summary>
+        internal static IPolygon Buffer(IGeometry geometry, double distance)
+        {
+            if (geometry is IPolygon polygon)
+            {
+                if (distance == 0.0)
+                {
+                    return polygon;
+                }
+            }
+            else if (distance <= 0.0)
+            {
+                return null;
+            }
+
+            return (IPolygon)Buffering.Buffer(ToSpatial(geometry), distance, BufferSettings, Factory);
+        }
+
+        #endregion
+
         #region Spatial relations
 
         // Filter geometries are prepared once and reused for every feature of a cursor. The entry lives as long as

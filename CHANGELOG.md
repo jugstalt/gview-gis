@@ -18,6 +18,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   `GeometryEngineOptions.UseSpatialNetForSpatialRelation`; off by default. Results follow
   DE-9IM: touching geometries intersect, and a filter polygon whose hole lies inside a
   feature does not contain it.
+- Geometry: `Buffer` of points, multipoints, polylines and polygons can run on SpatialNET
+  (opt-in with `GVIEW_SPATIALNET=buffer` or `GeometryEngineOptions.UseSpatialNetForBuffer`;
+  off by default). Multipoints and polylines are buffered in one pass, and buffers are exact
+  in geographic coordinates: the classic buffers round to 0.001 map units (Clipper), so in
+  degrees small buffer distances vanish.
 
 - GeoServices REST: query operation supports `outStatistics` and `groupByFieldsForStatistics`
   (MapServer and FeatureServer) with `count`, `sum`, `min`, `max`, `avg`, `stddev` and `var`

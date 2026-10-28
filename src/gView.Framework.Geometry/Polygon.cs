@@ -544,6 +544,12 @@ namespace gView.Framework.Geometry
 
         public IPolygon Buffer(double distance)
         {
+            // SpatialNET needs no VerifyHoles(): it reads the rings by even-odd nesting
+            if (Engine.GeometryEngineOptions.UseSpatialNetForBuffer)
+            {
+                return Engine.SpatialNetBridge.Buffer(this, distance);
+            }
+
             VerifyHoles();
             IPolygon buffer = Algorithm.PolygonBuffer(this, distance);
             return buffer;

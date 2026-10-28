@@ -199,6 +199,11 @@ namespace gView.Framework.Geometry
 
         public IPolygon Buffer(double distance)
         {
+            if (Engine.GeometryEngineOptions.UseSpatialNetForBuffer)
+            {
+                return Engine.SpatialNetBridge.Buffer(this, distance);
+            }
+
             IPolygon buffer = GeoProcessing.Algorithm.PointBuffer(this, distance);
             return buffer;
         }
