@@ -586,6 +586,13 @@ namespace gView.Framework.Geometry
         {
             if (geometry is IPolygon)
             {
+                // ADR 0002, phase 2: SpatialNET union behind the merge switch
+                if (Engine.GeometryEngineOptions.UseSpatialNetForMerge)
+                {
+                    CopyGeometry((IPolygon)Engine.SpatialNetBridge.Union(this, geometry));
+                    return;
+                }
+
                 CopyGeometry(new List<IPolygon>(new IPolygon[] { this, (IPolygon)geometry }).Merge());
             }
         }

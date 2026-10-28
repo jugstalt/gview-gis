@@ -3,6 +3,7 @@ using gView.Framework.Core.Geometry;
 using SpatialNET;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 
 namespace gView.Framework.Geometry.Engine
@@ -38,6 +39,32 @@ namespace gView.Framework.Geometry.Engine
         {
             return ToGView(Overlays.Union(ToSpatial(a), ToSpatial(b), factory: Factory));
         }
+
+        #region Merge
+
+        /// <summary>
+        /// The SpatialNET variant of gView's polygon merge: all polygons in one <c>UnionAll</c>, each read
+        /// by even-odd nesting (independent of ring orientation). gView's conventions: no polygons give
+        /// <c>null</c>, a single polygon is returned unchanged.
+        /// </summary>
+        internal static IPolygon MergePolygons(IList<IPolygon> polygons)
+        {
+            var parts = polygons?.Where(p => p != null).ToList();
+            if (parts == null || parts.Count == 0)
+            {
+                return null;
+            }
+
+            if (parts.Count == 1)
+            {
+                return parts[0];
+            }
+
+            return (IPolygon)Overlays.UnionAll(
+                parts.Select(p => (IPolygon2D)ToSpatial(p)), factory: Factory);
+        }
+
+        #endregion
 
         #region Buffer
 

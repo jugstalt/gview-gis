@@ -2116,11 +2116,29 @@ namespace gView.Framework.Geometry.GeoProcessing
         #region Buffer
         public static IPolygon MergePolygons(List<IPolygon> polygons)
         {
+            // ADR 0002, phase 2: one SpatialNET UnionAll behind a switch
+            if (Engine.GeometryEngineOptions.UseSpatialNetForMerge)
+            {
+                return Engine.SpatialNetBridge.MergePolygons(polygons);
+            }
+
             return polygons.Merge();
         }
 
         public static IPolygon FastMergePolygon(List<IPolygon> polygons, ICancelTracker cancelTracker, ProgressReporterEvent reporter)
         {
+            // ADR 0002, phase 2: one SpatialNET UnionAll instead of pairwise merging; it cannot be cancelled
+            // while running and reports no progress
+            if (Engine.GeometryEngineOptions.UseSpatialNetForMerge)
+            {
+                if (cancelTracker != null && cancelTracker.Continue == false)
+                {
+                    return null;
+                }
+
+                return Engine.SpatialNetBridge.MergePolygons(polygons);
+            }
+
             if (polygons == null || polygons.Count == 0)
             {
                 return null;

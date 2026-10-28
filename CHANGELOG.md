@@ -23,6 +23,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   off by default). Multipoints and polylines are buffered in one pass, and buffers are exact
   in geographic coordinates: the classic buffers round to 0.001 map units (Clipper), so in
   degrees small buffer distances vanish.
+- Geometry: merging polygons (`Algorithm.MergePolygons`, `Algorithm.FastMergePolygon`,
+  `Polygon.Union` with a polygon) can run on SpatialNET (opt-in with `GVIEW_SPATIALNET=merge`
+  or `GeometryEngineOptions.UseSpatialNetForMerge`; off by default): one union of all
+  polygons instead of pairwise merging, exact in geographic coordinates.
 
 - GeoServices REST: query operation supports `outStatistics` and `groupByFieldsForStatistics`
   (MapServer and FeatureServer) with `count`, `sum`, `min`, `max`, `avg`, `stddev` and `var`
@@ -55,6 +59,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - Unsupported renderer types (`heatmap`, `dotDensity`, ...) no longer hide the layer: the
     renderer of the layer is used.
   - New tests in `gView.Interoperability.GeoServices.Tests`.
+
+## Changed
+
+- Buffer queries (`BufferQueryFilter`) merge all buffers once at the end instead of uniting
+  the growing result with every single buffer.
 
 ## Fixed
 

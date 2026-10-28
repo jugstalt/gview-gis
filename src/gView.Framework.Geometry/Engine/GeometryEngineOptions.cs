@@ -10,7 +10,7 @@ namespace gView.Framework.Geometry.Engine
     /// </summary>
     /// <remarks>
     /// The initial values come from the environment variable <see cref="EnvironmentVariable"/>, a comma-separated
-    /// list of areas (<c>relation</c>, <c>buffer</c>) or <c>all</c>, e.g. <c>GVIEW_SPATIALNET=relation,buffer</c>. It works the same in
+    /// list of areas (<c>relation</c>, <c>buffer</c>, <c>merge</c>) or <c>all</c>, e.g. <c>GVIEW_SPATIALNET=relation,buffer</c>. It works the same in
     /// every host (Server, WebApps, Cmd tools). Hosts and tests may also set the properties directly.
     /// </remarks>
     public static class GeometryEngineOptions
@@ -23,6 +23,7 @@ namespace gView.Framework.Geometry.Engine
 
             UseSpatialNetForSpatialRelation = areas.Contains("all") || areas.Contains("relation");
             UseSpatialNetForBuffer = areas.Contains("all") || areas.Contains("buffer");
+            UseSpatialNetForMerge = areas.Contains("all") || areas.Contains("merge");
         }
 
         /// <summary>
@@ -34,6 +35,12 @@ namespace gView.Framework.Geometry.Engine
         /// <c>Buffer</c> of points, multipoints, polylines and polygons runs on SpatialNET.
         /// </summary>
         public static bool UseSpatialNetForBuffer { get; set; }
+
+        /// <summary>
+        /// Merging polygons (<c>Algorithm.MergePolygons</c>, <c>Algorithm.FastMergePolygon</c>, <c>Polygon.Union</c>
+        /// with a polygon) runs on SpatialNET.
+        /// </summary>
+        public static bool UseSpatialNetForMerge { get; set; }
 
         internal static HashSet<string> ParseAreas(string value)
         {

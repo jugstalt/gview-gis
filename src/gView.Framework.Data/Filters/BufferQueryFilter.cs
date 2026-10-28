@@ -4,7 +4,9 @@ using gView.Framework.Core.Data.Cursors;
 using gView.Framework.Core.Data.Filters;
 using gView.Framework.Core.FDB;
 using gView.Framework.Core.Geometry;
+using gView.Framework.Geometry.GeoProcessing;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace gView.Framework.Data.Filters
@@ -100,7 +102,9 @@ namespace gView.Framework.Data.Filters
                 //    rootFilter = SpatialFilter.Project(rootFilter as ISpatialFilter,
                 //        bufferQuery.RootFeatureClass.SpatialReference);
 
-                IPolygon buffer = null;
+                // Collect all buffers and merge them once at the end, instead of uniting the growing result
+                // with every single buffer
+                var buffers = new List<IPolygon>();
                 using (IFeatureCursor cursor = (IFeatureCursor)await bufferQuery.RootFeatureClass.Search(rootFilter))
                 {
                     IFeature feature;
@@ -122,17 +126,13 @@ namespace gView.Framework.Data.Filters
                         {
                             throw new Exception("Buffer fails for geometry...");
                         }
-                        if (buffer == null)
-                        {
-                            buffer = poly;
-                        }
-                        else
-                        {
-                            ((ITopologicalOperation)buffer).Union(poly);
-                        }
+                        buffers.Add(poly);
                     }
                 }
 
+                IPolygon buffer = buffers.Count == 1
+                    ? buffers[0]
+                    : Algorithm.MergePolygons(buffers);
                 if (buffer == null)
                 {
                     throw new Exception("No geometry found to buffer! (SELECT " + rootFilter.SubFields + " FROM " + bufferQuery.RootFeatureClass.Name + " WHERE " + rootFilter.WhereClause + ")");
