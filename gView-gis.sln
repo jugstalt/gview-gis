@@ -251,6 +251,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.DataSources.RasterNet
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Framework.Geometry.Tests", "src\tests\gView.Framework.Geometry.Tests\gView.Framework.Geometry.Tests.csproj", "{9C0043D4-52A3-48C4-ABAA-BD894808E690}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmarks", "benchmarks", "{66320409-64EC-F7C5-3DEF-65E7510DAAD1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Framework.Geometry.Benchmarks", "src\benchmarks\gView.Framework.Geometry.Benchmarks\gView.Framework.Geometry.Benchmarks.csproj", "{823D38DB-E455-4E19-B55F-C1DE786A04E8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1575,6 +1579,18 @@ Global
 		{9C0043D4-52A3-48C4-ABAA-BD894808E690}.Release|x64.Build.0 = Release|Any CPU
 		{9C0043D4-52A3-48C4-ABAA-BD894808E690}.Release|x86.ActiveCfg = Release|Any CPU
 		{9C0043D4-52A3-48C4-ABAA-BD894808E690}.Release|x86.Build.0 = Release|Any CPU
+		{823D38DB-E455-4E19-B55F-C1DE786A04E8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{823D38DB-E455-4E19-B55F-C1DE786A04E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{823D38DB-E455-4E19-B55F-C1DE786A04E8}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{823D38DB-E455-4E19-B55F-C1DE786A04E8}.Debug|x64.Build.0 = Debug|Any CPU
+		{823D38DB-E455-4E19-B55F-C1DE786A04E8}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{823D38DB-E455-4E19-B55F-C1DE786A04E8}.Debug|x86.Build.0 = Debug|Any CPU
+		{823D38DB-E455-4E19-B55F-C1DE786A04E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{823D38DB-E455-4E19-B55F-C1DE786A04E8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{823D38DB-E455-4E19-B55F-C1DE786A04E8}.Release|x64.ActiveCfg = Release|Any CPU
+		{823D38DB-E455-4E19-B55F-C1DE786A04E8}.Release|x64.Build.0 = Release|Any CPU
+		{823D38DB-E455-4E19-B55F-C1DE786A04E8}.Release|x86.ActiveCfg = Release|Any CPU
+		{823D38DB-E455-4E19-B55F-C1DE786A04E8}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1701,6 +1717,7 @@ Global
 		{FC7BFF30-92AC-4625-8AD7-8A2821191FE6} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 		{FFF1E63D-AB9E-4A30-A43B-FA435256D3A4} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 		{9C0043D4-52A3-48C4-ABAA-BD894808E690} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
+		{823D38DB-E455-4E19-B55F-C1DE786A04E8} = {66320409-64EC-F7C5-3DEF-65E7510DAAD1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {11C25FC0-EB32-4DE1-9CBB-CF2D68D1AA9B}

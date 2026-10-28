@@ -41,6 +41,7 @@ So the **concrete classes in `gView.Framework.Geometry`** (`Point`, `Path`, `Rin
   - The adapter round trip: `Ring`/`Hole`, closing point, `Srs`.
   - The repaired operations.
   - The comparisons old against new for each switched area.
+- Benchmarks go into `src/benchmarks/gView.Framework.Geometry.Benchmarks` (BenchmarkDotNet, run manually, not in CI). Every benchmark of the four areas runs with its switch off and on, in projected coordinates, so both compute the same thing: `dotnet run -c Release --project src/benchmarks/gView.Framework.Geometry.Benchmarks -- --filter *`.
 - `THIRD-PARTY-NOTICES` gets an entry for SpatialNET (Apache License 2.0) with the first package reference.
 - The embedded Clipper and the `Topology` namespace stay until the switches that replace them are on by default. Removing them is a later decision. Until then, everything that runs through Clipper (polygon buffer, `FastMergePolygon`/`Merge`, clipping) is only precise to 0.001 map units, which is too coarse for geographic coordinates.
 
