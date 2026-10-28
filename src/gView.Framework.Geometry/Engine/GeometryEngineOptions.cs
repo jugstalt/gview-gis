@@ -10,7 +10,7 @@ namespace gView.Framework.Geometry.Engine
     /// </summary>
     /// <remarks>
     /// The initial values come from the environment variable <see cref="EnvironmentVariable"/>, a comma-separated
-    /// list of areas (<c>relation</c>, <c>buffer</c>, <c>merge</c>) or <c>all</c>, e.g. <c>GVIEW_SPATIALNET=relation,buffer</c>. It works the same in
+    /// list of areas (<c>relation</c>, <c>buffer</c>, <c>merge</c>, <c>clip</c>) or <c>all</c>, e.g. <c>GVIEW_SPATIALNET=relation,buffer</c>. It works the same in
     /// every host (Server, WebApps, Cmd tools). Hosts and tests may also set the properties directly.
     /// </remarks>
     public static class GeometryEngineOptions
@@ -24,6 +24,7 @@ namespace gView.Framework.Geometry.Engine
             UseSpatialNetForSpatialRelation = areas.Contains("all") || areas.Contains("relation");
             UseSpatialNetForBuffer = areas.Contains("all") || areas.Contains("buffer");
             UseSpatialNetForMerge = areas.Contains("all") || areas.Contains("merge");
+            UseSpatialNetForClip = areas.Contains("all") || areas.Contains("clip");
         }
 
         /// <summary>
@@ -41,6 +42,13 @@ namespace gView.Framework.Geometry.Engine
         /// with a polygon) runs on SpatialNET.
         /// </summary>
         public static bool UseSpatialNetForMerge { get; set; }
+
+        /// <summary>
+        /// Clipping polygons to an envelope (Clipper's <c>Clip</c>, used by <c>Clip.PerformClip</c>, <c>Polygon.Clip</c>,
+        /// highlighting, raster footprints and polygon labels) runs on SpatialNET. Polylines and multipoints keep
+        /// gView's own envelope clip.
+        /// </summary>
+        public static bool UseSpatialNetForClip { get; set; }
 
         internal static HashSet<string> ParseAreas(string value)
         {

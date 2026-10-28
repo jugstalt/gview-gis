@@ -110,6 +110,12 @@ namespace gView.Framework.Geometry.GeoProcessing.Clipper
 
         static public IPolygon Clip(this IPolygon clippee, Envelope clipper)
         {
+            // ADR 0002, phase 2: SpatialNET behind the clip switch; exact also in geographic coordinates
+            if (Engine.GeometryEngineOptions.UseSpatialNetForClip)
+            {
+                return Engine.SpatialNetBridge.ClipPolygon(clippee, clipper);
+            }
+
             var clippeePolygons = clippee.ToClipperPolygons();
             var clipperPolygons = clipper.ToPolygon().ToClipperPolygons();
 

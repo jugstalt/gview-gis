@@ -562,10 +562,16 @@ namespace gView.Framework.Geometry
             CopyGeometry((IPolygon)result);
         }
 
+        /// <exception cref="NotSupportedException">The geometry is a polyline or points: the result would not be a polygon.</exception>
         public void Intersect(IGeometry geometry)
         {
             IGeometry result;
             Intersect(geometry, out result);
+            if (result != null && !(result is IPolygon))
+            {
+                throw new NotSupportedException($"Intersect yields a {result.GeometryType}, which cannot replace a polygon. Use the overload with an out result.");
+            }
+
             CopyGeometry((IPolygon)result);
         }
 
@@ -609,8 +615,18 @@ namespace gView.Framework.Geometry
             result = polygon;
         }
 
+        /// <summary>
+        /// With an envelope the classic clip; with any other geometry SpatialNET (ADR 0002, phase 1 repair:
+        /// <c>PerformClip</c> gave <c>null</c> for those). Polygon with polyline gives a polyline, with points a multipoint.
+        /// </summary>
         public void Intersect(IGeometry geometry, out IGeometry result)
         {
+            if (geometry != null && !(geometry is IEnvelope))
+            {
+                result = Engine.SpatialNetBridge.Intersection(this, geometry);
+                return;
+            }
+
             VerifyHoles();
             IGeometry polygon = GeoProcessing.Clip.PerformClip(geometry, this);
             if (!(polygon is IPolygon))

@@ -66,6 +66,21 @@ namespace gView.Framework.Geometry.Engine
 
         #endregion
 
+        #region Clip
+
+        /// <summary>
+        /// The SpatialNET variant of Clipper's polygon clip: the part of <paramref name="polygon"/> inside
+        /// <paramref name="envelope"/>, an empty polygon if they do not meet (as Clipper gives).
+        /// </summary>
+        internal static IPolygon ClipPolygon(IPolygon polygon, IEnvelope envelope)
+        {
+            var rectangle = new Envelope2D(envelope.MinX, envelope.MinY, envelope.MaxX, envelope.MaxY);
+
+            return (IPolygon)Overlays.Clip((IPolygon2D)ToSpatial(polygon), rectangle, factory: Factory);
+        }
+
+        #endregion
+
         #region Buffer
 
         // 16 segments per quarter circle: about 5.6° per step, close to gView's own 0.1 rad.

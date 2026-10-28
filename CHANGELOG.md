@@ -27,6 +27,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   `Polygon.Union` with a polygon) can run on SpatialNET (opt-in with `GVIEW_SPATIALNET=merge`
   or `GeometryEngineOptions.UseSpatialNetForMerge`; off by default): one union of all
   polygons instead of pairwise merging, exact in geographic coordinates.
+- Geometry: clipping polygons to an envelope (map highlighting, raster footprints, polygon
+  labels, `Clip.PerformClip`, `Polygon.Clip`) can run on SpatialNET (opt-in with
+  `GVIEW_SPATIALNET=clip` or `GeometryEngineOptions.UseSpatialNetForClip`; off by default),
+  exact in geographic coordinates. Polylines keep gView's own envelope clip.
 
 - GeoServices REST: query operation supports `outStatistics` and `groupByFieldsForStatistics`
   (MapServer and FeatureServer) with `count`, `sum`, `min`, `max`, `avg`, `stddev` and `var`
@@ -77,6 +81,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   (on SpatialNET) instead of throwing "not implemented". The in-place variants throw
   `NotSupportedException` when the result is not a polyline (e.g. polyline ∩ point); the
   variants with an `out` result return it as it is.
+- Geometry: `Polygon.Intersect` with a polygon, polyline or points computes the intersection
+  (on SpatialNET). Before, it returned `null` (`out` variant) or changed nothing. With a
+  polyline or points, the in-place variant throws `NotSupportedException`. With an envelope
+  it clips as before.
 
 ## 8.26.4001
 
