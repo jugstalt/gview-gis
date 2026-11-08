@@ -66,7 +66,6 @@ public sealed class VectorTileBuilder
             ?? throw new Exception($"Can't load spatial reference EPSG:{epsg}");
 
         var grid = _metadata.CreateTileGrid(epsg, orientation, sRef);
-        var builder = new MvtTileBuilder(grid, level, row, col, MvtTileOptions.Default);
 
         #region Prepare display (scale dependent visibility, renderers)
 
@@ -81,23 +80,29 @@ public sealed class VectorTileBuilder
 
         #endregion
 
+        var layers = VisibleLayers()
+            .OfType<IFeatureLayer>()
+            .Where(l => l.FeatureClass is not null && l.RenderInScale(display))
+            .ToList();
+
+        // Clipping adds artificial polygon edges on the buffer border. Clients cut each tile at its border,
+        // so these edges stay invisible only if the buffer is wider than half of the widest line (or the
+        // largest symbol) at this scale. Otherwise thick outlines show up as stripes along the tile borders.
+        var options = MvtTileOptions.Default with { Buffer = BufferFor(layers, scale) };
+        var builder = new MvtTileBuilder(grid, level, row, col, options);
+
         var clip = builder.ClipEnvelope;
         var clipEnvelope = new Envelope(clip.MinX, clip.MinY, clip.MaxX, clip.MaxY);
         var layerNames = MvtLayerNames.FromMap(_map);
 
-        foreach (var layer in VisibleLayers())
+        foreach (var featureLayer in layers)
         {
             if (cancelTracker?.Continue == false)
             {
                 return null;
             }
 
-            if (layer is not IFeatureLayer featureLayer
-                || featureLayer.FeatureClass is null
-                || !layer.RenderInScale(display))
-            {
-                continue;
-            }
+            var layer = (ILayer)featureLayer;
 
             string? mvtLayerName = layerNames[layer];
             if (mvtLayerName == null)
@@ -109,6 +114,25 @@ public sealed class VectorTileBuilder
         }
 
         return builder.IsEmpty ? null : builder.ToBytes(gzip: true);
+    }
+
+    /// <summary>
+    /// The clip buffer in tile units: the default (64 of 4096), or more when half of the widest symbol
+    /// (plus 2 pixels for antialiasing) reaches further into the neighbor tile.
+    /// </summary>
+    private double BufferFor(IEnumerable<IFeatureLayer> layers, double scale)
+    {
+        double maxPixels = layers
+            .Select(l => l.MaxSymbolPixels(scale, _map.Display.ReferenceScale, _metadata.Dpi))
+            .DefaultIfEmpty(0)
+            .Max();
+
+        double tilePixels = Math.Max(1, Math.Min(_metadata.TileWidth, _metadata.TileHeight));
+        double unitsPerPixel = MvtTileOptions.Default.Extent / tilePixels;
+        double needed = (maxPixels / 2.0 + 2.0) * unitsPerPixel;
+
+        // never more than half a tile: features from further away would multiply the tile size
+        return Math.Min(MvtTileOptions.Default.Extent / 2.0, Math.Max(MvtTileOptions.Default.Buffer, Math.Ceiling(needed)));
     }
 
     #region Layers

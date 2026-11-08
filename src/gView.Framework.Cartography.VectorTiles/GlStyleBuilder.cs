@@ -500,16 +500,7 @@ public sealed class GlStyleBuilder
         public GeometryType GeometryType { get; } = geometryType;
         public int Counter { get; set; }
 
-        public double RefScaleFactor(double referenceScale, double scale)
-        {
-            if (referenceScale <= 1 || layer.FeatureRenderer?.UseReferenceScale != true || !layer.ApplyRefScale)
-            {
-                return 1.0;
-            }
-
-            double factor = referenceScale / scale;
-            return layer.MaxRefScaleFactor > 0 ? Math.Min(factor, layer.MaxRefScaleFactor) : factor;
-        }
+        public double RefScaleFactor(double referenceScale, double scale) => layer.RefScaleFactor(referenceScale, scale);
     }
 
     #endregion
