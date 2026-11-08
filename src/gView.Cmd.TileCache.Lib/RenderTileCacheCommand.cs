@@ -47,7 +47,7 @@ public class RenderTileCacheCommand : ICommand
         },
         new CommandParameter<TileImageFormat>("imageformat")
         {
-            Description = "Imageformat: <png|jpg>"
+            Description = "Imageformat: <png|jpg|pbf> (pbf = Mapbox vector tiles)"
         },
         new CommandParameter<IEnvelope>("bbox")
         {

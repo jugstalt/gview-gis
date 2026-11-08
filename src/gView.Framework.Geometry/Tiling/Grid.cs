@@ -11,7 +11,7 @@ namespace gView.Framework.Geometry.Tiling
         UpperLeft = 1
     }
 
-    public enum TileImageFormat { png, jpg };
+    public enum TileImageFormat { png, jpg, pbf };
 
     public class Grid
     {

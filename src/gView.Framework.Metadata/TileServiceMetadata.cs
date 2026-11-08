@@ -199,6 +199,27 @@ namespace gView.Framework.Metadata
             set { _properties.SupportJpg = value; }
         }
 
+        public bool FormatMvt
+        {
+            get { return _properties.SupportMvt; }
+            set { _properties.SupportMvt = value; }
+        }
+
+        /// <summary>
+        /// Additional attribute fields per map layer (layer name or MVT layer name) written into vector tiles,
+        /// besides the fields the renderers require. Values are comma separated field names.
+        /// </summary>
+        public IReadOnlyDictionary<string, string> MvtLayerAttributes => _properties.MvtLayerAttributes;
+
+        /// <summary>
+        /// A log warning is written when a vector tile is larger than this (kB). 0 = no warning.
+        /// </summary>
+        public int MvtSizeWarningKb
+        {
+            get { return _properties.MvtSizeWarningKb; }
+            set { _properties.MvtSizeWarningKb = value; }
+        }
+
         public bool MakeTransparentPng { get; set; }
 
         public bool RenderTilesOnTheFly { get; set; }
@@ -267,6 +288,19 @@ namespace gView.Framework.Metadata
             _properties.SupportJpg = (bool)stream.Load("formatjpg", true);
             this.MakeTransparentPng = (bool)stream.Load("maketransparentpng", false);
 
+            _properties.SupportMvt = (bool)stream.Load("formatmvt", false);
+            _properties.MvtSizeWarningKb = (int)stream.Load("mvt_sizewarning_kb", 500);
+            _properties.MvtLayerAttributes.Clear();
+            int mvtAttributesCount = (int)stream.Load("mvt_attributes_count", 0);
+            for (int i = 0; i < mvtAttributesCount; i++)
+            {
+                string layerName = (string)stream.Load("mvt_attributes_layer" + i, String.Empty);
+                if (!String.IsNullOrWhiteSpace(layerName))
+                {
+                    _properties.MvtLayerAttributes[layerName] = (string)stream.Load("mvt_attributes_fields" + i, String.Empty);
+                }
+            }
+
             _properties.Dpi = (double)stream.Load("dpi", Const.TilesDpi);
 
             this.RenderTilesOnTheFly = (bool)stream.Load("rendertilesonthefly", false);
@@ -332,6 +366,18 @@ namespace gView.Framework.Metadata
             stream.Save("formatpng", _properties.SupportPng);
             stream.Save("formatjpg", _properties.SupportJpg);
             stream.Save("maketransparentpng", this.MakeTransparentPng);
+
+            stream.Save("formatmvt", _properties.SupportMvt);
+            stream.Save("mvt_sizewarning_kb", _properties.MvtSizeWarningKb);
+            var mvtAttributes = _properties.MvtLayerAttributes
+                .Where(kv => !String.IsNullOrWhiteSpace(kv.Key) && !String.IsNullOrWhiteSpace(kv.Value))
+                .ToArray();
+            stream.Save("mvt_attributes_count", mvtAttributes.Length);
+            for (int i = 0; i < mvtAttributes.Length; i++)
+            {
+                stream.Save("mvt_attributes_layer" + i, mvtAttributes[i].Key);
+                stream.Save("mvt_attributes_fields" + i, mvtAttributes[i].Value);
+            }
 
             stream.Save("rendertilesonthefly", this.RenderTilesOnTheFly);
 
@@ -536,6 +582,9 @@ namespace gView.Framework.Metadata
             public bool CacheLowerLeftTiles { get; set; } = true;
             public bool SupportPng { get; set; } = true;
             public bool SupportJpg { get; set; } = true;
+            public bool SupportMvt { get; set; } = false;
+            public Dictionary<string, string> MvtLayerAttributes { get; set; } = new Dictionary<string, string>();
+            public int MvtSizeWarningKb { get; set; } = 500;
             public double Dpi { get; set; } = Const.TilesDpi;
 
             public class EnvelopeModel

@@ -25,7 +25,8 @@ public class RenderTileCacheModel : IDialogResultItem
                           metadata.LowerLeft ? GridOrientation.LowerLeft : GridOrientation.UpperLeft;
 
         ImageFormat = metadata.FormatPng ? TileImageFormat.png : 
-                      metadata.FormatJpg ? TileImageFormat.jpg : TileImageFormat.png;
+                      metadata.FormatJpg ? TileImageFormat.jpg :
+                      metadata.FormatMvt ? TileImageFormat.pbf : TileImageFormat.png;
 
         ThreadCount = 1;
     }

@@ -15,7 +15,7 @@
   <ItemGroup>
     <PackageReference Include="Proj4Net.Core" Version="2.26.2401" />
     <!-- Flows to all dependents (gView's public geometry classes implement its interfaces), but only this project uses it (ADR 0002) -->
-    <PackageReference Include="SpatialNET.Extensions" Version="0.8.0-preview.1" />
+    <PackageReference Include="SpatialNET.Extensions" Version="0.10.0-preview.1" />
   </ItemGroup>
 
   <ItemGroup>

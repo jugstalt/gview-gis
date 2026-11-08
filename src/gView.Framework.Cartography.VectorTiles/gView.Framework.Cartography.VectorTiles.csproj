@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\gView.Framework.Cartography\gView.Framework.Cartography.csproj" />
+    <ProjectReference Include="..\gView.Framework.Core\gView.Framework.Core.csproj" />
+    <ProjectReference Include="..\gView.Framework.Data\gView.Framework.Data.csproj" />
+    <ProjectReference Include="..\gView.Framework.Geometry\gView.Framework.Geometry.csproj" />
+    <ProjectReference Include="..\gView.Framework.Metadata\gView.Framework.Metadata.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- MVT encoding, tile transform (clip, simplify, quantize) and grid math (vector tile cache design) -->
+    <PackageReference Include="SpatialNET.IO" Version="0.10.0-preview.1" />
+  </ItemGroup>
+
+</Project>

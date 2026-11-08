@@ -1,4 +1,5 @@
 ﻿using gView.Framework.Cartography;
+using gView.Framework.Cartography.VectorTiles;
 using gView.Framework.Common;
 using gView.Framework.Core.Carto;
 using gView.Framework.Core.Common;
@@ -147,7 +148,9 @@ public class TileServiceInterpreter : IServiceRequestInterpreter
                             }
 
                             int epsg = int.Parse(args[3]);
-                            string format = "image/" + args[4].ToLower();
+                            string format = args[4].ToLower() == "pbf"
+                                ? VectorTileBuilder.ContentType
+                                : "image/" + args[4].ToLower();
                             if (args[4].ToLower().EndsWith(".jpg"))
                             {
                                 format = ".jpg";
@@ -158,7 +161,11 @@ public class TileServiceInterpreter : IServiceRequestInterpreter
                         }
                         break;
                     case "tile":
-                        if (args.Length == 5)
+                        if (Array.Exists(args, a => a.EndsWith(VectorTileCache.Extension, StringComparison.OrdinalIgnoreCase)))
+                        {
+                            await GetVectorTile(context, serviceMap, metadata, args, renderOnTheFly);
+                        }
+                        else if (args.Length == 5)
                         {
                             int epsg = int.Parse(args[1]);
                             double scale = GetScale(metadata, args[2]); // double.Parse(args[2].Replace(",", "."), _nhi);
@@ -258,6 +265,73 @@ public class TileServiceInterpreter : IServiceRequestInterpreter
     public int Priority => 10;
 
     #endregion
+
+    /// <summary>
+    /// Vector tiles (.pbf) for seeding: tile[:render]/{ul|ll}/{epsg}/{scale}/{row}/{col}.pbf or
+    /// tile[:render]/{compact|}/{ul|ll}/{epsg}/{scale}/{row}/{col}.pbf[/{boundingTiles}].
+    /// The response is the path of the exploded tile file (as for raster tiles), nothing for compact.
+    /// </summary>
+    async private Task GetVectorTile(IServiceRequestContext context, IServiceMap serviceMap, TileServiceMetadata metadata, string[] args, bool renderOnTheFly)
+    {
+        if (!metadata.FormatMvt)
+        {
+            throw new Exception("Format vector tiles (pbf) not supported");
+        }
+
+        int offset = args.Length == 6 ? 0 : 1;  // tile/{ul|ll}/... or tile/{cacheformat}/{ul|ll}/...
+        string cacheFormat = offset == 1 ? args[1].ToLower() : "";
+        string orientationArg = args[1 + offset].ToLower();
+        if (orientationArg != "ul" && orientationArg != "ll")
+        {
+            throw new ArgumentException();
+        }
+
+        var orientation = orientationArg == "ul" ? GridOrientation.UpperLeft : GridOrientation.LowerLeft;
+        int epsg = int.Parse(args[2 + offset]);
+        double scale = metadata.Scales.GetScale(GetScale(metadata, args[3 + offset]));
+        int row = int.Parse(args[4 + offset]);
+        int col = int.Parse(args[5 + offset].Split('.')[0]);
+
+        if (!metadata.EPSGCodes.Contains(epsg) || scale <= 0.0)
+        {
+            throw new ArgumentException("Wrong epsg or scale argument");
+        }
+
+        var cache = new VectorTileCache(_mapServer.TileCachePath, serviceMap.Name, metadata,
+            message => _mapServer.LogAsync(serviceMap.Name, "VectorTiles", loggingMethod.error, message));
+
+        if (cacheFormat == "compact")
+        {
+            if (orientation != GridOrientation.UpperLeft)
+            {
+                throw new ArgumentException("Compact Tiles Orientation must bei Upper Left!");
+            }
+
+            if (renderOnTheFly)
+            {
+                var boundingTiles = args.Length > 6 + offset ? new BoundingTiles(args[6 + offset]) : null;
+                await cache.RenderCompactBundleAsync(serviceMap, epsg, scale, row, col,
+                    boundingTiles != null ? boundingTiles.Check : null);
+            }
+            return;
+        }
+
+        bool cacheTiles = (orientation == GridOrientation.UpperLeft && metadata.UpperLeftCacheTiles) ||
+                          (orientation == GridOrientation.LowerLeft && metadata.LowerLeftCacheTiles);
+        string path = cache.ExplodedTilePath(orientation, epsg, scale, row, col);
+
+        if (!File.Exists(path))
+        {
+            if (!renderOnTheFly && !metadata.RenderTilesOnTheFly)
+            {
+                return;  // Empty
+            }
+
+            await cache.RenderExplodedAsync(serviceMap, orientation, epsg, scale, row, col, writeToCache: cacheTiles);
+        }
+
+        context.ServiceRequest.Response = path;
+    }
 
     async private Task GetTile(IServiceRequestContext context, IServiceMap serviceMap, TileServiceMetadata metadata, int epsg, double scale, int row, int col, string format, GridOrientation orientation, bool renderOnTheFly)
     {

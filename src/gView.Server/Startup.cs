@@ -892,6 +892,28 @@ public class Startup
             );
 
 
+            // Vector Tiles (MVT)
+            routes.MapRoute(
+                name: "vtc_tiles",
+                template: "vtc/{folder}/{name}/{cachetype}/{origin}/{epsg}/{level}/{row}/{col}",
+                defaults: new { controller = "Vtc", Action = "Tile" }
+            );
+            routes.MapRoute(
+                name: "vtc_tiles2",
+                template: "vtc/{name}/{cachetype}/{origin}/{epsg}/{level}/{row}/{col}",
+                defaults: new { controller = "Vtc", Action = "Tile" }
+            );
+            routes.MapRoute(
+                name: "vtc_xyz",
+                template: "vtc/{folder}/{name}/{z}/{x}/{y}",
+                defaults: new { controller = "Vtc", Action = "TileXyz" }
+            );
+            routes.MapRoute(
+                name: "vtc_xyz2",
+                template: "vtc/{name}/{z}/{x}/{y}",
+                defaults: new { controller = "Vtc", Action = "TileXyz" }
+            );
+
             // ArcIMS
             routes.MapRoute(
                 name: "ags-servlet",

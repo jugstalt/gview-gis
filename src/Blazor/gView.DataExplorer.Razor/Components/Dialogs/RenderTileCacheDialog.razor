@@ -1,4 +1,4 @@
-@using gView.Framework.Geometry.Tiling;
+﻿@using gView.Framework.Geometry.Tiling;
 @inherits ModalDialogFormBase<RenderTileCacheModel>
 
 <ModalDialogFormBase T="RenderTileCacheModel"
@@ -38,6 +38,10 @@
                                     @if (Model.Metadata.FormatJpg)
                                     {
                                         <MudSelectItem Value="TileImageFormat.jpg">Jpg</MudSelectItem>
+                                    }
+                                    @if (Model.Metadata.FormatMvt)
+                                    {
+                                        <MudSelectItem Value="TileImageFormat.pbf">Vector Tiles (MVT/pbf)</MudSelectItem>
                                     }
                                 </MudSelect>
                                 <MudTextField T="int" InputType="InputType.Number"
