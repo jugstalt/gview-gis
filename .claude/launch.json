@@ -16,6 +16,18 @@
       "port": 5099,
       "url": "http://localhost:5099",
       "autoPort": false
+    },
+    {
+      "name": "vtc-viewer",
+      "runtimeExecutable": "python",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "5180",
+        "--directory",
+        "src/Playgrounds/VectorTilesViewer"
+      ],
+      "port": 5180
     }
   ]
 }

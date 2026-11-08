@@ -7,6 +7,9 @@ using gView.Framework.Geometry;
 using gView.Framework.Geometry.Tiling;
 using gView.Framework.Metadata;
 using System;
+using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 
 namespace gView.Interoperability.Server.TileService;
@@ -51,6 +54,12 @@ public class VectorTileRequest : IServiceRequestInterpreter
         }
 
         string[] args = context.ServiceRequest.Request.Split('/');
+
+        if (args.Length == 2 && (args[0] == "style" || args[0] == "tilejson"))
+        {
+            await StyleOrTileJson(context, metadata, args[0], args[1]);
+            return;
+        }
 
         string cacheFormat;
         GridOrientation orientation;
@@ -122,5 +131,70 @@ public class VectorTileRequest : IServiceRequestInterpreter
         context.ServiceRequest.ResponseContentType = VectorTileBuilder.ContentType;
         context.ServiceRequest.ResponseExpries = DateTime.UtcNow.AddDays(7);
         context.ServiceRequest.Response = data ?? Array.Empty<byte>();
+    }
+
+    /// <summary>
+    /// <c>style/{epsg}</c>: GL style (v8) from the renderers; <c>tilejson/{epsg}</c>: TileJSON 3.0.
+    /// Both carry the tile grid as <c>gview:grid</c> for clients of a custom grid (OpenLayers).
+    /// </summary>
+    async private Task StyleOrTileJson(IServiceRequestContext context, TileServiceMetadata metadata, string what, string epsgArgument)
+    {
+        int epsg = String.IsNullOrEmpty(epsgArgument) || epsgArgument == "default"
+            ? metadata.EPSGCodes.FirstOrDefault(e => e > 0)
+            : int.Parse(epsgArgument);
+        if (!metadata.EPSGCodes.Contains(epsg))
+        {
+            throw new ArgumentException($"EPSG:{epsg} is not part of the tile cache");
+        }
+
+        string baseUrl = context.ServiceRequest.OnlineResource.TrimEnd('/');
+
+        using (var serviceMap = await context.CreateServiceMapInstance())
+        {
+            var styleBuilder = new GlStyleBuilder(serviceMap, metadata, epsg);
+            string tileUrl = styleBuilder.IsWebMercator
+                ? $"{baseUrl}/{{z}}/{{x}}/{{y}}.pbf"
+                : $"{baseUrl}/compact/ul/{epsg}/{{z}}/{{y}}/{{x}}.pbf";
+
+            var grid = metadata.CreateTileGrid(epsg, GridOrientation.UpperLeft);
+            var extent = metadata.GetEPSGEnvelope(epsg);
+            var gridNode = new JsonObject
+            {
+                ["epsg"] = epsg,
+                ["origin"] = new JsonArray(grid.OriginX, grid.OriginY),
+                ["resolutions"] = new JsonArray(grid.Resolutions.Select(r => (JsonNode)r).ToArray()),
+                ["scales"] = new JsonArray(metadata.Scales.InnerList.Select(s => (JsonNode)s).ToArray()),
+                ["tileSize"] = new JsonArray(metadata.TileWidth, metadata.TileHeight),
+                ["extent"] = extent == null ? null : new JsonArray(extent.MinX, extent.MinY, extent.MaxX, extent.MaxY),
+                ["webmercator"] = styleBuilder.IsWebMercator
+            };
+
+            JsonObject result;
+            if (what == "style")
+            {
+                result = styleBuilder.Build(serviceMap.Name, tileUrl);
+                ((JsonObject)result["metadata"])["gview:grid"] = gridNode;
+            }
+            else
+            {
+                var layerNames = MvtLayerNames.FromMap(serviceMap);
+                result = new JsonObject
+                {
+                    ["tilejson"] = "3.0.0",
+                    ["name"] = serviceMap.Name,
+                    ["scheme"] = "xyz",
+                    ["tiles"] = new JsonArray(tileUrl),
+                    ["minzoom"] = styleBuilder.MinZoom,
+                    ["maxzoom"] = styleBuilder.MaxZoom,
+                    ["vector_layers"] = new JsonArray(layerNames.All.Values
+                        .Select(n => (JsonNode)new JsonObject { ["id"] = n, ["fields"] = new JsonObject() })
+                        .ToArray()),
+                    ["gview:grid"] = gridNode
+                };
+            }
+
+            context.ServiceRequest.ResponseContentType = "application/json";
+            context.ServiceRequest.Response = result.ToJsonString(new JsonSerializerOptions { WriteIndented = true });
+        }
     }
 }

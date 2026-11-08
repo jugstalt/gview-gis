@@ -13,7 +13,8 @@ namespace gView.Server.Controllers;
 /// <summary>
 /// Vector tiles (MVT) of the tile service grid:
 /// <c>vtc/[{folder}/]{name}/{exploded|compact}/{ul|ll}/{epsg}/{level}/{row}/{col}.pbf</c> and
-/// <c>vtc/[{folder}/]{name}/{z}/{x}/{y}.pbf</c> (Mapbox conform, WebMercator only).
+/// <c>vtc/[{folder}/]{name}/{z}/{x}/{y}.pbf</c> (Mapbox conform, WebMercator only),
+/// <c>vtc/[{folder}/]{name}/style.json[?epsg=]</c> (GL style) and <c>vtc/[{folder}/]{name}/tilejson.json[?epsg=]</c>.
 /// </summary>
 public class VtcController : BaseController
 {
@@ -36,6 +37,12 @@ public class VtcController : BaseController
     public Task<IActionResult> TileXyz(string name, string z, string x, string y, string folder = "")
         => VectorTile(name, folder, $"xyz/{z}/{x}/{y}");
 
+    public Task<IActionResult> Style(string name, string epsg = "", string folder = "")
+        => VectorTile(name, folder, $"style/{epsg}");
+
+    public Task<IActionResult> TileJson(string name, string epsg = "", string folder = "")
+        => VectorTile(name, folder, $"tilejson/{epsg}");
+
     async private Task<IActionResult> VectorTile(string name, string folder, string requestString)
     {
         if (IfMatch())
@@ -50,7 +57,9 @@ public class VtcController : BaseController
             var interpreter = _mapServiceMananger.GetInterpreter(typeof(VectorTileRequest));
             var serviceRequest = new ServiceRequest(name, folder, requestString)
             {
-                OnlineResource = $"{_mapServiceMananger.Options.OnlineResource}/vtc/{name}",
+                OnlineResource = String.IsNullOrEmpty(folder)
+                    ? $"{_mapServiceMananger.Options.OnlineResource}/vtc/{name}"
+                    : $"{_mapServiceMananger.Options.OnlineResource}/vtc/{folder}/{name}",
                 OutputUrl = _mapServiceMananger.Options.OutputUrl,
                 Identity = identity
             };
@@ -62,6 +71,11 @@ public class VtcController : BaseController
                 checkSecurity: true);
 
             await _mapServiceMananger.TaskQueue.AwaitRequest(interpreter.Request, context);
+
+            if (serviceRequest.Response is string json && serviceRequest.ResponseContentType == "application/json")
+            {
+                return Content(json, "application/json");
+            }
 
             if (serviceRequest.Response is not byte[] data)
             {

@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>gView Vector Tiles Viewer</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@10.11.0/ol.css">
+  <style>
+    :root { --bg: #fff; --fg: #222; --panel: rgba(255,255,255,.94); --border: #ccc; }
+    @media (prefers-color-scheme: dark) { :root { --bg: #1b1b1b; --fg: #eee; --panel: rgba(30,30,30,.94); --border: #444; } }
+    html, body { margin: 0; height: 100%; background: var(--bg); color: var(--fg); font: 13px system-ui, sans-serif; }
+    #map { position: absolute; inset: 0; }
+    #panel { position: absolute; top: 8px; right: 8px; z-index: 10; width: min(360px, calc(100% - 32px)); padding: 10px 12px;
+             background: var(--panel); border: 1px solid var(--border); border-radius: 6px; }
+    #panel label { display: block; margin-top: 6px; }
+    #panel input[type=text] { width: 100%; box-sizing: border-box; }
+    #panel button { margin-top: 8px; }
+    #status { margin-top: 8px; white-space: pre-wrap; max-height: 30vh; overflow: auto; font-family: ui-monospace, monospace; font-size: 11px; }
+    #info { position: absolute; bottom: 8px; left: 8px; z-index: 10; padding: 4px 8px; background: var(--panel); border-radius: 4px; }
+  </style>
+  <!-- the full builds: one OpenLayers instance shared with ol-mapbox-style (CDN module builds bundle each file separately) -->
+  <script src="https://cdn.jsdelivr.net/npm/ol@10.11.0/dist/ol.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ol-mapbox-style@13.9.0/dist/olms.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/proj4@2.22.0/dist/proj4.js"></script>
+</head>
+<body>
+<div id="map"></div>
+<div id="panel">
+  <strong>gView Vector Tiles</strong>
+  <label>Service (vtc base url)
+    <input id="url" type="text" value="https://localhost:44331/vtc/sqlite/basis-sqlite">
+  </label>
+  <label>EPSG (leer = erster aus Metadaten)
+    <input id="epsg" type="text" value="">
+  </label>
+  <label>proj4 Definition (leer = von epsg.io laden)
+    <input id="proj4def" type="text" value="">
+  </label>
+  <label><input id="raster" type="checkbox"> Raster-Tiles zum Vergleich (tilewmts, png)</label>
+  <label><input id="debug" type="checkbox"> Tile-Grid anzeigen</label>
+  <button id="load">Laden</button>
+  <div id="status"></div>
+</div>
+<div id="info"></div>
+
+<script>
+(() => {
+  // inside a function: a top level 'Map' would shadow the built-in Map for every script
+  const { Map, View } = ol;
+  const VectorTileLayer = ol.layer.VectorTile, TileLayer = ol.layer.Tile;
+  const VectorTileSource = ol.source.VectorTile, XYZ = ol.source.XYZ, TileDebug = ol.source.TileDebug;
+  const TileGrid = ol.tilegrid.TileGrid, MVT = ol.format.MVT;
+  const register = ol.proj.proj4.register, getProjection = ol.proj.get;
+  const applyMapboxStyle = olms.apply, applyStyle = olms.applyStyle;
+
+  const $ = id => document.getElementById(id);
+  const status = msg => { $('status').textContent += msg + '\n'; };
+  let map;
+
+  // remember the last inputs (per viewer convenience only)
+  for (const id of ['url', 'epsg', 'proj4def']) {
+    try { const v = localStorage.getItem('vtc-' + id); if (v !== null) $(id).value = v; } catch { }
+  }
+
+  async function load() {
+    $('status').textContent = '';
+    for (const id of ['url', 'epsg', 'proj4def']) {
+      try { localStorage.setItem('vtc-' + id, $(id).value); } catch { }
+    }
+    if (map) { map.setTarget(null); map = null; }
+
+    const base = $('url').value.replace(/\/+$/, '');
+    const epsgArg = $('epsg').value.trim();
+    const styleUrl = `${base}/style.json${epsgArg ? '?epsg=' + epsgArg : ''}`;
+
+    const style = await (await fetch(styleUrl)).json();
+    const grid = style.metadata['gview:grid'];
+    const warnings = style.metadata['gview:warnings'] || [];
+    status(`EPSG:${grid.epsg}, ${grid.resolutions.length} Levels, ${style.layers.length} Style-Layer` +
+           (grid.webmercator ? ', WebMercator (z/x/y)' : ', eigenes Grid'));
+    warnings.forEach(w => status('⚠ ' + w));
+
+    if (grid.webmercator) {
+      // Mapbox conform: the standard way, nothing gView specific
+      map = new Map({ target: 'map' });
+      await applyMapboxStyle(map, style, { styleUrl });
+      if (grid.extent) map.getView().fit(grid.extent);
+    } else {
+      const code = `EPSG:${grid.epsg}`;
+      let def = $('proj4def').value.trim();
+      if (!def) {
+        def = (await (await fetch(`https://epsg.io/${grid.epsg}.proj4`)).text()).trim();
+      }
+      proj4.defs(code, def);
+      register(proj4);
+      const projection = getProjection(code);
+      if (grid.extent) projection.setExtent(grid.extent);
+
+      const tileGrid = new TileGrid({
+        origin: grid.origin,
+        resolutions: grid.resolutions,
+        tileSize: grid.tileSize,
+        extent: grid.extent || undefined
+      });
+
+      const vtLayer = new VectorTileLayer({
+        declutter: true,
+        source: new VectorTileSource({
+          format: new MVT(),
+          projection,
+          tileGrid,
+          url: style.sources.gview.tiles[0]
+        })
+      });
+      await applyStyle(vtLayer, style, { updateSource: false, resolutions: grid.resolutions, styleUrl });
+
+      const layers = [];
+      if ($('raster').checked) {
+        // raster tiles of the same grid for comparison: tilewmts/[{folder}/]{name}/compact/ul/{epsg}/default/{level}/{row}/{col}.png
+        const rasterBase = base.replace('/vtc/', '/tilewmts/');
+        layers.push(new TileLayer({
+          opacity: 0.5,
+          source: new XYZ({
+            projection, tileGrid,
+            url: `${rasterBase}/compact/ul/${grid.epsg}/default/{z}/{y}/{x}.png`
+          })
+        }));
+      }
+      layers.push(vtLayer);
+      if ($('debug').checked) {
+        layers.push(new TileLayer({ source: new TileDebug({ projection, tileGrid }) }));
+      }
+
+      const view = new View({ projection, resolutions: grid.resolutions, constrainResolution: false });
+      map = new Map({ target: 'map', layers, view });
+      view.fit(grid.extent || projection.getExtent());
+    }
+
+    window.vtcMap = map;  // for debugging in the console
+
+    const showInfo = () => {
+      const view = map.getView();
+      const res = view.getResolution();
+      const mpu = view.getProjection().getMetersPerUnit() || 1;
+      const scale = res * mpu * (96 / 0.0254);  // like gView's dpi
+      $('info').textContent = `Auflösung ${res.toFixed(3)} · ca. 1:${Math.round(scale).toLocaleString('de')} · Zoom ${view.getZoom()?.toFixed(2)}`;
+    };
+    map.getView().on('change:resolution', showInfo);
+    showInfo();
+  }
+
+  $('load').addEventListener('click', () => load().catch(e => status('Fehler: ' + e.message)));
+})();
+</script>
+</body>
+</html>

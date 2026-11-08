@@ -19,7 +19,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <!-- The only test project that sees SpatialNET directly: it checks the interface views of the adapter -->
-    <PackageReference Include="SpatialNET.Extensions" Version="0.10.0-preview.1" />
+    <PackageReference Include="SpatialNET.Extensions" Version="0.10.0-preview.2" />
   </ItemGroup>
 
   <ItemGroup>

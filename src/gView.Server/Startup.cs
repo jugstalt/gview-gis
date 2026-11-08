@@ -893,6 +893,10 @@ public class Startup
 
 
             // Vector Tiles (MVT)
+            routes.MapRoute(name: "vtc_style", template: "vtc/{folder}/{name}/style.json", defaults: new { controller = "Vtc", Action = "Style" });
+            routes.MapRoute(name: "vtc_style2", template: "vtc/{name}/style.json", defaults: new { controller = "Vtc", Action = "Style" });
+            routes.MapRoute(name: "vtc_tilejson", template: "vtc/{folder}/{name}/tilejson.json", defaults: new { controller = "Vtc", Action = "TileJson" });
+            routes.MapRoute(name: "vtc_tilejson2", template: "vtc/{name}/tilejson.json", defaults: new { controller = "Vtc", Action = "TileJson" });
             routes.MapRoute(
                 name: "vtc_tiles",
                 template: "vtc/{folder}/{name}/{cachetype}/{origin}/{epsg}/{level}/{row}/{col}",

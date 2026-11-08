@@ -46,7 +46,26 @@ public static class TileServiceMetadataExtensions
         /// </summary>
         public int WebMercatorLevel(int zoom)
         {
-            if (!metadata.EPSGCodes.Contains(3857))
+            for (int level = 0; level < metadata.Scales.InnerList.Count; level++)
+            {
+                if (metadata.WebMercatorZoom(level) == zoom)
+                {
+                    return level;
+                }
+            }
+
+            return -1;
+        }
+
+        /// <summary>
+        /// The standard WebMercator zoom level of the scale index <paramref name="level"/>, or -1 if the
+        /// level (or the EPSG:3857 grid of the metadata) is not Mapbox conform.
+        /// </summary>
+        public int WebMercatorZoom(int level)
+        {
+            if (!metadata.EPSGCodes.Contains(3857)
+                || level < 0 || level >= metadata.Scales.InnerList.Count
+                || metadata.TileWidth != metadata.TileHeight || metadata.TileWidth <= 0)
             {
                 return -1;
             }
@@ -59,24 +78,17 @@ public static class TileServiceMetadataExtensions
                 return -1;
             }
 
-            if (metadata.TileWidth != metadata.TileHeight || metadata.TileWidth <= 0)
-            {
-                return -1;
-            }
-
             // z/x/y only depends on the tile's ground size: a 512px tile at resolution r is the 256px tile at 2r
-            double tileSizeFactor = metadata.TileWidth / 256.0;
-            var scales = metadata.Scales.InnerList;
-            for (int level = 0; level < scales.Count; level++)
-            {
-                double resolution = scales[level] / (metadata.Dpi / 0.0254) * tileSizeFactor;  // EPSG:3857: meters
-                if (TileGrid.TryGetWebMercatorZoomForResolution(resolution, out int z, relativeTolerance: 1e-4) && z == zoom)
-                {
-                    return level;
-                }
-            }
+            double resolution = metadata.Scales.InnerList[level] / (metadata.Dpi / 0.0254) * (metadata.TileWidth / 256.0);
 
-            return -1;
+            return TileGrid.TryGetWebMercatorZoomForResolution(resolution, out int z, relativeTolerance: 1e-4) ? z : -1;
         }
+
+        /// <summary>
+        /// True if every scale of the metadata is a standard WebMercator zoom level: the cache can be served as z/x/y.
+        /// </summary>
+        public bool IsWebMercatorConform()
+            => metadata.Scales.InnerList.Count > 0
+               && Enumerable.Range(0, metadata.Scales.InnerList.Count).All(level => metadata.WebMercatorZoom(level) >= 0);
     }
 }
