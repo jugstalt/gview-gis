@@ -189,4 +189,27 @@ internal static class SpatiaLiteTestEnvironment
             // temp file - leave it for the OS to clean up
         }
     }
+
+    /// <summary>
+    /// Deletes a temp folder created by a test. On Windows, SQLite handles that are still
+    /// referenced keep the database file locked: the pools are cleared and finalizers run
+    /// first so those handles are released before the delete.
+    /// </summary>
+    public static void TryDeleteFolder(string folder)
+    {
+        try
+        {
+            SQLiteConnection.ClearAllPools();
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            if (Directory.Exists(folder))
+            {
+                Directory.Delete(folder, true);
+            }
+        }
+        catch
+        {
+            // temp folder - leave it for the OS to clean up
+        }
+    }
 }

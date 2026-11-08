@@ -273,18 +273,18 @@ public class SpatiaLiteDatasetTests : IDisposable
 
         var folder = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"gview_sl_folder_{Guid.NewGuid():N}");
         System.IO.Directory.CreateDirectory(folder);
+        var fileDb = new SpatiaLiteDataset();
+        SpatiaLiteDataset? dataset = null;
         try
         {
-            gView.Framework.Core.FDB.IFileFeatureDatabase fileDb = new SpatiaLiteDataset();
-
             Assert.False(fileDb.IsFolderBased);
             Assert.Equal("SpatiaLite", fileDb.DatabaseName);
 
             var target = System.IO.Path.Combine(folder, "db.sqlite");
-            Assert.Equal(0, await fileDb.CreateDataset(target, null));
+            Assert.Equal(0, await ((gView.Framework.Core.FDB.IFileFeatureDatabase)fileDb).CreateDataset(target, null));
             Assert.True(System.IO.File.Exists(target));
 
-            var dataset = await ((gView.Framework.Core.FDB.IFeatureDatabase)fileDb).GetDataset(target) as SpatiaLiteDataset;
+            dataset = await ((gView.Framework.Core.FDB.IFeatureDatabase)fileDb).GetDataset(target) as SpatiaLiteDataset;
             Assert.NotNull(dataset);
 
             var geomDef = new GeometryDef(GeometryType.Point)
@@ -300,7 +300,10 @@ public class SpatiaLiteDatasetTests : IDisposable
         }
         finally
         {
-            try { System.IO.Directory.Delete(folder, true); } catch { }
+            // release the open datasets first, otherwise the database file stays locked
+            dataset?.Dispose();
+            fileDb.Dispose();
+            SpatiaLiteTestEnvironment.TryDeleteFolder(folder);
         }
     }
 

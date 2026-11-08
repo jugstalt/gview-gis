@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 9.26.4306
+
+## Added
+
+- Vector tile cache (Mapbox Vector Tiles, MVT 2.1) for the grid of the tile service metadata
+  ([ADR 0003](docs/adr/0003-vector-tile-cache.md)): any EPSG code and the metadata scales, not
+  only WebMercator. New metadata options `supportMvt`, `mvtLayerAttributes` (extra fields per
+  layer, `*` for all) and `mvtSizeWarningKb`.
+  - Tiles: one gzipped `.pbf` per tile with one MVT layer per map layer, clipped, simplified
+    and quantized per scale with SpatialNET.IO; the OID becomes the feature id, raster layers
+    are skipped.
+  - Seeding: `RenderTileCacheCommand` / DataExplorer "Render Tile Cache" with image format
+    `pbf`, exploded and compact (`.pbfbundle`).
+  - Serving: `vtc/[{folder}/]{name}/{exploded|compact}/{ul|ll}/{epsg}/{level}/{row}/{col}.pbf`,
+    rendered on the fly and cached if the metadata allows it, and
+    `vtc/[{folder}/]{name}/{z}/{x}/{y}.pbf` for Mapbox conform WebMercator caches.
+  - Styling: `vtc/[{folder}/]{name}/style.json` (MapLibre/Mapbox GL style v8 derived from the
+    Simple, ValueMap, ManyValueMap, Quantity, ScaleDependent and FeatureGroup renderers, sizes
+    following the reference scale) and `tilejson.json`, both with the tile grid as `gview:grid`.
+  - Test viewer for OpenLayers: `src/Playgrounds/VectorTilesViewer`.
+
+## Changed
+
+- Geometry: SpatialNET packages updated to 0.10.0-preview.2.
+
 ## 9.26.4301
 
 ## Added

@@ -20,7 +20,7 @@ namespace gView.Framework.Cartography.VectorTiles;
 /// <list type="bullet">
 /// <item>Zoom levels: for a Mapbox conform WebMercator cache the real zoom levels, otherwise the scale index of the
 /// metadata (as OpenLayers numbers the levels of a custom tile grid).</item>
-/// <item>Renderers: Simple, ValueMap (<c>match</c> via filters), Quantity (range filters), ScaleDependent (minzoom/maxzoom),
+/// <item>Renderers: Simple, ValueMap and ManyValueMap (one filter per key), Quantity (range filters), ScaleDependent (minzoom/maxzoom),
 /// FeatureGroup (several style layers). Others get a default style per geometry type.</item>
 /// <item>Symbols: fill, line (color, width, dash), point (circle). Symbol collections become several style layers.
 /// Anything GL can't draw is approximated (hatch → fill color, picture/font marker → circle).</item>
@@ -122,7 +122,12 @@ public sealed class GlStyleBuilder
                 return SymbolLayers(context, simple.Symbol, filter, levels);
 
             case ValueMapRenderer valueMap:
-                return ValueMapLayers(context, valueMap, filter, levels);
+                return ValueMapLayers(context, new JsonArray("to-string", new JsonArray("get", valueMap.ValueField)),
+                    valueMap.Keys, key => valueMap[key], filter, levels);
+
+            case ManyValueMapRenderer manyValueMap:
+                return ValueMapLayers(context, ManyValueKey(manyValueMap),
+                    manyValueMap.Keys, key => manyValueMap[key], filter, levels);
 
             case QuantityRenderer quantity:
                 return QuantityLayers(context, quantity, filter, levels);
@@ -153,26 +158,64 @@ public sealed class GlStyleBuilder
         }
     }
 
-    private IEnumerable<JsonObject> ValueMapLayers(LayerContext context, ValueMapRenderer renderer, JsonNode? filter, List<int> levels)
+    /// <summary>
+    /// One set of style layers per key, filtered on <paramref name="value"/> (a string expression),
+    /// and one for "all other values" if the renderer has it.
+    /// </summary>
+    private IEnumerable<JsonObject> ValueMapLayers(LayerContext context,
+                                                   JsonArray value,
+                                                   IEnumerable<string> rendererKeys,
+                                                   Func<string, ISymbol?> symbolOf,
+                                                   JsonNode? filter,
+                                                   List<int> levels)
     {
-        var value = new JsonArray("to-string", new JsonArray("get", renderer.ValueField));
-        var keys = renderer.Keys.Where(k => k != ValueMapRenderer.AllOtherValuesKey).ToList();
+        var allKeys = rendererKeys.ToList();
+        var keys = allKeys.Where(k => k != ValueMapRenderer.AllOtherValuesKey).ToList();
         var result = new List<JsonObject>();
 
         foreach (string key in keys)
         {
             var keyFilter = new JsonArray("==", value.DeepClone(), key);
-            result.AddRange(SymbolLayers(context, renderer[key], And(filter, keyFilter), levels));
+            result.AddRange(SymbolLayers(context, symbolOf(key), And(filter, keyFilter), levels));
         }
 
-        if (renderer.Keys.Contains(ValueMapRenderer.AllOtherValuesKey))
+        if (allKeys.Contains(ValueMapRenderer.AllOtherValuesKey))
         {
             var othersFilter = new JsonArray("!",
                 new JsonArray("in", value.DeepClone(), new JsonArray("literal", new JsonArray(keys.Select(k => (JsonNode)k!).ToArray()))));
-            result.AddRange(SymbolLayers(context, renderer[ValueMapRenderer.AllOtherValuesKey], And(filter, othersFilter), levels));
+            result.AddRange(SymbolLayers(context, symbolOf(ValueMapRenderer.AllOtherValuesKey), And(filter, othersFilter), levels));
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// The key of <see cref="ManyValueMapRenderer.GetKey"/> as GL expression: the field values as strings
+    /// (null → empty), a "|" in front of field 2 and 3 when they are set.
+    /// </summary>
+    private static JsonArray ManyValueKey(ManyValueMapRenderer renderer)
+    {
+        var concat = new JsonArray("concat");
+        void Add(string? field, bool separator)
+        {
+            if (String.IsNullOrEmpty(field))
+            {
+                return;
+            }
+
+            if (separator)
+            {
+                concat.Add("|");
+            }
+
+            concat.Add(new JsonArray("to-string", new JsonArray("get", field)));
+        }
+
+        Add(renderer.ValueField1, separator: false);
+        Add(renderer.ValueField2, separator: true);
+        Add(renderer.ValueField3, separator: true);
+
+        return concat.Count == 2 ? (JsonArray)concat[1]!.DeepClone() : concat;
     }
 
     private IEnumerable<JsonObject> QuantityLayers(LayerContext context, QuantityRenderer renderer, JsonNode? filter, List<int> levels)
