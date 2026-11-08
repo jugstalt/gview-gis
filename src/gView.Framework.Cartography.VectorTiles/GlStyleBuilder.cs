@@ -5,6 +5,7 @@ using gView.Framework.Core.Carto;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Core.Symbology;
+using gView.Framework.Symbology;
 using gView.Framework.Metadata;
 using gView.GraphicsEngine;
 using System.Globalization;
@@ -65,6 +66,7 @@ public sealed class GlStyleBuilder
     public JsonObject Build(string name, string tileUrlTemplate)
     {
         var layers = new JsonArray();
+        var labelLayers = new List<JsonObject>();
         var layerNames = MvtLayerNames.FromMap(_map);
 
         foreach (var layer in DrawingOrder())
@@ -76,17 +78,28 @@ public sealed class GlStyleBuilder
 
             string? sourceLayer = layerNames[layer];
             var levels = VisibleLevels(layer.MinimumScale, layer.MaximumScale, Enumerable.Range(0, _scales.Length));
-            if (sourceLayer == null || levels.Count == 0 || featureLayer.FeatureRenderer == null)
+            if (sourceLayer == null || levels.Count == 0)
             {
                 continue;
             }
 
             var context = new LayerContext(featureLayer, sourceLayer, featureLayer.FeatureClass.GeometryType);
-            foreach (var styleLayer in RendererLayers(context, featureLayer.FeatureRenderer, filter: null, levels))
+            if (featureLayer.FeatureRenderer != null)
             {
-                styleLayer["id"] = $"{sourceLayer}-{context.Counter++}";
-                layers.Add(styleLayer);
+                foreach (var styleLayer in RendererLayers(context, featureLayer.FeatureRenderer, filter: null, levels))
+                {
+                    styleLayer["id"] = $"{sourceLayer}-{context.Counter++}";
+                    layers.Add(styleLayer);
+                }
             }
+
+            // labels are drawn on top of all features: collected here, appended after the loop
+            labelLayers.AddRange(LabelLayers(context, featureLayer));
+        }
+
+        foreach (var labelLayer in labelLayers)
+        {
+            layers.Add(labelLayer);
         }
 
         var source = new JsonObject
@@ -417,6 +430,164 @@ public sealed class GlStyleBuilder
 
     private static (string color, double opacity) ColorAndOpacity(ArgbColor color)
         => (Color(color), Math.Round(color.A / 255.0, 3));
+
+    #endregion
+
+    #region Labels
+
+    /// <summary>
+    /// GL symbol layers for the label renderers of a layer, on the <c>{layer}__labels</c> MVT layer
+    /// (texts computed by gView, see <see cref="MvtLabels"/>).
+    /// </summary>
+    private IEnumerable<JsonObject> LabelLayers(LayerContext context, IFeatureLayer layer)
+    {
+        var entries = MvtLabels.Entries(layer.LabelRenderer);
+        if (entries.Count == 0)
+        {
+            if (layer.LabelRenderer != null)
+            {
+                _warnings.Add($"{context.SourceLayer}: label renderer '{layer.LabelRenderer.Name}' is not supported");
+            }
+            yield break;
+        }
+
+        // label scales of the layer; without own label scales the layer scales apply
+        var layerLevels = layer.MinimumLabelScale <= 1 && layer.MaximumLabelScale <= 1
+            ? VisibleLevels(layer.MinimumScale, layer.MaximumScale, Enumerable.Range(0, _scales.Length))
+            : VisibleLevels(layer.MinimumLabelScale, layer.MaximumLabelScale, Enumerable.Range(0, _scales.Length));
+
+        foreach (var entry in entries)
+        {
+            var levels = VisibleLevels(entry.MinimumScale, entry.MaximumScale, layerLevels);
+            if (levels.Count == 0 || entry.Renderer.TextSymbol is not ITextSymbol textSymbol)
+            {
+                continue;
+            }
+
+            var styleLayer = Layer(context, "symbol", new JsonArray("has", entry.Attribute), levels, LabelPaint(context, textSymbol));
+            styleLayer["id"] = $"{context.SourceLayer}-label-{entry.Index}";
+            styleLayer["source-layer"] = MvtLabels.LayerName(context.SourceLayer);
+            styleLayer["layout"] = LabelLayout(context, entry, textSymbol);
+
+            yield return styleLayer;
+        }
+    }
+
+    private JsonObject LabelLayout(LayerContext context, MvtLabels.LabelEntry entry, ITextSymbol textSymbol)
+    {
+        var font = textSymbol.Font;
+        // gView font sizes are points (unless the font says pixel): CSS/GL pixels at 96 dpi
+        float toPixels = font?.Unit == GraphicsUnit.Pixel ? 1f : 96f / 72f;
+        float fontSize = (font?.Size ?? 9f) * toPixels;
+
+        var layout = new JsonObject
+        {
+            ["text-field"] = new JsonArray("get", entry.Attribute),
+            ["text-font"] = new JsonArray(FontName(font)),
+            ["text-size"] = Size(context, fontSize, textSymbol.MinFontSize * toPixels, textSymbol.MaxFontSize * toPixels, DrawingUnit.Pixel, minimum: 1),
+            ["text-max-width"] = 1000,  // gView does not wrap labels
+            ["text-allow-overlap"] = entry.Renderer.LabelPriority == RenderLabelPriority.Always,
+            ["text-padding"] = 2
+        };
+
+        if (context.GeometryType == GeometryType.Polyline)
+        {
+            switch (entry.Renderer.CartoLineLabelling)
+            {
+                case SimpleLabelRenderer.CartographicLineLabeling.Horizontal:
+                case SimpleLabelRenderer.CartographicLineLabeling.Perpendicular:
+                    layout["symbol-placement"] = "line-center";
+                    layout["text-rotation-alignment"] = "viewport";
+                    break;
+                default:
+                    layout["symbol-placement"] = "line";
+                    layout["text-keep-upright"] = true;
+                    break;
+            }
+
+            if (entry.Renderer.CartoLineLabelling == SimpleLabelRenderer.CartographicLineLabeling.Perpendicular)
+            {
+                _warnings.Add($"{context.SourceLayer}: perpendicular line labels are drawn horizontal");
+            }
+        }
+        else
+        {
+            layout["symbol-placement"] = "point";
+            layout["text-anchor"] = Anchor(textSymbol.TextSymbolAlignment);
+
+            if (textSymbol is ISymbolTransformation transformation &&
+                (transformation.HorizontalOffset != 0 || transformation.VerticalOffset != 0))
+            {
+                // gView offsets are pixels (y down), GL offsets are ems
+                layout["text-offset"] = new JsonArray(
+                    Math.Round(transformation.HorizontalOffset / fontSize, 3),
+                    Math.Round(transformation.VerticalOffset / fontSize, 3));
+            }
+        }
+
+        return layout;
+    }
+
+    private JsonObject LabelPaint(LayerContext context, ITextSymbol textSymbol)
+    {
+        var color = textSymbol is IFontColor fontColor ? fontColor.FontColor : ArgbColor.FromArgb(255, 0, 0, 0);
+        var paint = new JsonObject
+        {
+            ["text-color"] = Color(color),
+            ["text-opacity"] = ColorAndOpacity(color).opacity
+        };
+
+        switch (textSymbol)
+        {
+            case GlowingTextSymbol glowing:
+                paint["text-halo-color"] = Color(glowing.GlowingColor);
+                paint["text-halo-width"] = Math.Max(1, glowing.GlowingWidth);
+                break;
+            case BlockoutTextSymbol blockout:
+                // GL has no text box: a wide halo in the box color comes closest
+                paint["text-halo-color"] = Color(blockout.ColorOutline);
+                paint["text-halo-width"] = 3;
+                _warnings.Add($"{context.SourceLayer}: blockout labels are approximated by a halo");
+                break;
+        }
+
+        return paint;
+    }
+
+    /// <summary>
+    /// GL font stack name: family plus style words, as ol-mapbox-style and glyph servers read it ("Arial Bold Italic").
+    /// </summary>
+    private static string FontName(GraphicsEngine.Abstraction.IFont? font)
+    {
+        if (font == null)
+        {
+            return "Arial Regular";
+        }
+
+        var name = font.Name;
+        bool bold = (font.Style & FontStyle.Bold) != 0, italic = (font.Style & FontStyle.Italic) != 0;
+        if (bold && italic) return $"{name} Bold Italic";
+        if (bold) return $"{name} Bold";
+        if (italic) return $"{name} Italic";
+        return $"{name} Regular";
+    }
+
+    /// <summary>
+    /// gView's alignment names the side the text is aligned to at the label point
+    /// ("leftAlign": the text starts at the point and runs to the right).
+    /// </summary>
+    private static string Anchor(TextSymbolAlignment alignment) => alignment switch
+    {
+        TextSymbolAlignment.Over => "bottom",
+        TextSymbolAlignment.Under => "top",
+        TextSymbolAlignment.leftAlignCenter => "left",
+        TextSymbolAlignment.rightAlignCenter => "right",
+        TextSymbolAlignment.leftAlignOver => "bottom-left",
+        TextSymbolAlignment.rightAlignOver => "bottom-right",
+        TextSymbolAlignment.leftAlignUnder => "top-left",
+        TextSymbolAlignment.rightAlignUnder => "top-right",
+        _ => "center"
+    };
 
     #endregion
 

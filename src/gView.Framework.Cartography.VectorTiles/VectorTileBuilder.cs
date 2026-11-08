@@ -7,7 +7,9 @@ using gView.Framework.Core.Data.Filters;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Data.Extensions;
 using gView.Framework.Data.Filters;
+using gView.Framework.Cartography.Rendering;
 using gView.Framework.Geometry;
+using gView.Framework.Geometry.GeoProcessing;
 using gView.Framework.Geometry.Tiling;
 using gView.Framework.Metadata;
 using SpatialNET;
@@ -75,7 +77,7 @@ public sealed class VectorTileBuilder
         display.ImageWidth = _metadata.TileWidth;
         display.ImageHeight = _metadata.TileHeight;
 
-        var tileEnvelope = grid.TileEnvelope(level, row, col);
+        var tileEnvelope = grid.TileEnvelope(level, row, col);  // SpatialNET Envelope2D
         display.ZoomTo(new Envelope(tileEnvelope.MinX, tileEnvelope.MinY, tileEnvelope.MaxX, tileEnvelope.MaxY));
 
         #endregion
@@ -110,7 +112,11 @@ public sealed class VectorTileBuilder
                 continue;
             }
 
-            await AddLayerAsync(builder, featureLayer, mvtLayerName, sRef, clipEnvelope, cancelTracker);
+            var labels = layer.LabelInScale(display)
+                ? MvtLabels.Entries(featureLayer.LabelRenderer).Where(e => e.InScale(scale)).ToList()
+                : [];
+
+            await AddLayerAsync(builder, featureLayer, mvtLayerName, sRef, clipEnvelope, tileEnvelope, labels, cancelTracker);
         }
 
         return builder.IsEmpty ? null : builder.ToBytes(gzip: true);
@@ -155,6 +161,8 @@ public sealed class VectorTileBuilder
                                      string mvtLayerName,
                                      ISpatialReference tileSRef,
                                      IEnvelope clipEnvelope,
+                                     Envelope2D tileEnvelope,
+                                     IReadOnlyList<MvtLabels.LabelEntry> labels,
                                      ICancelTracker? cancelTracker)
     {
         var fClass = layer.FeatureClass;
@@ -196,6 +204,10 @@ public sealed class VectorTileBuilder
         }
 
         PrepareAttributeFields(layer, mvtLayerName, filter);
+        foreach (var label in labels)
+        {
+            label.Renderer.PrepareQueryFilter(_map.Display, layer, filter);
+        }
 
         using var cursor = await fClass.GetFeatures(filter);
         if (cursor == null)
@@ -232,6 +244,84 @@ public sealed class VectorTileBuilder
             foreach (var geometry in Flatten(shape))
             {
                 builder.AddFeature(mvtLayerName, geometry, attributes, id);
+            }
+
+            if (labels.Count > 0)
+            {
+                AddLabels(builder, mvtLayerName, feature, shape, tileEnvelope, labels, id);
+            }
+        }
+    }
+
+    /// <summary>
+    /// The label feature(s) of <paramref name="feature"/> in the <c>{layer}__labels</c> MVT layer: the label texts
+    /// computed by gView, on label points inside this tile (points, polygons) or on the line itself.
+    /// </summary>
+    private void AddLabels(MvtTileBuilder builder,
+                           string mvtLayerName,
+                           IFeature feature,
+                           IGeometry shape,
+                           Envelope2D tileEnvelope,
+                           IReadOnlyList<MvtLabels.LabelEntry> labels,
+                           ulong? id)
+    {
+        var texts = new List<KeyValuePair<string, object?>>();
+        foreach (var label in labels)
+        {
+            if (!label.Renderer.LabelsFeature(_map.Display, feature))
+            {
+                continue;
+            }
+
+            string? text = label.Renderer.EvaluateLabelText(_map.Display, feature)?.Trim();
+            if (!String.IsNullOrEmpty(text))
+            {
+                texts.Add(new KeyValuePair<string, object?>(label.Attribute, text));
+            }
+        }
+
+        if (texts.Count == 0)
+        {
+            return;
+        }
+
+        string labelLayer = MvtLabels.LayerName(mvtLayerName);
+        bool perPart = labels.Any(l => l.Renderer.HowManyLabels == SimpleLabelRenderer.RenderHowManyLabels.OnPerPart);
+
+        foreach (var part in Flatten(shape))
+        {
+            if (part is IPolyline2D)
+            {
+                builder.AddFeature(labelLayer, part, texts, id);
+                continue;
+            }
+
+            IEnumerable<IPoint> points = part switch
+            {
+                IPolygon polygon => Algorithm.PolygonLabelPoints(polygon),
+                IMultiPoint multiPoint => multiPoint,
+                IPoint point => [point],
+                _ => []
+            };
+
+            if (!perPart)
+            {
+                points = points.Take(1);
+            }
+
+            foreach (var point in points)
+            {
+                // only in the tile that contains the point: a label must not repeat in the neighbor tiles
+                if (point.X >= tileEnvelope.MinX && point.X < tileEnvelope.MaxX &&
+                    point.Y > tileEnvelope.MinY && point.Y <= tileEnvelope.MaxY)
+                {
+                    builder.AddFeature(labelLayer, new gView.Framework.Geometry.Point(point.X, point.Y), texts, id);
+                }
+            }
+
+            if (!perPart)
+            {
+                break;
             }
         }
     }

@@ -243,6 +243,60 @@ namespace gView.Framework.Cartography.Rendering
 
         public RenderLabelPriority RenderPriority => _labelPriority;
 
+        /// <summary>
+        /// The label text of <paramref name="feature"/>, as <see cref="Draw"/> resolves it: the label field,
+        /// or the evaluated expression (fields, <c>[$feature.length]</c>/<c>[$feature.area]</c>, simple scripts,
+        /// <see cref="ModifyEvaluatedLabel"/>). <c>null</c> if the label field is not part of the feature.
+        /// Also used outside of drawing, e.g. for the labels of vector tiles.
+        /// </summary>
+        public string EvaluateLabelText(IDisplay display, IFeature feature)
+        {
+            if (!_useExpression)
+            {
+                foreach (FieldValue fv in feature.Fields)
+                {
+                    if (fv.Name == _fieldname)
+                    {
+                        return fv.Value?.ToString() ?? String.Empty;
+                    }
+                }
+
+                return null;
+            }
+
+            string expr = _expression;
+            foreach (FieldValue fv in feature.Fields)
+            {
+                expr = expr.EvaluateExpression(fv);
+            }
+
+            // "[$feature.length]"/"[$feature.area]" are reserved pseudo-fields for ArcGIS
+            // Pro's "Length($feature)"/"Area($feature)" geometry accessors, converted by
+            // AprxLabelExpressionParser - resolved here from the feature's actual geometry,
+            // not from an attribute field. The leading "$" (and the ".", never valid in a real
+            // column/field name either) makes these impossible to collide with a real
+            // attribute field name, so - unlike a real field - there's no precedence question
+            // to resolve against the loop above.
+            if (expr.Contains("[$feature.length", StringComparison.OrdinalIgnoreCase))
+            {
+                expr = expr.EvaluateExpression(new FieldValue("$feature.length", feature.Shape.GetLength()));
+            }
+            if (expr.Contains("[$feature.area", StringComparison.OrdinalIgnoreCase))
+            {
+                expr = expr.EvaluateExpression(new FieldValue("$feature.area", feature.Shape.GetArea()));
+            }
+
+            if (SimpleScriptInterpreter.IsSimpleScript(expr))
+            {
+                expr = new SimpleScriptInterpreter(expr).Interpret();
+            }
+
+            return ModifyEvaluatedLabel(display, feature, expr);
+        }
+
+        /// <summary>True if the renderer labels <paramref name="feature"/> at all (subclasses may skip features).</summary>
+        public bool LabelsFeature(IDisplay display, IFeature feature) => BeforeRenderFeature(display, feature);
+
         public void Draw(IDisplay display, IFeatureLayer layer, IFeature feature)
         {
             if (!BeforeRenderFeature(display, feature) || !(_symbol is ISymbol))
@@ -250,13 +304,8 @@ namespace gView.Framework.Cartography.Rendering
                 return;
             }
 
-            string expr = _expression;
             foreach (FieldValue fv in feature.Fields)
             {
-                if (fv.Name == _fieldname && !_useExpression)
-                {
-                    _symbol.Text = fv.Value.ToString();
-                }
                 if (fv.Name == _symbolRotation.RotationFieldName)
                 {
                     try
@@ -265,35 +314,12 @@ namespace gView.Framework.Cartography.Rendering
                     }
                     catch { }
                 }
-                if (_useExpression)
-                {
-                    expr = expr.EvaluateExpression(fv);
-                }
             }
-            if (_useExpression)
+
+            string text = EvaluateLabelText(display, feature);
+            if (text != null)
             {
-                // "[$feature.length]"/"[$feature.area]" are reserved pseudo-fields for ArcGIS
-                // Pro's "Length($feature)"/"Area($feature)" geometry accessors, converted by
-                // AprxLabelExpressionParser - resolved here from the feature's actual geometry,
-                // not from an attribute field. The leading "$" (and the ".", never valid in a real
-                // column/field name either) makes these impossible to collide with a real
-                // attribute field name, so - unlike a real field - there's no precedence question
-                // to resolve against the loop above.
-                if (expr.Contains("[$feature.length", StringComparison.OrdinalIgnoreCase))
-                {
-                    expr = expr.EvaluateExpression(new FieldValue("$feature.length", feature.Shape.GetLength()));
-                }
-                if (expr.Contains("[$feature.area", StringComparison.OrdinalIgnoreCase))
-                {
-                    expr = expr.EvaluateExpression(new FieldValue("$feature.area", feature.Shape.GetArea()));
-                }
-
-                if (SimpleScriptInterpreter.IsSimpleScript(expr))
-                {
-                    expr = new SimpleScriptInterpreter(expr).Interpret();
-                }
-
-                _symbol.Text = ModifyEvaluatedLabel(display, feature, expr);
+                _symbol.Text = text;
             }
 
             // Called unconditionally, before anything below can return early - a subclass hooking

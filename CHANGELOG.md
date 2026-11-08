@@ -24,11 +24,21 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - Styling: `vtc/[{folder}/]{name}/style.json` (MapLibre/Mapbox GL style v8 derived from the
     Simple, ValueMap, ManyValueMap, Quantity, ScaleDependent and FeatureGroup renderers, sizes
     following the reference scale) and `tilejson.json`, both with the tile grid as `gview:grid`.
+  - Labels: Simple, Advanced and ScaleDependent label renderers become GL `symbol` layers. The
+    label text is computed by gView (field, expression, script) and stored in an extra MVT layer
+    `{layer}__labels`, on one label point per feature (polygons, points) or along the line.
+    Font family and style, size (reference scale), color, halo (glowing text), alignment and
+    offset are taken over; blockout labels are approximated by a halo.
   - Test viewer for OpenLayers: `src/Playgrounds/VectorTilesViewer`.
 
 ## Changed
 
 - Geometry: SpatialNET packages updated to 0.10.0-preview.2.
+
+## Fixed
+
+- Geometry: `PointCollection`/`MultiPoint` can be enumerated as `IEnumerable<IPoint>` (the
+  generic enumerator threw `NotImplementedException`).
 
 ## 9.26.4301
 

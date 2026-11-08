@@ -47,6 +47,23 @@ public class VectorTileRequest : IServiceRequestInterpreter
             return;
         }
 
+        try
+        {
+            await HandleRequest(context);
+        }
+        catch (Exception ex)
+        {
+            // the task queue swallows exceptions: report them as response (the controller answers 400 with it) and log them
+            context.ServiceRequest.ResponseContentType = "text/plain";
+            context.ServiceRequest.Response = $"{ex.GetType().Name}: {ex.Message}";
+            await _mapServer.LogAsync(context, "VectorTiles", loggingMethod.error,
+                $"{context.ServiceRequest.Request}: {ex}");
+        }
+    }
+
+    async private Task HandleRequest(IServiceRequestContext context)
+    {
+
         var metadata = await context.GetMetadtaProviderAsync(MetadataProvider) as TileServiceMetadata;
         if (metadata == null || metadata.Use == false || metadata.FormatMvt == false)
         {

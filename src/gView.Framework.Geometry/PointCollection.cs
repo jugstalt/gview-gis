@@ -450,7 +450,7 @@ namespace gView.Framework.Geometry
 
         public IEnumerator<IPoint> GetEnumerator()
         {
-            throw new NotImplementedException();
+            return _points.GetEnumerator();
         }
 
         #endregion

@@ -11,7 +11,8 @@ gView's tile cache produces raster tiles (PNG/JPG) for the grid in the tile serv
 - **Format:** Mapbox Vector Tiles (MVT 2.1, `.pbf`, gzipped, extent 4096) for every projection. MVT itself does not depend on the projection, only the grid does. One file per tile contains one MVT layer per **map layer** (not per feature class). This is because filters and scale ranges belong to the map layer. The layer name is the TOC path, normalized to `[a-z0-9_]`, with a numeric suffix if two names collide (`MvtLayerNames`).
 - **Content:**
   - Only feature layers visible at the tile's scale are included. Raster layers are skipped.
-  - Geometries are projected to the tile CRS, then clipped with a buffer of 64/4096, simplified with a tolerance of about 1 tile pixel, and quantized.
+  - Geometries are projected to the tile CRS, then clipped with a buffer, simplified with a tolerance of about 1 tile pixel, and quantized.
+  - The buffer is 64/4096, or more at scales where half of the widest line or symbol (reference scale included) reaches further. Clipping adds artificial polygon edges on the buffer border. Clients cut each tile at its border, so these edges stay invisible only if thick outlines drawn along them don't reach into the tile. The buffer is at most half a tile.
   - The last scale is not simplified and acts as the overzoom level.
   - Attributes are the fields the renderers need (`PrepareQueryFilter`) plus the fields configured in `mvtLayerAttributes`.
   - The OID becomes the MVT feature id.
@@ -36,7 +37,7 @@ gView's tile cache produces raster tiles (PNG/JPG) for the grid in the tile serv
 1. SpatialNET.IO: encoder, decoder, tile transform, grid (done, 0.10.0-preview.2).
 2. gView: metadata, tile builder, seeding, serving (done).
 3. Style, TileJSON, OpenLayers test viewer `src/Playgrounds/VectorTilesViewer` (done).
-4. Labels as GL `symbol` layers. The font question is open: OpenLayers uses web fonts, MapLibre needs glyph PBFs.
+4. Labels as GL `symbol` layers (done for OpenLayers). The label text is computed by gView (`SimpleLabelRenderer.EvaluateLabelText`, so expressions and scripts work) and written to an extra MVT layer `{layer}__labels`. Points and polygons get one label point per feature, written only into the tile that contains it, so labels don't repeat per tile. Lines carry their geometry for line placement. `text-font` is a GL font stack ("Arial Bold"): OpenLayers maps it to CSS fonts. MapLibre would need a glyph endpoint (`fonts/{fontstack}/{range}.pbf`), which is still open.
 5. Sprites for picture and font markers and pattern fills.
 6. Vector tiles in the WMTS capabilities, a PBF reader in the `VectorTileCache` data source, and integration in the Leaflet viewer.
 
