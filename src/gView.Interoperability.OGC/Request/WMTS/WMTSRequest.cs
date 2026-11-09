@@ -726,6 +726,99 @@ namespace gView.Interoperability.OGC.Request.WMTS
 
                     #endregion
                 }
+
+                #region Vector tiles (MVT)
+
+                if (metadata.FormatMvt)
+                {
+                    // served by the vtc route (rendered on the fly if allowed), TileMatrix = scale index as there
+                    string vtcUrl = restFulUrl.Replace("/tilewmts/", "/vtc/");
+                    string vectorLayerName = MapName(context) + " EPSG:" + epsg + " vector";
+                    string vectorLayerId = MapName(context).ToLower().Replace(" ", "_") + "_" + epsg + "_vector";
+
+                    var vectorLayer = new gView.Framework.OGC.WMTS.Version_1_0_0.LayerType()
+                    {
+                        Title = new[] { new gView.Framework.OGC.WMTS.Version_1_0_0.LanguageStringType() { Value = vectorLayerName } },
+                        Identifier = new gView.Framework.OGC.WMTS.Version_1_0_0.CodeType() { Value = vectorLayerId },
+                        Style = new[]
+                        {
+                            new gView.Framework.OGC.WMTS.Version_1_0_0.Style()
+                            {
+                                isDefault = true,
+                                Title = new[] { new gView.Framework.OGC.WMTS.Version_1_0_0.LanguageStringType() { Value = "Default" } },
+                                Identifier = new gView.Framework.OGC.WMTS.Version_1_0_0.CodeType() { Value = "default" }
+                            }
+                        },
+                        BoundingBox = new[]
+                        {
+                            new gView.Framework.OGC.WMTS.Version_1_0_0.BoundingBoxType()
+                            {
+                                crs = "urn:ogc:def:crs:EPSG::" + epsg,
+                                LowerCorner = PointToString(extent.LowerLeft, sRef),
+                                UpperCorner = PointToString(extent.UpperRight, sRef)
+                            }
+                        },
+                        WGS84BoundingBox = new[]
+                        {
+                            new gView.Framework.OGC.WMTS.Version_1_0_0.WGS84BoundingBoxType()
+                            {
+                                crs = "urn:ogc:def:crs:OGC:2:84",
+                                LowerCorner = PointToString(extent4326.LowerLeft, null),
+                                UpperCorner = PointToString(extent4326.UpperRight, null)
+                            }
+                        },
+                        TileMatrixSetLink = new[]
+                        {
+                            new gView.Framework.OGC.WMTS.Version_1_0_0.TileMatrixSetLink() { TileMatrixSet = vectorLayerId + "_default_matrixset" }
+                        },
+                        Format = new[] { "application/vnd.mapbox-vector-tile" },
+                        ResourceURL = new[]
+                        {
+                            new Framework.OGC.WMTS.Version_1_0_0.URLTemplateType()
+                            {
+                                resourceType = Framework.OGC.WMTS.Version_1_0_0.URLTemplateTypeResourceType.tile,
+                                format = "application/vnd.mapbox-vector-tile",
+                                template = vtcUrl + "/compact/ul/" + epsg + "/{TileMatrix}/{TileRow}/{TileCol}.pbf"
+                            }
+                        }
+                    };
+                    layers.Add(vectorLayer);
+
+                    double inchMeter = 0.0254;
+                    double dpm = (inchMeter * 1000D / 0.28D) / inchMeter;   // wmts 0.28mm -> 1 pixel
+                    double matrixSetWidth = Math.Abs(extent.MaxX - origin.X);
+                    double matrixSetHeight = Math.Abs(origin.Y - extent.MinY);
+
+                    var vectorMatrixSet = new gView.Framework.OGC.WMTS.Version_1_0_0.TileMatrixSet()
+                    {
+                        Title = new[] { new gView.Framework.OGC.WMTS.Version_1_0_0.LanguageStringType() { Value = vectorLayerName + " Default Matrix Set" } },
+                        Identifier = new gView.Framework.OGC.WMTS.Version_1_0_0.CodeType() { Value = vectorLayerId + "_default_matrixset" },
+                        SupportedCRS = "urn:ogc:def:crs:EPSG::" + epsg,
+                        TileMatrix = new gView.Framework.OGC.WMTS.Version_1_0_0.TileMatrix[metadata.Scales.InnerList.Count]
+                    };
+
+                    // all levels: vector tiles don't need a seeded cache directory
+                    for (int s = 0; s < metadata.Scales.InnerList.Count; s++)
+                    {
+                        double resolution = metadata.Scales.InnerList[s] / (metadata.Dpi / inchMeter);
+                        double tileWidth = metadata.TileWidth * resolution, tileHeight = metadata.TileHeight * resolution;
+
+                        vectorMatrixSet.TileMatrix[s] = new gView.Framework.OGC.WMTS.Version_1_0_0.TileMatrix()
+                        {
+                            Identifier = new gView.Framework.OGC.WMTS.Version_1_0_0.CodeType() { Value = s.ToString() },
+                            TopLeftCorner = PointToString(origin, sRef),
+                            TileWidth = metadata.TileWidth.ToString(),
+                            TileHeight = metadata.TileHeight.ToString(),
+                            MatrixWidth = ((int)Math.Round(matrixSetWidth / tileWidth + 0.5)).ToString(),
+                            MatrixHeight = ((int)Math.Round(matrixSetHeight / tileHeight + 0.5)).ToString(),
+                            ScaleDenominator = resolution * dpm
+                        };
+                    }
+
+                    matrixSets.Add(vectorMatrixSet);
+                }
+
+                #endregion
             }
 
             capabilities.Contents.DatasetDescriptionSummary = layers.ToArray();
