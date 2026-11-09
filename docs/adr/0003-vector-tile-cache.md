@@ -12,7 +12,7 @@ gView's tile cache produces raster tiles (PNG/JPG) for the grid in the tile serv
 - **Content:**
   - Only feature layers visible at the tile's scale are included. Raster layers are skipped.
   - Geometries are projected to the tile CRS, then clipped with a buffer, simplified with a tolerance of about 1 tile pixel, and quantized.
-  - The buffer is 64/4096, or more at scales where half of the widest line or symbol (reference scale included) reaches further. Clipping adds artificial polygon edges on the buffer border. Clients cut each tile at its border, so these edges stay invisible only if thick outlines drawn along them don't reach into the tile. The buffer is at most half a tile.
+  - The buffer is 64/4096, or more at scales where half of the widest line or symbol (reference scale included) reaches further. Clipping adds artificial polygon edges on the buffer border. Clients cut each tile at its border, so these edges stay invisible only if thick outlines drawn along them don't reach into the tile. Clients show a level's tiles scaled between the neighbor levels (OpenLayers picks the nearest level), while the style interpolates widths over the zoom. So the buffer covers the widths half way to the finer level (wider lines, magnified tile) and to the coarser level (shrunk tile). The buffer is at most half a tile.
   - The last scale is not simplified and acts as the overzoom level.
   - Attributes are the fields the renderers need (`PrepareQueryFilter`) plus the fields configured in `mvtLayerAttributes`.
   - The OID becomes the MVT feature id.

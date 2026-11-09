@@ -90,7 +90,7 @@ public sealed class VectorTileBuilder
         // Clipping adds artificial polygon edges on the buffer border. Clients cut each tile at its border,
         // so these edges stay invisible only if the buffer is wider than half of the widest line (or the
         // largest symbol) at this scale. Otherwise thick outlines show up as stripes along the tile borders.
-        var options = MvtTileOptions.Default with { Buffer = BufferFor(layers, scale) };
+        var options = MvtTileOptions.Default with { Buffer = BufferFor(layers, level) };
         var builder = new MvtTileBuilder(grid, level, row, col, options);
 
         var clip = builder.ClipEnvelope;
@@ -126,12 +126,38 @@ public sealed class VectorTileBuilder
     /// The clip buffer in tile units: the default (64 of 4096), or more when half of the widest symbol
     /// (plus 2 pixels for antialiasing) reaches further into the neighbor tile.
     /// </summary>
-    private double BufferFor(IEnumerable<IFeatureLayer> layers, double scale)
+    /// <remarks>
+    /// Clients show the tiles of a level not only at its own scale but between the neighbor levels (OpenLayers
+    /// picks the nearest level), scaled, while the style interpolates line widths over the zoom:
+    /// <list type="bullet">
+    /// <item>towards the next finer level the lines get wider (up to that level's width) while the tile is magnified;</item>
+    /// <item>towards the coarser level the tile is shrunk, so the same pixel width covers more tile units.</item>
+    /// </list>
+    /// The buffer covers both ends, taken half way (geometric mean of the resolutions) to the neighbor levels.
+    /// </remarks>
+    private double BufferFor(IEnumerable<IFeatureLayer> layers, int level)
     {
-        double maxPixels = layers
-            .Select(l => l.MaxSymbolPixels(scale, _map.Display.ReferenceScale, _metadata.Dpi))
+        var scales = _metadata.Scales.InnerList;
+        double scale = scales[level];
+
+        double MaxPixels(double atScale) => layers
+            .Select(l => l.MaxSymbolPixels(atScale, _map.Display.ReferenceScale, _metadata.Dpi))
             .DefaultIfEmpty(0)
             .Max();
+
+        double here = MaxPixels(scale);
+
+        // half way to the coarser level: same widths at most, the tile shown smaller
+        double towardsCoarser = level > 0
+            ? here * Math.Sqrt(scales[level - 1] / scale)
+            : here;
+
+        // half way to the finer level: widths up to the finer level's, the tile shown larger
+        double towardsFiner = level < scales.Count - 1
+            ? MaxPixels(scales[level + 1]) * Math.Sqrt(scales[level + 1] / scale)
+            : here;
+
+        double maxPixels = Math.Max(here, Math.Max(towardsCoarser, towardsFiner));
 
         double tilePixels = Math.Max(1, Math.Min(_metadata.TileWidth, _metadata.TileHeight));
         double unitsPerPixel = MvtTileOptions.Default.Extent / tilePixels;
