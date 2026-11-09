@@ -41,16 +41,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - Glyphs for MapLibre/Mapbox clients: `vtc-glyphs/{fontstack}/{start}-{end}.pbf` (signed
     distance fields rendered from the installed fonts with gView's graphics engine, cached in
     `{TileCachePath}/_glyphs`); styles with labels refer to it as `glyphs`.
-  - Leaflet plugin `src/Clients/Leaflet.gViewVectorTiles` (one file, Leaflet only): draws gView
-    vector tiles of any grid into Leaflet maps of the same projection, also with other zoom
-    levels than the cache (e.g. Proj4Leaflet maps in GK M34), with the GL style incl. sprites
-    and labels.
-    It also reads classic WebMercator vector tiles with their GL style (tiles, TileJSON or
-    ESRI VectorTileServer sources, e.g. basemap.at) and caches rendered tiles as images for
-    fast panning. Tiles are loaded, decoded, filtered and rendered in a web worker
-    (OffscreenCanvas, created from the plugin's own code), with a main thread fallback.
-  - Test viewers for OpenLayers and Leaflet: `src/Playgrounds/VectorTilesViewer` (`index.html`,
-    `leaflet.html`).
+  - Leaflet clients: the separate project
+    [leaflet-gl-vectortiles](https://github.com/jugstalt/leaflet-gl-vectortiles) draws gView vector
+    tiles of any grid into Leaflet maps of the same projection (e.g. Proj4Leaflet maps in GK M34).
+  - Test viewer for OpenLayers: `src/Playgrounds/VectorTilesViewer/index.html`.
 
 ## Changed
 

@@ -29,6 +29,18 @@
       ],
       "port": 5180,
       "url": "http://localhost:5180"
+    },
+    {
+      "name": "glvt-example",
+      "runtimeExecutable": "python",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "5181",
+        "--directory",
+        "../leaflet-gl-vectortiles"
+      ],
+      "port": 5181
     }
   ]
 }
