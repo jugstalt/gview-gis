@@ -80,6 +80,11 @@ public sealed class VectorTileBuilder
         var tileEnvelope = grid.TileEnvelope(level, row, col);  // SpatialNET Envelope2D
         display.ZoomTo(new Envelope(tileEnvelope.MinX, tileEnvelope.MinY, tileEnvelope.MaxX, tileEnvelope.MaxY));
 
+        // the scale computed from the envelope differs in the last digits from tile to tile (249999.9999 / 250000.0001):
+        // a layer visible up to exactly this scale would flip from tile to tile. All tiles of a level use the level's scale,
+        // as the style does.
+        display.MapScale = scale;
+
         #endregion
 
         var layers = VisibleLayers()

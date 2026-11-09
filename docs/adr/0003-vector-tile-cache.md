@@ -44,7 +44,10 @@ gView's tile cache produces raster tiles (PNG/JPG) for the grid in the tile serv
    - The SpatialNET → gView geometry conversion is `internal` in `gView.Framework.Geometry`. The preferred way is a small public "MVT feature → gView geometry" method there, instead of another exception to ADR 0002.
    - It is untested whether `gView.Framework.Vtc` understands the expression syntax of the generated styles.
    - It is deferred because gView clients can use the map service directly; it pays off only for sharing vector tiles between servers or offline.
-8. Integration in the Leaflet viewer.
+8. Leaflet plugin (done): `src/Clients/Leaflet.gViewVectorTiles`, a standalone file to take from the repository, so Leaflet clients such as a WebGIS in GK M34 can use gView's vector tiles (Leaflet only had WebMercator plugins). It doesn't use VectorGrid, because VectorGrid ties the tile grid to the map's zoom levels.
+   - **Rendering:** its own canvas layer decodes MVT itself. It reads the grid from `gview:grid` and draws the nearest cache level at the map's resolution, so the map's CRS only needs the same projection, not the cache scales. Coarser tiles are drawn while a level loads.
+   - **Style:** it evaluates the GL style subset gView generates: filters, `interpolate`, fill, line and circle, sprite icons and patterns, and labels with declutter, drawn straight along lines.
+   - **Viewer:** the test viewer `src/Playgrounds/VectorTilesViewer/leaflet.html` builds the map CRS from the grid (`L.gViewVectorTiles.createCrs`).
 
 ## Consequences
 

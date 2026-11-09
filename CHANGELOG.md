@@ -41,7 +41,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - Glyphs for MapLibre/Mapbox clients: `vtc-glyphs/{fontstack}/{start}-{end}.pbf` (signed
     distance fields rendered from the installed fonts with gView's graphics engine, cached in
     `{TileCachePath}/_glyphs`); styles with labels refer to it as `glyphs`.
-  - Test viewer for OpenLayers: `src/Playgrounds/VectorTilesViewer`.
+  - Leaflet plugin `src/Clients/Leaflet.gViewVectorTiles` (one file, Leaflet only): draws gView
+    vector tiles of any grid into Leaflet maps of the same projection, also with other zoom
+    levels than the cache (e.g. Proj4Leaflet maps in GK M34), with the GL style incl. sprites
+    and labels.
+    It also reads classic WebMercator vector tiles with their GL style (tiles, TileJSON or
+    ESRI VectorTileServer sources, e.g. basemap.at) and caches rendered tiles as images for
+    fast panning.
+  - Test viewers for OpenLayers and Leaflet: `src/Playgrounds/VectorTilesViewer` (`index.html`,
+    `leaflet.html`).
 
 ## Changed
 
@@ -50,6 +58,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Fixed
 
+- Vector tiles: layers whose scale range ends exactly at a cache scale were in some tiles and missing
+  in others (scale computed per tile differed in the last digits); all tiles of a level now use the
+  level's scale.
 - Geometry: `PointCollection`/`MultiPoint` can be enumerated as `IEnumerable<IPoint>` (the
   generic enumerator threw `NotImplementedException`).
 

@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>gView Vector Tiles Leaflet</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
+  <style>
+    :root { --bg: #fff; --fg: #222; --panel: rgba(255,255,255,.94); --border: #ccc; }
+    @media (prefers-color-scheme: dark) { :root { --bg: #1b1b1b; --fg: #eee; --panel: rgba(30,30,30,.94); --border: #444; } }
+    html, body { margin: 0; height: 100%; background: var(--bg); color: var(--fg); font: 13px system-ui, sans-serif; }
+    #map { position: absolute; inset: 0; background: var(--bg); }
+    #panel { position: absolute; top: 8px; right: 8px; z-index: 1000; width: min(360px, calc(100% - 32px)); padding: 10px 12px;
+             background: var(--panel); border: 1px solid var(--border); border-radius: 6px; }
+    #panel label { display: block; margin-top: 6px; }
+    #panel input[type=text] { width: 100%; box-sizing: border-box; }
+    #panel button { margin-top: 8px; }
+    #status { margin-top: 8px; white-space: pre-wrap; max-height: 30vh; overflow: auto; font-family: ui-monospace, monospace; font-size: 11px; }
+    #info { position: absolute; bottom: 8px; left: 8px; z-index: 1000; padding: 4px 8px; background: var(--panel); border-radius: 4px; }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/proj4@2.12.1/dist/proj4.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/proj4leaflet@1.0.2/src/proj4leaflet.js"></script>
+  <!-- the plugin, straight from the repository -->
+  <script src="../../Clients/Leaflet.gViewVectorTiles/leaflet.gview-vectortiles.js"></script>
+</head>
+<body>
+<div id="map"></div>
+<div id="panel">
+  <strong>gView Vector Tiles · Leaflet</strong>
+  <label>gView-Dienst (vtc base url) oder GL-Style-URL (…/root.json)
+    <input id="url" type="text" value="https://localhost:44331/vtc/sqlite/basis-sqlite">
+  </label>
+  <div style="font-size:11px;opacity:.7">z. B. basemap.at: https://mapsneu.wien.gv.at/basemapvectorneu/root.json</div>
+  <label>EPSG (leer = erster aus Metadaten)
+    <input id="epsg" type="text" value="">
+  </label>
+  <label>proj4 Definition (leer = von epsg.io laden)
+    <input id="proj4def" type="text" value="">
+  </label>
+  <label><input id="debug" type="checkbox"> Tile-Grid anzeigen</label>
+  <label><input id="declutter" type="checkbox" checked> Labels entzerren (declutter)</label>
+  <button id="load">Laden</button>
+  <div id="status"></div>
+</div>
+<div id="info"></div>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const status = msg => { $('status').textContent += msg + '\n'; };
+  let map;
+
+  for (const id of ['url', 'epsg', 'proj4def']) {
+    try { const v = localStorage.getItem('vtc-leaflet-' + id); if (v !== null) $(id).value = v; } catch { }
+  }
+
+  async function load() {
+    $('status').textContent = '';
+    for (const id of ['url', 'epsg', 'proj4def']) {
+      try { localStorage.setItem('vtc-leaflet-' + id, $(id).value); } catch { }
+    }
+    if (map) { map.remove(); map = null; }
+
+    const base = $('url').value.replace(/\/+$/, '');
+    const epsgArg = $('epsg').value.trim();
+
+    const isStyleUrl = /\.json(\?|$)/i.test(base);
+    const style = await (await fetch(isStyleUrl ? base : `${base}/style.json${epsgArg ? '?epsg=' + epsgArg : ''}`)).json();
+    const grid = (style.metadata || {})['gview:grid'];
+
+    let crs;
+    if (!grid) {
+      // a classic GL style: WebMercator z/x/y tiles
+      status(`Klassischer GL-Style (WebMercator), ${style.layers.length} Style-Layer`);
+      crs = L.CRS.EPSG3857;
+    } else {
+      // a gView cache: its grid decides the map's CRS (any Proj4Leaflet CRS of the same EPSG code works too)
+      status(`EPSG:${grid.epsg}, ${grid.resolutions.length} Levels, ${style.layers.length} Style-Layer` +
+             (grid.webmercator ? ', WebMercator' : ', eigenes Grid'));
+      (style.metadata['gview:warnings'] || []).forEach(w => status('⚠ ' + w));
+
+      if (String(grid.epsg) === '3857') {
+        crs = L.CRS.EPSG3857;
+      } else {
+        let def = $('proj4def').value.trim();
+        if (!def) def = (await (await fetch(`https://epsg.io/${grid.epsg}.proj4`)).text()).trim();
+        crs = L.gViewVectorTiles.createCrs(grid, def);
+      }
+    }
+
+    // Proj4Leaflet knows only the zoom levels it has resolutions for: limit the map to them
+    const maxZoom = crs.options && crs.options.resolutions ? crs.options.resolutions.length - 1 : 20;
+    map = L.map('map', { crs, maxZoom, zoomSnap: 0, zoomDelta: 0.5, wheelPxPerZoomLevel: 120 });
+    window.vtcMap = map;   // for debugging in the console
+
+    const layer = L.gViewVectorTiles(base, {
+      epsg: grid ? grid.epsg : null,
+      debug: $('debug').checked,
+      declutter: $('declutter').checked
+    });
+    layer.on('error', e => status('Fehler: ' + e.error.message));
+    layer.addTo(map);
+    window.vtcLayer = layer;
+
+    // initial view: the cache extent, or the bounds / center of the classic source
+    const firstSource = Object.values(style.sources || {})[0] || {};
+    if (grid && grid.extent) {
+      const sw = crs.unproject(L.point(grid.extent[0], grid.extent[1]));
+      const ne = crs.unproject(L.point(grid.extent[2], grid.extent[3]));
+      map.fitBounds(L.latLngBounds(sw, ne));
+    } else if (firstSource.bounds) {
+      const b = firstSource.bounds;
+      map.fitBounds([[b[1], b[0]], [b[3], b[2]]]);
+    } else if (style.center) {
+      map.setView([style.center[1], style.center[0]], style.zoom || 2);
+    } else {
+      map.setView([0, 0], 1);
+    }
+
+    const showInfo = () => {
+      const t = map.options.crs.transformation, res = 1 / (map.options.crs.scale(map.getZoom()) * (t && t._a ? Math.abs(t._a) : 1));
+      $('info').textContent = `Auflösung ${res.toFixed(3)} · ca. 1:${Math.round(res * 96 / 0.0254).toLocaleString('de')} · Zoom ${map.getZoom().toFixed(2)}`;
+    };
+    map.on('zoomend moveend', showInfo);
+    showInfo();
+  }
+
+  $('load').addEventListener('click', () => load().catch(e => status('Fehler: ' + e.message)));
+})();
+</script>
+</body>
+</html>

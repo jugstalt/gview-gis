@@ -25,9 +25,10 @@
         "http.server",
         "5180",
         "--directory",
-        "src/Playgrounds/VectorTilesViewer"
+        "src"
       ],
-      "port": 5180
+      "port": 5180,
+      "url": "http://localhost:5180"
     }
   ]
 }
