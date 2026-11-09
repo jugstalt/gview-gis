@@ -22,8 +22,16 @@ projection.
   relative URLs, legacy GL functions (`stops`), `{field}` tokens, legacy filters, SDF icons tinted with
   `icon-color`, repeated line labels (`symbol-spacing`), `text-transform`, `text-letter-spacing`,
   `text-max-width` wrapping. 404/204 tiles count as empty.
-- **Fast panning:** with one source, each tile is rendered once per zoom step into an image and reused. Labels are
-  placed on every redraw, with collision handling across tiles.
+- **Web worker:** tiles are loaded, decoded, filtered and rendered into images in a web worker (`OffscreenCanvas`),
+  so dense maps (e.g. basemap.at in a city: hundreds of style layers, 600–900 KB tiles) don't block the page.
+  The main thread places labels and puts the images together. The worker is created from the plugin's own code
+  (blob URL), the plugin stays one file. Without `Worker`/`OffscreenCanvas` (or with a Content Security Policy
+  without `worker-src blob:`) and for styles with several sources, everything runs on the main thread.
+- **Fast panning and smooth zooming:** with one source, each tile is rendered once per zoom step into an image and
+  reused. After zooming, the images of the previous step are shown scaled while the new ones render in small
+  portions per frame (nearest to the center first). Tile requests are prioritized by distance to the center,
+  limited in number and aborted when no longer visible. Labels are placed on every redraw, with collision handling
+  across tiles (grid index, cached text widths).
 
 ## Usage
 
@@ -81,7 +89,11 @@ L.gViewVectorTiles(url, { epsg: grid.epsg }).addTo(map);
 | `style` | `{url}/style.json?epsg=…` | another style URL |
 | `declutter` | `true` | hide labels and icons overlapping earlier ones |
 | `debug` | `false` | draw the tile borders and coordinates |
-| `maxCachedTiles` | `256` | decoded tiles kept in memory |
+| `maxCachedTiles` | `384` | decoded tiles kept in memory |
+| `maxConcurrentRequests` | `8` | tile requests at the same time |
+| `renderBudget` | `12` | milliseconds per frame for rendering tile images (main thread rendering) |
+| `worker` | `true` | render in a web worker where the browser supports it |
+| `maxConcurrentRenders` | `4` | tile images rendered in the worker at the same time |
 | `fetchOptions` | `{}` | options for `fetch`, e.g. `{ credentials: 'include' }` or headers for authorization |
 | `pane` | `'overlayPane'` | the Leaflet pane |
 | `attribution` | `null` | |
@@ -95,8 +107,9 @@ Events: `load` (style loaded), `error` (`e.error`). Methods: `getStyle()`, `getG
 
 - The map's projection must be the cache's projection (gView caches) or WebMercator (classic sources). Reprojecting
   tiles on the client is not supported, so classic WebMercator tiles can't be shown in a GK M34 map.
-- Canvas 2D, not WebGL: complex styles (hundreds of layers, very detailed tiles) render well, but the first
-  rendering of a zoom step takes longer than in MapLibre. Expressions: `get`, `has`, comparisons, `!`, `all`,
+- Canvas 2D, not WebGL: complex styles (hundreds of layers, very detailed tiles) render well, in the worker without
+  blocking the page, but a new zoom step takes longer to fill in than in MapLibre. Labels are placed on the main
+  thread on every redraw. Expressions: `get`, `has`, comparisons, `!`, `all`,
   `any`, `in`, `to-string`, `to-number`, `concat`, `geometry-type`, `interpolate`, `match`, `case`, `step`, and
   legacy functions/filters. Not supported: `line-offset`, `*-translate`, `fill-extrusion`, `heatmap`, `raster`
   layers.

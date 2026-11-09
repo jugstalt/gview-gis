@@ -47,7 +47,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     and labels.
     It also reads classic WebMercator vector tiles with their GL style (tiles, TileJSON or
     ESRI VectorTileServer sources, e.g. basemap.at) and caches rendered tiles as images for
-    fast panning.
+    fast panning. Tiles are loaded, decoded, filtered and rendered in a web worker
+    (OffscreenCanvas, created from the plugin's own code), with a main thread fallback.
   - Test viewers for OpenLayers and Leaflet: `src/Playgrounds/VectorTilesViewer` (`index.html`,
     `leaflet.html`).
 

@@ -28,347 +28,734 @@
     'use strict';
 
     // ------------------------------------------------------------------------------------------
-    // Protobuf / MVT decoding
+    // Shared code: runs on the main thread and in the worker (its source is the worker script)
     // ------------------------------------------------------------------------------------------
 
-    function Pbf(bytes) {
-        this.buf = bytes;
-        this.pos = 0;
-        this.length = bytes.length;
-        this.view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
-    }
+    function gvShared() {
+        'use strict';
 
-    Pbf.prototype = {
-        readVarint: function () {
-            var result = 0, shift = 0, b;
-            do {
-                b = this.buf[this.pos++];
-                // beyond 28 bits: multiply, bit operations are 32 bit in JS
-                result += shift < 28 ? (b & 0x7f) << shift : (b & 0x7f) * Math.pow(2, shift);
-                shift += 7;
-            } while (b >= 0x80);
-            return result;
-        },
-        readSVarint: function () {
-            var n = this.readVarint();
-            return n % 2 === 1 ? (n + 1) / -2 : n / 2;
-        },
-        readBytes: function () {
-            var end = this.readVarint() + this.pos;
-            var bytes = this.buf.subarray(this.pos, end);
-            this.pos = end;
-            return bytes;
-        },
-        readString: function () {
-            return new TextDecoder('utf-8').decode(this.readBytes());
-        },
-        readFloat: function () { var v = this.view.getFloat32(this.pos, true); this.pos += 4; return v; },
-        readDouble: function () { var v = this.view.getFloat64(this.pos, true); this.pos += 8; return v; },
-        readPacked: function () {
-            var end = this.readVarint() + this.pos, values = [];
-            while (this.pos < end) values.push(this.readVarint());
-            return values;
-        },
-        skip: function (type) {
-            if (type === 0) this.readVarint();
-            else if (type === 1) this.pos += 8;
-            else if (type === 2) this.pos = this.readVarint() + this.pos;
-            else if (type === 5) this.pos += 4;
-            else throw new Error('Unsupported protobuf wire type ' + type);
-        },
-        // calls fn(tag, type) for every field of the message ending at end
-        fields: function (end, fn) {
-            while (this.pos < end) {
-                var key = this.readVarint(), tag = key >> 3, type = key & 7, before = this.pos;
-                if (fn(tag, type) === false) this.skip(type);
-                else if (this.pos === before) this.skip(type);
-            }
+        // ------------------------------------------------------------------------------------------
+        // Protobuf / MVT decoding
+        // ------------------------------------------------------------------------------------------
+
+        function Pbf(bytes) {
+            this.buf = bytes;
+            this.pos = 0;
+            this.length = bytes.length;
+            this.view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
         }
-    };
 
-    var GEOMETRY_TYPES = { 1: 'Point', 2: 'LineString', 3: 'Polygon' };
-
-    function decodeValue(pbf) {
-        var end = pbf.readVarint() + pbf.pos, value = null;
-        pbf.fields(end, function (tag) {
-            switch (tag) {
-                case 1: value = pbf.readString(); break;
-                case 2: value = pbf.readFloat(); break;
-                case 3: value = pbf.readDouble(); break;
-                case 4: value = pbf.readVarint(); break;   // int64 (non-negative range is enough here)
-                case 5: value = pbf.readVarint(); break;
-                case 6: value = pbf.readSVarint(); break;
-                case 7: value = pbf.readVarint() !== 0; break;
-                default: return false;
-            }
-        });
-        return value;
-    }
-
-    // MVT geometry commands → arrays of [x, y] paths (tile coordinates)
-    function decodeGeometry(commands) {
-        var paths = [], path = null, x = 0, y = 0, i = 0;
-        while (i < commands.length) {
-            var cmd = commands[i] & 0x7, count = commands[i] >> 3;
-            i++;
-            if (cmd === 1 || cmd === 2) {
-                for (var c = 0; c < count; c++) {
-                    var dx = commands[i++], dy = commands[i++];
-                    x += (dx >> 1) ^ (-(dx & 1));
-                    y += (dy >> 1) ^ (-(dy & 1));
-                    if (cmd === 1) {
-                        path = [[x, y]];
-                        paths.push(path);
-                    } else {
-                        path.push([x, y]);
-                    }
+        Pbf.prototype = {
+            readVarint: function () {
+                var result = 0, shift = 0, b;
+                do {
+                    b = this.buf[this.pos++];
+                    // beyond 28 bits: multiply, bit operations are 32 bit in JS
+                    result += shift < 28 ? (b & 0x7f) << shift : (b & 0x7f) * Math.pow(2, shift);
+                    shift += 7;
+                } while (b >= 0x80);
+                return result;
+            },
+            readSVarint: function () {
+                var n = this.readVarint();
+                return n % 2 === 1 ? (n + 1) / -2 : n / 2;
+            },
+            readBytes: function () {
+                var end = this.readVarint() + this.pos;
+                var bytes = this.buf.subarray(this.pos, end);
+                this.pos = end;
+                return bytes;
+            },
+            readString: function () {
+                return new TextDecoder('utf-8').decode(this.readBytes());
+            },
+            readFloat: function () { var v = this.view.getFloat32(this.pos, true); this.pos += 4; return v; },
+            readDouble: function () { var v = this.view.getFloat64(this.pos, true); this.pos += 8; return v; },
+            readPacked: function () {
+                var end = this.readVarint() + this.pos, values = [];
+                while (this.pos < end) values.push(this.readVarint());
+                return values;
+            },
+            skip: function (type) {
+                if (type === 0) this.readVarint();
+                else if (type === 1) this.pos += 8;
+                else if (type === 2) this.pos = this.readVarint() + this.pos;
+                else if (type === 5) this.pos += 4;
+                else throw new Error('Unsupported protobuf wire type ' + type);
+            },
+            // calls fn(tag, type) for every field of the message ending at end
+            fields: function (end, fn) {
+                while (this.pos < end) {
+                    var key = this.readVarint(), tag = key >> 3, type = key & 7, before = this.pos;
+                    if (fn(tag, type) === false) this.skip(type);
+                    else if (this.pos === before) this.skip(type);
                 }
-            } else if (cmd === 7 && path) {
-                path.closed = true;
             }
-        }
-        return paths;
-    }
+        };
 
-    function decodeTile(arrayBuffer) {
-        var pbf = new Pbf(new Uint8Array(arrayBuffer)), layers = {};
+        var GEOMETRY_TYPES = { 1: 'Point', 2: 'LineString', 3: 'Polygon' };
 
-        pbf.fields(pbf.length, function (tag) {
-            if (tag !== 3) return false;
-
-            var end = pbf.readVarint() + pbf.pos;
-            var layer = { name: '', extent: 4096, keys: [], values: [], features: [] }, rawFeatures = [];
-
-            pbf.fields(end, function (ltag) {
-                switch (ltag) {
-                    case 1: layer.name = pbf.readString(); break;
-                    case 2: rawFeatures.push(pbf.readBytes()); break;
-                    case 3: layer.keys.push(pbf.readString()); break;
-                    case 4: layer.values.push(decodeValue(pbf)); break;
-                    case 5: layer.extent = pbf.readVarint(); break;
+        function decodeValue(pbf) {
+            var end = pbf.readVarint() + pbf.pos, value = null;
+            pbf.fields(end, function (tag) {
+                switch (tag) {
+                    case 1: value = pbf.readString(); break;
+                    case 2: value = pbf.readFloat(); break;
+                    case 3: value = pbf.readDouble(); break;
+                    case 4: value = pbf.readVarint(); break;   // int64 (non-negative range is enough here)
+                    case 5: value = pbf.readVarint(); break;
+                    case 6: value = pbf.readSVarint(); break;
+                    case 7: value = pbf.readVarint() !== 0; break;
                     default: return false;
                 }
             });
+            return value;
+        }
 
-            rawFeatures.forEach(function (bytes) {
-                var fp = new Pbf(bytes), feature = { id: null, type: 'Unknown', properties: {}, geometry: [] };
-                fp.fields(fp.length, function (ftag) {
-                    switch (ftag) {
-                        case 1: feature.id = fp.readVarint(); break;
-                        case 2:
-                            var tags = fp.readPacked();
-                            for (var t = 0; t + 1 < tags.length; t += 2) {
-                                feature.properties[layer.keys[tags[t]]] = layer.values[tags[t + 1]];
-                            }
-                            break;
-                        case 3: feature.type = GEOMETRY_TYPES[fp.readVarint()] || 'Unknown'; break;
-                        case 4: feature.geometry = decodeGeometry(fp.readPacked()); break;
+        // MVT geometry commands → arrays of [x, y] paths (tile coordinates)
+        function decodeGeometry(commands) {
+            var paths = [], path = null, x = 0, y = 0, i = 0;
+            while (i < commands.length) {
+                var cmd = commands[i] & 0x7, count = commands[i] >> 3;
+                i++;
+                if (cmd === 1 || cmd === 2) {
+                    for (var c = 0; c < count; c++) {
+                        var dx = commands[i++], dy = commands[i++];
+                        x += (dx >> 1) ^ (-(dx & 1));
+                        y += (dy >> 1) ^ (-(dy & 1));
+                        if (cmd === 1) {
+                            path = [[x, y]];
+                            paths.push(path);
+                        } else {
+                            path.push([x, y]);
+                        }
+                    }
+                } else if (cmd === 7 && path) {
+                    path.closed = true;
+                }
+            }
+            return paths;
+        }
+
+        function decodeTile(arrayBuffer) {
+            var pbf = new Pbf(new Uint8Array(arrayBuffer)), layers = {};
+
+            pbf.fields(pbf.length, function (tag) {
+                if (tag !== 3) return false;
+
+                var end = pbf.readVarint() + pbf.pos;
+                var layer = { name: '', extent: 4096, keys: [], values: [], features: [] }, rawFeatures = [];
+
+                pbf.fields(end, function (ltag) {
+                    switch (ltag) {
+                        case 1: layer.name = pbf.readString(); break;
+                        case 2: rawFeatures.push(pbf.readBytes()); break;
+                        case 3: layer.keys.push(pbf.readString()); break;
+                        case 4: layer.values.push(decodeValue(pbf)); break;
+                        case 5: layer.extent = pbf.readVarint(); break;
                         default: return false;
                     }
                 });
-                layer.features.push(feature);
+
+                rawFeatures.forEach(function (bytes) {
+                    var fp = new Pbf(bytes), feature = { id: null, type: 'Unknown', properties: {}, geometry: [] };
+                    fp.fields(fp.length, function (ftag) {
+                        switch (ftag) {
+                            case 1: feature.id = fp.readVarint(); break;
+                            case 2:
+                                var tags = fp.readPacked();
+                                for (var t = 0; t + 1 < tags.length; t += 2) {
+                                    feature.properties[layer.keys[tags[t]]] = layer.values[tags[t + 1]];
+                                }
+                                break;
+                            case 3: feature.type = GEOMETRY_TYPES[fp.readVarint()] || 'Unknown'; break;
+                            case 4: feature.geometry = decodeGeometry(fp.readPacked()); break;
+                            default: return false;
+                        }
+                    });
+                    layer.features.push(feature);
+                });
+
+                layers[layer.name] = layer;
             });
 
-            layers[layer.name] = layer;
-        });
+            return layers;
+        }
 
-        return layers;
-    }
+        // ------------------------------------------------------------------------------------------
+        // GL style expressions (the subset gView generates, plus a few common ones)
+        // ------------------------------------------------------------------------------------------
 
-    // ------------------------------------------------------------------------------------------
-    // GL style expressions (the subset gView generates, plus a few common ones)
-    // ------------------------------------------------------------------------------------------
+        function evaluate(expr, feature, zoom) {
+            if (!Array.isArray(expr)) return expr;
 
-    function evaluate(expr, feature, zoom) {
-        if (!Array.isArray(expr)) return expr;
+            var op = expr[0], props = feature ? feature.properties : {};
+            var arg = function (i) { return evaluate(expr[i], feature, zoom); };
 
-        var op = expr[0], props = feature ? feature.properties : {};
-        var arg = function (i) { return evaluate(expr[i], feature, zoom); };
-
-        switch (op) {
-            case 'get': return props[expr[1]] === undefined ? null : props[expr[1]];
-            case 'has': return expr[1] in props;
-            case '!has': return !(expr[1] in props);
-            case 'literal': return expr[1];
-            case 'zoom': return zoom;
-            case 'geometry-type': return feature ? feature.type : null;
-            case '!': return !arg(1);
-            case 'all': for (var a = 1; a < expr.length; a++) if (!arg(a)) return false; return true;
-            case 'any': for (var b = 1; b < expr.length; b++) if (arg(b)) return true; return false;
-            case '==': return arg(1) === arg(2);
-            case '!=': return arg(1) !== arg(2);
-            case '>': return arg(1) > arg(2);
-            case '>=': return arg(1) >= arg(2);
-            case '<': return arg(1) < arg(2);
-            case '<=': return arg(1) <= arg(2);
-            case 'in':
-                var haystack = arg(2);
-                return Array.isArray(haystack) ? haystack.indexOf(arg(1)) >= 0 : false;
-            case 'to-string':
-                var s = arg(1);
-                return s === null || s === undefined ? '' : String(s);
-            case 'to-number':
-                var n = Number(arg(1));
-                return isNaN(n) ? 0 : n;
-            case 'concat':
-                var text = '';
-                for (var c = 1; c < expr.length; c++) { var v = arg(c); text += v === null || v === undefined ? '' : String(v); }
-                return text;
-            case 'match':
-                var input = arg(1);
-                for (var m = 2; m + 1 < expr.length; m += 2) {
-                    var labels = Array.isArray(expr[m]) ? expr[m] : [expr[m]];
-                    if (labels.indexOf(input) >= 0) return arg(m + 1);
-                }
-                return arg(expr.length - 1);
-            case 'case':
-                for (var k = 1; k + 1 < expr.length; k += 2) if (arg(k)) return arg(k + 1);
-                return arg(expr.length - 1);
-            case 'step':
-                var stepInput = arg(1), result = arg(2);
-                for (var st = 3; st + 1 < expr.length; st += 2) {
-                    if (stepInput >= expr[st]) result = arg(st + 1); else break;
-                }
-                return result;
-            case 'interpolate':
-                var x = arg(2), stops = [];
-                for (var p = 3; p + 1 < expr.length; p += 2) stops.push([expr[p], arg(p + 1)]);
-                if (!stops.length) return null;
-                if (x <= stops[0][0]) return stops[0][1];
-                if (x >= stops[stops.length - 1][0]) return stops[stops.length - 1][1];
-                for (var q = 0; q < stops.length - 1; q++) {
-                    if (x >= stops[q][0] && x <= stops[q + 1][0]) {
-                        var t = (x - stops[q][0]) / (stops[q + 1][0] - stops[q][0]);
-                        if (expr[1] && expr[1][0] === 'exponential' && expr[1][1] !== 1) {
-                            var base = expr[1][1];
-                            t = (Math.pow(base, t * (stops[q + 1][0] - stops[q][0])) - 1) / (Math.pow(base, stops[q + 1][0] - stops[q][0]) - 1);
-                        }
-                        return stops[q][1] + t * (stops[q + 1][1] - stops[q][1]);
+            switch (op) {
+                case 'get': return props[expr[1]] === undefined ? null : props[expr[1]];
+                case 'has': return expr[1] in props;
+                case '!has': return !(expr[1] in props);
+                case 'literal': return expr[1];
+                case 'zoom': return zoom;
+                case 'geometry-type': return feature ? feature.type : null;
+                case '!': return !arg(1);
+                case 'all': for (var a = 1; a < expr.length; a++) if (!arg(a)) return false; return true;
+                case 'any': for (var b = 1; b < expr.length; b++) if (arg(b)) return true; return false;
+                case '==': return arg(1) === arg(2);
+                case '!=': return arg(1) !== arg(2);
+                case '>': return arg(1) > arg(2);
+                case '>=': return arg(1) >= arg(2);
+                case '<': return arg(1) < arg(2);
+                case '<=': return arg(1) <= arg(2);
+                case 'in':
+                    var haystack = arg(2);
+                    return Array.isArray(haystack) ? haystack.indexOf(arg(1)) >= 0 : false;
+                case 'to-string':
+                    var s = arg(1);
+                    return s === null || s === undefined ? '' : String(s);
+                case 'to-number':
+                    var n = Number(arg(1));
+                    return isNaN(n) ? 0 : n;
+                case 'concat':
+                    var text = '';
+                    for (var c = 1; c < expr.length; c++) { var v = arg(c); text += v === null || v === undefined ? '' : String(v); }
+                    return text;
+                case 'match':
+                    var input = arg(1);
+                    for (var m = 2; m + 1 < expr.length; m += 2) {
+                        var labels = Array.isArray(expr[m]) ? expr[m] : [expr[m]];
+                        if (labels.indexOf(input) >= 0) return arg(m + 1);
                     }
-                }
-                return stops[stops.length - 1][1];
-            default:
-                // an array literal (dasharray, offsets, ...)
-                return expr;
-        }
-    }
-
-    // legacy GL functions: { stops: [[zoom, value], ...], base, type, property, default }
-    function evaluateFunction(fn, feature, zoom) {
-        var stops = fn.stops || [];
-        var input = fn.property ? (feature ? feature.properties[fn.property] : undefined) : zoom;
-
-        if (fn.type === 'identity') return input === undefined ? fn['default'] : input;
-        if (!stops.length) return fn['default'];
-
-        // zoom-and-property stops ({ zoom, value }): use the zoom part only
-        var key = function (s) { return typeof s[0] === 'object' && s[0] !== null ? s[0].zoom : s[0]; };
-
-        if (fn.type === 'categorical') {
-            for (var c = 0; c < stops.length; c++) if (key(stops[c]) === input) return stops[c][1];
-            return fn['default'];
-        }
-
-        var numeric = typeof stops[0][1] === 'number';
-        if (fn.type === 'interval' || !numeric || typeof input !== 'number') {
-            var result = stops[0][1];
-            for (var i = 0; i < stops.length; i++) { if (input >= key(stops[i])) result = stops[i][1]; else break; }
-            return result;
-        }
-
-        // exponential (base 1 = linear)
-        if (input <= key(stops[0])) return stops[0][1];
-        if (input >= key(stops[stops.length - 1])) return stops[stops.length - 1][1];
-        var base = fn.base || 1;
-        for (var j = 0; j < stops.length - 1; j++) {
-            var z0 = key(stops[j]), z1 = key(stops[j + 1]);
-            if (input >= z0 && input <= z1) {
-                var t = base === 1 ? (input - z0) / (z1 - z0) : (Math.pow(base, input - z0) - 1) / (Math.pow(base, z1 - z0) - 1);
-                return stops[j][1] + t * (stops[j + 1][1] - stops[j][1]);
+                    return arg(expr.length - 1);
+                case 'case':
+                    for (var k = 1; k + 1 < expr.length; k += 2) if (arg(k)) return arg(k + 1);
+                    return arg(expr.length - 1);
+                case 'step':
+                    var stepInput = arg(1), result = arg(2);
+                    for (var st = 3; st + 1 < expr.length; st += 2) {
+                        if (stepInput >= expr[st]) result = arg(st + 1); else break;
+                    }
+                    return result;
+                case 'interpolate':
+                    var x = arg(2), stops = [];
+                    for (var p = 3; p + 1 < expr.length; p += 2) stops.push([expr[p], arg(p + 1)]);
+                    if (!stops.length) return null;
+                    if (x <= stops[0][0]) return stops[0][1];
+                    if (x >= stops[stops.length - 1][0]) return stops[stops.length - 1][1];
+                    for (var q = 0; q < stops.length - 1; q++) {
+                        if (x >= stops[q][0] && x <= stops[q + 1][0]) {
+                            var t = (x - stops[q][0]) / (stops[q + 1][0] - stops[q][0]);
+                            if (expr[1] && expr[1][0] === 'exponential' && expr[1][1] !== 1) {
+                                var base = expr[1][1];
+                                t = (Math.pow(base, t * (stops[q + 1][0] - stops[q][0])) - 1) / (Math.pow(base, stops[q + 1][0] - stops[q][0]) - 1);
+                            }
+                            return stops[q][1] + t * (stops[q + 1][1] - stops[q][1]);
+                        }
+                    }
+                    return stops[stops.length - 1][1];
+                default:
+                    // an array literal (dasharray, offsets, ...)
+                    return expr;
             }
         }
-        return stops[stops.length - 1][1];
-    }
 
-    function evaluateValue(value, feature, zoom) {
-        if (value && typeof value === 'object' && !Array.isArray(value) && value.stops) {
-            return evaluateFunction(value, feature, zoom);
+        // legacy GL functions: { stops: [[zoom, value], ...], base, type, property, default }
+        function evaluateFunction(fn, feature, zoom) {
+            var stops = fn.stops || [];
+            var input = fn.property ? (feature ? feature.properties[fn.property] : undefined) : zoom;
+
+            if (fn.type === 'identity') return input === undefined ? fn['default'] : input;
+            if (!stops.length) return fn['default'];
+
+            // zoom-and-property stops ({ zoom, value }): use the zoom part only
+            var key = function (s) { return typeof s[0] === 'object' && s[0] !== null ? s[0].zoom : s[0]; };
+
+            if (fn.type === 'categorical') {
+                for (var c = 0; c < stops.length; c++) if (key(stops[c]) === input) return stops[c][1];
+                return fn['default'];
+            }
+
+            var numeric = typeof stops[0][1] === 'number';
+            if (fn.type === 'interval' || !numeric || typeof input !== 'number') {
+                var result = stops[0][1];
+                for (var i = 0; i < stops.length; i++) { if (input >= key(stops[i])) result = stops[i][1]; else break; }
+                return result;
+            }
+
+            // exponential (base 1 = linear)
+            if (input <= key(stops[0])) return stops[0][1];
+            if (input >= key(stops[stops.length - 1])) return stops[stops.length - 1][1];
+            var base = fn.base || 1;
+            for (var j = 0; j < stops.length - 1; j++) {
+                var z0 = key(stops[j]), z1 = key(stops[j + 1]);
+                if (input >= z0 && input <= z1) {
+                    var t = base === 1 ? (input - z0) / (z1 - z0) : (Math.pow(base, input - z0) - 1) / (Math.pow(base, z1 - z0) - 1);
+                    return stops[j][1] + t * (stops[j + 1][1] - stops[j][1]);
+                }
+            }
+            return stops[stops.length - 1][1];
         }
-        return evaluate(value, feature, zoom);
-    }
 
-    // "{field}" tokens of legacy text-field / icon-image values
-    function resolveTokens(value, feature) {
-        if (typeof value !== 'string' || value.indexOf('{') < 0) return value;
-        return value.replace(/\{([^}]+)\}/g, function (_, name) {
-            var v = feature.properties[name];
-            return v === null || v === undefined ? '' : String(v);
-        });
-    }
-
-    var LEGACY_COMPARISONS = ['==', '!=', '>', '>=', '<', '<=', 'in', '!in', 'has', '!has'];
-
-    // legacy filters (["==", "field", value], ["all", [...], ...]) or expressions
-    function isLegacyFilter(filter) {
-        if (!Array.isArray(filter)) return false;
-        var op = filter[0];
-        if (op === 'all' || op === 'any' || op === 'none') {
-            return filter.length > 1 && filter.slice(1).every(isLegacyFilter);
+        function evaluateValue(value, feature, zoom) {
+            if (value && typeof value === 'object' && !Array.isArray(value) && value.stops) {
+                return evaluateFunction(value, feature, zoom);
+            }
+            return evaluate(value, feature, zoom);
         }
-        return LEGACY_COMPARISONS.indexOf(op) >= 0 && typeof filter[1] === 'string';
-    }
 
-    function legacyFilter(filter, feature) {
-        var op = filter[0];
-        switch (op) {
-            case 'all': for (var a = 1; a < filter.length; a++) if (!legacyFilter(filter[a], feature)) return false; return true;
-            case 'any': for (var b = 1; b < filter.length; b++) if (legacyFilter(filter[b], feature)) return true; return false;
-            case 'none': for (var c = 1; c < filter.length; c++) if (legacyFilter(filter[c], feature)) return false; return true;
-            case 'has': return filter[1] in feature.properties;
-            case '!has': return !(filter[1] in feature.properties);
+        // "{field}" tokens of legacy text-field / icon-image values
+        function resolveTokens(value, feature) {
+            if (typeof value !== 'string' || value.indexOf('{') < 0) return value;
+            return value.replace(/\{([^}]+)\}/g, function (_, name) {
+                var v = feature.properties[name];
+                return v === null || v === undefined ? '' : String(v);
+            });
         }
-        var value = filter[1] === '$type' ? feature.type : filter[1] === '$id' ? feature.id : feature.properties[filter[1]];
-        switch (op) {
-            case '==': return value === filter[2];
-            case '!=': return value !== filter[2];
-            case '>': return value > filter[2];
-            case '>=': return value >= filter[2];
-            case '<': return value < filter[2];
-            case '<=': return value <= filter[2];
-            case 'in': return filter.slice(2).indexOf(value) >= 0;
-            case '!in': return filter.slice(2).indexOf(value) < 0;
+
+        var LEGACY_COMPARISONS = ['==', '!=', '>', '>=', '<', '<=', 'in', '!in', 'has', '!has'];
+
+        // legacy filters (["==", "field", value], ["all", [...], ...]) or expressions
+        function isLegacyFilter(filter) {
+            if (!Array.isArray(filter)) return false;
+            var op = filter[0];
+            if (op === 'all' || op === 'any' || op === 'none') {
+                return filter.length > 1 && filter.slice(1).every(isLegacyFilter);
+            }
+            return LEGACY_COMPARISONS.indexOf(op) >= 0 && typeof filter[1] === 'string';
         }
-        return false;
-    }
 
-    function filterMatches(filter, feature, zoom) {
-        if (!filter) return true;
-        return isLegacyFilter(filter) ? legacyFilter(filter, feature) : !!evaluate(filter, feature, zoom);
-    }
-
-    function filterUsesZoom(filter) {
-        return JSON.stringify(filter || null).indexOf('"zoom"') >= 0;
-    }
-
-    // true if a paint/layout value depends on feature attributes (then features are drawn one by one)
-    function isDataDriven(value) {
-        if (value === null || typeof value !== 'object') return false;
-        if (!Array.isArray(value)) return !!value.property || value.type === 'identity';
-        var json = JSON.stringify(value);
-        return json.indexOf('"get"') >= 0 || json.indexOf('"has"') >= 0 || json.indexOf('"properties"') >= 0 ||
-               json.indexOf('"geometry-type"') >= 0 || json.indexOf('"id"') >= 0 || json.indexOf('"feature-state"') >= 0;
-    }
-
-    function layerIsDataDriven(styleLayer) {
-        if (styleLayer._gvDataDriven === undefined) {
-            var paint = styleLayer.paint || {}, layout = styleLayer.layout || {}, driven = false;
-            Object.keys(paint).forEach(function (k) { if (isDataDriven(paint[k])) driven = true; });
-            Object.keys(layout).forEach(function (k) { if (isDataDriven(layout[k])) driven = true; });
-            // cached on the style layer object (not part of the GL style)
-            Object.defineProperty(styleLayer, '_gvDataDriven', { value: driven, enumerable: false });
+        function legacyFilter(filter, feature) {
+            var op = filter[0];
+            switch (op) {
+                case 'all': for (var a = 1; a < filter.length; a++) if (!legacyFilter(filter[a], feature)) return false; return true;
+                case 'any': for (var b = 1; b < filter.length; b++) if (legacyFilter(filter[b], feature)) return true; return false;
+                case 'none': for (var c = 1; c < filter.length; c++) if (legacyFilter(filter[c], feature)) return false; return true;
+                case 'has': return filter[1] in feature.properties;
+                case '!has': return !(filter[1] in feature.properties);
+            }
+            var value = filter[1] === '$type' ? feature.type : filter[1] === '$id' ? feature.id : feature.properties[filter[1]];
+            switch (op) {
+                case '==': return value === filter[2];
+                case '!=': return value !== filter[2];
+                case '>': return value > filter[2];
+                case '>=': return value >= filter[2];
+                case '<': return value < filter[2];
+                case '<=': return value <= filter[2];
+                case 'in': return filter.slice(2).indexOf(value) >= 0;
+                case '!in': return filter.slice(2).indexOf(value) < 0;
+            }
+            return false;
         }
-        return styleLayer._gvDataDriven;
+
+        function filterMatches(filter, feature, zoom) {
+            if (!filter) return true;
+            return isLegacyFilter(filter) ? legacyFilter(filter, feature) : !!evaluate(filter, feature, zoom);
+        }
+
+        function filterUsesZoom(filter) {
+            return JSON.stringify(filter || null).indexOf('"zoom"') >= 0;
+        }
+
+        // true if a paint/layout value depends on feature attributes (then features are drawn one by one)
+        function isDataDriven(value) {
+            if (value === null || typeof value !== 'object') return false;
+            if (!Array.isArray(value)) return !!value.property || value.type === 'identity';
+            var json = JSON.stringify(value);
+            return json.indexOf('"get"') >= 0 || json.indexOf('"has"') >= 0 || json.indexOf('"properties"') >= 0 ||
+                   json.indexOf('"geometry-type"') >= 0 || json.indexOf('"id"') >= 0 || json.indexOf('"feature-state"') >= 0;
+        }
+
+        function layerIsDataDriven(styleLayer) {
+            if (styleLayer._gvDataDriven === undefined) {
+                var paint = styleLayer.paint || {}, layout = styleLayer.layout || {}, driven = false;
+                Object.keys(paint).forEach(function (k) { if (isDataDriven(paint[k])) driven = true; });
+                Object.keys(layout).forEach(function (k) { if (isDataDriven(layout[k])) driven = true; });
+                // cached on the style layer object (not part of the GL style)
+                Object.defineProperty(styleLayer, '_gvDataDriven', { value: driven, enumerable: false });
+            }
+            return styleLayer._gvDataDriven;
+        }
+
+        // adds a path to the current canvas path, leaving out vertices closer than half a pixel to the last one
+        // (detailed polygons at small scales: invisible, but expensive to rasterize)
+        function addPath(ctx, path, tx, ty, close) {
+            var n = path.length;
+            if (!n) return;
+            var lastX = tx(path[0]), lastY = ty(path[0]);
+            ctx.moveTo(lastX, lastY);
+            for (var i = 1; i < n; i++) {
+                var x = tx(path[i]), y = ty(path[i]);
+                if (i < n - 1 && Math.abs(x - lastX) < 0.5 && Math.abs(y - lastY) < 0.5) continue;
+                ctx.lineTo(x, y);
+                lastX = x; lastY = y;
+            }
+            if (close) ctx.closePath();
+        }
+
+        var FILL_BATCH = 16;
+
+        function makeCanvas(width, height) {
+            if (typeof OffscreenCanvas !== 'undefined') return new OffscreenCanvas(width, height);
+            var canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            return canvas;
+        }
+
+        // draws the geometry layers (fill, line, circle) of tiles; style and sprite are set from outside
+        function TileRenderer() {
+            this._style = null;
+            this._sprite = null;     // { index, image, pixelRatio }
+            this._patterns = {};
+        }
+
+        TileRenderer.prototype = {
+            setStyle: function (style) { this._style = style; this._patterns = {}; },
+            setSprite: function (sprite) { this._sprite = sprite; this._patterns = {}; },
+
+            // all geometry layers of a source for one tile (d: { entry, x0, y0, sx, sy, clip })
+            renderTile: function (ctx, sourceId, d, zoom) {
+                var self = this;
+                this._style.layers.forEach(function (styleLayer, layerIndex) {
+                    if (styleLayer.source !== sourceId || styleLayer.type === 'symbol' || styleLayer.type === 'background') return;
+                    if (!self._layerVisible(styleLayer, zoom)) return;
+                    self._drawLayerTile(ctx, styleLayer, layerIndex, d, zoom, null);
+                });
+            },
+
+            _layerVisible: function (styleLayer, zoom) {
+                if (styleLayer.minzoom !== undefined && zoom < styleLayer.minzoom) return false;
+                if (styleLayer.maxzoom !== undefined && zoom >= styleLayer.maxzoom) return false;
+                return (styleLayer.layout || {}).visibility !== 'none';
+            },
+
+            // the features of one tile for one style layer: drawn on ctx, or (symbols) collected into labels
+            _drawLayerTile: function (ctx, styleLayer, layerIndex, d, zoom, labels) {
+                var layer = d.entry.layers[styleLayer['source-layer']];
+                if (!layer) return;
+
+                // the filtered features of a tile per style layer: filters rarely depend on the zoom
+                var zoomFilter = filterUsesZoom(styleLayer.filter);
+                var features = zoomFilter ? null : d.entry.filtered[layerIndex];
+                if (!features) {
+                    features = layer.features.filter(function (f) { return filterMatches(styleLayer.filter, f, zoom); });
+                    if (!zoomFilter) d.entry.filtered[layerIndex] = features;
+                }
+                if (!features.length) return;
+
+                var scaleX = d.sx / layer.extent, scaleY = d.sy / layer.extent;
+                var tx = function (p) { return d.x0 + p[0] * scaleX; };
+                var ty = function (p) { return d.y0 + p[1] * scaleY; };
+                var self = this;
+
+                if (styleLayer.type === 'symbol') {
+                    if (labels) features.forEach(function (feature) { labels(feature, tx, ty); });
+                } else if (!layerIsDataDriven(styleLayer)) {
+                    // the same style for every feature: few paths, few fill/stroke calls
+                    this._drawFeatures(ctx, styleLayer, features, zoom, tx, ty);
+                } else {
+                    features.forEach(function (feature) { self._drawFeature(ctx, styleLayer, feature, zoom, tx, ty); });
+                }
+            },
+
+            _paint: function (styleLayer, name, feature, zoom, fallback) {
+                var paint = styleLayer.paint || {};
+                var value = paint[name] !== undefined ? evaluateValue(paint[name], feature, zoom) : undefined;
+                return value === undefined || value === null ? fallback : value;
+            },
+
+            _layout: function (styleLayer, name, feature, zoom, fallback) {
+                var layout = styleLayer.layout || {};
+                var value = layout[name] !== undefined ? evaluateValue(layout[name], feature, zoom) : undefined;
+                return value === undefined || value === null ? fallback : value;
+            },
+
+            _path: function (ctx, feature, tx, ty, close) {
+                ctx.beginPath();
+                feature.geometry.forEach(function (path) {
+                    addPath(ctx, path, tx, ty, close || path.closed);
+                });
+            },
+
+            // all features of a tile with one style (no data driven properties) as one path
+            _drawFeatures: function (ctx, styleLayer, features, zoom, tx, ty) {
+                var type = styleLayer.type;
+
+                // fills: one path with thousands of polygons is very slow to fill in browsers (nonzero over many
+                // subpaths); small batches keep the number of calls low and each fill cheap
+                if (type === 'fill' && features.length > FILL_BATCH) {
+                    for (var b = 0; b < features.length; b += FILL_BATCH) {
+                        this._drawFeatures(ctx, styleLayer, features.slice(b, b + FILL_BATCH), zoom, tx, ty);
+                    }
+                    return;
+                }
+
+                var wanted = type === 'fill' ? 'Polygon' : type === 'circle' ? 'Point' : null;
+
+                ctx.beginPath();
+                var any = false;
+                features.forEach(function (feature) {
+                    if (wanted ? feature.type !== wanted : feature.type === 'Point') return;
+                    any = true;
+                    if (type === 'circle') return;   // circles below
+                    feature.geometry.forEach(function (path) {
+                        addPath(ctx, path, tx, ty, type === 'fill' || path.closed);
+                    });
+                });
+                if (!any) return;
+
+                switch (type) {
+                    case 'fill':
+                        var pattern = this._paint(styleLayer, 'fill-pattern', null, zoom, null);
+                        ctx.globalAlpha = this._paint(styleLayer, 'fill-opacity', null, zoom, 1);
+                        ctx.fillStyle = pattern ? (this._pattern(ctx, pattern) || 'transparent') : this._paint(styleLayer, 'fill-color', null, zoom, '#000');
+                        // MVT rings have a defined winding (holes opposite): nonzero keeps overlapping features filled
+                        ctx.fill('nonzero');
+                        var outline = this._paint(styleLayer, 'fill-outline-color', null, zoom, null);
+                        if (outline && !pattern) {
+                            ctx.strokeStyle = outline;
+                            ctx.lineWidth = 1;
+                            ctx.stroke();
+                        }
+                        ctx.globalAlpha = 1;
+                        break;
+
+                    case 'line':
+                        var width = this._paint(styleLayer, 'line-width', null, zoom, 1);
+                        if (width <= 0) return;
+                        ctx.globalAlpha = this._paint(styleLayer, 'line-opacity', null, zoom, 1);
+                        ctx.strokeStyle = this._paint(styleLayer, 'line-color', null, zoom, '#000');
+                        ctx.lineWidth = width;
+                        ctx.lineJoin = this._layout(styleLayer, 'line-join', null, zoom, 'miter');
+                        ctx.lineCap = this._layout(styleLayer, 'line-cap', null, zoom, 'butt');
+                        var dash = this._paint(styleLayer, 'line-dasharray', null, zoom, null);
+                        ctx.setLineDash(Array.isArray(dash) ? dash.map(function (v) { return v * width; }) : []);
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+                        ctx.globalAlpha = 1;
+                        break;
+
+                    case 'circle':
+                        var radius = this._paint(styleLayer, 'circle-radius', null, zoom, 5);
+                        ctx.beginPath();
+                        features.forEach(function (feature) {
+                            if (feature.type !== 'Point') return;
+                            feature.geometry.forEach(function (path) {
+                                path.forEach(function (p) {
+                                    ctx.moveTo(tx(p) + radius, ty(p));
+                                    ctx.arc(tx(p), ty(p), radius, 0, 2 * Math.PI);
+                                });
+                            });
+                        });
+                        ctx.globalAlpha = this._paint(styleLayer, 'circle-opacity', null, zoom, 1);
+                        ctx.fillStyle = this._paint(styleLayer, 'circle-color', null, zoom, '#000');
+                        ctx.fill();
+                        var strokeWidth = this._paint(styleLayer, 'circle-stroke-width', null, zoom, 0);
+                        if (strokeWidth > 0) {
+                            ctx.globalAlpha = this._paint(styleLayer, 'circle-stroke-opacity', null, zoom, 1);
+                            ctx.strokeStyle = this._paint(styleLayer, 'circle-stroke-color', null, zoom, '#000');
+                            ctx.lineWidth = strokeWidth;
+                            ctx.stroke();
+                        }
+                        ctx.globalAlpha = 1;
+                        break;
+                }
+            },
+
+            _drawFeature: function (ctx, styleLayer, feature, zoom, tx, ty) {
+                var self = this;
+                switch (styleLayer.type) {
+                    case 'fill':
+                        if (feature.type !== 'Polygon') return;
+                        this._path(ctx, feature, tx, ty, true);
+                        var pattern = this._paint(styleLayer, 'fill-pattern', feature, zoom, null);
+                        ctx.globalAlpha = this._paint(styleLayer, 'fill-opacity', feature, zoom, 1);
+                        ctx.fillStyle = pattern ? (this._pattern(ctx, resolveTokens(pattern, feature)) || 'transparent') : this._paint(styleLayer, 'fill-color', feature, zoom, '#000');
+                        ctx.fill('evenodd');
+                        var outline = this._paint(styleLayer, 'fill-outline-color', feature, zoom, null);
+                        if (outline && !pattern) {
+                            ctx.strokeStyle = outline;
+                            ctx.lineWidth = 1;
+                            ctx.stroke();
+                        }
+                        ctx.globalAlpha = 1;
+                        break;
+
+                    case 'line':
+                        if (feature.type === 'Point') return;
+                        this._path(ctx, feature, tx, ty, feature.type === 'Polygon');
+                        var width = this._paint(styleLayer, 'line-width', feature, zoom, 1);
+                        if (width <= 0) return;
+                        ctx.globalAlpha = this._paint(styleLayer, 'line-opacity', feature, zoom, 1);
+                        ctx.strokeStyle = this._paint(styleLayer, 'line-color', feature, zoom, '#000');
+                        ctx.lineWidth = width;
+                        ctx.lineJoin = this._layout(styleLayer, 'line-join', feature, zoom, 'miter');
+                        ctx.lineCap = this._layout(styleLayer, 'line-cap', feature, zoom, 'butt');
+                        var dash = this._paint(styleLayer, 'line-dasharray', feature, zoom, null);
+                        ctx.setLineDash(Array.isArray(dash) ? dash.map(function (v) { return v * width; }) : []);
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+                        ctx.globalAlpha = 1;
+                        break;
+
+                    case 'circle':
+                        if (feature.type !== 'Point') return;
+                        var radius = this._paint(styleLayer, 'circle-radius', feature, zoom, 5);
+                        var strokeWidth = this._paint(styleLayer, 'circle-stroke-width', feature, zoom, 0);
+                        feature.geometry.forEach(function (path) {
+                            path.forEach(function (p) {
+                                ctx.beginPath();
+                                ctx.arc(tx(p), ty(p), radius, 0, 2 * Math.PI);
+                                ctx.globalAlpha = self._paint(styleLayer, 'circle-opacity', feature, zoom, 1);
+                                ctx.fillStyle = self._paint(styleLayer, 'circle-color', feature, zoom, '#000');
+                                ctx.fill();
+                                if (strokeWidth > 0) {
+                                    ctx.globalAlpha = self._paint(styleLayer, 'circle-stroke-opacity', feature, zoom, 1);
+                                    ctx.strokeStyle = self._paint(styleLayer, 'circle-stroke-color', feature, zoom, '#000');
+                                    ctx.lineWidth = strokeWidth;
+                                    ctx.stroke();
+                                }
+                            });
+                        });
+                        ctx.globalAlpha = 1;
+                        break;
+                }
+            },
+
+            // ---------------------------------------------------------------- sprites
+
+            _spriteEntry: function (name) {
+                return this._sprite && name && this._sprite.index[name] ? this._sprite.index[name] : null;
+            },
+
+            _pattern: function (ctx, name) {
+                if (this._patterns[name] !== undefined) return this._patterns[name];
+                var entry = this._spriteEntry(name);
+                if (!entry) return (this._patterns[name] = null);
+
+                var tile = makeCanvas(entry.width, entry.height);
+                tile.getContext('2d').drawImage(this._sprite.image, entry.x, entry.y, entry.width, entry.height, 0, 0, entry.width, entry.height);
+
+                var pattern = ctx.createPattern(tile, 'repeat');
+                var ratio = entry.pixelRatio || this._sprite.pixelRatio;
+                if (pattern && pattern.setTransform && ratio > 1) {
+                    pattern.setTransform(new DOMMatrix().scale(1 / ratio));
+                }
+                return (this._patterns[name] = pattern);
+            }
+        };
+
+        return {
+            decodeTile: decodeTile, evaluate: evaluate, evaluateValue: evaluateValue, resolveTokens: resolveTokens,
+            filterMatches: filterMatches, filterUsesZoom: filterUsesZoom, layerIsDataDriven: layerIsDataDriven,
+            addPath: addPath, makeCanvas: makeCanvas, TileRenderer: TileRenderer
+        };
     }
+
+    // ------------------------------------------------------------------------------------------
+    // Worker: loads, decodes, filters and renders tiles into ImageBitmaps (OffscreenCanvas)
+    // ------------------------------------------------------------------------------------------
+
+    function gvWorkerMain(shared) {
+        var renderer = new shared.TileRenderer(), tiles = {}, controllers = {};
+
+        self.onmessage = function (e) {
+            var m = e.data;
+            switch (m.type) {
+                case 'style':
+                    renderer.setStyle(m.style);
+                    break;
+
+                case 'sprite':
+                    renderer.setSprite(m.sprite);
+                    break;
+
+                case 'load':
+                    var controller = new AbortController();
+                    controllers[m.key] = controller;
+                    var options = Object.assign({}, m.fetchOptions || {}, { signal: controller.signal });
+                    fetch(m.url, options)
+                        .then(function (r) {
+                            // 204 (gView) and 404 (ESRI, outside the data) are empty tiles
+                            if (r.status === 204 || r.status === 404) return new ArrayBuffer(0);
+                            if (!r.ok) throw new Error(String(r.status));
+                            return r.arrayBuffer();
+                        })
+                        .then(function (buffer) {
+                            var layers = buffer.byteLength ? shared.decodeTile(buffer) : {};
+                            tiles[m.key] = { layers: layers, filtered: {} };
+
+                            // the main thread places labels: it gets the features of each symbol layer, filtered here.
+                            // Features shared by several symbol layers are sent once (structured clone keeps identity).
+                            var symbolLayers = {}, filtered = {};
+                            (renderer._style ? renderer._style.layers : []).forEach(function (styleLayer, layerIndex) {
+                                if (styleLayer.type !== 'symbol') return;
+                                var layer = layers[styleLayer['source-layer']];
+                                if (!layer) return;
+                                if (shared.filterUsesZoom(styleLayer.filter)) {
+                                    symbolLayers[layer.name] = layer;   // zoom dependent filter: the main thread filters itself
+                                    return;
+                                }
+                                symbolLayers[layer.name] = symbolLayers[layer.name] || { name: layer.name, extent: layer.extent, features: [] };
+                                filtered[layerIndex] = layer.features.filter(function (f) { return shared.filterMatches(styleLayer.filter, f, 0); });
+                            });
+                            self.postMessage({ type: 'loaded', key: m.key, layers: symbolLayers, filtered: filtered });
+                        })
+                        .catch(function (error) {
+                            self.postMessage({ type: error && error.name === 'AbortError' ? 'aborted' : 'error', key: m.key });
+                        })
+                        .then(function () { delete controllers[m.key]; });
+                    break;
+
+                case 'abort':
+                    if (controllers[m.key]) controllers[m.key].abort();
+                    break;
+
+                case 'drop':
+                    delete tiles[m.key];
+                    break;
+
+                case 'render':
+                    var tile = tiles[m.tileKey];
+                    if (!tile || !renderer._style) {
+                        self.postMessage({ type: 'rendered', key: m.key, bitmap: null });
+                        break;
+                    }
+                    var canvas = new OffscreenCanvas(m.w, m.h), ctx = canvas.getContext('2d');
+                    // drawing coordinates are the map canvas coordinates of the main thread, mapped to the image
+                    var view = m.view, sx = m.w / view[2], sy = m.h / view[3];
+                    ctx.setTransform(sx, 0, 0, sy, -view[0] * sx, -view[1] * sy);
+                    var d = { entry: tile, x0: m.d.x0, y0: m.d.y0, sx: m.d.sx, sy: m.d.sy, clip: m.d.clip };
+                    renderer.renderTile(ctx, m.sourceId, d, m.zoom);
+                    var bitmap = canvas.transferToImageBitmap();
+                    self.postMessage({ type: 'rendered', key: m.key, zoomKey: m.zoomKey, tileKey: m.tileKey, layerRect: m.layerRect, bitmap: bitmap }, [bitmap]);
+                    break;
+            }
+        };
+    }
+
+    var workerUrl = null;
+
+    // the worker script: the shared code and the worker main, as text (the plugin stays one file)
+    function createWorker() {
+        if (typeof Worker === 'undefined' || typeof OffscreenCanvas === 'undefined' || typeof createImageBitmap === 'undefined' ||
+            !OffscreenCanvas.prototype.transferToImageBitmap) {
+            return null;
+        }
+        try {
+            if (!workerUrl) {
+                var source = '(' + gvWorkerMain.toString() + ')((' + gvShared.toString() + ')());';
+                workerUrl = URL.createObjectURL(new Blob([source], { type: 'application/javascript' }));
+            }
+            return new Worker(workerUrl);
+        } catch (e) {
+            return null;   // e.g. a Content Security Policy without worker-src blob:
+        }
+    }
+
+    var gvs = gvShared();
+    var decodeTile = gvs.decodeTile, evaluateValue = gvs.evaluateValue, resolveTokens = gvs.resolveTokens;
 
     // ------------------------------------------------------------------------------------------
     // Fonts, colors
@@ -392,26 +779,10 @@
         'top-left': [0, 0], 'top-right': [-1, 0], 'bottom-left': [0, -1], 'bottom-right': [-1, -1]
     };
 
-    // adds a path to the current canvas path, leaving out vertices closer than half a pixel to the last one
-    // (detailed polygons at small scales: invisible, but expensive to rasterize)
-    function addPath(ctx, path, tx, ty, close) {
-        var n = path.length;
-        if (!n) return;
-        var lastX = tx(path[0]), lastY = ty(path[0]);
-        ctx.moveTo(lastX, lastY);
-        for (var i = 1; i < n; i++) {
-            var x = tx(path[i]), y = ty(path[i]);
-            if (i < n - 1 && Math.abs(x - lastX) < 0.5 && Math.abs(y - lastY) < 0.5) continue;
-            ctx.lineTo(x, y);
-            lastX = x; lastY = y;
-        }
-        if (close) ctx.closePath();
-    }
-
     // glyphs of a text along a screen path, centered at distance center: [{ ch, x, y, angle, width }] or null
     // (doesn't fit, or the line bends more than maxAngle between neighbor glyphs). Kept upright: the path is
     // walked backwards when the text would run right to left.
-    function placeAlongPath(ctx, text, path, center, maxAngle, letterSpacing) {
+    function placeAlongPath(measure, text, path, center, maxAngle, letterSpacing) {
         var cumulative = [0];
         for (var i = 1; i < path.length; i++) {
             cumulative.push(cumulative[i - 1] + Math.hypot(path[i][0] - path[i - 1][0], path[i][1] - path[i - 1][1]));
@@ -419,7 +790,7 @@
         var length = cumulative[cumulative.length - 1];
 
         var chars = Array.from(text);
-        var widths = chars.map(function (ch) { return ctx.measureText(ch).width + letterSpacing; });
+        var widths = chars.map(function (ch) { return measure(ch) + letterSpacing; });
         var total = widths.reduce(function (a, b) { return a + b; }, 0) - letterSpacing;
         if (total > length) return null;
 
@@ -460,7 +831,6 @@
     }
 
     var WEBMERCATOR_HALF = 20037508.342789244;
-    var FILL_BATCH = 16;
     var WEBMERCATOR_RES0_512 = 2 * WEBMERCATOR_HALF / 512;   // style zoom 0 (MapLibre convention: 512 px world)
 
     function resolveUrl(url, base) {
@@ -489,6 +859,14 @@
             debug: false,
             // tiles kept in memory (all sources)
             maxCachedTiles: 384,
+            // tile requests at the same time (the nearest to the center first)
+            maxConcurrentRequests: 8,
+            // milliseconds per animation frame for rendering tile images (the rest in the next frames)
+            renderBudget: 12,
+            // render tiles in a web worker (OffscreenCanvas); falls back to the main thread where not available
+            worker: true,
+            // tile images rendered in the worker at the same time
+            maxConcurrentRenders: 4,
             // fetch options, e.g. { credentials: 'include' } or { headers: { Authorization: ... } }
             fetchOptions: {},
             attribution: null
@@ -513,7 +891,15 @@
             this._sprite = null;     // { index, image, pixelRatio }
             this._patterns = {};
             this._tinted = {};
+            this._renderer = new gvs.TileRenderer();
+            this._worker = null;     // the render worker (one source, supported browser)
+            this._rendering = {};    // image key → zoomKey of a render job running in the worker
             this._images = {};       // tile images: key → { canvas, zoomKey, entry }
+            this._renderQueue = {};  // tile images to (re)render: key → { sourceId, d, zoom }
+            this._pending = [];      // tile requests waiting: [{ key, sourceId, t, priority }]
+            this._active = 0;        // running tile requests
+            this._textWidths = {};   // measureText cache: font|text → width
+            this._textWidthCount = 0;
         },
 
         getEvents: function () {
@@ -545,6 +931,16 @@
         },
 
         onRemove: function () {
+            if (this._worker) {
+                this._worker.terminate();
+                this._worker = null;
+                this._tiles = {};
+                this._tileOrder = [];
+                this._images = {};
+                this._rendering = {};
+                this._active = 0;
+                this._ready = null;   // onAdd loads the style again and starts a new worker
+            }
             L.DomUtil.remove(this._canvas);
             this._canvas = this._ctx = null;
         },
@@ -596,6 +992,7 @@
             return this._fetchJson(styleUrl)
                 .then(function (style) {
                     self._style = style;
+                    self._renderer.setStyle(style);
                     var gviewGrid = (style.metadata || {})['gview:grid'] || null;
 
                     var used = {};
@@ -609,6 +1006,7 @@
                     var sprite = self._style.sprite;
                     return sprite && typeof sprite === 'string' ? self._loadSprite(resolveUrl(sprite, styleUrl)) : null;
                 })
+                .then(function () { return self._startWorker(); })
                 .then(function () { self.fire('load', { style: self._style }); });
         },
 
@@ -680,7 +1078,7 @@
                     return new Promise(function (resolve) {
                         var image = new Image();
                         image.crossOrigin = 'anonymous';
-                        image.onload = function () { self._sprite = { index: index, image: image, pixelRatio: ratio }; resolve(); };
+                        image.onload = function () { self._sprite = { index: index, image: image, pixelRatio: ratio }; self._renderer.setSprite(self._sprite); resolve(); };
                         image.onerror = function () { resolve(); };   // draw without sprites
                         image.src = spriteUrl + suffix + '.png';
                     });
@@ -692,6 +1090,86 @@
             var code = this._map && this._map.options.crs && this._map.options.crs.code;
             var match = /EPSG:(\d+)/i.exec(code || '');
             return match ? match[1] : null;
+        },
+
+        // ---------------------------------------------------------------- worker
+
+        _startWorker: function () {
+            if (!this.options.worker || Object.keys(this._sources).length !== 1) return null;   // several sources: main thread
+            var worker = createWorker();
+            if (!worker) return null;
+
+            var self = this;
+
+            worker.onmessage = function (e) { self._onWorkerMessage(e.data); };
+            worker.onerror = function () { self._stopWorker(); };   // fall back to the main thread
+            worker.postMessage({ type: 'style', style: this._style });
+
+            this._worker = worker;
+
+            // the sprite (icons, patterns) before the first render job
+            if (!this._sprite) return null;
+            return createImageBitmap(this._sprite.image).then(function (bitmap) {
+                worker.postMessage({ type: 'sprite', sprite: { index: self._sprite.index, image: bitmap, pixelRatio: self._sprite.pixelRatio } }, [bitmap]);
+            });
+        },
+
+        _stopWorker: function () {
+            if (!this._worker) return;
+            this._worker.terminate();
+            this._worker = null;
+            // tiles of the worker have no geometry on the main thread: load them again
+            this._tiles = {};
+            this._tileOrder = [];
+            this._images = {};
+            this._rendering = {};
+            this._active = 0;
+            this._update();
+        },
+
+        _onWorkerMessage: function (m) {
+            var entry = this._tiles[m.key];
+            switch (m.type) {
+                case 'loaded':
+                    this._active--;
+                    if (entry) {
+                        // symbol layers only, already filtered: the geometry stays in the worker
+                        entry.layers = m.layers;
+                        entry.filtered = m.filtered;
+                        entry.status = 'loaded';
+                        this._scheduleRedraw();
+                    }
+                    this._pump();
+                    break;
+                case 'error':
+                    this._active--;
+                    if (entry) entry.status = 'error';
+                    this._pump();
+                    break;
+                case 'aborted':
+                    this._active--;
+                    this._pump();
+                    break;
+                case 'rendered':
+                    delete this._rendering[m.key];
+                    if (m.bitmap) {
+                        var old = this._images[m.key];
+                        if (old && old.canvas.close) old.canvas.close();
+                        this._images[m.key] = { canvas: m.bitmap, zoomKey: m.zoomKey, entry: this._tiles[m.tileKey], layerRect: m.layerRect };
+                    }
+                    this._scheduleRedraw();
+                    break;
+            }
+        },
+
+        _dropImage: function (key) {
+            var image = this._images[key];
+            if (image && image.canvas.close) image.canvas.close();
+            delete this._images[key];
+        },
+
+        _layerOrigin: function () {
+            return this._map.containerPointToLayerPoint([0, 0]);
         },
 
         // ---------------------------------------------------------------- canvas placement (as L.Renderer)
@@ -854,37 +1332,96 @@
 
         _requestTiles: function () {
             var resolution = this._mapResolution(), self = this;
+            var size = this._map.getSize(), cx = size.x / 2, cy = size.y / 2;
+            var wanted = {}, pending = [];
+
             Object.keys(this._sources).forEach(function (id) {
                 var source = self._sources[id];
                 var level = self._level(source, resolution);
                 self._visibleTiles(source.grid, level).forEach(function (t) {
                     var key = self._key(id, t);
+                    wanted[key] = true;
                     if (self._tiles[key]) {
                         self._tiles[key].used = Date.now();
                         return;
                     }
 
-                    var entry = self._tiles[key] = { status: 'loading', layers: null, used: Date.now(), filtered: {} };
-                    self._tileOrder.push(key);
-
-                    fetch(self._tileUrlFor(source, t), self.options.fetchOptions)
-                        .then(function (r) {
-                            // 204 (gView) and 404 (ESRI, outside the data) are empty tiles
-                            if (r.status === 204 || r.status === 404) return new ArrayBuffer(0);
-                            if (!r.ok) throw new Error(r.status);
-                            return r.arrayBuffer();
-                        })
-                        .then(function (buffer) {
-                            entry.layers = buffer.byteLength ? decodeTile(buffer) : {};
-                            entry.status = 'loaded';
-                            self._scheduleRedraw();
-                        })
-                        .catch(function () {
-                            entry.status = 'error';
-                        });
+                    // the nearest tiles to the center of the map first
+                    var env = self._tileEnvelope(source.grid, t.level, t.row, t.col);
+                    var p = self._toCanvas((env.minX + env.maxX) / 2, (env.minY + env.maxY) / 2);
+                    pending.push({ key: key, sourceId: id, t: t, priority: Math.hypot(p.x - cx, p.y - cy) });
                 });
             });
+
+            // requests for tiles that are no longer visible (fast zooming or panning) are aborted
+            Object.keys(this._tiles).forEach(function (key) {
+                var entry = self._tiles[key];
+                if (entry.status === 'loading' && !wanted[key]) {
+                    if (entry.inWorker && self._worker) self._worker.postMessage({ type: 'abort', key: key });
+                    else if (entry.controller) entry.controller.abort();
+                    else return;
+                    delete self._tiles[key];
+                }
+            });
+
+            pending.sort(function (a, b) { return a.priority - b.priority; });
+            this._pending = pending;
+            this._pump();
             this._pruneCache();
+        },
+
+        _pump: function () {
+            var self = this;
+            while (this._active < this.options.maxConcurrentRequests && this._pending.length) {
+                var job = this._pending.shift();
+                if (this._tiles[job.key]) continue;
+                this._load(job);
+            }
+        },
+
+        _load: function (job) {
+            var self = this, source = this._sources[job.sourceId];
+
+            if (this._worker) {
+                this._tiles[job.key] = { status: 'loading', layers: null, used: Date.now(), filtered: {}, inWorker: true };
+                this._tileOrder.push(job.key);
+                this._active++;
+                this._worker.postMessage({
+                    type: 'load', key: job.key, url: this._tileUrlFor(source, job.t),
+                    fetchOptions: this.options.fetchOptions
+                });
+                return;
+            }
+
+            var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+            var entry = this._tiles[job.key] = { status: 'loading', layers: null, used: Date.now(), filtered: {}, controller: controller };
+            this._tileOrder.push(job.key);
+            this._active++;
+
+            var options = L.extend({}, this.options.fetchOptions);
+            if (controller) options.signal = controller.signal;
+
+            fetch(this._tileUrlFor(source, job.t), options)
+                .then(function (r) {
+                    // 204 (gView) and 404 (ESRI, outside the data) are empty tiles
+                    if (r.status === 204 || r.status === 404) return new ArrayBuffer(0);
+                    if (!r.ok) throw new Error(r.status);
+                    return r.arrayBuffer();
+                })
+                .then(function (buffer) {
+                    entry.layers = buffer.byteLength ? decodeTile(buffer) : {};
+                    entry.status = 'loaded';
+                    entry.controller = null;
+                    self._scheduleRedraw();
+                })
+                .catch(function () {
+                    entry.status = 'error';
+                    entry.controller = null;
+                })
+                .then(function () {
+                    self._active--;
+                    self._pump();
+                });
         },
 
         _pruneCache: function () {
@@ -893,17 +1430,23 @@
             var self = this;
             this._tileOrder.sort(function (a, b) { return (self._tiles[a] ? self._tiles[a].used : 0) - (self._tiles[b] ? self._tiles[b].used : 0); });
             while (this._tileOrder.length > max) {
-                delete this._tiles[this._tileOrder.shift()];
+                var key = this._tileOrder.shift();
+                delete this._tiles[key];
+                if (this._worker) this._worker.postMessage({ type: 'drop', key: key });
             }
         },
 
+        // redraws for arriving tiles and images: coalesced, at most every ~100 ms (a redraw places all labels)
         _scheduleRedraw: function () {
             if (this._redrawRequested) return;
             this._redrawRequested = true;
-            L.Util.requestAnimFrame(function () {
-                this._redrawRequested = false;
-                this._redraw();
-            }, this);
+            var wait = Math.max(0, 100 - (Date.now() - (this._lastRedraw || 0)));
+            setTimeout(L.bind(function () {
+                L.Util.requestAnimFrame(function () {
+                    this._redrawRequested = false;
+                    this._redraw();
+                }, this);
+            }, this), wait);
         },
 
         // the loaded tile for t, or the nearest loaded coarser tile covering it (drawn clipped to t)
@@ -926,6 +1469,7 @@
 
         _redraw: function () {
             if (!this._ctx || !this._style || !this._validResolution()) return;
+            this._lastRedraw = Date.now();
 
             var ctx = this._ctx, ratio = window.devicePixelRatio || 1, size = this._map.getSize();
             ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
@@ -987,12 +1531,26 @@
             // one source: geometry layers per tile from the tile image cache
             if (cacheTiles) {
                 var id = sourceIds[0], current = perSource[id];
+                this._renderQueue = {};
                 current.drawables.forEach(function (d) {
                     var image = self._tileImage(id, d, current.zoom, usedImages);
+                    if (image && image.layerRect) {
+                        // overzoomed part rendered in the worker: placed by its layer coordinates
+                        var origin = self._layerOrigin();
+                        ctx.save();
+                        ctx.beginPath();
+                        ctx.rect(d.clip[0], d.clip[1], d.clip[2], d.clip[3]);
+                        ctx.clip();
+                        ctx.drawImage(image.canvas, image.layerRect[0] - origin.x, image.layerRect[1] - origin.y, image.layerRect[2], image.layerRect[3]);
+                        ctx.restore();
+                        return;
+                    }
                     if (image) {
+                        // the current image, or the one of the previous zoom step (scaled) while the new one renders
                         ctx.drawImage(image, d.clip[0], d.clip[1], d.clip[2], d.clip[3]);
                         return;
                     }
+                    if (image === undefined) return;   // queued, nothing to show yet
 
                     // overzoomed far beyond the last level: the tile would be a huge image, draw it directly
                     ctx.save();
@@ -1007,7 +1565,8 @@
                     ctx.restore();
                 });
                 // tile images not drawn now are dropped
-                Object.keys(this._images).forEach(function (key) { if (!usedImages[key]) delete self._images[key]; });
+                Object.keys(this._images).forEach(function (key) { if (!usedImages[key] && !self._rendering[key]) self._dropImage(key); });
+                this._scheduleRender();
             }
 
             // symbols (icons, labels) of all tiles, placed with collision handling on every redraw
@@ -1035,259 +1594,128 @@
             }
         },
 
-        _layerVisible: function (styleLayer, zoom) {
-            if (styleLayer.minzoom !== undefined && zoom < styleLayer.minzoom) return false;
-            if (styleLayer.maxzoom !== undefined && zoom >= styleLayer.maxzoom) return false;
-            return (styleLayer.layout || {}).visibility !== 'none';
-        },
+        // the geometry layers of a tile as image, rendered once per (tile, zoom step) and reused while panning.
+        // Returns the image, null (too big: draw directly) or undefined (queued, nothing yet). A missing or
+        // outdated image is queued for rendering; an outdated one is returned meanwhile (drawn scaled).
+        _layerVisible: function (styleLayer, zoom) { return this._renderer._layerVisible(styleLayer, zoom); },
+        _paint: function (styleLayer, name, feature, zoom, fallback) { return this._renderer._paint(styleLayer, name, feature, zoom, fallback); },
+        _layout: function (styleLayer, name, feature, zoom, fallback) { return this._renderer._layout(styleLayer, name, feature, zoom, fallback); },
+        _spriteEntry: function (name) { return this._renderer._spriteEntry(name); },
 
-        // the features of one tile for one style layer: drawn on ctx, or (symbols) collected into labels
+        // geometry on ctx, or (symbols) collected into labels
         _drawLayerTile: function (ctx, styleLayer, layerIndex, d, zoom, labels) {
-            var layer = d.entry.layers[styleLayer['source-layer']];
-            if (!layer) return;
-
-            // the filtered features of a tile per style layer: filters rarely depend on the zoom
-            var zoomFilter = filterUsesZoom(styleLayer.filter);
-            var features = zoomFilter ? null : d.entry.filtered[layerIndex];
-            if (!features) {
-                features = layer.features.filter(function (f) { return filterMatches(styleLayer.filter, f, zoom); });
-                if (!zoomFilter) d.entry.filtered[layerIndex] = features;
-            }
-            if (!features.length) return;
-
-            var scaleX = d.sx / layer.extent, scaleY = d.sy / layer.extent;
-            var tx = function (p) { return d.x0 + p[0] * scaleX; };
-            var ty = function (p) { return d.y0 + p[1] * scaleY; };
             var self = this;
-
-            if (styleLayer.type === 'symbol') {
-                if (labels) features.forEach(function (feature) { self._collectSymbol(labels, styleLayer, feature, zoom, tx, ty, d); });
-            } else if (!layerIsDataDriven(styleLayer)) {
-                // the same style for every feature: few paths, few fill/stroke calls
-                this._drawFeatures(ctx, styleLayer, features, zoom, tx, ty);
-            } else {
-                features.forEach(function (feature) { self._drawFeature(ctx, styleLayer, feature, zoom, tx, ty); });
-            }
+            this._renderer._drawLayerTile(ctx, styleLayer, layerIndex, d, zoom, labels ? function (feature, tx, ty) {
+                self._collectSymbol(labels, styleLayer, feature, zoom, tx, ty, d);
+            } : null);
         },
 
-        // the geometry layers of a tile as image, rendered once per (tile, zoom step) and reused while panning
         _tileImage: function (sourceId, d, zoom, usedImages) {
             var zoomKey = Math.round(zoom * 2) / 2;
             var key = sourceId + '|' + d.req.level + '/' + d.req.row + '/' + d.req.col;
             usedImages[key] = true;
 
-            var cached = this._images[key];
-            if (cached && cached.zoomKey === zoomKey && cached.entry === d.entry) return cached.canvas;
-
             var ratio = window.devicePixelRatio || 1;
-            var w = Math.max(1, Math.round(d.clip[2] * ratio)), h = Math.max(1, Math.round(d.clip[3] * ratio));
-            if (w > 4096 || h > 4096) return null;   // zoomed far beyond the cache: not cached
+            var cached = this._images[key];
 
+            if (d.clip[2] * ratio > 4096 || d.clip[3] * ratio > 4096) {
+                // overzoomed far beyond the cache: the whole tile would be a huge image
+                if (!this._worker) return null;   // main thread: drawn directly
+                // worker: only the visible part of the tile, positioned in layer coordinates (stable while panning)
+                var size = this._map.getSize(), origin = this._layerOrigin();
+                var vx = Math.max(0, d.clip[0]), vy = Math.max(0, d.clip[1]);
+                var vw = Math.min(size.x, d.clip[0] + d.clip[2]) - vx, vh = Math.min(size.y, d.clip[1] + d.clip[3]) - vy;
+                if (vw <= 0 || vh <= 0) return undefined;
+                var rect = [vx + origin.x, vy + origin.y, vw, vh];
+                var covers = cached && cached.layerRect && cached.zoomKey === zoomKey && cached.entry === d.entry &&
+                    cached.layerRect[0] <= rect[0] + 0.5 && cached.layerRect[1] <= rect[1] + 0.5 &&
+                    cached.layerRect[0] + cached.layerRect[2] >= rect[0] + rect[2] - 0.5 && cached.layerRect[1] + cached.layerRect[3] >= rect[1] + rect[3] - 0.5;
+                if (!covers) {
+                    this._renderQueue[key] = { sourceId: sourceId, d: d, zoom: zoom, zoomKey: zoomKey, view: [vx, vy, vw, vh], layerRect: rect };
+                }
+                return cached && cached.layerRect ? cached : undefined;   // drawn at its layer rect
+            }
+
+            if (cached && !cached.layerRect && cached.zoomKey === zoomKey && cached.entry === d.entry) return cached.canvas;
+
+            this._renderQueue[key] = { sourceId: sourceId, d: d, zoom: zoom, zoomKey: zoomKey };
+            return cached && !cached.layerRect ? cached.canvas : undefined;
+        },
+
+        // render jobs to the worker, nearest to the center first, a few at a time
+        _sendRenderJobs: function () {
+            var size = this._map.getSize(), cx = size.x / 2, cy = size.y / 2, queue = this._renderQueue, self = this;
+            var ratio = window.devicePixelRatio || 1;
+            var keys = Object.keys(queue).sort(function (a, b) {
+                var da = queue[a].d.clip, db = queue[b].d.clip;
+                return Math.hypot(da[0] + da[2] / 2 - cx, da[1] + da[3] / 2 - cy) - Math.hypot(db[0] + db[2] / 2 - cx, db[1] + db[3] / 2 - cy);
+            });
+
+            var running = Object.keys(this._rendering).length;
+            keys.forEach(function (key) {
+                var job = queue[key];
+                if (self._rendering[key] === job.zoomKey) return;   // already rendering this
+                if (running >= self.options.maxConcurrentRenders) return;
+
+                var view = job.view || job.d.clip;
+                var w = Math.max(1, Math.round(view[2] * ratio)), h = Math.max(1, Math.round(view[3] * ratio));
+                self._rendering[key] = job.zoomKey;
+                running++;
+                self._worker.postMessage({
+                    type: 'render', key: key, tileKey: self._key(job.sourceId, job.d.tile), sourceId: job.sourceId,
+                    zoom: job.zoom, zoomKey: job.zoomKey, w: w, h: h, view: view, layerRect: job.layerRect || null,
+                    d: { x0: job.d.x0, y0: job.d.y0, sx: job.d.sx, sy: job.d.sy, clip: job.d.clip }
+                });
+            });
+        },
+
+        _renderTileImage: function (key, job) {
+            var d = job.d, ratio = window.devicePixelRatio || 1;
+            var w = Math.max(1, Math.round(d.clip[2] * ratio)), h = Math.max(1, Math.round(d.clip[3] * ratio));
+
+            var cached = this._images[key];
             var canvas = cached && cached.canvas.width === w && cached.canvas.height === h ? cached.canvas : document.createElement('canvas');
             canvas.width = w;
             canvas.height = h;
             var c = canvas.getContext('2d');
             c.clearRect(0, 0, w, h);
             // draw in the coordinates of the map canvas, shifted to the tile
-            c.setTransform(ratio * w / (d.clip[2] * ratio), 0, 0, ratio * h / (d.clip[3] * ratio), -d.clip[0] * ratio * w / (d.clip[2] * ratio), -d.clip[1] * ratio * h / (d.clip[3] * ratio));
+            var sx = w / d.clip[2], sy = h / d.clip[3];
+            c.setTransform(sx, 0, 0, sy, -d.clip[0] * sx, -d.clip[1] * sy);
 
-            var self = this;
-            this._style.layers.forEach(function (styleLayer, layerIndex) {
-                if (styleLayer.source !== sourceId || styleLayer.type === 'symbol' || styleLayer.type === 'background') return;
-                if (!self._layerVisible(styleLayer, zoom)) return;
-                self._drawLayerTile(c, styleLayer, layerIndex, d, zoom, null);
-            });
+            this._renderer.renderTile(c, job.sourceId, d, job.zoom);
 
-            this._images[key] = { canvas: canvas, zoomKey: zoomKey, entry: d.entry };
-            return canvas;
+            this._images[key] = { canvas: canvas, zoomKey: job.zoomKey, entry: d.entry };
         },
 
-        _paint: function (styleLayer, name, feature, zoom, fallback) {
-            var paint = styleLayer.paint || {};
-            var value = paint[name] !== undefined ? evaluateValue(paint[name], feature, zoom) : undefined;
-            return value === undefined || value === null ? fallback : value;
-        },
-
-        _layout: function (styleLayer, name, feature, zoom, fallback) {
-            var layout = styleLayer.layout || {};
-            var value = layout[name] !== undefined ? evaluateValue(layout[name], feature, zoom) : undefined;
-            return value === undefined || value === null ? fallback : value;
-        },
-
-        _path: function (ctx, feature, tx, ty, close) {
-            ctx.beginPath();
-            feature.geometry.forEach(function (path) {
-                addPath(ctx, path, tx, ty, close || path.closed);
-            });
-        },
-
-        // all features of a tile with one style (no data driven properties) as one path
-        _drawFeatures: function (ctx, styleLayer, features, zoom, tx, ty) {
-            var type = styleLayer.type;
-
-            // fills: one path with thousands of polygons is very slow to fill in browsers (nonzero over many
-            // subpaths); small batches keep the number of calls low and each fill cheap
-            if (type === 'fill' && features.length > FILL_BATCH) {
-                for (var b = 0; b < features.length; b += FILL_BATCH) {
-                    this._drawFeatures(ctx, styleLayer, features.slice(b, b + FILL_BATCH), zoom, tx, ty);
-                }
+        // renders queued tile images, nearest to the center first, within the frame budget; the rest next frame
+        _scheduleRender: function () {
+            if (this._worker) {
+                this._sendRenderJobs();
                 return;
             }
+            if (this._renderRequested || !Object.keys(this._renderQueue).length) return;
+            this._renderRequested = true;
+            L.Util.requestAnimFrame(function () {
+                this._renderRequested = false;
+                if (!this._map || !this._ctx) return;
 
-            var wanted = type === 'fill' ? 'Polygon' : type === 'circle' ? 'Point' : null;
-
-            ctx.beginPath();
-            var any = false;
-            features.forEach(function (feature) {
-                if (wanted ? feature.type !== wanted : feature.type === 'Point') return;
-                any = true;
-                if (type === 'circle') return;   // circles below
-                feature.geometry.forEach(function (path) {
-                    addPath(ctx, path, tx, ty, type === 'fill' || path.closed);
+                var size = this._map.getSize(), cx = size.x / 2, cy = size.y / 2, queue = this._renderQueue;
+                var keys = Object.keys(queue).sort(function (a, b) {
+                    var da = queue[a].d.clip, db = queue[b].d.clip;
+                    return Math.hypot(da[0] + da[2] / 2 - cx, da[1] + da[3] / 2 - cy) - Math.hypot(db[0] + db[2] / 2 - cx, db[1] + db[3] / 2 - cy);
                 });
-            });
-            if (!any) return;
 
-            switch (type) {
-                case 'fill':
-                    var pattern = this._paint(styleLayer, 'fill-pattern', null, zoom, null);
-                    ctx.globalAlpha = this._paint(styleLayer, 'fill-opacity', null, zoom, 1);
-                    ctx.fillStyle = pattern ? (this._pattern(ctx, pattern) || 'transparent') : this._paint(styleLayer, 'fill-color', null, zoom, '#000');
-                    // MVT rings have a defined winding (holes opposite): nonzero keeps overlapping features filled
-                    ctx.fill('nonzero');
-                    var outline = this._paint(styleLayer, 'fill-outline-color', null, zoom, null);
-                    if (outline && !pattern) {
-                        ctx.strokeStyle = outline;
-                        ctx.lineWidth = 1;
-                        ctx.stroke();
-                    }
-                    ctx.globalAlpha = 1;
-                    break;
+                var start = performance.now();
+                for (var i = 0; i < keys.length; i++) {
+                    this._renderTileImage(keys[i], queue[keys[i]]);
+                    delete queue[keys[i]];
+                    if (performance.now() - start > this.options.renderBudget) break;
+                }
 
-                case 'line':
-                    var width = this._paint(styleLayer, 'line-width', null, zoom, 1);
-                    if (width <= 0) return;
-                    ctx.globalAlpha = this._paint(styleLayer, 'line-opacity', null, zoom, 1);
-                    ctx.strokeStyle = this._paint(styleLayer, 'line-color', null, zoom, '#000');
-                    ctx.lineWidth = width;
-                    ctx.lineJoin = this._layout(styleLayer, 'line-join', null, zoom, 'miter');
-                    ctx.lineCap = this._layout(styleLayer, 'line-cap', null, zoom, 'butt');
-                    var dash = this._paint(styleLayer, 'line-dasharray', null, zoom, null);
-                    ctx.setLineDash(Array.isArray(dash) ? dash.map(function (v) { return v * width; }) : []);
-                    ctx.stroke();
-                    ctx.setLineDash([]);
-                    ctx.globalAlpha = 1;
-                    break;
-
-                case 'circle':
-                    var radius = this._paint(styleLayer, 'circle-radius', null, zoom, 5);
-                    ctx.beginPath();
-                    features.forEach(function (feature) {
-                        if (feature.type !== 'Point') return;
-                        feature.geometry.forEach(function (path) {
-                            path.forEach(function (p) {
-                                ctx.moveTo(tx(p) + radius, ty(p));
-                                ctx.arc(tx(p), ty(p), radius, 0, 2 * Math.PI);
-                            });
-                        });
-                    });
-                    ctx.globalAlpha = this._paint(styleLayer, 'circle-opacity', null, zoom, 1);
-                    ctx.fillStyle = this._paint(styleLayer, 'circle-color', null, zoom, '#000');
-                    ctx.fill();
-                    var strokeWidth = this._paint(styleLayer, 'circle-stroke-width', null, zoom, 0);
-                    if (strokeWidth > 0) {
-                        ctx.globalAlpha = this._paint(styleLayer, 'circle-stroke-opacity', null, zoom, 1);
-                        ctx.strokeStyle = this._paint(styleLayer, 'circle-stroke-color', null, zoom, '#000');
-                        ctx.lineWidth = strokeWidth;
-                        ctx.stroke();
-                    }
-                    ctx.globalAlpha = 1;
-                    break;
-            }
-        },
-
-        _drawFeature: function (ctx, styleLayer, feature, zoom, tx, ty) {
-            var self = this;
-            switch (styleLayer.type) {
-                case 'fill':
-                    if (feature.type !== 'Polygon') return;
-                    this._path(ctx, feature, tx, ty, true);
-                    var pattern = this._paint(styleLayer, 'fill-pattern', feature, zoom, null);
-                    ctx.globalAlpha = this._paint(styleLayer, 'fill-opacity', feature, zoom, 1);
-                    ctx.fillStyle = pattern ? (this._pattern(ctx, resolveTokens(pattern, feature)) || 'transparent') : this._paint(styleLayer, 'fill-color', feature, zoom, '#000');
-                    ctx.fill('evenodd');
-                    var outline = this._paint(styleLayer, 'fill-outline-color', feature, zoom, null);
-                    if (outline && !pattern) {
-                        ctx.strokeStyle = outline;
-                        ctx.lineWidth = 1;
-                        ctx.stroke();
-                    }
-                    ctx.globalAlpha = 1;
-                    break;
-
-                case 'line':
-                    if (feature.type === 'Point') return;
-                    this._path(ctx, feature, tx, ty, feature.type === 'Polygon');
-                    var width = this._paint(styleLayer, 'line-width', feature, zoom, 1);
-                    if (width <= 0) return;
-                    ctx.globalAlpha = this._paint(styleLayer, 'line-opacity', feature, zoom, 1);
-                    ctx.strokeStyle = this._paint(styleLayer, 'line-color', feature, zoom, '#000');
-                    ctx.lineWidth = width;
-                    ctx.lineJoin = this._layout(styleLayer, 'line-join', feature, zoom, 'miter');
-                    ctx.lineCap = this._layout(styleLayer, 'line-cap', feature, zoom, 'butt');
-                    var dash = this._paint(styleLayer, 'line-dasharray', feature, zoom, null);
-                    ctx.setLineDash(Array.isArray(dash) ? dash.map(function (v) { return v * width; }) : []);
-                    ctx.stroke();
-                    ctx.setLineDash([]);
-                    ctx.globalAlpha = 1;
-                    break;
-
-                case 'circle':
-                    if (feature.type !== 'Point') return;
-                    var radius = this._paint(styleLayer, 'circle-radius', feature, zoom, 5);
-                    var strokeWidth = this._paint(styleLayer, 'circle-stroke-width', feature, zoom, 0);
-                    feature.geometry.forEach(function (path) {
-                        path.forEach(function (p) {
-                            ctx.beginPath();
-                            ctx.arc(tx(p), ty(p), radius, 0, 2 * Math.PI);
-                            ctx.globalAlpha = self._paint(styleLayer, 'circle-opacity', feature, zoom, 1);
-                            ctx.fillStyle = self._paint(styleLayer, 'circle-color', feature, zoom, '#000');
-                            ctx.fill();
-                            if (strokeWidth > 0) {
-                                ctx.globalAlpha = self._paint(styleLayer, 'circle-stroke-opacity', feature, zoom, 1);
-                                ctx.strokeStyle = self._paint(styleLayer, 'circle-stroke-color', feature, zoom, '#000');
-                                ctx.lineWidth = strokeWidth;
-                                ctx.stroke();
-                            }
-                        });
-                    });
-                    ctx.globalAlpha = 1;
-                    break;
-            }
-        },
-
-        // ---------------------------------------------------------------- sprites
-
-        _spriteEntry: function (name) {
-            return this._sprite && name && this._sprite.index[name] ? this._sprite.index[name] : null;
-        },
-
-        _pattern: function (ctx, name) {
-            if (this._patterns[name] !== undefined) return this._patterns[name];
-            var entry = this._spriteEntry(name);
-            if (!entry) return (this._patterns[name] = null);
-
-            var tile = document.createElement('canvas');
-            tile.width = entry.width;
-            tile.height = entry.height;
-            tile.getContext('2d').drawImage(this._sprite.image, entry.x, entry.y, entry.width, entry.height, 0, 0, entry.width, entry.height);
-
-            var pattern = ctx.createPattern(tile, 'repeat');
-            var ratio = entry.pixelRatio || this._sprite.pixelRatio;
-            if (pattern && pattern.setTransform && ratio > 1) {
-                pattern.setTransform(new DOMMatrix().scale(1 / ratio));
-            }
-            return (this._patterns[name] = pattern);
+                // shows the new images (cheap: images are cached) and queues what is still missing
+                this._redraw();
+            }, this);
         },
 
         // icon image (an SDF icon tinted with icon-color): { source, x, y, width, height }
@@ -1435,16 +1863,33 @@
         },
 
         _drawSymbols: function (ctx, labels) {
-            var placed = [], declutter = this.options.declutter;
+            var declutter = this.options.declutter;
 
-            function collides(box) {
-                if (!box) return false;
-                for (var i = 0; i < placed.length; i++) {
-                    var p = placed[i];
-                    if (box[0] < p[2] && box[2] > p[0] && box[1] < p[3] && box[3] > p[1]) return true;
+            // placed boxes in a grid of 64 px cells: a box is only tested against the boxes of its cells
+            var CELL = 64, grid = {};
+            function cells(box, fn) {
+                for (var gx = Math.floor(box[0] / CELL), gx1 = Math.floor(box[2] / CELL); gx <= gx1; gx++) {
+                    for (var gy = Math.floor(box[1] / CELL), gy1 = Math.floor(box[3] / CELL); gy <= gy1; gy++) {
+                        if (fn(gx + ',' + gy) === true) return true;
+                    }
                 }
                 return false;
             }
+            function collides(box) {
+                if (!box) return false;
+                return cells(box, function (cell) {
+                    var list = grid[cell];
+                    if (!list) return false;
+                    for (var i = 0; i < list.length; i++) {
+                        var p = list[i];
+                        if (box[0] < p[2] && box[2] > p[0] && box[1] < p[3] && box[3] > p[1]) return true;
+                    }
+                    return false;
+                });
+            }
+            var placed = {
+                push: function (box) { cells(box, function (cell) { (grid[cell] || (grid[cell] = [])).push(box); }); }
+            };
 
             function setLetterSpacing(px) {
                 if ('letterSpacing' in ctx) ctx.letterSpacing = px ? px + 'px' : '0px';
@@ -1461,6 +1906,18 @@
                     Math.max.apply(null, corners.map(function (c) { return c[0]; })) + pad,
                     Math.max.apply(null, corners.map(function (c) { return c[1]; })) + pad
                 ];
+            }
+
+            var widths = this._textWidths, self = this;
+            function measure(text) {
+                var key = ctx.font + '|' + (ctx.letterSpacing || '') + '|' + text;
+                var w = widths[key];
+                if (w === undefined) {
+                    if (self._textWidthCount > 20000) { widths = self._textWidths = {}; self._textWidthCount = 0; }
+                    w = widths[key] = ctx.measureText(text).width;
+                    self._textWidthCount++;
+                }
+                return w;
             }
 
             labels.forEach(function (l) {
@@ -1484,21 +1941,21 @@
                         lines = [];
                         words.forEach(function (word) {
                             var candidate = current ? current + ' ' + word : word;
-                            if (current && ctx.measureText(candidate).width > maxPx) { lines.push(current); current = word; }
+                            if (current && measure(candidate) > maxPx) { lines.push(current); current = word; }
                             else current = candidate;
                         });
                         if (current) lines.push(current);
                     }
 
                     var lineHeight = l.size * 1.2;
-                    var width = Math.max.apply(null, lines.map(function (line) { return ctx.measureText(line).width; }));
+                    var width = Math.max.apply(null, lines.map(function (line) { return measure(line); }));
                     var height = lineHeight * lines.length;
                     setLetterSpacing(0);
 
                     if (l.curvedPath) {
                         // along the line, glyph by glyph
                         setLetterSpacing(0);
-                        var glyphs = placeAlongPath(ctx, l.text, l.curvedPath, l.curvedDistance, l.maxAngle, l.letterSpacing * l.size);
+                        var glyphs = placeAlongPath(measure, l.text, l.curvedPath, l.curvedDistance, l.maxAngle, l.letterSpacing * l.size);
                         if (glyphs) {
                             var half = l.size / 2 + l.padding;
                             text = {
@@ -1625,6 +2082,7 @@
 
     GViewVectorTiles.decodeTile = decodeTile;
     GViewVectorTiles.evaluate = evaluateValue;
+    GViewVectorTiles.shared = gvShared;
 
     L.GViewVectorTiles = GViewVectorTiles;
     L.gViewVectorTiles = function (url, options) {
