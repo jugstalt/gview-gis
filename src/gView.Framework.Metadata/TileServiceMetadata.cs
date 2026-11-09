@@ -220,9 +220,44 @@ namespace gView.Framework.Metadata
             set { _properties.MvtSizeWarningKb = value; }
         }
 
+        /// <summary>
+        /// Polygon labels in vector tiles: a polygon part that covers at least this share of a tile (0..1)
+        /// gets its own label point in that tile, so large areas are labelled wherever they are visible.
+        /// 0 (or less, the default): one label point per polygon only.
+        /// </summary>
+        public double MvtLabelTileCoverage
+        {
+            get { return _properties.MvtLabelTileCoverage; }
+            set { _properties.MvtLabelTileCoverage = value; }
+        }
+
+        /// <summary>
+        /// <see cref="MvtLabelTileCoverage"/> per map layer (layer name or MVT layer name).
+        /// </summary>
+        public IReadOnlyDictionary<string, double> MvtLayerLabelTileCoverage => _properties.MvtLayerLabelTileCoverage;
+
+        public double LabelTileCoverage(string mvtLayerName, string layerTitle)
+        {
+            if (mvtLayerName != null && _properties.MvtLayerLabelTileCoverage.TryGetValue(mvtLayerName, out double coverage))
+            {
+                return coverage;
+            }
+
+            if (layerTitle != null && _properties.MvtLayerLabelTileCoverage.TryGetValue(layerTitle, out coverage))
+            {
+                return coverage;
+            }
+
+            return _properties.MvtLabelTileCoverage;
+        }
+
         public bool MakeTransparentPng { get; set; }
 
-        public bool RenderTilesOnTheFly { get; set; }
+        public bool RenderTilesOnTheFly
+        {
+            get { return _properties.RenderTilesOnTheFly; }
+            set { _properties.RenderTilesOnTheFly = value; }
+        }
 
         #endregion
 
@@ -290,6 +325,17 @@ namespace gView.Framework.Metadata
 
             _properties.SupportMvt = (bool)stream.Load("formatmvt", false);
             _properties.MvtSizeWarningKb = (int)stream.Load("mvt_sizewarning_kb", 500);
+            _properties.MvtLabelTileCoverage = Convert.ToDouble(stream.Load("mvt_label_tilecoverage", 0.0));
+            _properties.MvtLayerLabelTileCoverage.Clear();
+            int mvtCoverageCount = (int)stream.Load("mvt_label_tilecoverage_count", 0);
+            for (int i = 0; i < mvtCoverageCount; i++)
+            {
+                string layerName = (string)stream.Load("mvt_label_tilecoverage_layer" + i, String.Empty);
+                if (!String.IsNullOrWhiteSpace(layerName))
+                {
+                    _properties.MvtLayerLabelTileCoverage[layerName] = Convert.ToDouble(stream.Load("mvt_label_tilecoverage_value" + i, 0.0));
+                }
+            }
             _properties.MvtLayerAttributes.Clear();
             int mvtAttributesCount = (int)stream.Load("mvt_attributes_count", 0);
             for (int i = 0; i < mvtAttributesCount; i++)
@@ -303,7 +349,7 @@ namespace gView.Framework.Metadata
 
             _properties.Dpi = (double)stream.Load("dpi", Const.TilesDpi);
 
-            this.RenderTilesOnTheFly = (bool)stream.Load("rendertilesonthefly", false);
+            _properties.RenderTilesOnTheFly = (bool)stream.Load("rendertilesonthefly", false);
 
             _properties.Scales.Clear();
             int scales_count = (int)stream.Load("scales_count", 0);
@@ -369,6 +415,16 @@ namespace gView.Framework.Metadata
 
             stream.Save("formatmvt", _properties.SupportMvt);
             stream.Save("mvt_sizewarning_kb", _properties.MvtSizeWarningKb);
+            stream.Save("mvt_label_tilecoverage", _properties.MvtLabelTileCoverage);
+            var mvtCoverage = _properties.MvtLayerLabelTileCoverage
+                .Where(kv => !String.IsNullOrWhiteSpace(kv.Key))
+                .ToArray();
+            stream.Save("mvt_label_tilecoverage_count", mvtCoverage.Length);
+            for (int i = 0; i < mvtCoverage.Length; i++)
+            {
+                stream.Save("mvt_label_tilecoverage_layer" + i, mvtCoverage[i].Key);
+                stream.Save("mvt_label_tilecoverage_value" + i, mvtCoverage[i].Value);
+            }
             var mvtAttributes = _properties.MvtLayerAttributes
                 .Where(kv => !String.IsNullOrWhiteSpace(kv.Key) && !String.IsNullOrWhiteSpace(kv.Value))
                 .ToArray();
@@ -379,7 +435,7 @@ namespace gView.Framework.Metadata
                 stream.Save("mvt_attributes_fields" + i, mvtAttributes[i].Value);
             }
 
-            stream.Save("rendertilesonthefly", this.RenderTilesOnTheFly);
+            stream.Save("rendertilesonthefly", _properties.RenderTilesOnTheFly);
 
             stream.Save("dpi", _properties.Dpi);
 
@@ -585,6 +641,9 @@ namespace gView.Framework.Metadata
             public bool SupportMvt { get; set; } = false;
             public Dictionary<string, string> MvtLayerAttributes { get; set; } = new Dictionary<string, string>();
             public int MvtSizeWarningKb { get; set; } = 500;
+            public double MvtLabelTileCoverage { get; set; } = 0;
+            public Dictionary<string, double> MvtLayerLabelTileCoverage { get; set; } = new Dictionary<string, double>();
+            public bool RenderTilesOnTheFly { get; set; } = false;
             public double Dpi { get; set; } = Const.TilesDpi;
 
             public class EnvelopeModel

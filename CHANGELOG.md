@@ -29,11 +29,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     `{layer}__labels`, on one label point per feature (polygons, points) or along the line.
     Font family and style, size (reference scale), color, halo (glowing text), alignment and
     offset are taken over; blockout labels are approximated by a halo.
+    Large polygons are labelled in every tile their part covers to at least
+    `mvtLabelTileCoverage` (metadata, per layer `mvtLayerLabelTileCoverage`; default 0 =
+    one label per polygon).
   - Test viewer for OpenLayers: `src/Playgrounds/VectorTilesViewer`.
 
 ## Changed
 
 - Geometry: SpatialNET packages updated to 0.10.0-preview.2.
+- Tile service metadata: `renderTilesOnTheFly` can be set in the metadata editor (YAML).
 
 ## Fixed
 

@@ -204,6 +204,7 @@ public sealed class VectorTileBuilder
         }
 
         PrepareAttributeFields(layer, mvtLayerName, filter);
+        double labelTileCoverage = _metadata.LabelTileCoverage(mvtLayerName, layer.Title);
         foreach (var label in labels)
         {
             label.Renderer.PrepareQueryFilter(_map.Display, layer, filter);
@@ -248,7 +249,7 @@ public sealed class VectorTileBuilder
 
             if (labels.Count > 0)
             {
-                AddLabels(builder, mvtLayerName, feature, shape, tileEnvelope, labels, id);
+                AddLabels(builder, mvtLayerName, feature, shape, tileEnvelope, labels, labelTileCoverage, id);
             }
         }
     }
@@ -263,6 +264,7 @@ public sealed class VectorTileBuilder
                            IGeometry shape,
                            Envelope2D tileEnvelope,
                            IReadOnlyList<MvtLabels.LabelEntry> labels,
+                           double labelTileCoverage,
                            ulong? id)
     {
         var texts = new List<KeyValuePair<string, object?>>();
@@ -293,6 +295,19 @@ public sealed class VectorTileBuilder
             if (part is IPolyline2D)
             {
                 builder.AddFeature(labelLayer, part, texts, id);
+                continue;
+            }
+
+            if (part is IPolygon largePolygon && labelTileCoverage > 0 &&
+                TileLabelPoint(largePolygon, tileEnvelope, labelTileCoverage) is IPoint tilePoint)
+            {
+                // the part covers a large share of this tile: label it here, wherever its label point is
+                builder.AddFeature(labelLayer, new gView.Framework.Geometry.Point(tilePoint.X, tilePoint.Y), texts, id);
+                if (!perPart)
+                {
+                    break;
+                }
+
                 continue;
             }
 
@@ -358,6 +373,36 @@ public sealed class VectorTileBuilder
     }
 
     #endregion
+
+    /// <summary>
+    /// The label point of the part of <paramref name="polygon"/> inside the tile, if that part covers at least
+    /// <paramref name="coverage"/> (0..1) of the tile; otherwise <c>null</c> (the polygon's own label point applies).
+    /// </summary>
+    private static IPoint? TileLabelPoint(IPolygon polygon, Envelope2D tileEnvelope, double coverage)
+    {
+        double tileArea = tileEnvelope.Width * tileEnvelope.Height;
+        if (tileArea <= 0 || polygon.Area < coverage * tileArea)
+        {
+            return null;  // the whole polygon is smaller than the threshold: no clip needed
+        }
+
+        var envelope = new Envelope(tileEnvelope.MinX, tileEnvelope.MinY, tileEnvelope.MaxX, tileEnvelope.MaxY);
+        if (Clip.PerformClip(envelope, polygon) is not IPolygon clipped || clipped.Area < coverage * tileArea)
+        {
+            return null;
+        }
+
+        foreach (var point in Algorithm.PolygonLabelPoints(clipped))
+        {
+            if (point.X >= tileEnvelope.MinX && point.X < tileEnvelope.MaxX &&
+                point.Y > tileEnvelope.MinY && point.Y <= tileEnvelope.MaxY)
+            {
+                return point;
+            }
+        }
+
+        return null;
+    }
 
     #region Helper
 
