@@ -32,6 +32,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     Large polygons are labelled in every tile their part covers to at least
     `mvtLabelTileCoverage` (metadata, per layer `mvtLayerLabelTileCoverage`; default 0 =
     one label per polygon).
+  - Sprites: `vtc/[{folder}/]{name}/sprite.json|png` and `sprite@2x.json|png`, rendered by gView
+    from the renderers' symbols. Picture, svg, font and non-circle markers become `icon-image`
+    (scaled per zoom with the reference scale), hatches and other fills become `fill-pattern`.
   - Test viewer for OpenLayers: `src/Playgrounds/VectorTilesViewer`.
 
 ## Changed

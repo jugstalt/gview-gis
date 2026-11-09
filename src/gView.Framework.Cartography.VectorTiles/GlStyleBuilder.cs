@@ -63,8 +63,9 @@ public sealed class GlStyleBuilder
     public double MinZoom => _zooms.Length > 0 ? _zooms.Min() : 0;
     public double MaxZoom => _zooms.Length > 0 ? _zooms.Max() : 0;
 
-    public JsonObject Build(string name, string tileUrlTemplate)
+    public JsonObject Build(string name, string tileUrlTemplate, string? spriteUrl = null)
     {
+        _sprites.Clear();
         var layers = new JsonArray();
         var labelLayers = new List<JsonObject>();
         var layerNames = MvtLayerNames.FromMap(_map);
@@ -110,7 +111,7 @@ public sealed class GlStyleBuilder
             ["maxzoom"] = MaxZoom
         };
 
-        return new JsonObject
+        var style = new JsonObject
         {
             ["version"] = 8,
             ["name"] = name,
@@ -123,6 +124,13 @@ public sealed class GlStyleBuilder
             ["sources"] = new JsonObject { [SourceName] = source },
             ["layers"] = layers
         };
+
+        if (spriteUrl != null && _sprites.Count > 0)
+        {
+            style["sprite"] = spriteUrl;
+        }
+
+        return style;
     }
 
     #region Renderers
@@ -293,18 +301,25 @@ public sealed class GlStyleBuilder
         switch (symbol)
         {
             case IFillSymbol fill:
-                if (fill is IBrushColor brush && brush.FillColor.A > 0)
+                if (symbol is SimpleFillSymbol)
                 {
-                    if (symbol.GetType().Name != "SimpleFillSymbol")
+                    if (fill is IBrushColor brush && brush.FillColor.A > 0)
                     {
-                        _warnings.Add($"{context.SourceLayer}: {symbol.GetType().Name} approximated by its fill color");
+                        var (color, opacity) = ColorAndOpacity(brush.FillColor);
+                        result.Add(Layer(context, "fill", filter, levels, new JsonObject
+                        {
+                            ["fill-color"] = color,
+                            ["fill-opacity"] = opacity
+                        }));
                     }
-
-                    var (color, opacity) = ColorAndOpacity(brush.FillColor);
+                }
+                else
+                {
+                    // hatches, gradients, ...: the fill drawn by gView as repeated pattern (sprite)
+                    string spriteId = AddSprite(context, symbol, pattern: true, SpriteSymbol.PatternSize);
                     result.Add(Layer(context, "fill", filter, levels, new JsonObject
                     {
-                        ["fill-color"] = color,
-                        ["fill-opacity"] = opacity
+                        ["fill-pattern"] = spriteId
                     }));
                 }
 
@@ -342,12 +357,7 @@ public sealed class GlStyleBuilder
                 }
                 break;
 
-            case IPointSymbol:
-                if (symbol.GetType().Name != "SimplePointSymbol")
-                {
-                    _warnings.Add($"{context.SourceLayer}: {symbol.GetType().Name} approximated by a circle");
-                }
-
+            case IPointSymbol when symbol is SimplePointSymbol { Marker: SimplePointSymbol.MarkerType.Circle }:
                 var fillColor = symbol is IBrushColor pointBrush ? pointBrush.FillColor : ArgbColor.FromArgb(255, 128, 128, 128);
                 var circle = new JsonObject
                 {
@@ -367,6 +377,27 @@ public sealed class GlStyleBuilder
 
                 result.Add(Layer(context, "circle", filter, levels, circle));
                 break;
+
+            case IPointSymbol:
+            {
+                // picture, svg, font and non-circle markers: the symbol drawn by gView as icon (sprite)
+                float baseSize = symbol is ISymbolSize iconSize && iconSize.SymbolSize > 0 ? iconSize.SymbolSize : SpriteSymbol.DefaultIconSize;
+                string spriteId = AddSprite(context, symbol, pattern: false, baseSize);
+
+                var icon = Layer(context, "symbol", filter, levels, new JsonObject());
+                icon["layout"] = new JsonObject
+                {
+                    ["icon-image"] = spriteId,
+                    // the sprite is drawn at the base size: the reference scale scales it per zoom
+                    ["icon-size"] = symbol is ISymbolSize scaled
+                        ? Size(context, 1f, scaled.MinSymbolSize / baseSize, scaled.MaxSymbolSize / baseSize, DrawingUnit.Pixel, minimum: 0.01f)
+                        : 1,
+                    ["icon-allow-overlap"] = true,
+                    ["icon-ignore-placement"] = true
+                };
+                result.Add(icon);
+                break;
+            }
 
             default:
                 _warnings.Add($"{context.SourceLayer}: symbol {symbol.GetType().Name} is not supported");
@@ -430,6 +461,25 @@ public sealed class GlStyleBuilder
 
     private static (string color, double opacity) ColorAndOpacity(ArgbColor color)
         => (Color(color), Math.Round(color.A / 255.0, 3));
+
+    #endregion
+
+    #region Sprites
+
+    private readonly List<SpriteSymbol> _sprites = new();
+
+    /// <summary>
+    /// The symbols the style refers to by <c>icon-image</c> or <c>fill-pattern</c>, in the order the style was built.
+    /// The sprite sheet is rendered from exactly this list (<see cref="SpriteSheetBuilder"/>).
+    /// </summary>
+    public IReadOnlyList<SpriteSymbol> Sprites => _sprites;
+
+    private string AddSprite(LayerContext context, ISymbol symbol, bool pattern, float size)
+    {
+        string id = $"{context.SourceLayer}-{_sprites.Count(s => s.Id.StartsWith(context.SourceLayer + "-"))}";
+        _sprites.Add(new SpriteSymbol(id, symbol, pattern, size));
+        return id;
+    }
 
     #endregion
 

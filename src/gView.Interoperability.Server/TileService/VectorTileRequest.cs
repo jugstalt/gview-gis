@@ -78,6 +78,12 @@ public class VectorTileRequest : IServiceRequestInterpreter
             return;
         }
 
+        if (args.Length == 3 && args[0] == "sprite")
+        {
+            await Sprite(context, metadata, int.Parse(args[1]), args[2]);
+            return;
+        }
+
         string cacheFormat;
         GridOrientation orientation;
         int epsg, level, row, col;
@@ -189,7 +195,7 @@ public class VectorTileRequest : IServiceRequestInterpreter
             JsonObject result;
             if (what == "style")
             {
-                result = styleBuilder.Build(serviceMap.Name, tileUrl);
+                result = styleBuilder.Build(serviceMap.Name, tileUrl, spriteUrl: $"{baseUrl}/sprite");
                 ((JsonObject)result["metadata"])["gview:grid"] = gridNode;
             }
             else
@@ -212,6 +218,35 @@ public class VectorTileRequest : IServiceRequestInterpreter
 
             context.ServiceRequest.ResponseContentType = "application/json";
             context.ServiceRequest.Response = result.ToJsonString(new JsonSerializerOptions { WriteIndented = true });
+        }
+    }
+
+    /// <summary>
+    /// <c>sprite/{pixelRatio}/{json|png}</c>: the sprite sheet of the style, rendered from the same renderers
+    /// (the style of the first EPSG code decides which symbols are sprites; zoom levels don't matter here).
+    /// </summary>
+    async private Task Sprite(IServiceRequestContext context, TileServiceMetadata metadata, int pixelRatio, string extension)
+    {
+        int epsg = metadata.EPSGCodes.FirstOrDefault(e => e > 0);
+
+        using (var serviceMap = await context.CreateServiceMapInstance())
+        {
+            var styleBuilder = new GlStyleBuilder(serviceMap, metadata, epsg);
+            styleBuilder.Build(serviceMap.Name, String.Empty);
+
+            var (png, index) = SpriteSheetBuilder.Build(styleBuilder.Sprites, pixelRatio);
+
+            context.ServiceRequest.ResponseExpries = DateTime.UtcNow.AddDays(1);
+            if (extension == "png")
+            {
+                context.ServiceRequest.ResponseContentType = "image/png";
+                context.ServiceRequest.Response = png;
+            }
+            else
+            {
+                context.ServiceRequest.ResponseContentType = "application/json";
+                context.ServiceRequest.Response = index.ToJsonString(new JsonSerializerOptions { WriteIndented = true });
+            }
         }
     }
 }

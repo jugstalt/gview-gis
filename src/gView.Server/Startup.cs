@@ -893,6 +893,14 @@ public class Startup
 
 
             // Vector Tiles (MVT)
+            routes.MapRoute(name: "vtc_sprite1_json", template: "vtc/{folder}/{name}/sprite.json", defaults: new { controller = "Vtc", Action = "Sprite", ratio = "", ext = "json" });
+            routes.MapRoute(name: "vtc_sprite1_json2", template: "vtc/{name}/sprite.json", defaults: new { controller = "Vtc", Action = "Sprite", ratio = "", ext = "json" });
+            routes.MapRoute(name: "vtc_sprite1_png", template: "vtc/{folder}/{name}/sprite.png", defaults: new { controller = "Vtc", Action = "Sprite", ratio = "", ext = "png" });
+            routes.MapRoute(name: "vtc_sprite1_png2", template: "vtc/{name}/sprite.png", defaults: new { controller = "Vtc", Action = "Sprite", ratio = "", ext = "png" });
+            routes.MapRoute(name: "vtc_sprite2_json", template: "vtc/{folder}/{name}/sprite@2x.json", defaults: new { controller = "Vtc", Action = "Sprite", ratio = "@2x", ext = "json" });
+            routes.MapRoute(name: "vtc_sprite2_json2", template: "vtc/{name}/sprite@2x.json", defaults: new { controller = "Vtc", Action = "Sprite", ratio = "@2x", ext = "json" });
+            routes.MapRoute(name: "vtc_sprite2_png", template: "vtc/{folder}/{name}/sprite@2x.png", defaults: new { controller = "Vtc", Action = "Sprite", ratio = "@2x", ext = "png" });
+            routes.MapRoute(name: "vtc_sprite2_png2", template: "vtc/{name}/sprite@2x.png", defaults: new { controller = "Vtc", Action = "Sprite", ratio = "@2x", ext = "png" });
             routes.MapRoute(name: "vtc_style", template: "vtc/{folder}/{name}/style.json", defaults: new { controller = "Vtc", Action = "Style" });
             routes.MapRoute(name: "vtc_style2", template: "vtc/{name}/style.json", defaults: new { controller = "Vtc", Action = "Style" });
             routes.MapRoute(name: "vtc_tilejson", template: "vtc/{folder}/{name}/tilejson.json", defaults: new { controller = "Vtc", Action = "TileJson" });

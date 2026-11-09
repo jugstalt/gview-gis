@@ -43,6 +43,12 @@ public class VtcController : BaseController
     public Task<IActionResult> TileJson(string name, string epsg = "", string folder = "")
         => VectorTile(name, folder, $"tilejson/{epsg}");
 
+    /// <summary>
+    /// <c>sprite.json</c>, <c>sprite.png</c>, <c>sprite@2x.json</c>, <c>sprite@2x.png</c>.
+    /// </summary>
+    public Task<IActionResult> Sprite(string name, string ratio, string ext, string folder = "")
+        => VectorTile(name, folder, $"sprite/{(ratio == "@2x" ? 2 : 1)}/{(ext == "png" ? "png" : "json")}");
+
     async private Task<IActionResult> VectorTile(string name, string folder, string requestString)
     {
         if (IfMatch())
