@@ -9,7 +9,7 @@
     :root { --bg: #fff; --fg: #222; --panel: rgba(255,255,255,.94); --border: #ccc; }
     @media (prefers-color-scheme: dark) { :root { --bg: #1b1b1b; --fg: #eee; --panel: rgba(30,30,30,.94); --border: #444; } }
     html, body { margin: 0; height: 100%; background: var(--bg); color: var(--fg); font: 13px system-ui, sans-serif; }
-    #map { position: absolute; inset: 0; background: var(--bg); }
+    #map { position: absolute; inset: 0; background: #fff; }   /* maps are drawn on white, like the original basemaps */
     #panel { position: absolute; top: 8px; right: 8px; z-index: 1000; width: min(360px, calc(100% - 32px)); padding: 10px 12px;
              background: var(--panel); border: 1px solid var(--border); border-radius: 6px; }
     #panel label { display: block; margin-top: 6px; }

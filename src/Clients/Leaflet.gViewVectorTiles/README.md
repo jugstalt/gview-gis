@@ -99,9 +99,9 @@ Events: `load` (style loaded), `error` (`e.error`). Methods: `getStyle()`, `getG
   rendering of a zoom step takes longer than in MapLibre. Expressions: `get`, `has`, comparisons, `!`, `all`,
   `any`, `in`, `to-string`, `to-number`, `concat`, `geometry-type`, `interpolate`, `match`, `case`, `step`, and
   legacy functions/filters. Not supported: `line-offset`, `*-translate`, `fill-extrusion`, `heatmap`, `raster`
-  layers, curved text along lines.
-- Labels along lines are drawn straight at the middle of the longest part (no curved text). Labels repeat per tile
-  for lines crossing tile borders, as in other vector tile clients.
+  layers.
+- Labels with `symbol-placement: line` follow the line glyph by glyph (kept upright, not where the line bends more
+  than `text-max-angle`). Labels repeat per tile for lines crossing tile borders, as in other vector tile clients.
 - Fonts are CSS fonts: `text-font` "Arial Bold" becomes `bold … "Arial"`. The glyph PBFs of the style are only
   for MapLibre.
 

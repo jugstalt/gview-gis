@@ -408,6 +408,57 @@
         if (close) ctx.closePath();
     }
 
+    // glyphs of a text along a screen path, centered at distance center: [{ ch, x, y, angle, width }] or null
+    // (doesn't fit, or the line bends more than maxAngle between neighbor glyphs). Kept upright: the path is
+    // walked backwards when the text would run right to left.
+    function placeAlongPath(ctx, text, path, center, maxAngle, letterSpacing) {
+        var cumulative = [0];
+        for (var i = 1; i < path.length; i++) {
+            cumulative.push(cumulative[i - 1] + Math.hypot(path[i][0] - path[i - 1][0], path[i][1] - path[i - 1][1]));
+        }
+        var length = cumulative[cumulative.length - 1];
+
+        var chars = Array.from(text);
+        var widths = chars.map(function (ch) { return ctx.measureText(ch).width + letterSpacing; });
+        var total = widths.reduce(function (a, b) { return a + b; }, 0) - letterSpacing;
+        if (total > length) return null;
+
+        function pointAt(distance, reversed) {
+            var d = reversed ? length - distance : distance;
+            for (var j = 1; j < path.length; j++) {
+                if (cumulative[j] >= d) {
+                    var segment = cumulative[j] - cumulative[j - 1] || 1, t = (d - cumulative[j - 1]) / segment;
+                    var a = path[j - 1], b = path[j];
+                    var angle = Math.atan2(b[1] - a[1], b[0] - a[0]);
+                    if (reversed) angle += Math.PI;
+                    return { x: a[0] + t * (b[0] - a[0]), y: a[1] + t * (b[1] - a[1]), angle: angle };
+                }
+            }
+            return null;
+        }
+
+        // upright: the direction at the center decides
+        var mid = pointAt(center, false);
+        if (!mid) return null;
+        var reversed = Math.cos(mid.angle) < 0;
+        var start = (reversed ? length - center : center) - total / 2;
+        if (start < 0 || start + total > length) return null;
+
+        var glyphs = [], run = start, previous = null;
+        for (var g = 0; g < chars.length; g++) {
+            var at = pointAt(run + widths[g] / 2, reversed);
+            if (!at) return null;
+            if (previous !== null) {
+                var bend = Math.abs(Math.atan2(Math.sin(at.angle - previous), Math.cos(at.angle - previous)));
+                if (bend > maxAngle) return null;
+            }
+            previous = at.angle;
+            glyphs.push({ ch: chars[g], x: at.x, y: at.y, angle: at.angle, width: widths[g] - letterSpacing });
+            run += widths[g];
+        }
+        return glyphs;
+    }
+
     var WEBMERCATOR_HALF = 20037508.342789244;
     var FILL_BATCH = 16;
     var WEBMERCATOR_RES0_512 = 2 * WEBMERCATOR_HALF / 512;   // style zoom 0 (MapLibre convention: 512 px world)
@@ -706,6 +757,17 @@
 
         // the level to draw: nearest resolution (as OpenLayers), within the source's tile levels
         _level: function (source, resolution) {
+            if (!source.gview) {
+                // GL clients load the tiles of floor(zoom), and classic styles are made for that: a style layer
+                // starting at zoom 16 shows data that only the level 16 tiles contain
+                var zoom = this._styleZoom(source, resolution);
+                var level = source.minLevel;
+                for (var z = source.minLevel; z <= source.maxLevel && z < source.zooms.length; z++) {
+                    if (source.zooms[z] <= zoom + 1e-6) level = z;
+                }
+                return level;
+            }
+
             var res = source.grid.resolutions, best = source.minLevel, bestDiff = Infinity;
             for (var i = source.minLevel; i <= source.maxLevel && i < res.length; i++) {
                 var diff = Math.abs(Math.log(res[i] / resolution));
@@ -1303,7 +1365,7 @@
                             var angle = keepViewport ? 0 : Math.atan2(pts[j][1] - pts[j - 1][1], pts[j][0] - pts[j - 1][0]);
                             if (angle > Math.PI / 2) angle -= Math.PI;
                             if (angle < -Math.PI / 2) angle += Math.PI;
-                            return { x: pts[j - 1][0] + t * (pts[j][0] - pts[j - 1][0]), y: pts[j - 1][1] + t * (pts[j][1] - pts[j - 1][1]), angle: angle, lineLength: path.length };
+                            return { x: pts[j - 1][0] + t * (pts[j][0] - pts[j - 1][0]), y: pts[j - 1][1] + t * (pts[j][1] - pts[j - 1][1]), angle: angle, lineLength: path.length, path: pts, distance: distance };
                         }
                         run += segment;
                     }
@@ -1344,6 +1406,10 @@
                     iconSize: self._layout(styleLayer, 'icon-size', feature, zoom, 1),
                     iconRotate: self._layout(styleLayer, 'icon-rotate', feature, zoom, 0) * Math.PI / 180,
                     iconOverlap: self._layout(styleLayer, 'icon-allow-overlap', feature, zoom, false),
+                    iconOptional: self._layout(styleLayer, 'icon-optional', feature, zoom, false),
+                    iconIgnorePlacement: self._layout(styleLayer, 'icon-ignore-placement', feature, zoom, false),
+                    textOptional: self._layout(styleLayer, 'text-optional', feature, zoom, false),
+                    textIgnorePlacement: self._layout(styleLayer, 'text-ignore-placement', feature, zoom, false),
                     text: text || null,
                     font: cssFont(self._layout(styleLayer, 'text-font', feature, zoom, ['Arial Regular']), size),
                     size: size,
@@ -1359,7 +1425,11 @@
                     haloColor: self._paint(styleLayer, 'text-halo-color', feature, zoom, null),
                     haloWidth: self._paint(styleLayer, 'text-halo-width', feature, zoom, 0),
                     alongLine: a.lineLength !== undefined && placement !== 'point',
-                    lineLength: a.lineLength
+                    lineLength: a.lineLength,
+                    // 'line' placement, aligned to the map: the text follows the line glyph by glyph
+                    curvedPath: placement === 'line' && !keepViewport && a.path ? a.path : null,
+                    curvedDistance: a.distance,
+                    maxAngle: self._layout(styleLayer, 'text-max-angle', feature, zoom, 45) * Math.PI / 180
                 });
             });
         },
@@ -1368,6 +1438,7 @@
             var placed = [], declutter = this.options.declutter;
 
             function collides(box) {
+                if (!box) return false;
                 for (var i = 0; i < placed.length; i++) {
                     var p = placed[i];
                     if (box[0] < p[2] && box[2] > p[0] && box[1] < p[3] && box[3] > p[1]) return true;
@@ -1379,84 +1450,152 @@
                 if ('letterSpacing' in ctx) ctx.letterSpacing = px ? px + 'px' : '0px';
             }
 
-            labels.forEach(function (l) {
-                // icon
-                if (l.icon) {
-                    var w = l.icon.width / l.iconRatio * l.iconSize, h = l.icon.height / l.iconRatio * l.iconSize;
-                    var iconBox = [l.x - w / 2, l.y - h / 2, l.x + w / 2, l.y + h / 2];
-                    if (l.iconOverlap || !declutter || !collides(iconBox)) {
-                        ctx.save();
-                        ctx.translate(l.x, l.y);
-                        ctx.rotate(l.angle + l.iconRotate);
-                        ctx.drawImage(l.icon.source, l.icon.x, l.icon.y, l.icon.width, l.icon.height, -w / 2, -h / 2, w, h);
-                        ctx.restore();
-                        if (!l.iconOverlap) placed.push(iconBox);
-                    } else if (!l.text) {
-                        return;
-                    }
-                }
-
-                // text
-                if (!l.text) return;
-                ctx.font = l.font;
-                setLetterSpacing(l.letterSpacing * l.size);
-
-                // point labels wrap at text-max-width (ems), as GL does
-                var lines = [l.text];
-                if (!l.alongLine && l.maxWidth > 0) {
-                    var maxPx = l.maxWidth * l.size, words = l.text.split(' '), current = '';
-                    lines = [];
-                    words.forEach(function (word) {
-                        var candidate = current ? current + ' ' + word : word;
-                        if (current && ctx.measureText(candidate).width > maxPx) { lines.push(current); current = word; }
-                        else current = candidate;
-                    });
-                    if (current) lines.push(current);
-                }
-
-                var lineHeight = l.size * 1.2;
-                var width = Math.max.apply(null, lines.map(function (s) { return ctx.measureText(s).width; }));
-                var height = lineHeight * lines.length;
-                if (l.alongLine && width > l.lineLength) { setLetterSpacing(0); return; }   // longer than the line, as GL
-
-                var anchor = ANCHORS[l.anchor] || ANCHORS.center;
-                var dx = anchor[0] * width + (l.offset[0] || 0) * l.size;
-                var dy = anchor[1] * height + (l.offset[1] || 0) * l.size;
-
-                var angle = l.angle + l.textRotate;
-                var cos = Math.cos(angle), sin = Math.sin(angle), pad = l.padding;
+            function rotatedBox(l, dx, dy, width, height, angle, pad) {
+                var cos = Math.cos(angle), sin = Math.sin(angle);
                 var corners = [[dx, dy], [dx + width, dy], [dx, dy + height], [dx + width, dy + height]].map(function (c) {
                     return [l.x + c[0] * cos - c[1] * sin, l.y + c[0] * sin + c[1] * cos];
                 });
-                var box = [
+                return [
                     Math.min.apply(null, corners.map(function (c) { return c[0]; })) - pad,
                     Math.min.apply(null, corners.map(function (c) { return c[1]; })) - pad,
                     Math.max.apply(null, corners.map(function (c) { return c[0]; })) + pad,
                     Math.max.apply(null, corners.map(function (c) { return c[1]; })) + pad
                 ];
+            }
 
-                if (declutter && !l.textOverlap && collides(box)) { setLetterSpacing(0); return; }
-                placed.push(box);
+            labels.forEach(function (l) {
+                // ---- icon layout
+                var icon = null;
+                if (l.icon) {
+                    var w = l.icon.width / l.iconRatio * l.iconSize, h = l.icon.height / l.iconRatio * l.iconSize;
+                    icon = { w: w, h: h, box: [l.x - w / 2, l.y - h / 2, l.x + w / 2, l.y + h / 2] };
+                }
 
-                ctx.save();
-                ctx.translate(l.x, l.y);
-                ctx.rotate(angle);
-                ctx.textBaseline = 'top';
-                ctx.textAlign = 'center';
-                ctx.globalAlpha = l.opacity;
-                lines.forEach(function (line, i) {
-                    var lx = dx + width / 2, ly = dy + i * lineHeight + (lineHeight - l.size) / 2;
-                    if (l.haloColor && l.haloWidth > 0) {
-                        ctx.lineJoin = 'round';
-                        ctx.lineWidth = l.haloWidth * 2;
-                        ctx.strokeStyle = l.haloColor;
-                        ctx.strokeText(line, lx, ly);
+                // ---- text layout
+                var text = null;
+                if (l.text) {
+                    ctx.font = l.font;
+                    setLetterSpacing(l.letterSpacing * l.size);
+
+                    // point labels wrap at text-max-width (ems), as GL does
+                    var lines = [l.text];
+                    if (!l.alongLine && l.maxWidth > 0) {
+                        var maxPx = l.maxWidth * l.size, words = l.text.split(' '), current = '';
+                        lines = [];
+                        words.forEach(function (word) {
+                            var candidate = current ? current + ' ' + word : word;
+                            if (current && ctx.measureText(candidate).width > maxPx) { lines.push(current); current = word; }
+                            else current = candidate;
+                        });
+                        if (current) lines.push(current);
                     }
-                    ctx.fillStyle = l.color;
-                    ctx.fillText(line, lx, ly);
-                });
-                ctx.restore();
-                setLetterSpacing(0);
+
+                    var lineHeight = l.size * 1.2;
+                    var width = Math.max.apply(null, lines.map(function (line) { return ctx.measureText(line).width; }));
+                    var height = lineHeight * lines.length;
+                    setLetterSpacing(0);
+
+                    if (l.curvedPath) {
+                        // along the line, glyph by glyph
+                        setLetterSpacing(0);
+                        var glyphs = placeAlongPath(ctx, l.text, l.curvedPath, l.curvedDistance, l.maxAngle, l.letterSpacing * l.size);
+                        if (glyphs) {
+                            var half = l.size / 2 + l.padding;
+                            text = {
+                                glyphs: glyphs,
+                                box: [
+                                    Math.min.apply(null, glyphs.map(function (g) { return g.x; })) - half,
+                                    Math.min.apply(null, glyphs.map(function (g) { return g.y; })) - half,
+                                    Math.max.apply(null, glyphs.map(function (g) { return g.x; })) + half,
+                                    Math.max.apply(null, glyphs.map(function (g) { return g.y; })) + half
+                                ]
+                            };
+                        }
+                    } else if (!(l.alongLine && width > l.lineLength)) {
+                        // longer than its line: no text there, as GL
+                        var anchor = ANCHORS[l.anchor] || ANCHORS.center;
+                        var dx = anchor[0] * width + (l.offset[0] || 0) * l.size;
+                        var dy = anchor[1] * height + (l.offset[1] || 0) * l.size;
+                        var angle = l.angle + l.textRotate;
+                        text = {
+                            lines: lines, lineHeight: lineHeight, width: width, dx: dx, dy: dy, angle: angle,
+                            box: rotatedBox(l, dx, dy, width, height, angle, l.padding)
+                        };
+                    }
+                }
+                if (!icon && !text) return;
+
+                // ---- placement: icon and text of a symbol are placed together, as GL does
+                var iconFits = !icon || !declutter || l.iconOverlap || !collides(icon.box);
+                var textFits = !text || !declutter || l.textOverlap || !collides(text.box);
+
+                var showIcon = !!icon, showText = !!text;
+                if (!iconFits || !textFits) {
+                    if (icon && text && iconFits && l.textOptional) showText = false;        // icon alone
+                    else if (icon && text && textFits && l.iconOptional) showIcon = false;   // text alone
+                    else return;
+                }
+
+                if (showIcon) {
+                    ctx.save();
+                    ctx.translate(l.x, l.y);
+                    ctx.rotate(l.angle + l.iconRotate);
+                    ctx.drawImage(l.icon.source, l.icon.x, l.icon.y, l.icon.width, l.icon.height, -icon.w / 2, -icon.h / 2, icon.w, icon.h);
+                    ctx.restore();
+                    if (!l.iconIgnorePlacement) placed.push(icon.box);
+                }
+
+                if (showText && text.glyphs) {
+                    ctx.save();
+                    ctx.font = l.font;
+                    ctx.textBaseline = 'middle';
+                    ctx.textAlign = 'center';
+                    ctx.globalAlpha = l.opacity;
+                    // first all halos, then all glyphs: halos must not cover neighbor glyphs
+                    [true, false].forEach(function (halo) {
+                        if (halo && !(l.haloColor && l.haloWidth > 0)) return;
+                        text.glyphs.forEach(function (g) {
+                            ctx.save();
+                            ctx.translate(g.x, g.y);
+                            ctx.rotate(g.angle);
+                            if (halo) {
+                                ctx.lineJoin = 'round';
+                                ctx.lineWidth = l.haloWidth * 2;
+                                ctx.strokeStyle = l.haloColor;
+                                ctx.strokeText(g.ch, 0, 0);
+                            } else {
+                                ctx.fillStyle = l.color;
+                                ctx.fillText(g.ch, 0, 0);
+                            }
+                            ctx.restore();
+                        });
+                    });
+                    ctx.restore();
+                    if (!l.textIgnorePlacement) placed.push(text.box);
+                } else if (showText) {
+                    ctx.save();
+                    ctx.font = l.font;
+                    setLetterSpacing(l.letterSpacing * l.size);
+                    ctx.translate(l.x, l.y);
+                    ctx.rotate(text.angle);
+                    ctx.textBaseline = 'top';
+                    ctx.textAlign = 'center';
+                    ctx.globalAlpha = l.opacity;
+                    text.lines.forEach(function (line, i) {
+                        var lx = text.dx + text.width / 2, ly = text.dy + i * text.lineHeight + (text.lineHeight - l.size) / 2;
+                        if (l.haloColor && l.haloWidth > 0) {
+                            ctx.lineJoin = 'round';
+                            ctx.lineWidth = l.haloWidth * 2;
+                            ctx.strokeStyle = l.haloColor;
+                            ctx.strokeText(line, lx, ly);
+                        }
+                        ctx.fillStyle = l.color;
+                        ctx.fillText(line, lx, ly);
+                    });
+                    ctx.restore();
+                    setLetterSpacing(0);
+                    if (!l.textIgnorePlacement) placed.push(text.box);
+                }
             });
         }
     });
