@@ -63,7 +63,7 @@ public sealed class GlStyleBuilder
     public double MinZoom => _zooms.Length > 0 ? _zooms.Min() : 0;
     public double MaxZoom => _zooms.Length > 0 ? _zooms.Max() : 0;
 
-    public JsonObject Build(string name, string tileUrlTemplate, string? spriteUrl = null)
+    public JsonObject Build(string name, string tileUrlTemplate, string? spriteUrl = null, string? glyphsUrl = null)
     {
         _sprites.Clear();
         var layers = new JsonArray();
@@ -128,6 +128,12 @@ public sealed class GlStyleBuilder
         if (spriteUrl != null && _sprites.Count > 0)
         {
             style["sprite"] = spriteUrl;
+        }
+
+        // MapLibre/Mapbox need glyph PBFs for symbol layers with text (OpenLayers uses CSS fonts and ignores it)
+        if (glyphsUrl != null && labelLayers.Count > 0)
+        {
+            style["glyphs"] = glyphsUrl;
         }
 
         return style;

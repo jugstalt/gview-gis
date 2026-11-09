@@ -195,7 +195,11 @@ public class VectorTileRequest : IServiceRequestInterpreter
             JsonObject result;
             if (what == "style")
             {
-                result = styleBuilder.Build(serviceMap.Name, tileUrl, spriteUrl: $"{baseUrl}/sprite");
+                // glyphs are not per service: {online resource}/vtc-glyphs/{fontstack}/{range}.pbf
+                int vtcIndex = baseUrl.LastIndexOf("/vtc/", StringComparison.OrdinalIgnoreCase);
+                string glyphsUrl = (vtcIndex >= 0 ? baseUrl.Substring(0, vtcIndex) : baseUrl) + "/vtc-glyphs/{fontstack}/{range}.pbf";
+
+                result = styleBuilder.Build(serviceMap.Name, tileUrl, spriteUrl: $"{baseUrl}/sprite", glyphsUrl: glyphsUrl);
                 ((JsonObject)result["metadata"])["gview:grid"] = gridNode;
             }
             else

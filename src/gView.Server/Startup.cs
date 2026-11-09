@@ -893,6 +893,7 @@ public class Startup
 
 
             // Vector Tiles (MVT)
+            routes.MapRoute(name: "vtc_glyphs", template: "vtc-glyphs/{fontstack}/{range}", defaults: new { controller = "Vtc", Action = "Glyphs" });
             routes.MapRoute(name: "vtc_sprite1_json", template: "vtc/{folder}/{name}/sprite.json", defaults: new { controller = "Vtc", Action = "Sprite", ratio = "", ext = "json" });
             routes.MapRoute(name: "vtc_sprite1_json2", template: "vtc/{name}/sprite.json", defaults: new { controller = "Vtc", Action = "Sprite", ratio = "", ext = "json" });
             routes.MapRoute(name: "vtc_sprite1_png", template: "vtc/{folder}/{name}/sprite.png", defaults: new { controller = "Vtc", Action = "Sprite", ratio = "", ext = "png" });

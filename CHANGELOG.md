@@ -38,6 +38,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - WMTS: the capabilities list a layer `{service} EPSG:{epsg} vector` per EPSG code with the
     format `application/vnd.mapbox-vector-tile` and a RESTful template on the `vtc` route
     (all levels, no seeded cache needed).
+  - Glyphs for MapLibre/Mapbox clients: `vtc-glyphs/{fontstack}/{start}-{end}.pbf` (signed
+    distance fields rendered from the installed fonts with gView's graphics engine, cached in
+    `{TileCachePath}/_glyphs`); styles with labels refer to it as `glyphs`.
   - Test viewer for OpenLayers: `src/Playgrounds/VectorTilesViewer`.
 
 ## Changed

@@ -6,6 +6,7 @@ using gView.Server.Services.MapServer;
 using gView.Server.Services.Security;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace gView.Server.Controllers;
@@ -48,6 +49,61 @@ public class VtcController : BaseController
     /// </summary>
     public Task<IActionResult> Sprite(string name, string ratio, string ext, string folder = "")
         => VectorTile(name, folder, $"sprite/{(ratio == "@2x" ? 2 : 1)}/{(ext == "png" ? "png" : "json")}");
+
+    /// <summary>
+    /// <c>vtc-glyphs/{fontstack}/{start}-{end}.pbf</c>: glyph PBFs for MapLibre/Mapbox clients, rendered from the
+    /// installed fonts and cached in the tile cache directory (<c>_glyphs</c>). Not bound to a service.
+    /// </summary>
+    async public Task<IActionResult> Glyphs(string fontstack, string range)
+    {
+        if (IfMatch())
+        {
+            return NotModified();
+        }
+
+        try
+        {
+            var match = System.Text.RegularExpressions.Regex.Match(range ?? "", @"^(\d+)-(\d+)(\.pbf)?$");
+            if (!match.Success || String.IsNullOrWhiteSpace(fontstack) || fontstack.Length > 256)
+            {
+                return BadRequest("Invalid glyph request");
+            }
+
+            int start = int.Parse(match.Groups[1].Value);
+            start -= start % 256;
+            if (start < 0 || start > 65535)
+            {
+                return BadRequest("Invalid glyph range");
+            }
+
+            // the font stack becomes a folder name: only safe characters
+            string folder = new string(fontstack.Select(c => char.IsLetterOrDigit(c) || c == ' ' || c == ',' || c == '-' ? c : '_').ToArray());
+            var fi = new System.IO.FileInfo(System.IO.Path.Combine(
+                _mapServiceMananger.Instance.TileCachePath, "_glyphs", folder, $"{start}-{start + 255}.pbf"));
+
+            byte[] data;
+            if (fi.Exists)
+            {
+                data = await System.IO.File.ReadAllBytesAsync(fi.FullName);
+            }
+            else
+            {
+                data = gView.Framework.Cartography.VectorTiles.GlyphPbfBuilder.Build(fontstack, start);
+
+                fi.Directory?.Create();
+                string temp = fi.FullName + "." + Guid.NewGuid().ToString("N") + ".tmp";
+                await System.IO.File.WriteAllBytesAsync(temp, data);
+                System.IO.File.Move(temp, fi.FullName, overwrite: true);
+            }
+
+            AppendEtag(DateTime.UtcNow.AddDays(30));
+            return File(data, "application/x-protobuf");
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
 
     async private Task<IActionResult> VectorTile(string name, string folder, string requestString)
     {
