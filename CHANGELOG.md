@@ -53,6 +53,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Fixed
 
+- Tile service: tiles rendered on the fly (vector and raster) failed with "file used by another process" /
+  "access denied" when clients requested the same tile several times at once. A tile is now rendered once per
+  process for concurrent requests (`TileCacheFile`), written via a temp file without overwriting, a locked cache
+  file counts as not cached, and a failed cache write is only logged: the tile is delivered anyway.
 - Vector tiles: layers whose scale range ends exactly at a cache scale were in some tiles and missing
   in others (scale computed per tile differed in the last digits); all tiles of a level now use the
   level's scale.

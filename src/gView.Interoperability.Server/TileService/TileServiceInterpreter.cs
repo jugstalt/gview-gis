@@ -370,29 +370,51 @@ public class TileServiceInterpreter : IServiceRequestInterpreter
 
         string path = _mapServer.TileCachePath + @"\" + serviceMap.Name + @"\_alllayers\" +
             TileServiceMetadata.TilePath(orientation, epsg, scale, row, col) + format;
-        if ((orientation == GridOrientation.UpperLeft && metadata.UpperLeftCacheTiles) ||
-            (orientation == GridOrientation.LowerLeft && metadata.LowerLeftCacheTiles))
+        bool cacheTiles = (orientation == GridOrientation.UpperLeft && metadata.UpperLeftCacheTiles) ||
+                          (orientation == GridOrientation.LowerLeft && metadata.LowerLeftCacheTiles);
+        if (cacheTiles)
         {
-            FileInfo fi = new FileInfo(path);
-            if (fi.Exists)
+            if (File.Exists(path))
             {
-                context.ServiceRequest.Response = fi.FullName;
+                context.ServiceRequest.Response = path;
                 return;
             }
             else if (!renderOnTheFly && !metadata.RenderTilesOnTheFly)
             {
                 return;  // Empty
             }
-            if (!fi.Directory.Exists)
+
+            // clients often request a tile several times at once: it is rendered once in this process, written via a
+            // temp file without overwriting (never a half written or replaced file), a failed write is only logged
+            var data = await TileCacheFile.GetOrCreateAsync(path, async () =>
             {
-                fi.Directory.Create();
+                var bytes = await RenderTileImage(serviceMap, metadata, epsg, scale, row, col, format, orientation);
+                await TileCacheFile.TryWriteAsync(path, bytes,
+                    message => _mapServer.LogAsync(serviceMap.Name, "TileService", loggingMethod.error, message));
+                return bytes;
+            });
+
+            if (!File.Exists(path))
+            {
+                // not cached (write failed): deliver it from the output folder
+                path = _mapServer.OutputPath + @"\tile_" + Guid.NewGuid().ToString("N").ToLower() + format;
+                await File.WriteAllBytesAsync(path, data);
             }
-        }
-        else
-        {
-            path = _mapServer.OutputPath + @"\tile_" + Guid.NewGuid().ToString("N").ToLower() + format;
+
+            context.ServiceRequest.Response = path;
+            return;
         }
 
+        path = _mapServer.OutputPath + @"\tile_" + Guid.NewGuid().ToString("N").ToLower() + format;
+        await File.WriteAllBytesAsync(path, await RenderTileImage(serviceMap, metadata, epsg, scale, row, col, format, orientation));
+        context.ServiceRequest.Response = path;
+    }
+
+    /// <summary>
+    /// A raster tile of the grid as image bytes (png or jpg).
+    /// </summary>
+    async private Task<byte[]> RenderTileImage(IServiceMap serviceMap, TileServiceMetadata metadata, int epsg, double scale, int row, int col, string format, GridOrientation orientation)
+    {
         ISpatialReference sRef = SpatialReference.FromID("epsg:" + epsg);
 
         serviceMap.Display.SpatialReference = sRef;
@@ -431,9 +453,10 @@ public class TileServiceInterpreter : IServiceRequestInterpreter
         }
 
         await serviceMap.TryRender(3);
-        await serviceMap.SaveImage(path, format == ".jpg" ? ImageFormat.Jpeg : ImageFormat.Png);
 
-        context.ServiceRequest.Response = path;
+        using var ms = new MemoryStream();
+        await serviceMap.SaveImage(ms, format == ".jpg" ? ImageFormat.Jpeg : ImageFormat.Png);
+        return ms.ToArray();
     }
 
     async private Task GetCompactTile(IServiceRequestContext context, IServiceMap serviceMap, TileServiceMetadata metadata, int epsg, double scale, int row, int col, string format, GridOrientation orientation, BoundingTiles boundingTiles, bool renderOnTheFly)

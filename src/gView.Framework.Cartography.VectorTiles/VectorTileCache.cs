@@ -1,3 +1,4 @@
+using gView.Framework.Common;
 using gView.Framework.Core.Carto;
 using gView.Framework.Core.Common;
 using gView.Framework.Geometry.Tiling;
@@ -41,38 +42,32 @@ public sealed class VectorTileCache
     /// <summary>
     /// The cached tile, or <c>null</c> if it is not cached. An empty array is an empty tile.
     /// </summary>
-    public async Task<byte[]?> ReadExplodedAsync(GridOrientation orientation, int epsg, double scale, int row, int col)
-    {
-        var fi = new FileInfo(ExplodedTilePath(orientation, epsg, scale, row, col));
-        if (!fi.Exists)
-        {
-            return null;
-        }
-
-        return await File.ReadAllBytesAsync(fi.FullName);
-    }
+    public Task<byte[]?> ReadExplodedAsync(GridOrientation orientation, int epsg, double scale, int row, int col)
+        // a file locked by a concurrent writer counts as not cached: the caller renders (or waits for that rendering)
+        => TileCacheFile.TryReadAsync(ExplodedTilePath(orientation, epsg, scale, row, col));
 
     /// <summary>
     /// Renders the tile and (if <paramref name="writeToCache"/>) stores it as exploded tile.
     /// Returns the gzipped tile or an empty array for an empty tile.
     /// </summary>
-    public async Task<byte[]> RenderExplodedAsync(IServiceMap map, GridOrientation orientation, int epsg, double scale, int row, int col,
-                                                  bool writeToCache, ICancelTracker? cancelTracker = null)
+    /// <remarks>
+    /// Concurrent requests of the same tile (clients often ask several times at once) render it once in this
+    /// process and share the result. A failed cache write is only logged, the tile is returned anyway.
+    /// </remarks>
+    public Task<byte[]> RenderExplodedAsync(IServiceMap map, GridOrientation orientation, int epsg, double scale, int row, int col,
+                                            bool writeToCache, ICancelTracker? cancelTracker = null)
     {
-        var data = await RenderAsync(map, orientation, epsg, scale, row, col, cancelTracker);
+        string path = ExplodedTilePath(orientation, epsg, scale, row, col);
 
-        if (writeToCache)
+        return TileCacheFile.GetOrCreateAsync(path, async () =>
         {
-            var fi = new FileInfo(ExplodedTilePath(orientation, epsg, scale, row, col));
-            fi.Directory?.Create();
-
-            // write to a temp file first: concurrent requests of the same tile must not read a half written file
-            string temp = fi.FullName + "." + Guid.NewGuid().ToString("N") + ".tmp";
-            await File.WriteAllBytesAsync(temp, data);
-            File.Move(temp, fi.FullName, overwrite: true);
-        }
-
-        return data;
+            var data = await RenderAsync(map, orientation, epsg, scale, row, col, cancelTracker);
+            if (writeToCache)
+            {
+                await TileCacheFile.TryWriteAsync(path, data, _logWarning);
+            }
+            return data;
+        });
     }
 
     #endregion
