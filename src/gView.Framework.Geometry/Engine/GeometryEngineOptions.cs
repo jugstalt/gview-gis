@@ -20,6 +20,12 @@ namespace gView.Framework.Geometry.Engine
         /// <summary>Environment variable for <see cref="LabelSpatialNetMinVertices"/>, e.g. <c>GVIEW_LABEL_SPATIALNET_MIN_VERTICES=12000</c>.</summary>
         public const string LabelMinVerticesEnvironmentVariable = "GVIEW_LABEL_SPATIALNET_MIN_VERTICES";
 
+        /// <summary>Environment variable for <see cref="LabelAlternativeSeparationPixels"/>.</summary>
+        public const string LabelSeparationEnvironmentVariable = "GVIEW_LABEL_ALTERNATIVE_SEPARATION_PIXELS";
+
+        /// <summary>Environment variable for <see cref="LabelMaxAlternatives"/>.</summary>
+        public const string LabelMaxAlternativesEnvironmentVariable = "GVIEW_LABEL_MAX_ALTERNATIVES";
+
         static GeometryEngineOptions()
         {
             var areas = ParseAreas(Environment.GetEnvironmentVariable(EnvironmentVariable));
@@ -33,6 +39,17 @@ namespace gView.Framework.Geometry.Engine
                 int.TryParse(Environment.GetEnvironmentVariable(LabelMinVerticesEnvironmentVariable), out int minVertices) && minVertices >= 0
                     ? minVertices
                     : 0;
+
+            LabelAlternativeSeparationPixels =
+                double.TryParse(Environment.GetEnvironmentVariable(LabelSeparationEnvironmentVariable),
+                    System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out double separation) && separation > 0
+                    ? separation
+                    : 20.0;
+
+            LabelMaxAlternatives =
+                int.TryParse(Environment.GetEnvironmentVariable(LabelMaxAlternativesEnvironmentVariable), out int maxAlternatives) && maxAlternatives > 0
+                    ? maxAlternatives
+                    : 32;
         }
 
         /// <summary>
@@ -67,6 +84,21 @@ namespace gView.Framework.Geometry.Engine
         /// Also settable by <c>GVIEW_LABEL_SPATIALNET_MIN_VERTICES</c>. Independent of <see cref="UseSpatialNetForClip"/>.
         /// </summary>
         public static int LabelSpatialNetMinVertices { get; set; }
+
+        /// <summary>
+        /// Polygon labels on the SpatialNET path: after a collision the alternative label points are at least this many
+        /// pixels apart (default 20). A smaller distance tries more points (more labels placed in dense maps, but more
+        /// label engine checks, which cost most of the time); a larger one is faster and places fewer labels.
+        /// Also settable by <c>GVIEW_LABEL_ALTERNATIVE_SEPARATION_PIXELS</c> (a decimal number with a point).
+        /// </summary>
+        public static double LabelAlternativeSeparationPixels { get; set; }
+
+        /// <summary>
+        /// Polygon labels on the SpatialNET path: at most this many alternative label points per polygon after a
+        /// collision (default 32), the upper bound of the work for one label.
+        /// Also settable by <c>GVIEW_LABEL_MAX_ALTERNATIVES</c>.
+        /// </summary>
+        public static int LabelMaxAlternatives { get; set; }
 
         internal static HashSet<string> ParseAreas(string value)
         {

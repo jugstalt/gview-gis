@@ -13,11 +13,6 @@ namespace gView.Framework.Geometry.Engine
     /// </summary>
     internal sealed class SpatialNetSmartLabelPoint : Point, ISmartLabelPoint
     {
-        // as the classic raster: the alternative points are 20 pixels apart
-        private const double SeparationInPixels = 20.0;
-        // upper bound of the work after a collision
-        private const int MaxAlternatives = 32;
-
         private readonly Coordinate _seed;
         private readonly IPolygon2D _polygon;
         private readonly double _pixelSize;
@@ -48,8 +43,8 @@ namespace gView.Framework.Geometry.Engine
             double pixel = _pixelSize > 0 ? _pixelSize : display.MapScale / display.Dpm;
             var options = new AlternativeLabelOptions
             {
-                Separation = SeparationInPixels * pixel,
-                MaxCount = MaxAlternatives,
+                Separation = GeometryEngineOptions.LabelAlternativeSeparationPixels * pixel,
+                MaxCount = GeometryEngineOptions.LabelMaxAlternatives,
             };
 
             foreach (var coordinate in Shapes.FastAlternativePolygonLabelsLazy(_polygon, _seed, options))

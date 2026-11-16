@@ -55,11 +55,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   clipped if that point is not visible; for a collision the alternative points come lazily
   (`FastAlternativePolygonLabelsLazy`, at most 32, 20 pixels apart; `ISmartLabelPoint.AlternativeLabelPointsLazy`),
   and the classic raster is lazy too. Benchmarks per feature: polygons cut by the map edge or completely visible
-  need about 1/10 to 1/40 of the time, large polygons (100000 vertices) 0.5 ms instead of 4-15 ms; only the
-  alternative point positions differ from before. The limit is the setting
+  need about 1/10 to 1/40 of the time, large polygons (100000 vertices) 0.5 ms instead of 4-15 ms; a dense map
+  with many label collisions draws its labels 15-30% faster. The alternative point positions differ from before and
+  fewer alternatives are tried, so about 10% fewer labels are placed in very dense maps. The limit is the setting
   `GeometryEngineOptions.LabelSpatialNetMinVertices` (environment variable
   `GVIEW_LABEL_SPATIALNET_MIN_VERTICES`, default 0 = all polygons; `int.MaxValue` = classic path only,
-  12000 = the old behaviour).
+  12000 = the old behaviour). The alternative points can be tuned with
+  `GeometryEngineOptions.LabelAlternativeSeparationPixels` (`GVIEW_LABEL_ALTERNATIVE_SEPARATION_PIXELS`, default 20)
+  and `GeometryEngineOptions.LabelMaxAlternatives` (`GVIEW_LABEL_MAX_ALTERNATIVES`, default 32): a smaller distance
+  places more labels in dense maps but needs more label engine checks, a larger one is faster.
 - Tile service metadata: `renderTilesOnTheFly` can be set in the metadata editor (YAML).
 
 ## Fixed

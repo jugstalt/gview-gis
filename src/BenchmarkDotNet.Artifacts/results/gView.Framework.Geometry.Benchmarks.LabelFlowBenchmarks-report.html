@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>gView.Framework.Geometry.Benchmarks.LabelFlowBenchmarks-20261116-180234</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet v0.15.8, Windows 11 (10.0.26100.9711/24H2/2024Update/HudsonValley)
+11th Gen Intel Core i7-1185G7 3.00GHz, 1 CPU, 8 logical and 4 physical cores
+.NET SDK 11.0.100
+  [Host]   : .NET 10.0.15 (10.0.15, 10.0.1526.53008), X64 RyuJIT x86-64-v4
+  ShortRun : .NET 10.0.15 (10.0.15, 10.0.1526.53008), X64 RyuJIT x86-64-v4
+</code></pre>
+<pre><code>Job=ShortRun  IterationCount=3  LaunchCount=1  
+WarmupCount=3  
+</code></pre>
+
+<table>
+<thead><tr><th>Method</th><th>MinVertices</th><th>Parcels</th><th>Mean</th><th>Error</th><th>StdDev</th><th>Gen0</th><th>Gen1</th><th>Allocated</th>
+</tr>
+</thead><tbody><tr><td>Flow</td><td>0</td><td>800</td><td>12.07 ms</td><td>11.548 ms</td><td>0.633 ms</td><td>1593.7500</td><td>375.0000</td><td>9.62 MB</td>
+</tr><tr><td>Flow</td><td>0</td><td>3000</td><td>56.93 ms</td><td>15.188 ms</td><td>0.832 ms</td><td>14444.4444</td><td>222.2222</td><td>86.5 MB</td>
+</tr><tr><td>Flow</td><td>2147483647</td><td>800</td><td>10.35 ms</td><td>6.735 ms</td><td>0.369 ms</td><td>1531.2500</td><td>343.7500</td><td>9.23 MB</td>
+</tr><tr><td>Flow</td><td>2147483647</td><td>3000</td><td>49.69 ms</td><td>18.965 ms</td><td>1.040 ms</td><td>13600.0000</td><td>100.0000</td><td>81.46 MB</td>
+</tr></tbody></table>
+</body>
+</html>
