@@ -9,6 +9,7 @@ using gView.Framework.Cartography;
 using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
 using gView.Framework.Data;
+using gView.Framework.NetworkModel.Module;
 
 namespace gView.Carto.Plugins.CartoTools;
 
@@ -50,6 +51,11 @@ internal class LayerSettings : ICartoButtonWithSubItems
         if (layer?.IsRasterLayer() == true)
         {
             yield return new((int)LayerSettingsDialog.Page.Raster, "Raster Settings", "basic:drop-50");
+        }
+
+        if (Razor.Components.Dialogs.Models.NetworkLayerSettings.Create(scope.Modules.OfType<NetworkModule>().FirstOrDefault(), layer) is not null)
+        {
+            yield return new((int)LayerSettingsDialog.Page.Network, "Network", "basic:share");
         }
 
         if(layer?.HasDataSource() == true)
@@ -97,12 +103,17 @@ internal class LayerSettings : ICartoButtonWithSubItems
 
         var tocElement = originalMap.TOC.GetTocElementByLayerId(originalLayer.ID);
 
+        // a working copy, written back to the module on Apply only
+        var networkSettings = Razor.Components.Dialogs.Models.NetworkLayerSettings.Create(
+            scope.Modules.OfType<NetworkModule>().FirstOrDefault(), originalLayer);
+
         var model = await scope.ShowModalDialog(typeof(gView.Carto.Razor.Components.Dialogs.LayerSettingsDialog),
                                                             $"Layer: {tocElement?.Name}",
                                                             new Razor.Components.Dialogs.Models.LayerSettingsModel()
                                                             {
                                                                 Map = clonedMap,
                                                                 Layer = clonedLayer,
+                                                                Network = networkSettings,
                                                                 StartPage = (LayerSettingsDialog.Page)subItemId
                                                             },
                                                             new ModalDialogOptions()
@@ -129,6 +140,8 @@ internal class LayerSettings : ICartoButtonWithSubItems
         {
             clonedSelection.SelectionSet = originalSelection.SelectionSet;
         }
+
+        networkSettings?.Apply();
 
         originalLayer.DatasetID = clonedLayer.DatasetID;
         originalMap.ReplaceLayer(originalLayer, clonedLayer);

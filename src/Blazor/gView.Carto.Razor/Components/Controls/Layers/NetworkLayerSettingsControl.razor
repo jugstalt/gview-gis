@@ -1,0 +1,156 @@
+@using gView.Framework.NetworkModel.Config
+
+@inherits BaseHandler
+
+@if (Settings is not null && Layer is not null)
+{
+    <GvCard Title="Network">
+        <GvCardContent>
+            <MudCheckBox T="bool" @bind-Value="Settings.Participates"
+                         Label="@(Settings.PossibleRole == NetworkLayerRole.Shards ? "Use this layer for sharding (one shard per polygon)" : $"Layer takes part in the network (as {(Settings.PossibleRole == NetworkLayerRole.Node ? "nodes" : "edges")})")" />
+            @if (Settings.PossibleRole == NetworkLayerRole.Shards)
+            {
+                @GvUtilities.InfoText("Only one layer of the map assigns shards; this replaces another shard layer.")
+            }
+        </GvCardContent>
+    </GvCard>
+
+    @if (Settings.Participates)
+    {
+        if (Settings.PossibleRole == NetworkLayerRole.Shards)
+        {
+            <GvCard Title="Shards">
+                <GvCardContent>
+                    <MudSelect T="string" Label="Shard key field (e.g. E_TP)" @bind-Value="Settings.Shards.Field">
+                        @foreach (var field in _fields)
+                        {
+                            <MudSelectItem Value="field">@field</MudSelectItem>
+                        }
+                    </MudSelect>
+                    <MudTextField T="string" Label="Where (only these polygons, e.g. STATPOLY_AKTIV=1)" @bind-Value="Settings.Shards.Where" />
+                </GvCardContent>
+            </GvCard>
+        }
+        else
+        {
+            var layerConfig = Settings.PossibleRole == NetworkLayerRole.Node ? (LayerConfig)Settings.Node : Settings.Edge;
+
+            <GvCard Title="Type">
+                <GvCardContent>
+                    @GvUtilities.InfoText("Per facet a fixed text, [FIELD], {layer-name}, {group-name} or {group-name:n}; empty = not set.")
+                    <table style="width:100%">
+                        @for (int i = 0; i < Settings.Facets.Count; i++)
+                        {
+                            var index = i;
+                            <tr>
+                                <td>
+                                    <MudTextField T="string" Label="@Settings.Facets[index].Name"
+                                                  Value="layerConfig.Type[index]"
+                                                  ValueChanged="(string v) => layerConfig.Type[index] = v ?? string.Empty" />
+                                </td>
+                                <td style="width:220px">
+                                    <MudSelect T="string" Label="Insert field" Value="@null"
+                                               ValueChanged="(string f) => InsertField(layerConfig, index, f)">
+                                        @foreach (var field in _fields)
+                                        {
+                                            <MudSelectItem Value="field">@field</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </td>
+                            </tr>
+                        }
+                    </table>
+                </GvCardContent>
+            </GvCard>
+
+            <GvCard Title="Features">
+                <GvCardContent>
+                    <MudTextField T="string" Label="Where (only these features take part)" @bind-Value="layerConfig.Where" />
+                    @if (Settings.PossibleRole == NetworkLayerRole.Node)
+                    {
+                        <MudCheckBox T="bool" @bind-Value="Settings.Node.RemoveDuplicates"
+                                     Label="Leave out duplicates (points of this layer within the tolerance; the lowest object id stays)" />
+                    }
+                </GvCardContent>
+            </GvCard>
+
+            @if (Settings.PossibleRole == NetworkLayerRole.Node)
+            {
+                <GvCard Title="Normal switching state">
+                    <GvCardContent>
+                        @GvUtilities.InfoText("The node is blocked (reached, but not passed) when the field has one of the values.")
+                        <FieldValuesEditor Fields="_fields" Value="Settings.Node.Blocked" ValueChanged="v => Settings.Node.Blocked = v" />
+                    </GvCardContent>
+                </GvCard>
+            }
+            else
+            {
+                <GvCard Title="Length and direction">
+                    <GvCardContent>
+                        <MudTextField T="string" Label="Length (empty = geometry, e.g. [AUFMASS])" @bind-Value="Settings.Edge.Length" />
+                        <MudTextField T="string" Label="Direction (both, forward, backward or [FIELD]; empty = both)" @bind-Value="Settings.Edge.Direction" />
+                    </GvCardContent>
+                </GvCard>
+
+                <GvCard Title="Normal switching state">
+                    <GvCardContent>
+                        @GvUtilities.InfoText("The edge is disabled when the field has one of the values.")
+                        <FieldValuesEditor Fields="_fields" Value="Settings.Edge.Disabled" ValueChanged="v => Settings.Edge.Disabled = v" />
+                    </GvCardContent>
+                </GvCard>
+
+                @if (Settings.Weights.Count > 0)
+                {
+                    <GvCard Title="Weights">
+                        <GvCardContent>
+                            @GvUtilities.InfoText("A number or [FIELD]; empty = the fallback of the weight.")
+                            @foreach (var weight in Settings.Weights)
+                            {
+                                var name = weight.Name;
+                                <MudTextField T="string" Label="@($"{name} ({weight.Kind})")"
+                                              Value="Settings.Edge.Weights.GetValueOrDefault(name)"
+                                              ValueChanged="(string v) => SetWeight(name, v)" />
+                            }
+                        </GvCardContent>
+                    </GvCard>
+                }
+            }
+        }
+    }
+}
+
+@code {
+    [Parameter] public IFeatureLayer? Layer { get; set; }
+    [Parameter] public NetworkLayerSettings? Settings { get; set; }
+
+    private string[] _fields = [];
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        _fields = Layer?.FeatureClass?.Fields?.ToEnumerable()
+                      .Select(f => f.name)
+                      .Where(n => !string.IsNullOrEmpty(n))
+                      .ToArray() ?? [];
+    }
+
+    private static void InsertField(LayerConfig layerConfig, int index, string? field)
+    {
+        if (!string.IsNullOrEmpty(field))
+        {
+            layerConfig.Type[index] = $"{layerConfig.Type[index]}[{field}]";
+        }
+    }
+
+    private void SetWeight(string name, string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            Settings!.Edge.Weights.Remove(name);
+        }
+        else
+        {
+            Settings!.Edge.Weights[name] = value.Trim();
+        }
+    }
+}

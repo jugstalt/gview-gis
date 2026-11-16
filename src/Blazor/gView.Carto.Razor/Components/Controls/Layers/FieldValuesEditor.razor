@@ -1,0 +1,50 @@
+@using gView.Framework.NetworkModel.Config
+
+@* A field and a list of values, e.g. the normal switching state: SCHALTSTAT in (0, AUS) *@
+
+<table style="width:100%">
+    <tr>
+        <td style="width:40%">
+            <MudSelect T="string" Label="Field" Clearable="true"
+                       Value="Value?.Field"
+                       ValueChanged="OnFieldChanged">
+                @foreach (var field in Fields)
+                {
+                    <MudSelectItem Value="field">@field</MudSelectItem>
+                }
+            </MudSelect>
+        </td>
+        <td>
+            <MudTextField T="string" Label="Values (comma separated)"
+                          Disabled="Value is null"
+                          Value="@(Value is null ? "" : string.Join(", ", Value.Values))"
+                          ValueChanged="OnValuesChanged" />
+        </td>
+    </tr>
+</table>
+
+@code {
+    [Parameter] public string[] Fields { get; set; } = [];
+    [Parameter] public FieldValuesConfig? Value { get; set; }
+    [Parameter] public EventCallback<FieldValuesConfig?> ValueChanged { get; set; }
+
+    private Task OnFieldChanged(string? field)
+    {
+        Value = string.IsNullOrEmpty(field)
+            ? null
+            : new FieldValuesConfig { Field = field, Values = Value?.Values ?? [] };
+        return ValueChanged.InvokeAsync(Value);
+    }
+
+    private Task OnValuesChanged(string? text)
+    {
+        if (Value is null)
+        {
+            return Task.CompletedTask;
+        }
+        Value.Values = (text ?? "")
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .ToList();
+        return ValueChanged.InvokeAsync(Value);
+    }
+}

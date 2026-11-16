@@ -1,0 +1,254 @@
+@using gView.Framework.NetworkModel.Config
+@using gView.Framework.NetworkModel.Module
+@using gView.Framework.NetworkModel.Build
+@using SpatialNET.Network
+@using IOPath = System.IO.Path
+
+@inherits BaseHandler
+@inject ICartoApplicationScopeService AppScope
+
+@if (_module is not null)
+{
+    var config = _module.Config;
+
+    <GvScrollable>
+        <GvCard Title="Network">
+            <GvCardContent>
+                <MudTextField T="string" Label="Name" @bind-Value="config.Name" />
+                <MudTextField T="string" Label="Spatial reference (e.g. epsg:31256; empty = map, must be metric)" @bind-Value="config.Srs" />
+                <MudNumericField T="double" Label="Tolerance (joins line ends and points)" @bind-Value="config.Tolerance" />
+                <MudNumericField T="double" Label="Grid cell size for nodes outside every shard polygon" @bind-Value="config.FallbackShardCellSize" />
+            </GvCardContent>
+        </GvCard>
+
+        <GvCard Title="Type facets">
+            <GvCardContent>
+                @GvUtilities.InfoText("Every node and edge type is a combination of facet values. Values not listed get a number automatically. Fixed values: 1=Niederspannung, 2=Mittelspannung")
+                <table style="width:100%">
+                    @for (int i = 0; i < config.Facets.Count; i++)
+                    {
+                        var facet = config.Facets[i];
+                        <tr>
+                            <td style="width:30%"><MudTextField T="string" Label="Facet" @bind-Value="facet.Name" /></td>
+                            <td><MudTextField T="string" Label="Fixed values"
+                                              Value="FacetValuesText(facet)"
+                                              ValueChanged="(string text) => SetFacetValues(facet, text)" /></td>
+                            <td style="width:50px">
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="() => RemoveFacet(facet)" />
+                            </td>
+                        </tr>
+                    }
+                </table>
+                <MudButton Variant="Variant.Filled" OnClick="AddFacet">Add facet</MudButton>
+            </GvCardContent>
+        </GvCard>
+
+        <GvCard Title="Weights">
+            <GvCardContent>
+                @GvUtilities.InfoText("The length is always there. PerLength: value × length, LengthOverValue: length / value, Absolute: value.")
+                <table style="width:100%">
+                    @foreach (var weight in config.Weights)
+                    {
+                        <tr>
+                            <td><MudTextField T="string" Label="Name" @bind-Value="weight.Name" /></td>
+                            <td>
+                                <MudSelect T="WeightKind" Label="Kind" @bind-Value="weight.Kind">
+                                    @foreach (var kind in Enum.GetValues<WeightKind>().Where(k => k != WeightKind.Length))
+                                    {
+                                        <MudSelectItem Value="kind">@kind</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </td>
+                            <td><MudNumericField T="double?" Label="Fallback" @bind-Value="weight.Fallback" /></td>
+                            <td style="width:50px">
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="() => config.Weights.Remove(weight)" />
+                            </td>
+                        </tr>
+                    }
+                </table>
+                <MudButton Variant="Variant.Filled" OnClick="AddWeight">Add weight</MudButton>
+            </GvCardContent>
+        </GvCard>
+
+        <GvCard Title="Layers">
+            <GvCardContent>
+                @GvUtilities.InfoText("Layers take part only when set in the layer settings (page Network). Layers not listed here are not part of the network.")
+                <table style="width:100%;text-align:left">
+                    <tr><th>Role</th><th>Layer</th><th>Type</th></tr>
+                    @foreach (var node in config.Nodes)
+                    {
+                        <tr><td>Node</td><td>@LayerTitle(node.LayerId, node.Layer)</td><td>@string.Join(" | ", node.Type)</td></tr>
+                    }
+                    @foreach (var edge in config.Edges)
+                    {
+                        <tr><td>Edge</td><td>@LayerTitle(edge.LayerId, edge.Layer)</td><td>@string.Join(" | ", edge.Type)</td></tr>
+                    }
+                    @if (config.Shards is not null)
+                    {
+                        <tr><td>Shards</td><td>@LayerTitle(config.Shards.LayerId, config.Shards.Layer)</td><td>[@config.Shards.Field]</td></tr>
+                    }
+                </table>
+                <MudButton Variant="Variant.Filled" OnClick="AddAllLayers">Add all point and line layers</MudButton>
+            </GvCardContent>
+        </GvCard>
+
+        <GvCard Title="JSON (gView.Cmd)">
+            <GvCardContent>
+                <MudTextField T="string" Label="JSON file" @bind-Value="_jsonPath" />
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Export">Export</MudButton>
+                <MudButton Variant="Variant.Filled" OnClick="Import">Import</MudButton>
+                @if (_messages.Count > 0)
+                {
+                    <MudAlert Severity="_messageSeverity">
+                        @foreach (var message in _messages)
+                        {
+                            <div>@message</div>
+                        }
+                    </MudAlert>
+                }
+                @if (!string.IsNullOrEmpty(_command))
+                {
+                    <MudText Typo="Typo.body2" Style="font-family:monospace;margin-top:8px">@_command</MudText>
+                }
+            </GvCardContent>
+        </GvCard>
+    </GvScrollable>
+}
+
+@code {
+    [Parameter] public IMapApplicationModule? Instance { get; set; }
+
+    private NetworkModule? _module;
+    private string _jsonPath = "";
+    private List<string> _messages = [];
+    private Severity _messageSeverity = Severity.Info;
+    private string? _command;
+
+    protected override void OnParametersSet() => Handle(() =>
+    {
+        base.OnParametersSet();
+        _module = Instance as NetworkModule;
+
+        if (string.IsNullOrEmpty(_jsonPath))
+        {
+            var mxl = AppScope.Document?.FilePath;
+            _jsonPath = string.IsNullOrEmpty(mxl)
+                ? ""
+                : IOPath.Combine(IOPath.GetDirectoryName(mxl) ?? "", $"{IOPath.GetFileNameWithoutExtension(mxl)}.network.json");
+        }
+    });
+
+    private static string FacetValuesText(FacetConfig facet)
+        => string.Join(", ", facet.Values.OrderBy(v => v.Key).Select(v => $"{v.Key}={v.Value}"));
+
+    private void SetFacetValues(FacetConfig facet, string text) => Handle(() =>
+    {
+        var values = new Dictionary<int, string>();
+        foreach (var part in (text ?? "").Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            var pair = part.Split('=', 2, StringSplitOptions.TrimEntries);
+            if (pair.Length != 2 || !int.TryParse(pair[0], out var number) || number <= 0 || pair[1].Length == 0)
+            {
+                throw new ArgumentException($"Invalid facet value '{part}', use number=text with number > 0.");
+            }
+            values[number] = pair[1];
+        }
+        facet.Values = values;
+    });
+
+    private void AddWeight() => Handle(() =>
+        _module!.Config.Weights.Add(new WeightConfig { Name = Unique(_module.Config.Weights.Select(w => w.Name), "Weight") }));
+
+    private void AddFacet() => Handle(() =>
+    {
+        _module!.Config.Facets.Add(new FacetConfig { Name = Unique(_module.Config.Facets.Select(f => f.Name), "Facet") });
+        _module.AlignTypeTemplates();
+    });
+
+    private void RemoveFacet(FacetConfig facet) => Handle(() =>
+    {
+        if (_module!.Config.Facets.Count <= 1)
+        {
+            throw new InvalidOperationException("A network needs at least one facet.");
+        }
+        int index = _module.Config.Facets.IndexOf(facet);
+        _module.Config.Facets.RemoveAt(index);
+        foreach (var layer in _module.Config.Nodes.Cast<LayerConfig>().Concat(_module.Config.Edges))
+        {
+            if (index < layer.Type.Count)
+            {
+                layer.Type.RemoveAt(index);
+            }
+        }
+    });
+
+    private void AddAllLayers() => Handle(() =>
+    {
+        int added = _module!.AddAllLayers();
+        SetMessages(Severity.Info, $"{added} layer(s) added.");
+    });
+
+    private void Export() => Handle(() =>
+    {
+        if (string.IsNullOrWhiteSpace(_jsonPath))
+        {
+            throw new ArgumentException("Enter the path of the JSON file.");
+        }
+        _module!.Config.Validate();
+
+        var mxl = AppScope.Document?.FilePath;
+        var mapPath = string.IsNullOrEmpty(mxl)
+            ? null
+            : IOPath.GetRelativePath(IOPath.GetDirectoryName(IOPath.GetFullPath(_jsonPath))!, mxl);
+
+        File.WriteAllText(_jsonPath, _module.ExportJson(mapPath));
+        SetMessages(Severity.Success, $"Written: {_jsonPath}",
+            string.IsNullOrEmpty(mxl) ? "The map is not saved yet: add \"map\" to the JSON or pass -mxl to gView.Cmd." : "Save the map, if you changed it, before building.");
+        _command = $"gView.Cmd --command Network -u build -config \"{_jsonPath}\" -output \"{IOPath.Combine(IOPath.GetDirectoryName(_jsonPath) ?? "", "network")}\"";
+    });
+
+    private void Import() => Handle(() =>
+    {
+        if (!File.Exists(_jsonPath))
+        {
+            throw new FileNotFoundException($"File not found: {_jsonPath}");
+        }
+        var problems = _module!.ImportJson(File.ReadAllText(_jsonPath));
+        _command = null;
+        if (problems.Count == 0)
+        {
+            SetMessages(Severity.Success, $"Imported: {_module.Config.Nodes.Count} node layer(s), {_module.Config.Edges.Count} edge layer(s).");
+        }
+        else
+        {
+            SetMessages(Severity.Warning, [$"Imported with {problems.Count} problem(s), these layers were left out:", .. problems]);
+        }
+    });
+
+    private void SetMessages(Severity severity, params string[] messages)
+    {
+        _messageSeverity = severity;
+        _messages = messages.ToList();
+    }
+
+    private string LayerTitle(int? layerId, string fallback)
+    {
+        if (_module?.Map is null || layerId is null)
+        {
+            return fallback;
+        }
+        return MapLayers.FeatureLayers(_module.Map).FirstOrDefault(l => l.Id == layerId)?.Path ?? $"{fallback} (missing)";
+    }
+
+    private static string Unique(IEnumerable<string> names, string prefix)
+    {
+        var set = names.ToHashSet(StringComparer.OrdinalIgnoreCase);
+        for (int i = 1; ; i++)
+        {
+            if (!set.Contains($"{prefix} {i}"))
+            {
+                return $"{prefix} {i}";
+            }
+        }
+    }
+}

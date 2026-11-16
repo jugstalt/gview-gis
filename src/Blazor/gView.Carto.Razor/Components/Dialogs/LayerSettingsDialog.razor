@@ -76,6 +76,13 @@
                                          OnClick="() => _drawerIsOpen = false" />
                         }
 
+                        @if (Model.Network is not null)
+                        {
+                            <MudListItem Icon="@IconService.FromString("basic:share")" Style="white-space:nowrap"
+                                         Value="Page.Network" Text="Network"
+                                         OnClick="() => _drawerIsOpen = false" />
+                        }
+
                         @if (Model.Layer.IsGroupLayer())
                         {
                             <MudListItem Icon="@IconService.FromString("basic:cloud-connect")" Style="white-space:nowrap"
@@ -203,6 +210,10 @@
                 {
                     <LayerFieldsSettingsControl Layer="Model.Layer as IFeatureLayer" />
                 }
+                else if (Page.Network.Equals(_currentTab))
+                {
+                    <NetworkLayerSettingsControl Layer="Model.Layer as IFeatureLayer" Settings="Model.Network" />
+                }
                 else if (Page.Raster.Equals(_currentTab))
                 {
                     <RasterLayerSettingsControl Layer="Model.Layer as IRasterLayer" />
@@ -262,7 +273,8 @@
         Grid,
         WebService,
         WMS,
-        Errors
+        Errors,
+        Network
     }
     private bool _drawerIsOpen = false;
     private Page _currentTab = Page.General;
