@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>gView.Framework.Geometry.Benchmarks.LargePolygonLabelPathBenchmarks-20261116-130326</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet v0.15.8, Windows 11 (10.0.26100.9711/24H2/2024Update/HudsonValley)
+11th Gen Intel Core i7-1185G7 3.00GHz, 1 CPU, 8 logical and 4 physical cores
+.NET SDK 11.0.100
+  [Host]   : .NET 10.0.15 (10.0.15, 10.0.1526.53008), X64 RyuJIT x86-64-v4
+  ShortRun : .NET 10.0.15 (10.0.15, 10.0.1526.53008), X64 RyuJIT x86-64-v4
+</code></pre>
+<pre><code>Job=ShortRun  IterationCount=3  LaunchCount=1  
+WarmupCount=3  
+</code></pre>
+
+<table>
+<thead><tr><th>Method</th><th>Vertices</th><th>Shape</th><th>Scenario</th><th>Mean   </th><th>Error  </th><th>StdDev</th><th>Ratio</th><th>RatioSD</th><th>Gen0</th><th>Gen1</th><th>Gen2</th><th>Allocated</th><th>Alloc Ratio</th>
+</tr>
+</thead><tbody><tr><td>AlwaysClip</td><td>12000</td><td>Jagged</td><td>Complete</td><td>849.15 &mu;s</td><td>467.333 &mu;s</td><td>25.616 &mu;s</td><td>1.00</td><td>0.04</td><td>464.8438</td><td>462.8906</td><td>331.0547</td><td>2474822 B</td><td>1.000</td>
+</tr><tr><td>LabelFirst</td><td>12000</td><td>Jagged</td><td>Complete</td><td>55.41 &mu;s</td><td>78.258 &mu;s</td><td>4.290 &mu;s</td><td>0.07</td><td>0.00</td><td>-</td><td>-</td><td>-</td><td>240 B</td><td>0.000</td>
+</tr><tr><td>AlwaysClip</td><td>12000</td><td>Jagged</td><td>Hidden</td><td>2,874.61 &mu;s</td><td>4,609.603 &mu;s</td><td>252.668 &mu;s</td><td>1.00</td><td>0.11</td><td>335.9375</td><td>253.9063</td><td>195.3125</td><td>1556830 B</td><td>1.00</td>
+</tr><tr><td>LabelFirst</td><td>12000</td><td>Jagged</td><td>Hidden</td><td>2,794.38 &mu;s</td><td>1,223.171 &mu;s</td><td>67.046 &mu;s</td><td>0.98</td><td>0.07</td><td>218.7500</td><td>218.7500</td><td>218.7500</td><td>1556650 B</td><td>1.00</td>
+</tr><tr><td>AlwaysClip</td><td>12000</td><td>Jagged</td><td>Inside</td><td>703.81 &mu;s</td><td>225.858 &mu;s</td><td>12.380 &mu;s</td><td>1.00</td><td>0.02</td><td>221.6797</td><td>221.6797</td><td>221.6797</td><td>771668 B</td><td>1.000</td>
+</tr><tr><td>LabelFirst</td><td>12000</td><td>Jagged</td><td>Inside</td><td>54.41 &mu;s</td><td>20.395 &mu;s</td><td>1.118 &mu;s</td><td>0.08</td><td>0.00</td><td>-</td><td>-</td><td>-</td><td>240 B</td><td>0.000</td>
+</tr><tr><td>AlwaysClip</td><td>12000</td><td>Smooth</td><td>Complete</td><td>795.39 &mu;s</td><td>113.599 &mu;s</td><td>6.227 &mu;s</td><td>1.00</td><td>0.01</td><td>500.0000</td><td>500.0000</td><td>500.0000</td><td>2473144 B</td><td>1.000</td>
+</tr><tr><td>LabelFirst</td><td>12000</td><td>Smooth</td><td>Complete</td><td>53.07 &mu;s</td><td>4.531 &mu;s</td><td>0.248 &mu;s</td><td>0.07</td><td>0.00</td><td>-</td><td>-</td><td>-</td><td>240 B</td><td>0.000</td>
+</tr><tr><td>AlwaysClip</td><td>12000</td><td>Smooth</td><td>Hidden</td><td>870.70 &mu;s</td><td>41.668 &mu;s</td><td>2.284 &mu;s</td><td>1.00</td><td>0.00</td><td>221.6797</td><td>221.6797</td><td>221.6797</td><td>1304236 B</td><td>1.00</td>
+</tr><tr><td>LabelFirst</td><td>12000</td><td>Smooth</td><td>Hidden</td><td>921.35 &mu;s</td><td>117.296 &mu;s</td><td>6.429 &mu;s</td><td>1.06</td><td>0.01</td><td>221.6797</td><td>221.6797</td><td>221.6797</td><td>1304516 B</td><td>1.00</td>
+</tr><tr><td>AlwaysClip</td><td>12000</td><td>Smooth</td><td>Inside</td><td>657.50 &mu;s</td><td>218.216 &mu;s</td><td>11.961 &mu;s</td><td>1.00</td><td>0.02</td><td>221.6797</td><td>221.6797</td><td>221.6797</td><td>771668 B</td><td>1.000</td>
+</tr><tr><td>LabelFirst</td><td>12000</td><td>Smooth</td><td>Inside</td><td>54.98 &mu;s</td><td>25.772 &mu;s</td><td>1.413 &mu;s</td><td>0.08</td><td>0.00</td><td>-</td><td>-</td><td>-</td><td>240 B</td><td>0.000</td>
+</tr><tr><td>AlwaysClip</td><td>100000</td><td>Jagged</td><td>Complete</td><td>13,187.29 &mu;s</td><td>13,472.681 &mu;s</td><td>738.483 &mu;s</td><td>1.00</td><td>0.07</td><td>1734.3750</td><td>1578.1250</td><td>828.1250</td><td>20506824 B</td><td>1.000</td>
+</tr><tr><td>LabelFirst</td><td>100000</td><td>Jagged</td><td>Complete</td><td>472.02 &mu;s</td><td>114.422 &mu;s</td><td>6.272 &mu;s</td><td>0.04</td><td>0.00</td><td>-</td><td>-</td><td>-</td><td>240 B</td><td>0.000</td>
+</tr><tr><td>AlwaysClip</td><td>100000</td><td>Jagged</td><td>Hidden</td><td>152,064.56 &mu;s</td><td>26,418.852 &mu;s</td><td>1,448.106 &mu;s</td><td>1.00</td><td>0.01</td><td>1000.0000</td><td>1000.0000</td><td>1000.0000</td><td>12737515 B</td><td>1.00</td>
+</tr><tr><td>LabelFirst</td><td>100000</td><td>Jagged</td><td>Hidden</td><td>154,087.77 &mu;s</td><td>23,708.333 &mu;s</td><td>1,299.534 &mu;s</td><td>1.01</td><td>0.01</td><td>1000.0000</td><td>1000.0000</td><td>1000.0000</td><td>12737933 B</td><td>1.00</td>
+</tr><tr><td>AlwaysClip</td><td>100000</td><td>Jagged</td><td>Inside</td><td>5,560.79 &mu;s</td><td>2,170.567 &mu;s</td><td>118.976 &mu;s</td><td>1.00</td><td>0.03</td><td>492.1875</td><td>492.1875</td><td>492.1875</td><td>6403981 B</td><td>1.000</td>
+</tr><tr><td>LabelFirst</td><td>100000</td><td>Jagged</td><td>Inside</td><td>523.92 &mu;s</td><td>83.642 &mu;s</td><td>4.585 &mu;s</td><td>0.09</td><td>0.00</td><td>-</td><td>-</td><td>-</td><td>241 B</td><td>0.000</td>
+</tr><tr><td>AlwaysClip</td><td>100000</td><td>Smooth</td><td>Complete</td><td>13,822.01 &mu;s</td><td>5,099.270 &mu;s</td><td>279.508 &mu;s</td><td>1.00</td><td>0.02</td><td>1531.2500</td><td>1265.6250</td><td>625.0000</td><td>20504637 B</td><td>1.000</td>
+</tr><tr><td>LabelFirst</td><td>100000</td><td>Smooth</td><td>Complete</td><td>479.83 &mu;s</td><td>68.355 &mu;s</td><td>3.747 &mu;s</td><td>0.03</td><td>0.00</td><td>-</td><td>-</td><td>-</td><td>240 B</td><td>0.000</td>
+</tr><tr><td>AlwaysClip</td><td>100000</td><td>Smooth</td><td>Hidden</td><td>9,549.99 &mu;s</td><td>206.526 &mu;s</td><td>11.320 &mu;s</td><td>1.00</td><td>0.00</td><td>1171.8750</td><td>1031.2500</td><td>1000.0000</td><td>10746560 B</td><td>1.00</td>
+</tr><tr><td>LabelFirst</td><td>100000</td><td>Smooth</td><td>Hidden</td><td>10,377.69 &mu;s</td><td>2,902.357 &mu;s</td><td>159.088 &mu;s</td><td>1.09</td><td>0.01</td><td>1171.8750</td><td>1031.2500</td><td>1000.0000</td><td>10747069 B</td><td>1.00</td>
+</tr><tr><td>AlwaysClip</td><td>100000</td><td>Smooth</td><td>Inside</td><td>5,584.84 &mu;s</td><td>3,965.997 &mu;s</td><td>217.390 &mu;s</td><td>1.00</td><td>0.05</td><td>492.1875</td><td>492.1875</td><td>492.1875</td><td>6404041 B</td><td>1.000</td>
+</tr><tr><td>LabelFirst</td><td>100000</td><td>Smooth</td><td>Inside</td><td>489.01 &mu;s</td><td>146.094 &mu;s</td><td>8.008 &mu;s</td><td>0.09</td><td>0.00</td><td>-</td><td>-</td><td>-</td><td>240 B</td><td>0.000</td>
+</tr></tbody></table>
+</body>
+</html>

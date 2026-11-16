@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>gView.Framework.Geometry.Benchmarks.SmallClipProfileBenchmarks-20261116-130026</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet v0.15.8, Windows 11 (10.0.26100.9711/24H2/2024Update/HudsonValley)
+11th Gen Intel Core i7-1185G7 3.00GHz, 1 CPU, 8 logical and 4 physical cores
+.NET SDK 11.0.100
+  [Host]   : .NET 10.0.15 (10.0.15, 10.0.1526.53008), X64 RyuJIT x86-64-v4
+  ShortRun : .NET 10.0.15 (10.0.15, 10.0.1526.53008), X64 RyuJIT x86-64-v4
+</code></pre>
+<pre><code>Job=ShortRun  IterationCount=3  LaunchCount=1  
+WarmupCount=3  
+</code></pre>
+
+<table>
+<thead><tr><th>Method               </th><th>Vertices</th><th>Mean   </th><th>Error </th><th>StdDev</th><th>Ratio</th><th>RatioSD</th><th>Gen0</th><th>Gen1</th><th>Allocated</th><th>Alloc Ratio</th>
+</tr>
+</thead><tbody><tr><td>Clipper</td><td>8</td><td>3,651.715 ns</td><td>1,862.013 ns</td><td>102.0632 ns</td><td>1.001</td><td>0.03</td><td>2.1935</td><td>0.0191</td><td>13776 B</td><td>1.00</td>
+</tr><tr><td>Bridge</td><td>8</td><td>1,724.839 ns</td><td>2,210.387 ns</td><td>121.1588 ns</td><td>0.473</td><td>0.03</td><td>0.9003</td><td>0.0019</td><td>5648 B</td><td>0.41</td>
+</tr><tr><td>OverlaysClip_GViewFactory</td><td>8</td><td>1,654.942 ns</td><td>591.117 ns</td><td>32.4011 ns</td><td>0.453</td><td>0.01</td><td>0.9003</td><td>0.0019</td><td>5648 B</td><td>0.41</td>
+</tr><tr><td>OverlaysClip_DefaultFactory</td><td>8</td><td>NA</td><td>NA</td><td>NA</td><td>?</td><td>?</td><td>NA</td><td>NA</td><td>NA</td><td>?</td>
+</tr><tr><td>EnvelopeIntersects</td><td>8</td><td>6.520 ns</td><td>2.944 ns</td><td>0.1614 ns</td><td>0.002</td><td>0.00</td><td>-</td><td>-</td><td>-</td><td>0.00</td>
+</tr><tr><td>Clipper</td><td>50</td><td>13,611.123 ns</td><td>2,298.326 ns</td><td>125.9790 ns</td><td>1.000</td><td>0.01</td><td>7.3853</td><td>0.3204</td><td>46360 B</td><td>1.00</td>
+</tr><tr><td>Bridge</td><td>50</td><td>3,952.043 ns</td><td>922.287 ns</td><td>50.5537 ns</td><td>0.290</td><td>0.00</td><td>1.7624</td><td>0.0229</td><td>11072 B</td><td>0.24</td>
+</tr><tr><td>OverlaysClip_GViewFactory</td><td>50</td><td>3,947.310 ns</td><td>1,929.268 ns</td><td>105.7497 ns</td><td>0.290</td><td>0.01</td><td>1.7624</td><td>0.0229</td><td>11072 B</td><td>0.24</td>
+</tr><tr><td>OverlaysClip_DefaultFactory</td><td>50</td><td>NA</td><td>NA</td><td>NA</td><td>?</td><td>?</td><td>NA</td><td>NA</td><td>NA</td><td>?</td>
+</tr><tr><td>EnvelopeIntersects</td><td>50</td><td>6.146 ns</td><td>4.427 ns</td><td>0.2427 ns</td><td>0.000</td><td>0.00</td><td>-</td><td>-</td><td>-</td><td>0.00</td>
+</tr></tbody></table>
+</body>
+</html>

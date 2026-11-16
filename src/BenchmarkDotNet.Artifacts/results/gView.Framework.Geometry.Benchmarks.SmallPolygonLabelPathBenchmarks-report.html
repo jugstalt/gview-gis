@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>gView.Framework.Geometry.Benchmarks.SmallPolygonLabelPathBenchmarks-20261116-130639</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet v0.15.8, Windows 11 (10.0.26100.9711/24H2/2024Update/HudsonValley)
+11th Gen Intel Core i7-1185G7 3.00GHz, 1 CPU, 8 logical and 4 physical cores
+.NET SDK 11.0.100
+  [Host]   : .NET 10.0.15 (10.0.15, 10.0.1526.53008), X64 RyuJIT x86-64-v4
+  ShortRun : .NET 10.0.15 (10.0.15, 10.0.1526.53008), X64 RyuJIT x86-64-v4
+</code></pre>
+<pre><code>Job=ShortRun  IterationCount=3  LaunchCount=1  
+WarmupCount=3  
+</code></pre>
+
+<table>
+<thead><tr><th>Method</th><th>Vertices</th><th>Radius</th><th>Scenario</th><th>Mean </th><th>Error  </th><th>StdDev</th><th>Ratio</th><th>RatioSD</th><th>Gen0</th><th>Gen1</th><th>Allocated</th><th>Alloc Ratio</th>
+</tr>
+</thead><tbody><tr><td>Classic</td><td>8</td><td>200</td><td>Complete</td><td>164.0 ns</td><td>75.76 ns</td><td>4.15 ns</td><td>1.00</td><td>0.03</td><td>0.0739</td><td>-</td><td>464 B</td><td>1.00</td>
+</tr><tr><td>SpatialNet</td><td>8</td><td>200</td><td>Complete</td><td>137.4 ns</td><td>92.41 ns</td><td>5.07 ns</td><td>0.84</td><td>0.03</td><td>0.0381</td><td>-</td><td>240 B</td><td>0.52</td>
+</tr><tr><td>Classic</td><td>8</td><td>200</td><td>Hidden</td><td>3,798.2 ns</td><td>2,914.14 ns</td><td>159.73 ns</td><td>1.00</td><td>0.05</td><td>2.2697</td><td>0.0191</td><td>14240 B</td><td>1.00</td>
+</tr><tr><td>SpatialNet</td><td>8</td><td>200</td><td>Hidden</td><td>1,926.7 ns</td><td>189.10 ns</td><td>10.37 ns</td><td>0.51</td><td>0.02</td><td>0.9766</td><td>0.0038</td><td>6128 B</td><td>0.43</td>
+</tr><tr><td>Classic</td><td>8</td><td>200</td><td>Inside</td><td>3,513.1 ns</td><td>390.05 ns</td><td>21.38 ns</td><td>1.00</td><td>0.01</td><td>2.2240</td><td>0.0191</td><td>13960 B</td><td>1.00</td>
+</tr><tr><td>SpatialNet</td><td>8</td><td>200</td><td>Inside</td><td>140.3 ns</td><td>51.15 ns</td><td>2.80 ns</td><td>0.04</td><td>0.00</td><td>0.0381</td><td>-</td><td>240 B</td><td>0.02</td>
+</tr><tr><td>Classic</td><td>8</td><td>5000</td><td>Complete</td><td>167.5 ns</td><td>78.94 ns</td><td>4.33 ns</td><td>1.00</td><td>0.03</td><td>0.0739</td><td>-</td><td>464 B</td><td>1.00</td>
+</tr><tr><td>SpatialNet</td><td>8</td><td>5000</td><td>Complete</td><td>133.0 ns</td><td>2.84 ns</td><td>0.16 ns</td><td>0.79</td><td>0.02</td><td>0.0381</td><td>-</td><td>240 B</td><td>0.52</td>
+</tr><tr><td>Classic</td><td>8</td><td>5000</td><td>Hidden</td><td>3,670.5 ns</td><td>652.81 ns</td><td>35.78 ns</td><td>1.00</td><td>0.01</td><td>2.2697</td><td>0.0191</td><td>14240 B</td><td>1.00</td>
+</tr><tr><td>SpatialNet</td><td>8</td><td>5000</td><td>Hidden</td><td>2,029.7 ns</td><td>1,161.53 ns</td><td>63.67 ns</td><td>0.55</td><td>0.02</td><td>0.9766</td><td>0.0038</td><td>6128 B</td><td>0.43</td>
+</tr><tr><td>Classic</td><td>8</td><td>5000</td><td>Inside</td><td>3,919.9 ns</td><td>3,102.55 ns</td><td>170.06 ns</td><td>1.00</td><td>0.05</td><td>2.2240</td><td>0.0191</td><td>13960 B</td><td>1.00</td>
+</tr><tr><td>SpatialNet</td><td>8</td><td>5000</td><td>Inside</td><td>135.0 ns</td><td>14.63 ns</td><td>0.80 ns</td><td>0.03</td><td>0.00</td><td>0.0381</td><td>-</td><td>240 B</td><td>0.02</td>
+</tr><tr><td>Classic</td><td>50</td><td>200</td><td>Complete</td><td>565.0 ns</td><td>241.06 ns</td><td>13.21 ns</td><td>1.00</td><td>0.03</td><td>0.0734</td><td>-</td><td>464 B</td><td>1.00</td>
+</tr><tr><td>SpatialNet</td><td>50</td><td>200</td><td>Complete</td><td>365.9 ns</td><td>160.84 ns</td><td>8.82 ns</td><td>0.65</td><td>0.02</td><td>0.0381</td><td>-</td><td>240 B</td><td>0.52</td>
+</tr><tr><td>Classic</td><td>50</td><td>200</td><td>Hidden</td><td>15,309.0 ns</td><td>5,774.79 ns</td><td>316.54 ns</td><td>1.00</td><td>0.03</td><td>7.2021</td><td>0.2594</td><td>45248 B</td><td>1.00</td>
+</tr><tr><td>SpatialNet</td><td>50</td><td>200</td><td>Hidden</td><td>5,085.3 ns</td><td>4,039.33 ns</td><td>221.41 ns</td><td>0.33</td><td>0.01</td><td>1.5411</td><td>0.0153</td><td>9712 B</td><td>0.21</td>
+</tr><tr><td>Classic</td><td>50</td><td>200</td><td>Inside</td><td>15,302.7 ns</td><td>31,441.34 ns</td><td>1,723.41 ns</td><td>1.01</td><td>0.14</td><td>7.0953</td><td>0.2747</td><td>44584 B</td><td>1.000</td>
+</tr><tr><td>SpatialNet</td><td>50</td><td>200</td><td>Inside</td><td>360.1 ns</td><td>102.21 ns</td><td>5.60 ns</td><td>0.02</td><td>0.00</td><td>0.0381</td><td>-</td><td>240 B</td><td>0.005</td>
+</tr><tr><td>Classic</td><td>50</td><td>5000</td><td>Complete</td><td>560.1 ns</td><td>50.37 ns</td><td>2.76 ns</td><td>1.00</td><td>0.01</td><td>0.0734</td><td>-</td><td>464 B</td><td>1.00</td>
+</tr><tr><td>SpatialNet</td><td>50</td><td>5000</td><td>Complete</td><td>359.8 ns</td><td>117.97 ns</td><td>6.47 ns</td><td>0.64</td><td>0.01</td><td>0.0381</td><td>-</td><td>240 B</td><td>0.52</td>
+</tr><tr><td>Classic</td><td>50</td><td>5000</td><td>Hidden</td><td>12,519.2 ns</td><td>2,012.48 ns</td><td>110.31 ns</td><td>1.00</td><td>0.01</td><td>7.2021</td><td>0.2594</td><td>45248 B</td><td>1.00</td>
+</tr><tr><td>SpatialNet</td><td>50</td><td>5000</td><td>Hidden</td><td>4,591.8 ns</td><td>2,320.54 ns</td><td>127.20 ns</td><td>0.37</td><td>0.01</td><td>1.5411</td><td>0.0153</td><td>9712 B</td><td>0.21</td>
+</tr><tr><td>Classic</td><td>50</td><td>5000</td><td>Inside</td><td>12,752.5 ns</td><td>7,553.10 ns</td><td>414.01 ns</td><td>1.00</td><td>0.04</td><td>7.0953</td><td>0.2747</td><td>44584 B</td><td>1.000</td>
+</tr><tr><td>SpatialNet</td><td>50</td><td>5000</td><td>Inside</td><td>367.3 ns</td><td>57.66 ns</td><td>3.16 ns</td><td>0.03</td><td>0.00</td><td>0.0381</td><td>-</td><td>240 B</td><td>0.005</td>
+</tr><tr><td>Classic</td><td>200</td><td>200</td><td>Complete</td><td>1,994.6 ns</td><td>166.69 ns</td><td>9.14 ns</td><td>1.00</td><td>0.01</td><td>0.0725</td><td>-</td><td>464 B</td><td>1.00</td>
+</tr><tr><td>SpatialNet</td><td>200</td><td>200</td><td>Complete</td><td>991.7 ns</td><td>272.57 ns</td><td>14.94 ns</td><td>0.50</td><td>0.01</td><td>0.0381</td><td>-</td><td>240 B</td><td>0.52</td>
+</tr><tr><td>Classic</td><td>200</td><td>200</td><td>Hidden</td><td>44,129.6 ns</td><td>9,441.32 ns</td><td>517.51 ns</td><td>1.00</td><td>0.01</td><td>24.9023</td><td>3.4180</td><td>156424 B</td><td>1.00</td>
+</tr><tr><td>SpatialNet</td><td>200</td><td>200</td><td>Hidden</td><td>13,135.1 ns</td><td>2,046.78 ns</td><td>112.19 ns</td><td>0.30</td><td>0.00</td><td>4.5166</td><td>0.2136</td><td>28384 B</td><td>0.18</td>
+</tr><tr><td>Classic</td><td>200</td><td>200</td><td>Inside</td><td>43,962.5 ns</td><td>8,703.22 ns</td><td>477.05 ns</td><td>1.00</td><td>0.01</td><td>24.3530</td><td>3.0518</td><td>153024 B</td><td>1.000</td>
+</tr><tr><td>SpatialNet</td><td>200</td><td>200</td><td>Inside</td><td>1,015.8 ns</td><td>73.05 ns</td><td>4.00 ns</td><td>0.02</td><td>0.00</td><td>0.0381</td><td>-</td><td>240 B</td><td>0.002</td>
+</tr><tr><td>Classic</td><td>200</td><td>5000</td><td>Complete</td><td>1,940.9 ns</td><td>111.56 ns</td><td>6.12 ns</td><td>1.00</td><td>0.00</td><td>0.0725</td><td>-</td><td>464 B</td><td>1.00</td>
+</tr><tr><td>SpatialNet</td><td>200</td><td>5000</td><td>Complete</td><td>1,037.8 ns</td><td>304.64 ns</td><td>16.70 ns</td><td>0.53</td><td>0.01</td><td>0.0381</td><td>-</td><td>240 B</td><td>0.52</td>
+</tr><tr><td>Classic</td><td>200</td><td>5000</td><td>Hidden</td><td>43,431.3 ns</td><td>6,416.56 ns</td><td>351.71 ns</td><td>1.00</td><td>0.01</td><td>24.9023</td><td>3.4180</td><td>156424 B</td><td>1.00</td>
+</tr><tr><td>SpatialNet</td><td>200</td><td>5000</td><td>Hidden</td><td>12,632.8 ns</td><td>2,279.83 ns</td><td>124.97 ns</td><td>0.29</td><td>0.00</td><td>4.5166</td><td>0.2136</td><td>28384 B</td><td>0.18</td>
+</tr><tr><td>Classic</td><td>200</td><td>5000</td><td>Inside</td><td>53,548.2 ns</td><td>240,032.18 ns</td><td>13,156.97 ns</td><td>1.04</td><td>0.31</td><td>24.3530</td><td>3.0518</td><td>153024 B</td><td>1.000</td>
+</tr><tr><td>SpatialNet</td><td>200</td><td>5000</td><td>Inside</td><td>1,041.9 ns</td><td>610.58 ns</td><td>33.47 ns</td><td>0.02</td><td>0.00</td><td>0.0381</td><td>-</td><td>240 B</td><td>0.002</td>
+</tr></tbody></table>
+</body>
+</html>

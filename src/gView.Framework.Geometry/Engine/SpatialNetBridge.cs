@@ -1,5 +1,6 @@
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Geometry;
+using gView.Framework.Geometry.GeoProcessing;
 using SpatialNET;
 using System;
 using System.Collections.Generic;
@@ -77,6 +78,84 @@ namespace gView.Framework.Geometry.Engine
             var rectangle = new Envelope2D(envelope.MinX, envelope.MinY, envelope.MaxX, envelope.MaxY);
 
             return (IPolygon)Overlays.Clip((IPolygon2D)ToSpatial(polygon), rectangle, factory: Factory);
+        }
+
+        #endregion
+
+        #region Label points
+
+        /// <summary>
+        /// Label points of a (large) polygon with SpatialNET (<c>FastPolygonLabel</c>, speed matters more than the
+        /// nicest position). The points are <see cref="SpatialNetSmartLabelPoint"/>s: after a collision they give
+        /// alternative points lazily (<c>FastAlternativePolygonLabelsLazy</c>).
+        /// </summary>
+        /// <param name="visible">Optional: alternative points outside of it are skipped (the polygon is not clipped to it).</param>
+        /// <param name="perPart">
+        /// One point per part (shell with its holes). Needs the rings typed as shells and holes in groups, which
+        /// the result of <see cref="ClipPolygon"/> has. Without it: one point for the whole polygon, which reads
+        /// the rings by even-odd nesting and needs neither <c>IHole</c> nor <c>VerifyHoles()</c>.
+        /// </param>
+        internal static IMultiPoint LabelPoints(IPolygon polygon, double pixelSize, bool perPart, IEnvelope visible = null)
+        {
+            var result = new MultiPoint();
+            if (polygon == null || polygon.RingCount == 0)
+            {
+                return result;
+            }
+
+            if (!perPart || polygon.RingCount == 1)
+            {
+                AddLabelPoint(result, polygon, pixelSize, visible);
+                return result;
+            }
+
+            foreach (var part in SplitParts(polygon))
+            {
+                AddLabelPoint(result, part, pixelSize, visible);
+            }
+
+            return result;
+        }
+
+        private static void AddLabelPoint(MultiPoint result, IPolygon polygon, double pixelSize, IEnvelope visible)
+        {
+            var spatial = (IPolygon2D)ToSpatial(polygon);
+
+            // SpatialNET's own cheap label point: centroid if inside, else a point on the surface
+            var coordinate = Shapes.FastPolygonLabel(spatial);
+            if (coordinate.HasValue)
+            {
+                // lazy alternative points for a collision, with the polygon already at hand
+                result.AddPoint(new SpatialNetSmartLabelPoint(
+                    coordinate.Value, spatial, pixelSize, visible) { Srs = polygon.Srs });
+            }
+        }
+
+        // The factory writes every shell followed by its holes
+        private static List<Polygon> SplitParts(IPolygon polygon)
+        {
+            var parts = new List<Polygon>();
+            Polygon current = null;
+            for (int i = 0; i < polygon.RingCount; i++)
+            {
+                var ring = polygon[i];
+                if (ring == null)
+                {
+                    continue;
+                }
+
+                if (ring is IHole && current != null)
+                {
+                    current.AddRing(ring);
+                }
+                else
+                {
+                    current = new Polygon(ring) { Srs = polygon.Srs };
+                    parts.Add(current);
+                }
+            }
+
+            return parts;
         }
 
         #endregion

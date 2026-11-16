@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -17,6 +17,9 @@ namespace gView.Framework.Geometry.Engine
     {
         public const string EnvironmentVariable = "GVIEW_SPATIALNET";
 
+        /// <summary>Environment variable for <see cref="LabelSpatialNetMinVertices"/>, e.g. <c>GVIEW_LABEL_SPATIALNET_MIN_VERTICES=12000</c>.</summary>
+        public const string LabelMinVerticesEnvironmentVariable = "GVIEW_LABEL_SPATIALNET_MIN_VERTICES";
+
         static GeometryEngineOptions()
         {
             var areas = ParseAreas(Environment.GetEnvironmentVariable(EnvironmentVariable));
@@ -25,6 +28,11 @@ namespace gView.Framework.Geometry.Engine
             UseSpatialNetForBuffer = areas.Contains("all") || areas.Contains("buffer");
             UseSpatialNetForMerge = areas.Contains("all") || areas.Contains("merge");
             UseSpatialNetForClip = areas.Contains("all") || areas.Contains("clip");
+
+            LabelSpatialNetMinVertices =
+                int.TryParse(Environment.GetEnvironmentVariable(LabelMinVerticesEnvironmentVariable), out int minVertices) && minVertices >= 0
+                    ? minVertices
+                    : 0;
         }
 
         /// <summary>
@@ -49,6 +57,16 @@ namespace gView.Framework.Geometry.Engine
         /// gView's own envelope clip.
         /// </summary>
         public static bool UseSpatialNetForClip { get; set; }
+
+        /// <summary>
+        /// Polygon labels (<c>SimpleLabelRenderer</c>): polygons with <b>more</b> vertices than this are clipped and
+        /// labelled with SpatialNET (label point first, clip only if it is not visible; alternative points lazily).
+        /// Smaller polygons keep gView's classic path (Clipper, ring raster). Default 0: all polygons use SpatialNET
+        /// (it is faster for polygons of every size, see the label path benchmarks). Set to <see cref="int.MaxValue"/>
+        /// for the classic path only; the old behaviour was 12000.
+        /// Also settable by <c>GVIEW_LABEL_SPATIALNET_MIN_VERTICES</c>. Independent of <see cref="UseSpatialNetForClip"/>.
+        /// </summary>
+        public static int LabelSpatialNetMinVertices { get; set; }
 
         internal static HashSet<string> ParseAreas(string value)
         {

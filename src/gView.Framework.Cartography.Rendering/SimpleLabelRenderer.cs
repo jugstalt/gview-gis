@@ -10,6 +10,7 @@ using gView.Framework.Core.IO;
 using gView.Framework.Core.Symbology;
 using gView.Framework.Core.UI;
 using gView.Framework.Geometry;
+using gView.Framework.Geometry.Engine;
 using gView.Framework.Geometry.GeoProcessing;
 using gView.Framework.Symbology;
 using gView.GraphicsEngine.Abstraction;
@@ -642,39 +643,26 @@ namespace gView.Framework.Cartography.Rendering
 
         #endregion
 
-        internal const int MaxPolygonTotalPointCount = 12000;  // Labelling is too expensive for complex polygons
         private bool LabelPolygon(IDisplay disp, IFeatureLayer layer, IPolygon polygon)
         {
-            //var center = new MultiPoint();
-            //center.AddPoint(polygon.Envelope.Center);
-            //return LabelPointCollection(disp, polygon, center);
+            if (polygon == null)
+            {
+                return false;
+            }
 
-            IEnvelope env = new Envelope(_clipEnvelope); //new Envelope(disp.Envelope);
-            //env.Raise(70.0);
+            return polygon.TotalPointCount > GeometryEngineOptions.LabelSpatialNetMinVertices
+                ? HandleLargePolygons(disp, layer, polygon)
+                : HandleSmallPolygons(disp, layer, polygon);
+        }
+
+        private bool HandleSmallPolygons(IDisplay disp, IFeatureLayer layer, IPolygon polygon)
+        {
+            IEnvelope env = new Envelope(_clipEnvelope);
             if (polygon is ITopologicalOperation)
             {
                 try
                 {
-                    double tolerance = 1.0 * disp.MapScale / disp.Dpm;  // 1 Pixel
-
-                    // Wichtig bei Flächen mit sehr vielen Vertices... Bundesländer, Länder Thema kann sonst beim Clippen abstürzen
-                    //if (polygon.TotalPointCount > MaxPolygonTotalPointCount)
-                    //{
-                    //polygon = SpatialAlgorithms.Algorithm.SnapOutsidePointsToEnvelope(polygon, env);
-                    //polygon = (IPolygon)SpatialAlgorithms.Algorithm.Generalize(polygon, tolerance);
-                    //}
-                    // For testing polygons with many vertices an clipping
-                    // polygon = (IPolygon)SpatialAlgorithms.Algorithm.InterpolatePoints(polygon, 2, true);
-
-                    IGeometry g;
-                    if (polygon.TotalPointCount > MaxPolygonTotalPointCount)
-                    {
-                        g = polygon;
-                    }
-                    else
-                    {
-                        ((ITopologicalOperation)polygon).Clip(env, out g);
-                    }
+                    ((ITopologicalOperation)polygon).Clip(env, out IGeometry g);
                     if (g == null)
                     {
                         return false;
@@ -690,20 +678,67 @@ namespace gView.Framework.Cartography.Rendering
                     return false;
                 }
             }
-            if (polygon == null)
-            {
-                return false;
-            }
 
-            if (polygon.TotalPointCount < MaxPolygonTotalPointCount)
+            IMultiPoint pColl = Algorithm.PolygonLabelPoints(polygon);
+            return LabelPointCollection(disp, layer, polygon, pColl);
+        }
+
+        // Polygons with very many vertices (countries, states): clip and label point with SpatialNET.
+        // The label points are SpatialNetSmartLabelPoints: after a collision they give alternative points lazily.
+        private bool HandleLargePolygons(IDisplay disp, IFeatureLayer layer, IPolygon polygon)
+        {
+            try
             {
-                IMultiPoint pColl = Algorithm.PolygonLabelPoints(polygon);
+                double pixelSize = 1.0 * disp.MapScale / disp.Dpm;  // 1 Pixel
+                var pColl = LargePolygonLabelPoints(
+                    polygon, _clipEnvelope, pixelSize, _howManyLabels == RenderHowManyLabels.OnPerPart);
+
                 return LabelPointCollection(disp, layer, polygon, pColl);
             }
-            else
+            catch (Exception)
             {
                 return false;
             }
+        }
+
+        internal static IMultiPoint LargePolygonLabelPoints(IPolygon polygon, IEnvelope clipEnvelope, double pixelSize, bool perPart)
+        {
+            if (clipEnvelope == null)
+            {
+                return LargePolygonLabeling.LabelPoints(polygon, pixelSize, perPart);
+            }
+
+            var envelope = polygon.Envelope;
+            if (!clipEnvelope.Intersects(envelope))
+            {
+                return null;
+            }
+
+            // One label per feature: the label point of the whole polygon first. If it is visible, there is no
+            // need to clip (the clip is by far the most expensive step). This also needs no typed holes.
+            if (!perPart)
+            {
+                var points = LargePolygonLabeling.LabelPoints(polygon, pixelSize, false, clipEnvelope);
+                if (points.PointCount > 0 && clipEnvelope.Contains(points[0]))
+                {
+                    return points;
+                }
+
+                if (clipEnvelope.Contains(envelope))
+                {
+                    return points.PointCount > 0 ? points : null;
+                }
+            }
+
+            // Label point outside of the map (or one label per part, which needs the typed and grouped rings
+            // of the clip): label the visible part
+            var clipped = LargePolygonLabeling.Clip(polygon, clipEnvelope);
+            if (clipped == null || clipped.RingCount == 0)
+            {
+                return null;
+            }
+
+            return LargePolygonLabeling.LabelPoints(clipped, pixelSize, perPart, clipEnvelope);
         }
 
         private bool LabelPointCollection(IDisplay disp, IFeatureLayer layer, IPolygon polygon, IMultiPoint pColl)
@@ -734,7 +769,19 @@ namespace gView.Framework.Cartography.Rendering
                         ISmartLabelPoint slp = pColl[i] as ISmartLabelPoint;
                         if (slp != null)
                         {
-                            LabelPointCollection(disp, layer, polygon, slp.AlernativeLabelPoints(disp));
+                            // lazy: stop at the first alternative point that fits
+                            foreach (var alternative in slp.AlternativeLabelPointsLazy(disp))
+                            {
+                                if (disp.LabelEngine.TryAppend(disp, layer, _symbol, alternative, _labelPriority != RenderLabelPriority.Always) == LabelAppendResult.Succeeded)
+                                {
+                                    if (_howManyLabels == RenderHowManyLabels.OnPerName)
+                                    {
+                                        _labelStrings.Add(_symbol.Text.Trim());
+                                    }
+
+                                    break;
+                                }
+                            }
                         }
                     }
                     break;

@@ -10,6 +10,7 @@ using gView.Framework.Core.IO;
 using gView.Framework.Core.Symbology;
 using gView.Framework.Core.UI;
 using gView.Framework.Geometry;
+using gView.Framework.Geometry.Engine;
 using gView.Framework.Geometry.GeoProcessing;
 using gView.Framework.Symbology;
 using System;
@@ -285,8 +286,27 @@ namespace gView.Framework.Cartography.Rendering
 
         #endregion
 
+        // Classic path only (LabelSpatialNetMinVertices above this): polygons with more vertices are not clipped
+        private const int MaxUnclippedPolygonTotalPointCount = 12000;
+
         private bool LabelPolygon(IDisplay disp, IFeatureLayer layer, IPolygon polygon, double[] values, double valSum, double valMin, double valMax)
         {
+            if (polygon != null && polygon.TotalPointCount > GeometryEngineOptions.LabelSpatialNetMinVertices)
+            {
+                // SpatialNET: label point first, clip only if it is not visible; one chart per feature
+                try
+                {
+                    double pixelSize = 1.0 * disp.MapScale / disp.Dpm;  // 1 Pixel
+                    var points = SimpleLabelRenderer.LargePolygonLabelPoints(polygon, _clipEnvelope, pixelSize, false);
+
+                    return LabelPointCollection(disp, layer, polygon, points, values, valSum, valMin, valMax);
+                }
+                catch (Exception)
+                {
+                    return false;
+                }
+            }
+
             IEnvelope env = new Envelope(_clipEnvelope);
 
             if (polygon is ITopologicalOperation)
@@ -305,7 +325,7 @@ namespace gView.Framework.Cartography.Rendering
                     // polygon = (IPolygon)SpatialAlgorithms.Algorithm.InterpolatePoints(polygon, 2, true);
 
                     IGeometry g;
-                    if (polygon.TotalPointCount > SimpleLabelRenderer.MaxPolygonTotalPointCount)
+                    if (polygon.TotalPointCount > MaxUnclippedPolygonTotalPointCount)
                     {
                         g = polygon;
                     }
@@ -359,7 +379,17 @@ namespace gView.Framework.Cartography.Rendering
                 ISmartLabelPoint slp = pColl[i] as ISmartLabelPoint;
                 if (slp != null)
                 {
-                    LabelPointCollection(disp, layer, polygon, slp.AlernativeLabelPoints(disp), values, valSum, valMin, valMax);
+                    // lazy: stop at the first alternative point that fits
+                    foreach (var alternative in slp.AlternativeLabelPointsLazy(disp))
+                    {
+                        if (disp.LabelEngine.TryAppend(disp, layer,
+                            ChartAnnotationPolygon(disp, alternative, values, valSum, valMin, valMax),
+                            alternative, _labelPriority != RenderLabelPriority.Always) == LabelAppendResult.Succeeded)
+                        {
+                            DrawChart(disp, alternative, values, valSum, valMin, valMax);
+                            break;
+                        }
+                    }
                 }
             }
             return false;

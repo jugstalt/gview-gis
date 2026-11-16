@@ -2086,6 +2086,18 @@ namespace gView.Framework.Geometry.GeoProcessing
             {
                 MultiPoint pColl = new MultiPoint();
 
+                foreach (var point in AlternativeLabelPointsLazy(display))
+                {
+                    pColl.AddPoint(point);
+                }
+
+                return pColl;
+            }
+
+            // Same points in the same order as AlernativeLabelPoints, but created one by one,
+            // so the caller can stop at the first one that fits.
+            public IEnumerable<IPoint> AlternativeLabelPointsLazy(IDisplay display)
+            {
                 IEnvelope env = _ring.Envelope;
                 double R =
                     Math.Max(
@@ -2101,14 +2113,11 @@ namespace gView.Framework.Geometry.GeoProcessing
                         double y = _centerPoint.Y + r * Math.Sin(w);
                         if (Jordan(_polygon, x, y))
                         {
-                            pColl.AddPoint(new Point(x, y));
+                            yield return new Point(x, y);
                         }
                     }
                 }
-
-                return pColl;
             }
-
             #endregion
         }
         #endregion

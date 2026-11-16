@@ -14,4 +14,9 @@
     <ProjectReference Include="..\gView.Framework\gView.Framework.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Benchmarks of the large polygon labelling (SimpleLabelRenderer.LargePolygonLabelPoints) -->
+    <InternalsVisibleTo Include="gView.Framework.Geometry.Benchmarks" />
+  </ItemGroup>
+
 </Project>

@@ -48,7 +48,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Changed
 
-- Geometry: SpatialNET packages updated to 0.10.0-preview.2.
+- Geometry: SpatialNET packages updated to 0.10.0-preview.4.
+- Polygon labels (`SimpleLabelRenderer`, `ChartLabelRenderer`): all polygons now take the SpatialNET path
+  that was only used for polygons with more than 12000 vertices before (the limit where Clipper and the ring
+  raster became too slow or crashed). The label point is found first (`FastPolygonLabel`) and the polygon is only
+  clipped if that point is not visible; for a collision the alternative points come lazily
+  (`FastAlternativePolygonLabelsLazy`, at most 32, 20 pixels apart; `ISmartLabelPoint.AlternativeLabelPointsLazy`),
+  and the classic raster is lazy too. Benchmarks per feature: polygons cut by the map edge or completely visible
+  need about 1/10 to 1/40 of the time, large polygons (100000 vertices) 0.5 ms instead of 4-15 ms; only the
+  alternative point positions differ from before. The limit is the setting
+  `GeometryEngineOptions.LabelSpatialNetMinVertices` (environment variable
+  `GVIEW_LABEL_SPATIALNET_MIN_VERTICES`, default 0 = all polygons; `int.MaxValue` = classic path only,
+  12000 = the old behaviour).
 - Tile service metadata: `renderTilesOnTheFly` can be set in the metadata editor (YAML).
 
 ## Fixed

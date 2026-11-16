@@ -26,6 +26,25 @@ internal static class Shapes
         return new Polygon(new Ring(points));
     }
 
+    /// <summary>
+    /// A smooth, concave polygon like a real border: a low-frequency shape with a little fine noise, so that
+    /// neighbouring vertices are close together at any number of vertices.
+    /// </summary>
+    public static Polygon SmoothBlob(Random random, double centerX, double centerY, double radius, int vertices)
+    {
+        double phase1 = random.NextDouble() * 2 * Math.PI, phase2 = random.NextDouble() * 2 * Math.PI;
+        var points = new List<IPoint>(vertices);
+        for (int i = 0; i < vertices; i++)
+        {
+            double angle = 2 * Math.PI * i / vertices;
+            double r = radius * (1 + 0.15 * Math.Sin(3 * angle + phase1) + 0.08 * Math.Sin(7 * angle + phase2)
+                                 + 0.002 * (random.NextDouble() - 0.5));
+            points.Add(new Point(centerX + r * Math.Cos(angle), centerY + r * Math.Sin(angle)));
+        }
+
+        return new Polygon(new Ring(points));
+    }
+
     /// <summary>A random walk with the given number of vertices.</summary>
     public static Polyline Walk(Random random, double startX, double startY, double step, int vertices)
     {
