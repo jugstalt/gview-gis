@@ -125,6 +125,10 @@ public sealed class FileNetworkStore : INetworkStore
             }
             Directory.Move(tempDir, shardDir);
 
+            NodeIndex.Write(
+                Path.Combine(_directory, NodeIndex.FileName),
+                _shards.Values.SelectMany(s => s.Nodes.Select(n => (n.Node.Id, s.Id, n.Node.TypeId))));
+
             File.WriteAllText(Path.Combine(_directory, MetadataFile), JsonSerializer.Serialize(metadata, NetworkConfig.JsonOptions));
         }
 

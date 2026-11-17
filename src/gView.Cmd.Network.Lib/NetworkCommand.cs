@@ -26,17 +26,30 @@ public class NetworkCommand : ICommand
 {
     public string Name => "Network";
 
-    public string Description => "Build a SpatialNET network from the layers of a map (-u build | config-from-mxl)";
+    public string Description => "Build and search SpatialNET networks (-u build | config-from-mxl | trace | reach | path | supply | info)";
 
     public string ExecutableName => "";
 
     public IEnumerable<ICommandParameterDescription> ParameterDescriptions =>
         [
-            new RequiredCommandParameter<string>("u") { Description = "build | config-from-mxl" },
+            new RequiredCommandParameter<string>("u") { Description = "build | config-from-mxl | trace | reach | path | supply | info" },
             new CommandParameter<string>("config") { Description = "network config (json); build" },
             new CommandParameter<string>("mxl") { Description = "map (mxl); for build it overrides the map of the config" },
-            new RequiredCommandParameter<string>("output") { Description = "build: network directory; config-from-mxl: json file" },
+            new CommandParameter<string>("output") { Description = "build: network directory; config-from-mxl: json file" },
             new CommandParameter<string>("json") { Description = "build: true also writes each shard as json (debugging)" },
+            new CommandParameter<string>("network") { Description = "searches: the network directory" },
+            new CommandParameter<string>("start") { Description = "trace, reach: nodes (Layer#OID, id or type pattern like [*,Trafo,*]; comma separated)" },
+            new CommandParameter<string>("from") { Description = "path: start node" },
+            new CommandParameter<string>("to") { Description = "path: end node" },
+            new CommandParameter<string>("sources") { Description = "supply: source nodes" },
+            new CommandParameter<string>("sinks") { Description = "supply: sink nodes" },
+            new CommandParameter<string>("node") { Description = "info: the node" },
+            new CommandParameter<string>("filter") { Description = "searches: only edges of these types (pattern)" },
+            new CommandParameter<string>("block") { Description = "searches: nodes blocked for this search" },
+            new CommandParameter<string>("unblock") { Description = "searches: nodes opened for this search" },
+            new CommandParameter<string>("weight") { Description = "searches: weight name (default length)" },
+            new CommandParameter<string>("max-cost") { Description = "searches: stop at this cost" },
+            new CommandParameter<string>("out") { Description = "searches: result file (.csv or .geojson)" },
         ];
 
     async public Task<bool> Run(IDictionary<string, object> parameters, ICancelTracker? cancelTracker = null, ICommandLogger? logger = null)
@@ -50,10 +63,22 @@ public class NetworkCommand : ICommand
                 return await Build(parameters, output, logger);
             case "config-from-mxl":
                 return await ConfigFromMxl(parameters.GetValue<string>("mxl"), output, logger);
+            case "trace":
+            case "reach":
+            case "path":
+            case "supply":
+            case "info":
+                return await NetworkAnalysisCommands.Run(utility, parameters, logger);
             default:
                 logger?.LogLine("Usage:");
                 logger?.LogLine("  -u build (-config <net.json> [-mxl <map.mxl>] | -mxl <map.mxl with network from Carto>) -output <directory> [-json true]");
                 logger?.LogLine("  -u config-from-mxl -mxl <map.mxl> -output <net.json>");
+                logger?.LogLine("  -u trace  -network <dir> -start <nodes> [-filter <pattern>] [-block <nodes>] [-unblock <nodes>] [-out x.csv|x.geojson]");
+                logger?.LogLine("  -u reach  -network <dir> -start <nodes> -max-cost <cost> [-weight <name>] [-out ...]");
+                logger?.LogLine("  -u path   -network <dir> -from <node> -to <node> [-weight <name>] [-out ...]");
+                logger?.LogLine("  -u supply -network <dir> -sources <nodes> -sinks <nodes> [-out ...]");
+                logger?.LogLine("  -u info   -network <dir> -node <node>");
+                logger?.LogLine("  nodes: Layer#OID (Trafo#5929), node id, or type pattern ([*,Trafo,*]), comma separated");
                 return false;
         }
     }
@@ -133,6 +158,7 @@ public class NetworkCommand : ICommand
         }
 
         WriteWarningsAndDuplicates(service, output, logger);
+        File.Delete(Path.Combine(output, "conflicts.json")); // from an earlier failed build
 
         foreach (var group in report.Diagnostics.GroupBy(d => d.Kind))
         {
