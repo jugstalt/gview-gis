@@ -3,8 +3,8 @@ using gView.Framework.Core.Data;
 
 namespace gView.Framework.NetworkModel.Build;
 
-/// <summary>A feature layer of a map with its id, name and group path in the TOC.</summary>
-public sealed record MapLayer(IFeatureLayer Layer, string Name, IReadOnlyList<string> GroupPath)
+/// <summary>A feature layer of a map with its id, name, group path and position in the TOC (0 at the top).</summary>
+public sealed record MapLayer(IFeatureLayer Layer, string Name, IReadOnlyList<string> GroupPath, int TocOrder = 0)
 {
     public int Id => Layer.ID;
 
@@ -33,7 +33,8 @@ public static class MapLayers
                 groups.Insert(0, group.Name);
             }
 
-            result.Add(new MapLayer(featureLayer, name, groups));
+            int tocOrder = tocElement is not null && map.TOC is not null ? map.TOC.GetTOCElementOrder(tocElement) : -1;
+            result.Add(new MapLayer(featureLayer, name, groups, tocOrder >= 0 ? tocOrder : int.MaxValue));
         }
         return result;
     }

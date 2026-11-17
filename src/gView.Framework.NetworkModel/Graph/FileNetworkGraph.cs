@@ -19,6 +19,7 @@ public sealed class FileNetworkGraph : IGraph<long, long>
 
     private readonly FileNetworkStore _store;
     private readonly NodeIndex _index;
+    private readonly AliasIndex _aliases;
     private readonly Dictionary<long, LoadedShard> _shards = [];
     private readonly Dictionary<long, ShardEdge> _edges = [];
 
@@ -32,6 +33,7 @@ public sealed class FileNetworkGraph : IGraph<long, long>
             throw new FileNotFoundException($"{indexPath} is missing; build the network again.");
         }
         _index = NodeIndex.Read(indexPath);
+        _aliases = AliasIndex.Read(Path.Combine(directory, AliasIndex.FileName));
         Types = new TypeRegistry(
             Metadata.Facets.Select(f => new Facet(f.Name, f.Values)).ToList(),
             Metadata.Types.Select(t => new NetworkType(t.Id, t.Kind, t.Facets, t.Name)));
@@ -89,6 +91,15 @@ public sealed class FileNetworkGraph : IGraph<long, long>
         return _index.TryGet(id, out var shardId, out _) && Shard(shardId).Nodes.TryGetValue(id, out node);
     }
 
+    /// <summary>The ids of the points merged into a node (aliases), e.g. customers drawn on a box; empty for none.</summary>
+    public IReadOnlyList<long> AliasesOf(long nodeId) => _aliases.AliasesOf(nodeId);
+
+    /// <summary>The type of a merged point (alias).</summary>
+    public int AliasTypeOf(long aliasId) => _aliases.TypeOf(aliasId);
+
+    /// <summary>The node a merged point (alias) was merged into.</summary>
+    public bool TryGetAliasTarget(long aliasId, out long nodeId) => _aliases.TryGetNode(aliasId, out nodeId);
+
     public bool TryGetShardOf(long nodeId, out long shardId) => _index.TryGet(nodeId, out shardId, out _);
 
     /// <summary>An edge that a search returned (its shard is loaded then).</summary>
@@ -99,6 +110,22 @@ public sealed class FileNetworkGraph : IGraph<long, long>
             ? edges
             : [];
 
+    /// <summary>Reads every shard from the store, one after the other, without keeping them (for checks over the whole network).</summary>
+    public IEnumerable<ShardData> ReadShards()
+    {
+        foreach (var shard in Metadata.Shards)
+        {
+            yield return _store.ReadShard(shard.Id);
+        }
+    }
+
+    /// <summary>Drops the loaded shards; they are loaded again when a search touches them.</summary>
+    public void ClearCache()
+    {
+        _shards.Clear();
+        _edges.Clear();
+    }
+
     #endregion
 
     #region References
@@ -106,6 +133,7 @@ public sealed class FileNetworkGraph : IGraph<long, long>
     /// <summary>
     /// Resolves a comma separated list of node references: Layer#OID (e.g. Trafo#5929, Niederspannung/Kasten#23660),
     /// a raw node id, or a type pattern (e.g. [*,Trafo,*], Niederspannung.Kasten), which means every node of that type.
+    /// A merged point (alias) resolves to the node it was merged into.
     /// </summary>
     public IReadOnlyList<long> ResolveNodes(string references)
     {
@@ -141,6 +169,10 @@ public sealed class FileNetworkGraph : IGraph<long, long>
                     : $"Layer name '{layer}' is ambiguous, use the path: {string.Join(", ", featureClasses.Select(f => f.Layer))}");
             }
             var id = NetworkIds.Compose(featureClasses[0].Index, oid);
+            if (_aliases.TryGetNode(id, out var target))
+            {
+                return [target];
+            }
             if (!_index.TryGet(id, out _, out _))
             {
                 throw new ArgumentException($"{reference} is not a node of the network (left out by a filter or as a duplicate?).");
@@ -150,11 +182,16 @@ public sealed class FileNetworkGraph : IGraph<long, long>
 
         if (long.TryParse(reference, NumberStyles.Integer, CultureInfo.InvariantCulture, out var rawId))
         {
+            if (_aliases.TryGetNode(rawId, out var target))
+            {
+                return [target];
+            }
             return _index.TryGet(rawId, out _, out _) ? [rawId] : throw new ArgumentException($"Node id {rawId} is not in the network.");
         }
 
         var types = Types.Nodes(reference);
-        return _index.NodesOfTypes(types.Contains).ToList();
+        // merged points of the type (customers drawn on a box) stand for the node they were merged into
+        return _index.NodesOfTypes(types.Contains).Concat(_aliases.NodesOfAliasTypes(types.Contains)).Distinct().ToList();
     }
 
     /// <summary>Splits at commas outside of [ ] (patterns contain commas).</summary>

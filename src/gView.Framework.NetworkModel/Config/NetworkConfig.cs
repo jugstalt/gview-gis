@@ -21,6 +21,9 @@ public class NetworkConfig
     /// <summary>Line ends and points closer than this are joined into one node (units of the srs).</summary>
     public double Tolerance { get; set; } = 0.01;
 
+    /// <summary>What happens to points of different node layers within the tolerance of each other.</summary>
+    public NodeConflictMode NodeConflicts { get; set; } = NodeConflictMode.Error;
+
     /// <summary>The size of the grid cells for nodes outside every shard polygon.</summary>
     public double FallbackShardCellSize { get; set; } = 2000;
 
@@ -38,6 +41,9 @@ public class NetworkConfig
 
     /// <summary>The polygon layer that assigns shards.</summary>
     public ShardConfig? Shards { get; set; }
+
+    /// <summary>The validation rules; written into network.json on build, checked by gView.Cmd -u validate.</summary>
+    public List<NetworkRuleConfig> Rules { get; set; } = [];
 
     public static JsonSerializerOptions JsonOptions { get; } = new()
     {
@@ -90,11 +96,29 @@ public class NetworkConfig
                 }
             }
         }
+        var duplicateRule = Rules.GroupBy(r => r.Id, StringComparer.OrdinalIgnoreCase).FirstOrDefault(g => g.Count() > 1 || string.IsNullOrWhiteSpace(g.Key));
+        if (duplicateRule is not null)
+        {
+            throw new InvalidDataException(string.IsNullOrWhiteSpace(duplicateRule.Key) ? "Every rule needs an id." : $"The rule id '{duplicateRule.Key}' is used twice.");
+        }
         if (Shards is not null && ((string.IsNullOrWhiteSpace(Shards.Layer) && Shards.LayerId is null) || string.IsNullOrWhiteSpace(Shards.Field)))
         {
             throw new InvalidDataException("The shards need a layer and a field.");
         }
     }
+}
+
+/// <summary>What happens to points of different node layers within the tolerance of each other (SpatialNET ADR 0054).</summary>
+public enum NodeConflictMode
+{
+    /// <summary>A data error: the build stops and lists every conflict (ADR 0050).</summary>
+    Error,
+
+    /// <summary>
+    /// The point of the layer higher in the TOC stays (the lowest object id within a layer); the others are merged into it
+    /// and kept as aliases, so Layer#OID still finds their node.
+    /// </summary>
+    PriorityByToc,
 }
 
 public class FacetConfig

@@ -47,6 +47,7 @@ public sealed class FileNetworkStore : INetworkStore
         private readonly string _directory;
         private readonly bool _writeJson;
         private readonly Dictionary<long, ShardData> _shards = [];
+        private readonly List<(long AliasId, long NodeId, int TypeId)> _aliases = [];
         private int _nodeCount, _edgeCount;
 
         public Writer(string directory, bool writeJson)
@@ -68,6 +69,10 @@ public sealed class FileNetworkStore : INetworkStore
         {
             Shard(node.Shard).Nodes.Add(new ShardNode(node.Node, node.IsHelper, node.IsHelper ? null : node.Source));
             _nodeCount++;
+            foreach (var merged in node.Merged ?? [])
+            {
+                _aliases.Add((merged.Id, node.Node.Id, merged.TypeId));
+            }
         }
 
         public void WriteEdge(in BuiltEdge<long, long, FeatureRef> edge)
@@ -129,9 +134,16 @@ public sealed class FileNetworkStore : INetworkStore
                 Path.Combine(_directory, NodeIndex.FileName),
                 _shards.Values.SelectMany(s => s.Nodes.Select(n => (n.Node.Id, s.Id, n.Node.TypeId))));
 
+            AliasIndex.Write(Path.Combine(_directory, AliasIndex.FileName), _aliases);
+            metadata.AliasCount = _aliases.Count;
+
             File.WriteAllText(Path.Combine(_directory, MetadataFile), JsonSerializer.Serialize(metadata, NetworkConfig.JsonOptions));
         }
 
-        public void Dispose() => _shards.Clear();
+        public void Dispose()
+        {
+            _shards.Clear();
+            _aliases.Clear();
+        }
     }
 }

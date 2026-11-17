@@ -26,13 +26,13 @@ public class NetworkCommand : ICommand
 {
     public string Name => "Network";
 
-    public string Description => "Build and search SpatialNET networks (-u build | config-from-mxl | trace | reach | path | supply | info)";
+    public string Description => "Build and search SpatialNET networks (-u build | config-from-mxl | trace | reach | path | supply | info | validate)";
 
     public string ExecutableName => "";
 
     public IEnumerable<ICommandParameterDescription> ParameterDescriptions =>
         [
-            new RequiredCommandParameter<string>("u") { Description = "build | config-from-mxl | trace | reach | path | supply | info" },
+            new RequiredCommandParameter<string>("u") { Description = "build | config-from-mxl | trace | reach | path | supply | info | validate" },
             new CommandParameter<string>("config") { Description = "network config (json); build" },
             new CommandParameter<string>("mxl") { Description = "map (mxl); for build it overrides the map of the config" },
             new CommandParameter<string>("output") { Description = "build: network directory; config-from-mxl: json file" },
@@ -49,7 +49,9 @@ public class NetworkCommand : ICommand
             new CommandParameter<string>("unblock") { Description = "searches: nodes opened for this search" },
             new CommandParameter<string>("weight") { Description = "searches: weight name (default length)" },
             new CommandParameter<string>("max-cost") { Description = "searches: stop at this cost" },
-            new CommandParameter<string>("out") { Description = "searches: result file (.csv or .geojson)" },
+            new CommandParameter<string>("out") { Description = "searches, validate: result file (.csv or .geojson)" },
+            new CommandParameter<string>("rules") { Description = "validate: rules (json array, or an object with \"rules\"); default: the rules in network.json" },
+            new CommandParameter<string>("rule") { Description = "validate: check only these rule ids (comma separated)" },
         ];
 
     async public Task<bool> Run(IDictionary<string, object> parameters, ICancelTracker? cancelTracker = null, ICommandLogger? logger = null)
@@ -68,6 +70,7 @@ public class NetworkCommand : ICommand
             case "path":
             case "supply":
             case "info":
+            case "validate":
                 return await NetworkAnalysisCommands.Run(utility, parameters, logger);
             default:
                 logger?.LogLine("Usage:");
@@ -78,6 +81,7 @@ public class NetworkCommand : ICommand
                 logger?.LogLine("  -u path   -network <dir> -from <node> -to <node> [-weight <name>] [-out ...]");
                 logger?.LogLine("  -u supply -network <dir> -sources <nodes> -sinks <nodes> [-out ...]");
                 logger?.LogLine("  -u info   -network <dir> -node <node>");
+                logger?.LogLine("  -u validate -network <dir> [-rules <rules.json>] [-rule <id,...>] [-out x.csv|x.geojson]");
                 logger?.LogLine("  nodes: Layer#OID (Trafo#5929), node id, or type pattern ([*,Trafo,*]), comma separated");
                 return false;
         }
@@ -189,6 +193,16 @@ public class NetworkCommand : ICommand
             logger?.LogLine($"Duplicates left out {group.Key}: {group.Count()}");
         }
         File.WriteAllText(Path.Combine(output, "duplicates.json"), JsonSerializer.Serialize(service.Duplicates, NetworkConfig.JsonOptions));
+
+        if (service.Merged.Count > 0)
+        {
+            logger?.LogLine($"Merged into the point of a layer higher in the TOC: {service.Merged.Count}");
+            foreach (var group in service.Merged.GroupBy(m => $"{m.MergedLayer} -> {m.KeptLayer}").OrderByDescending(g => g.Count()))
+            {
+                logger?.LogLine($"  {group.Count(),6}  {group.Key}");
+            }
+        }
+        File.WriteAllText(Path.Combine(output, "merged.json"), JsonSerializer.Serialize(service.Merged, NetworkConfig.JsonOptions));
     }
 
     private static async Task<bool> ConfigFromMxl(string mxlPath, string output, ICommandLogger? logger)

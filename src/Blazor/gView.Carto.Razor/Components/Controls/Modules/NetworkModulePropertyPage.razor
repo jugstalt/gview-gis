@@ -17,6 +17,10 @@
                 <MudTextField T="string" Label="Name" @bind-Value="config.Name" />
                 <MudTextField T="string" Label="Spatial reference (e.g. epsg:31256; empty = map, must be metric)" @bind-Value="config.Srs" />
                 <MudNumericField T="double" Label="Tolerance (joins line ends and points)" @bind-Value="config.Tolerance" />
+                <MudSelect T="NodeConflictMode" Label="Points of different layers at one place" @bind-Value="config.NodeConflicts">
+                    <MudSelectItem Value="NodeConflictMode.Error">Error: the build stops and lists the conflicts</MudSelectItem>
+                    <MudSelectItem Value="NodeConflictMode.PriorityByToc">Merge: the layer higher in the TOC wins, the others become aliases</MudSelectItem>
+                </MudSelect>
                 <MudNumericField T="double" Label="Grid cell size for nodes outside every shard polygon" @bind-Value="config.FallbackShardCellSize" />
             </GvCardContent>
         </GvCard>
@@ -92,6 +96,57 @@
             </GvCardContent>
         </GvCard>
 
+        <GvCard Title="Rules (validation)">
+            <GvCardContent>
+                @GvUtilities.InfoText("Each rule counts the direct neighbours of nodes or edges: subject types (pattern, e.g. [*,Kasten,*]; several with |), counted edge types, allowed min..max (max empty = no limit). Edge rules may look only at ends where the node is / is not of the end types. Checked after the build: gView.Cmd --command Network -u validate -network <dir>")
+                <table style="width:100%">
+                    @foreach (var rule in config.Rules)
+                    {
+                        <tr>
+                            <td style="width:12%"><MudTextField T="string" Label="Id" @bind-Value="rule.Id" /></td>
+                            <td style="width:9%">
+                                <MudSelect T="RuleSeverity" Label="Severity" @bind-Value="rule.Severity">
+                                    @foreach (var value in Enum.GetValues<RuleSeverity>())
+                                    {
+                                        <MudSelectItem Value="value">@value</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </td>
+                            <td style="width:8%">
+                                <MudSelect T="RuleSubject" Label="Subject" @bind-Value="rule.Subject">
+                                    @foreach (var value in Enum.GetValues<RuleSubject>())
+                                    {
+                                        <MudSelectItem Value="value">@value</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </td>
+                            <td><MudTextField T="string" Label="Subject types" @bind-Value="rule.SubjectTypes" /></td>
+                            <td style="width:10%">
+                                <MudSelect T="RuleEndFilter" Label="Ends" @bind-Value="rule.EndFilter" Disabled="rule.Subject == RuleSubject.Node">
+                                    @foreach (var value in Enum.GetValues<RuleEndFilter>())
+                                    {
+                                        <MudSelectItem Value="value">@value</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </td>
+                            <td><MudTextField T="string" Label="End types" @bind-Value="rule.EndTypes" Disabled="rule.EndFilter == RuleEndFilter.All" /></td>
+                            <td><MudTextField T="string" Label="Counted edge types" @bind-Value="rule.CountTypes" /></td>
+                            <td style="width:6%"><MudNumericField T="int" Label="Min" @bind-Value="rule.Min" Min="0" /></td>
+                            <td style="width:6%"><MudNumericField T="int?" Label="Max" @bind-Value="rule.Max" Min="0" /></td>
+                            <td><MudTextField T="string" Label="Description" @bind-Value="rule.Description" /></td>
+                            <td style="width:50px">
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="() => config.Rules.Remove(rule)" />
+                            </td>
+                        </tr>
+                    }
+                </table>
+                <MudButton Variant="Variant.Filled" OnClick="AddRule">Add rule</MudButton>
+                <MudTextField T="string" Label="Rules JSON file" @bind-Value="_rulesPath" />
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="ExportRules">Export rules</MudButton>
+                <MudButton Variant="Variant.Filled" OnClick="ImportRules">Import rules</MudButton>
+            </GvCardContent>
+        </GvCard>
+
         <GvCard Title="JSON (gView.Cmd)">
             <GvCardContent>
                 <MudTextField T="string" Label="JSON file" @bind-Value="_jsonPath" />
@@ -120,6 +175,7 @@
 
     private NetworkModule? _module;
     private string _jsonPath = "";
+    private string _rulesPath = "";
     private List<string> _messages = [];
     private Severity _messageSeverity = Severity.Info;
     private string? _command;
@@ -135,6 +191,13 @@
             _jsonPath = string.IsNullOrEmpty(mxl)
                 ? ""
                 : IOPath.Combine(IOPath.GetDirectoryName(mxl) ?? "", $"{IOPath.GetFileNameWithoutExtension(mxl)}.network.json");
+        }
+        if (string.IsNullOrEmpty(_rulesPath))
+        {
+            var mxl = AppScope.Document?.FilePath;
+            _rulesPath = string.IsNullOrEmpty(mxl)
+                ? ""
+                : IOPath.Combine(IOPath.GetDirectoryName(mxl) ?? "", $"{IOPath.GetFileNameWithoutExtension(mxl)}.rules.json");
         }
     });
 
@@ -158,6 +221,31 @@
 
     private void AddWeight() => Handle(() =>
         _module!.Config.Weights.Add(new WeightConfig { Name = Unique(_module.Config.Weights.Select(w => w.Name), "Weight") }));
+
+    private void AddRule() => Handle(() =>
+        _module!.Config.Rules.Add(new NetworkRuleConfig { Id = Unique(_module.Config.Rules.Select(r => r.Id), "rule") }));
+
+    private void ExportRules() => Handle(() =>
+    {
+        if (string.IsNullOrWhiteSpace(_rulesPath))
+        {
+            throw new ArgumentException("Enter the path of the rules JSON file.");
+        }
+        File.WriteAllText(_rulesPath, _module!.ExportRulesJson());
+        SetMessages(Severity.Success, $"Written: {_rulesPath} ({_module.Config.Rules.Count} rules)");
+        _command = $"gView.Cmd --command Network -u validate -network <dir> -rules \"{_rulesPath}\" -out \"{IOPath.ChangeExtension(_rulesPath, ".violations.csv")}\"";
+    });
+
+    private void ImportRules() => Handle(() =>
+    {
+        if (!File.Exists(_rulesPath))
+        {
+            throw new FileNotFoundException($"File not found: {_rulesPath}");
+        }
+        int count = _module!.ImportRulesJson(File.ReadAllText(_rulesPath));
+        _command = null;
+        SetMessages(Severity.Success, $"Imported: {count} rule(s).");
+    });
 
     private void AddFacet() => Handle(() =>
     {

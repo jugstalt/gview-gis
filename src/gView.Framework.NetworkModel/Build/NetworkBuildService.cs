@@ -17,10 +17,15 @@ using System.Globalization;
 namespace gView.Framework.NetworkModel.Build;
 
 /// <summary>The outcome of a build.</summary>
-public sealed record NetworkBuildReport(NetworkMetadata Metadata, IReadOnlyList<BuildDiagnostic> Diagnostics, IReadOnlyList<string> Warnings, IReadOnlyList<DuplicatePoint> Duplicates);
+public sealed record NetworkBuildReport(
+    NetworkMetadata Metadata, IReadOnlyList<BuildDiagnostic> Diagnostics, IReadOnlyList<string> Warnings,
+    IReadOnlyList<DuplicatePoint> Duplicates, IReadOnlyList<MergedPoint> Merged);
 
 /// <summary>A point left out because another point of the same layer lies within the tolerance.</summary>
 public sealed record DuplicatePoint(string Layer, long KeptOid, long DroppedOid, double X, double Y);
+
+/// <summary>A point merged into the point of another layer within the tolerance (<see cref="NodeConflictMode.PriorityByToc"/>).</summary>
+public sealed record MergedPoint(string KeptLayer, long KeptOid, string MergedLayer, long MergedOid, double X, double Y);
 
 /// <summary>
 /// Builds a network from the layers of a map as the config defines it: reads points and lines, gives them types,
@@ -35,6 +40,9 @@ public sealed class NetworkBuildService
 
     /// <summary>The points left out as duplicates in the last build, also when it failed.</summary>
     public List<DuplicatePoint> Duplicates { get; } = [];
+
+    /// <summary>The points merged into the point of another layer in the last build.</summary>
+    public List<MergedPoint> Merged { get; } = [];
 
     /// <summary>The metadata of the last build as far as it got, e.g. to name the feature classes of conflicts.</summary>
     public NetworkMetadata? Metadata { get; private set; }
@@ -57,6 +65,7 @@ public sealed class NetworkBuildService
         var duplicates = Duplicates;
         warnings.Clear();
         duplicates.Clear();
+        Merged.Clear();
 
         var types = new TypeCatalog(config.Facets, previous);
         var weights = ResolveWeights(config, previous);
@@ -68,7 +77,8 @@ public sealed class NetworkBuildService
             Srs = srs?.Name,
             Tolerance = config.Tolerance,
             Weights = weights.Select(w => new NetworkWeightMetadata { Id = w.Id, Name = w.Name, Kind = w.Kind, Fallback = w.Fallback }).ToList(),
-            ShardKeys = new(previous?.ShardKeys ?? [], StringComparer.OrdinalIgnoreCase)
+            ShardKeys = new(previous?.ShardKeys ?? [], StringComparer.OrdinalIgnoreCase),
+            Rules = config.Rules
         };
         Metadata = metadata;
 
@@ -109,12 +119,18 @@ public sealed class NetworkBuildService
 
         var ids = new NetworkIds(config.Tolerance);
         var builder = new NetworkBuilder<long, long, FeatureRef>(options, ids);
+        var tocOrderOf = new Dictionary<int, int>();
+        if (config.NodeConflicts == NodeConflictMode.PriorityByToc)
+        {
+            builder.ResolveCoincidentNodes = group => ResolveByToc(group, tocOrderOf);
+        }
 
         // nodes first, then lines
         foreach (var nodeConfig in config.Nodes)
         {
             var layer = MapLayers.Find(layers, nodeConfig.LayerId, nodeConfig.Layer);
             int fcIndex = FeatureClassIndex(layer, ElementKind.Node);
+            tocOrderOf[fcIndex] = layer.TocOrder;
             var typeTemplates = nodeConfig.Type.Select(t => ValueTemplate.Parse(t, layer.Name, layer.GroupPath)).ToArray();
             var texts = new string[typeTemplates.Length];
             int count = 0, skipped = 0;
@@ -155,7 +171,7 @@ public sealed class NetworkBuildService
                 count++;
             }
 
-            _log($"Nodes  {layer.Path}: {count}{(points.Count > count ? $" ({points.Count - count} duplicates left out)" : "")}");
+            _log($"Nodes  {layer.Path} (TOC {layer.TocOrder}): {count}{(points.Count > count ? $" ({points.Count - count} duplicates left out)" : "")}");
             if (skipped > 0)
             {
                 warnings.Add($"{layer.Path}: {skipped} feature(s) without point geometry skipped.");
@@ -267,10 +283,37 @@ public sealed class NetworkBuildService
 
         _log($"Built: {result.NodeCount} nodes, {result.EdgeCount} edges, {metadata.Shards.Count} shards, {result.Diagnostics.Count} diagnostics");
 
-        return new NetworkBuildReport(metadata, result.Diagnostics, warnings, duplicates);
+        return new NetworkBuildReport(metadata, result.Diagnostics, warnings, duplicates, Merged);
     }
 
-    private static List<(long Oid, Coordinate Location, int TypeId, bool Blocked)> RemoveDuplicates(
+    /// <summary>The point of the layer highest in the TOC stays, within a layer the lowest object id; the others are kept as merged.</summary>
+    private int ResolveByToc(IReadOnlyList<CoincidentNode<long, FeatureRef>> group, Dictionary<int, int> tocOrderOf)
+    {
+        int winner = 0;
+        for (int i = 1; i < group.Count; i++)
+        {
+            if (Rank(group[i]).CompareTo(Rank(group[winner])) < 0)
+            {
+                winner = i;
+            }
+        }
+
+        var kept = group[winner].Source;
+        for (int i = 0; i < group.Count; i++)
+        {
+            if (i != winner)
+            {
+                var merged = group[i];
+                Merged.Add(new MergedPoint(LayerOf(kept.FeatureClass), kept.Oid, LayerOf(merged.Source.FeatureClass), merged.Source.Oid, merged.Location.X, merged.Location.Y));
+            }
+        }
+        return winner;
+
+        (int, int, long) Rank(CoincidentNode<long, FeatureRef> node)
+            => (tocOrderOf.GetValueOrDefault(node.Source.FeatureClass, int.MaxValue), node.Source.FeatureClass, node.Source.Oid);
+    }
+
+    internal static List<(long Oid, Coordinate Location, int TypeId, bool Blocked)> RemoveDuplicates(
         List<(long Oid, Coordinate Location, int TypeId, bool Blocked)> points, double tolerance, string layerPath, List<DuplicatePoint> duplicates)
     {
         // sorted by object id, so the result does not depend on the order of the data

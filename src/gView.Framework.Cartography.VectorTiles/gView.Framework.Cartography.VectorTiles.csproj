@@ -17,7 +17,7 @@
 
   <ItemGroup>
     <!-- MVT encoding, tile transform (clip, simplify, quantize) and grid math (vector tile cache design) -->
-    <PackageReference Include="SpatialNET.IO" Version="0.10.0-preview.4" />
+    <PackageReference Include="SpatialNET.IO" Version="0.10.0-preview.5" />
   </ItemGroup>
 
 </Project>

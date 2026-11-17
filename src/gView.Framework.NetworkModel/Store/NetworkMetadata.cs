@@ -1,3 +1,4 @@
+using gView.Framework.NetworkModel.Config;
 using SpatialNET.Network;
 
 namespace gView.Framework.NetworkModel.Store;
@@ -12,6 +13,9 @@ public class NetworkMetadata
     public double Tolerance { get; set; }
     public int NodeCount { get; set; }
     public int EdgeCount { get; set; }
+
+    /// <summary>The number of points merged into the node of another point (aliases.idx).</summary>
+    public int AliasCount { get; set; }
     public List<NetworkFacetMetadata> Facets { get; set; } = [];
     public List<NetworkTypeMetadata> Types { get; set; } = [];
     public List<NetworkWeightMetadata> Weights { get; set; } = [];
@@ -20,6 +24,9 @@ public class NetworkMetadata
 
     /// <summary>Shard keys that are no numbers (e.g. E_TP as text) and the shard ids they got.</summary>
     public Dictionary<string, long> ShardKeys { get; set; } = [];
+
+    /// <summary>The validation rules of the config at build time; gView.Cmd -u validate checks them unless -rules is given.</summary>
+    public List<NetworkRuleConfig> Rules { get; set; } = [];
 }
 
 public class NetworkFacetMetadata

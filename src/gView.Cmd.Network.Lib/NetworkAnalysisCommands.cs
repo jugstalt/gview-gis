@@ -1,6 +1,8 @@
 using gView.Cmd.Core.Abstraction;
 using gView.Cmd.Core.Extensions;
+using gView.Framework.NetworkModel.Config;
 using gView.Framework.NetworkModel.Graph;
+using gView.Framework.NetworkModel.Validation;
 using SpatialNET.Network;
 using System.Diagnostics;
 using System.Globalization;
@@ -29,6 +31,7 @@ internal static class NetworkAnalysisCommands
             "path" => Path(graph, parameters, logger),
             "supply" => Supply(graph, parameters, logger),
             "info" => Info(graph, parameters, logger),
+            "validate" => Validate(graph, parameters, logger),
             _ => throw new ArgumentException($"Unknown utility {utility}")
         };
 
@@ -111,7 +114,7 @@ internal static class NetworkAnalysisCommands
     {
         var sources = graph.ResolveNodes(Required(parameters, "sources"));
         var sinks = graph.ResolveNodes(Required(parameters, "sinks"));
-        logger?.LogLine($"Supply: {sources.Count} source(s), {sinks.Count} sink(s)");
+        logger?.LogLine($"Supply: {sources.Count} source(s), {sinks.Count} sink(s), {sinks.Sum(s => graph.AliasesOf(s).Count)} merged point(s) at the sinks");
 
         var progress = new Progress<SupplyProgress>(p =>
         {
@@ -155,6 +158,11 @@ internal static class NetworkAnalysisCommands
         logger?.LogLine($"At      {node.Node.Location.X.ToString("0.###", CultureInfo.InvariantCulture)}, {node.Node.Location.Y.ToString("0.###", CultureInfo.InvariantCulture)}");
         logger?.LogLine($"Shard   {shard}{ShardKey(graph, shard)}");
         logger?.LogLine($"Blocked {node.Node.Blocked}");
+        var aliases = graph.AliasesOf(id);
+        if (aliases.Count > 0)
+        {
+            logger?.LogLine($"Merged  {string.Join(", ", aliases.Select(a => $"{graph.NodeLabel(a)} ({graph.TypeName(graph.AliasTypeOf(a))})"))}");
+        }
 
         var edges = graph.EdgesOf(id);
         logger?.LogLine($"Edges   {edges.Count}");
@@ -165,6 +173,94 @@ internal static class NetworkAnalysisCommands
             logger?.LogLine($"  {graph.EdgeLabel(edge.Edge.Id),-50} {graph.TypeName(edge.Edge.TypeId),-45} {edge.Edge.Length,9:0.##} m  {(edge.Edge.Disabled ? "disabled " : "")}-> {graph.NodeLabel(other)} ({graph.TypeName(otherType)})");
         }
         return true;
+    }
+
+    /// <summary>
+    /// Checks the rules of network.json (or of -rules) over the whole network; a summary per rule, the violations to -out.
+    /// False (exit code 1) when a rule of severity Error is violated; warnings do not count.
+    /// </summary>
+    private static bool Validate(FileNetworkGraph graph, IDictionary<string, object> parameters, ICommandLogger? logger)
+    {
+        var rulesPath = Optional(parameters, "rules");
+        var rules = string.IsNullOrEmpty(rulesPath) ? graph.Metadata.Rules : LoadRules(rulesPath);
+        var only = Optional(parameters, "rule");
+        if (!string.IsNullOrEmpty(only))
+        {
+            var ids = only.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            var unknown = ids.Where(id => !rules.Any(r => r.Id.Equals(id, StringComparison.OrdinalIgnoreCase))).ToList();
+            if (unknown.Count > 0)
+            {
+                throw new ArgumentException($"Unknown rule(s): {string.Join(", ", unknown)}. Rules: {string.Join(", ", rules.Select(r => r.Id))}");
+            }
+            rules = rules.Where(r => ids.Contains(r.Id, StringComparer.OrdinalIgnoreCase)).ToList();
+        }
+        if (rules.Count == 0)
+        {
+            logger?.LogLine(string.IsNullOrEmpty(rulesPath)
+                ? "No rules in network.json: add rules to the network config (or the network module of the map) and build again, or pass -rules <json>."
+                : $"No rules in {rulesPath}.");
+            return false;
+        }
+        logger?.LogLine($"Validate: {rules.Count} rule(s) from {(string.IsNullOrEmpty(rulesPath) ? "network.json" : rulesPath)}");
+
+        var validator = new NetworkValidator(graph, rules);
+        var progress = new SyncProgress<(int Done, int Total)>(p =>
+        {
+            if (p.Done % 500 == 0 || p.Done == p.Total)
+            {
+                logger?.LogLine($"  {p.Done}/{p.Total} shards");
+            }
+        });
+
+        var outPath = Optional(parameters, "out");
+        var violations = new List<RuleViolation<long, long>>();
+        foreach (var violation in validator.Validate(progress))
+        {
+            if (!string.IsNullOrEmpty(outPath))
+            {
+                violations.Add(violation);
+            }
+        }
+
+        var summaries = validator.Summaries;
+        int idWidth = Math.Max(4, summaries.Max(s => s.Rule.Id.Length));
+        logger?.LogLine($"  {"rule".PadRight(idWidth)}  severity  {"checked",10}  {"violations",10}");
+        foreach (var summary in summaries)
+        {
+            var description = string.IsNullOrEmpty(summary.Rule.Description) ? "" : "  " + summary.Rule.Description;
+            logger?.LogLine($"  {summary.Rule.Id.PadRight(idWidth)}  {summary.Rule.Severity,-8}  {summary.Checked,10}  {summary.Violations,10}{description}");
+        }
+        long errors = summaries.Where(s => s.Rule.Severity == RuleSeverity.Error).Sum(s => s.Violations);
+        long warnings = summaries.Where(s => s.Rule.Severity == RuleSeverity.Warning).Sum(s => s.Violations);
+        logger?.LogLine($"Errors: {errors}, warnings: {warnings}");
+
+        if (!string.IsNullOrEmpty(outPath))
+        {
+            WriteViolations(graph, outPath, violations);
+            logger?.LogLine($"Written: {outPath} ({violations.Count} violations)");
+        }
+        return errors == 0;
+    }
+
+    /// <summary>A rules file: a JSON array of rules, or an object with "rules" (e.g. a whole network config).</summary>
+    internal static List<NetworkRuleConfig> LoadRules(string path)
+    {
+        using var document = JsonDocument.Parse(File.ReadAllText(path), new JsonDocumentOptions { CommentHandling = JsonCommentHandling.Skip, AllowTrailingCommas = true });
+        var element = document.RootElement;
+        if (element.ValueKind == JsonValueKind.Object)
+        {
+            element = element.EnumerateObject().FirstOrDefault(p => p.Name.Equals("rules", StringComparison.OrdinalIgnoreCase)).Value;
+            if (element.ValueKind != JsonValueKind.Array)
+            {
+                throw new InvalidDataException($"{path}: no \"rules\" array.");
+            }
+        }
+        return element.Deserialize<List<NetworkRuleConfig>>(NetworkConfig.JsonOptions) ?? [];
+    }
+
+    private sealed class SyncProgress<T>(Action<T> report) : IProgress<T>
+    {
+        public void Report(T value) => report(value);
     }
 
     #endregion
@@ -254,11 +350,20 @@ internal static class NetworkAnalysisCommands
             return;
         }
 
-        var list = rows.ToList();
+        // a node with merged points (customers drawn on a box) is followed by one row per merged point
+        var list = new List<(Row Row, long Id, string Label, int TypeId, string AliasOf)>();
+        foreach (var row in rows)
+        {
+            list.Add((row, row.Node, graph.NodeLabel(row.Node), row.TypeId, ""));
+            foreach (var alias in graph.AliasesOf(row.Node))
+            {
+                list.Add((row, alias, graph.NodeLabel(alias), graph.AliasTypeOf(alias), graph.NodeLabel(row.Node)));
+            }
+        }
         if (path.EndsWith(".geojson", StringComparison.OrdinalIgnoreCase) || path.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
         {
             var features = new List<object>();
-            foreach (var row in list)
+            foreach (var (row, id, label, typeId, aliasOf) in list)
             {
                 if (graph.TryGetNode(row.Node, out var node))
                 {
@@ -266,7 +371,7 @@ internal static class NetworkAnalysisCommands
                     {
                         type = "Feature",
                         geometry = new { type = "Point", coordinates = new[] { node.Node.Location.X, node.Node.Location.Y } },
-                        properties = new { kind = row.Kind, id = row.Node.ToString(), node = graph.NodeLabel(row.Node), type = graph.TypeName(row.TypeId), cost = row.Cost, source = row.Source }
+                        properties = new { kind = row.Kind, id = id.ToString(), node = label, type = graph.TypeName(typeId), cost = row.Cost, source = row.Source, alias_of = aliasOf }
                     });
                 }
             }
@@ -293,15 +398,63 @@ internal static class NetworkAnalysisCommands
         }
         else
         {
-            var sb = new StringBuilder("id;node;type;kind;cost;source\n");
-            foreach (var row in list)
+            var sb = new StringBuilder("id;node;type;kind;cost;source;alias_of\n");
+            foreach (var (row, id, label, typeId, aliasOf) in list)
             {
-                sb.Append(row.Node).Append(';').Append(graph.NodeLabel(row.Node)).Append(';').Append(graph.TypeName(row.TypeId)).Append(';')
-                  .Append(row.Kind).Append(';').Append(row.Cost.ToString("0.###", CultureInfo.InvariantCulture)).Append(';').Append(row.Source).Append('\n');
+                sb.Append(id).Append(';').Append(label).Append(';').Append(graph.TypeName(typeId)).Append(';')
+                  .Append(row.Kind).Append(';').Append(row.Cost.ToString("0.###", CultureInfo.InvariantCulture)).Append(';').Append(row.Source).Append(';')
+                  .Append(aliasOf).Append('\n');
             }
             File.WriteAllText(path, sb.ToString());
         }
-        logger?.LogLine($"Written: {path} ({list.Count} nodes{(edgeIds.Count > 0 ? $", {edgeIds.Count} edges" : "")})");
+        logger?.LogLine($"Written: {path} ({list.Count(r => r.AliasOf.Length == 0)} nodes, {list.Count(r => r.AliasOf.Length > 0)} merged points{(edgeIds.Count > 0 ? $", {edgeIds.Count} edges" : "")})");
+    }
+
+    /// <summary>One row (or point) per violation: the node with its merged points (aliases), the edge for edge rules.</summary>
+    private static void WriteViolations(FileNetworkGraph graph, string path, IReadOnlyList<RuleViolation<long, long>> violations)
+    {
+        string Aliases(long node) => string.Join(";", graph.AliasesOf(node).Select(graph.NodeLabel));
+        string Edge(RuleViolation<long, long> v) => v.Kind == ElementKind.Edge ? graph.EdgeLabel(v.Edge) : "";
+
+        if (path.EndsWith(".geojson", StringComparison.OrdinalIgnoreCase) || path.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+        {
+            File.WriteAllText(path, JsonSerializer.Serialize(new
+            {
+                type = "FeatureCollection",
+                crs = graph.Metadata.Srs is null ? null : new { type = "name", properties = new { name = graph.Metadata.Srs } },
+                features = violations.Select(v => new
+                {
+                    type = "Feature",
+                    geometry = new { type = "Point", coordinates = new[] { v.Location.X, v.Location.Y } },
+                    properties = new
+                    {
+                        rule = v.RuleId,
+                        severity = v.Severity.ToString(),
+                        kind = v.Kind.ToString(),
+                        node = graph.NodeLabel(v.Node),
+                        edge = Edge(v),
+                        type = graph.TypeName(v.TypeId),
+                        count = v.Count,
+                        min = v.Min,
+                        max = v.Max,
+                        aliases = Aliases(v.Node)
+                    }
+                })
+            }));
+            return;
+        }
+
+        var sb = new StringBuilder("rule;severity;kind;node;edge;type;count;min;max;x;y;aliases\n");
+        foreach (var v in violations)
+        {
+            sb.Append(v.RuleId).Append(';').Append(v.Severity).Append(';').Append(v.Kind).Append(';')
+              .Append(graph.NodeLabel(v.Node)).Append(';').Append(Edge(v)).Append(';').Append(graph.TypeName(v.TypeId)).Append(';')
+              .Append(v.Count).Append(';').Append(v.Min).Append(';').Append(v.Max?.ToString(CultureInfo.InvariantCulture) ?? "").Append(';')
+              .Append(v.Location.X.ToString("0.###", CultureInfo.InvariantCulture)).Append(';')
+              .Append(v.Location.Y.ToString("0.###", CultureInfo.InvariantCulture)).Append(';')
+              .Append(Aliases(v.Node)).Append('\n');
+        }
+        File.WriteAllText(path, sb.ToString());
     }
 
     #endregion

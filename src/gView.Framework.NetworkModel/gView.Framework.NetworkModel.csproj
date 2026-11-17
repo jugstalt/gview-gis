@@ -7,8 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="SpatialNET.Network" Version="0.10.0-preview.4" />
-    <PackageReference Include="SpatialNET.Network.Building" Version="0.10.0-preview.4" />
+    <InternalsVisibleTo Include="gView.Framework.NetworkModel.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="SpatialNET.Network" Version="0.10.0-preview.5" />
+    <PackageReference Include="SpatialNET.Network.Building" Version="0.10.0-preview.5" />
   </ItemGroup>
 
   <ItemGroup>

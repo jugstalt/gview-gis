@@ -207,6 +207,26 @@ public class NetworkModule : IMapApplicationModule, IPersistable
         return problems;
     }
 
+    /// <summary>The rules as a JSON array (the format of gView.Cmd -u validate -rules).</summary>
+    public string ExportRulesJson() => JsonSerializer.Serialize(Config.Rules, NetworkConfig.JsonOptions);
+
+    /// <summary>Replaces the rules by a JSON array of rules, or the "rules" of a network config.</summary>
+    public int ImportRulesJson(string json)
+    {
+        using var document = JsonDocument.Parse(json, new JsonDocumentOptions { CommentHandling = JsonCommentHandling.Skip, AllowTrailingCommas = true });
+        var element = document.RootElement;
+        if (element.ValueKind == JsonValueKind.Object)
+        {
+            element = element.EnumerateObject().FirstOrDefault(p => p.Name.Equals("rules", StringComparison.OrdinalIgnoreCase)).Value;
+        }
+        if (element.ValueKind != JsonValueKind.Array)
+        {
+            throw new InvalidDataException("No rules: expected a JSON array of rules or an object with \"rules\".");
+        }
+        Config.Rules = element.Deserialize<List<NetworkRuleConfig>>(NetworkConfig.JsonOptions) ?? [];
+        return Config.Rules.Count;
+    }
+
     public static T Clone<T>(T value)
         => JsonSerializer.Deserialize<T>(JsonSerializer.Serialize(value, NetworkConfig.JsonOptions), NetworkConfig.JsonOptions)!;
 
