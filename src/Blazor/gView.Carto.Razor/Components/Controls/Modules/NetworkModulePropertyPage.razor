@@ -99,47 +99,50 @@
         <GvCard Title="Rules (validation)">
             <GvCardContent>
                 @GvUtilities.InfoText("Each rule counts the direct neighbours of nodes or edges: subject types (pattern, e.g. [*,Kasten,*]; several with |), counted edge types, allowed min..max (max empty = no limit). Edge rules may look only at ends where the node is / is not of the end types. Checked after the build: gView.Cmd --command Network -u validate -network <dir>")
-                <table style="width:100%">
-                    @foreach (var rule in config.Rules)
-                    {
-                        <tr>
-                            <td style="width:12%"><MudTextField T="string" Label="Id" @bind-Value="rule.Id" /></td>
-                            <td style="width:9%">
+                @foreach (var rule in config.Rules)
+                {
+                    <div style="border:1px solid var(--mud-palette-lines-default);border-radius:4px;padding:4px 8px;margin-bottom:8px">
+                        <div style="display:flex;gap:8px;align-items:flex-end">
+                            <div style="flex:2"><MudTextField T="string" Label="Id" @bind-Value="rule.Id" /></div>
+                            <div style="flex:1">
                                 <MudSelect T="RuleSeverity" Label="Severity" @bind-Value="rule.Severity">
                                     @foreach (var value in Enum.GetValues<RuleSeverity>())
                                     {
                                         <MudSelectItem Value="value">@value</MudSelectItem>
                                     }
                                 </MudSelect>
-                            </td>
-                            <td style="width:8%">
+                            </div>
+                            <div style="flex:1">
                                 <MudSelect T="RuleSubject" Label="Subject" @bind-Value="rule.Subject">
                                     @foreach (var value in Enum.GetValues<RuleSubject>())
                                     {
                                         <MudSelectItem Value="value">@value</MudSelectItem>
                                     }
                                 </MudSelect>
-                            </td>
-                            <td><MudTextField T="string" Label="Subject types" @bind-Value="rule.SubjectTypes" /></td>
-                            <td style="width:10%">
-                                <MudSelect T="RuleEndFilter" Label="Ends" @bind-Value="rule.EndFilter" Disabled="rule.Subject == RuleSubject.Node">
-                                    @foreach (var value in Enum.GetValues<RuleEndFilter>())
-                                    {
-                                        <MudSelectItem Value="value">@value</MudSelectItem>
-                                    }
-                                </MudSelect>
-                            </td>
-                            <td><MudTextField T="string" Label="End types" @bind-Value="rule.EndTypes" Disabled="rule.EndFilter == RuleEndFilter.All" /></td>
-                            <td><MudTextField T="string" Label="Counted edge types" @bind-Value="rule.CountTypes" /></td>
-                            <td style="width:6%"><MudNumericField T="int" Label="Min" @bind-Value="rule.Min" Min="0" /></td>
-                            <td style="width:6%"><MudNumericField T="int?" Label="Max" @bind-Value="rule.Max" Min="0" /></td>
-                            <td><MudTextField T="string" Label="Description" @bind-Value="rule.Description" /></td>
-                            <td style="width:50px">
-                                <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="() => config.Rules.Remove(rule)" />
-                            </td>
-                        </tr>
-                    }
-                </table>
+                            </div>
+                            <div style="flex:1"><MudNumericField T="int" Label="Min" @bind-Value="rule.Min" Min="0" /></div>
+                            <div style="flex:1"><MudNumericField T="int?" Label="Max (empty = no limit)" @bind-Value="rule.Max" Min="0" /></div>
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="() => config.Rules.Remove(rule)" />
+                        </div>
+                        <MudTextField T="string" Label="Subject types (checked nodes/edges, e.g. [*,Kasten,*]; several with |)" @bind-Value="rule.SubjectTypes" />
+                        @if (rule.Subject == RuleSubject.Edge)
+                        {
+                            <div style="display:flex;gap:8px">
+                                <div style="flex:1">
+                                    <MudSelect T="RuleEndFilter" Label="Ends" @bind-Value="rule.EndFilter">
+                                        @foreach (var value in Enum.GetValues<RuleEndFilter>())
+                                        {
+                                            <MudSelectItem Value="value">@value</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </div>
+                                <div style="flex:3"><MudTextField T="string" Label="End node types (untyped = line end without point)" @bind-Value="rule.EndTypes" Disabled="rule.EndFilter == RuleEndFilter.All" /></div>
+                            </div>
+                        }
+                        <MudTextField T="string" Label="Counted edge types (several with | = or)" @bind-Value="rule.CountTypes" />
+                        <MudTextField T="string" Label="Description" @bind-Value="rule.Description" />
+                    </div>
+                }
                 <MudButton Variant="Variant.Filled" OnClick="AddRule">Add rule</MudButton>
                 <MudTextField T="string" Label="Rules JSON file" @bind-Value="_rulesPath" />
                 <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="ExportRules">Export rules</MudButton>

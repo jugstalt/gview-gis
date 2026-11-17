@@ -36,8 +36,11 @@ public class NetworkRuleConfig
     /// <summary>The largest allowed count; null for no upper limit.</summary>
     public int? Max { get; set; }
 
+    /// <summary>The row for SpatialNET; a node rule has no ends, so its end filter and end types are left out.</summary>
     public NetworkRuleDefinition ToDefinition()
-        => new(Id, Severity, Subject, SubjectTypes, EndFilter, string.IsNullOrWhiteSpace(EndTypes) ? null : EndTypes, CountTypes, Min, Max);
+        => Subject == RuleSubject.Node || EndFilter == RuleEndFilter.All
+            ? new(Id, Severity, Subject, SubjectTypes, RuleEndFilter.All, null, CountTypes, Min, Max)
+            : new(Id, Severity, Subject, SubjectTypes, EndFilter, string.IsNullOrWhiteSpace(EndTypes) ? null : EndTypes, CountTypes, Min, Max);
 
     /// <summary>Resolves the rule against the types of a network; throws an <see cref="ArgumentException"/> naming the rule.</summary>
     public NetworkRule Resolve(TypeRegistry types) => NetworkRule.FromDefinition(ToDefinition(), types);

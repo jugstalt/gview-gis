@@ -139,7 +139,14 @@ namespace gView.Server.Services.MapServer
                 folder = mapName.Split('/')[0];
                 mapName = mapName.Split('/')[1];
             }
-            MapServices.Add(new MapService(this, _accessService, mapName.Trim(), folder.Trim(), type));
+            // an mxl service needs the path of its document (its .settings are written next to it),
+            // not only its name, which would resolve against the working directory
+            string filename = mapName.Trim();
+            if (type == MapServiceType.MXL && !String.IsNullOrEmpty(Options?.ServicesPath))
+            {
+                filename = Path.Combine(Options.ServicesPath, folder.Trim(), $"{mapName.Trim()}.mxl");
+            }
+            MapServices.Add(new MapService(this, _accessService, filename, folder.Trim(), type));
         }
 
         private object _tryAddServiceLocker = new object();
