@@ -17,6 +17,9 @@ namespace gView.Server.Services.MapServer
         public string LoginManagerRootPath { get; set; }
         public string LoggingRootPath { get; set; }
 
+        /// <summary>Where the networks of the services are built: {NetworksPath}/{folder}/{service}.network</summary>
+        public string NetworksPath { get; set; }
+
         public bool LogServiceErrors { get; set; }
         public bool LogServiceRequests { get; set; }
         public bool LogServiceRequestDetails { get; set; }

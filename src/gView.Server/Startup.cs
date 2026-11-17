@@ -204,6 +204,7 @@ public class Startup
                     config.ServicesPath = $"{Configuration.Value("services-folder")}/services";
                     config.LoginManagerRootPath = $"{Configuration.Value("services-folder")}/_login";
                     config.LoggingRootPath = $"{Configuration.Value("services-folder")}/log";
+                    config.NetworksPath = Configuration.Value("networks-folder") ?? $"{Configuration.Value("services-folder")}/networks";
 
                     config.LogServiceErrors = Configuration.Value("Logging:LogServiceErrors")?.ToLower() != "false";
                     config.LogServiceRequests = Configuration.Value("Logging:LogServiceRequests")?.ToLower() == "true";
@@ -545,6 +546,31 @@ public class Startup
                name: "geoservices_rest_servicelayer2_token",
                template: "geoservices({urltoken})/rest/services/{id}/mapserver/{layerId}",
                defaults: new { controller = "GeoServicesRest", Action = "ServiceLayer" }
+            );
+
+            #endregion
+
+            #region NetworkServer
+
+            routes.MapRoute(
+                name: "geoservices_rest_networkserver_op",
+                template: "geoservices/rest/services/{folder}/{id}/networkserver/{op}",
+                defaults: new { controller = "GeoServicesRest", Action = "NetworkServerOperation" }
+            );
+            routes.MapRoute(
+                name: "geoservices_rest_networkserver_op2",
+                template: "geoservices/rest/services/{id}/networkserver/{op}",
+                defaults: new { controller = "GeoServicesRest", Action = "NetworkServerOperation" }
+            );
+            routes.MapRoute(
+                name: "geoservices_rest_networkserver",
+                template: "geoservices/rest/services/{folder}/{id}/networkserver",
+                defaults: new { controller = "GeoServicesRest", Action = "NetworkServer" }
+            );
+            routes.MapRoute(
+                name: "geoservices_rest_networkserver2",
+                template: "geoservices/rest/services/{id}/networkserver",
+                defaults: new { controller = "GeoServicesRest", Action = "NetworkServer" }
             );
 
             #endregion

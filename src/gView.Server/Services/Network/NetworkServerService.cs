@@ -146,11 +146,18 @@ public class NetworkServerService
         return config;
     }
 
-    /// <summary>The network directory of a service, or null when its map has no network configured.</summary>
+    /// <summary>
+    /// The network directory of a service, or null when its map has no network configured:
+    /// {NetworksPath}/{folder}/{service}.network. The "directory" of the config is for Carto and gView.Cmd only.
+    /// </summary>
     public string? NetworkDirectory(IMapService mapService)
-        => Config(mapService) is NetworkConfig config && MapDocumentPath(mapService) is string mxl
-            ? config.ResolveDirectory(mxl)
-            : null;
+        => Config(mapService) is not null ? NetworkDirectoryPath(_mapServiceManager.Options, mapService.Fullname) : null;
+
+    /// <summary>{NetworksPath}/{folder}/{service}.network for a service name like "folder/service".</summary>
+    public static string? NetworkDirectoryPath(MapServerManagerOptions options, string serviceFullname)
+        => string.IsNullOrEmpty(options?.NetworksPath) || string.IsNullOrWhiteSpace(serviceFullname)
+            ? null
+            : Path.GetFullPath(Path.Combine(options.NetworksPath, $"{serviceFullname.Trim('/')}.network"));
 
     /// <summary>The metadata of the built network, or null.</summary>
     public static NetworkMetadata? Metadata(string? directory)
@@ -187,11 +194,12 @@ public class NetworkServerService
             break;
         }
 
-        _ = Task.Run(() => RunBuild(job, mxl));
+        var directory = NetworkDirectory(mapService) ?? throw new MapServerException("No networks folder configured.");
+        _ = Task.Run(() => RunBuild(job, mxl, directory));
         return job;
     }
 
-    private async Task RunBuild(NetworkBuildJob job, string mxl)
+    private async Task RunBuild(NetworkBuildJob job, string mxl, string directory)
     {
         try
         {
@@ -204,7 +212,7 @@ public class NetworkServerService
             var module = document.GetMapModules(map).OfType<NetworkModule>().FirstOrDefault(m => m.IsConfigured)
                 ?? throw new InvalidDataException("The map has no network configured.");
 
-            var directory = module.Config.ResolveDirectory(mxl);
+            Directory.CreateDirectory(Path.GetDirectoryName(directory)!);
             job.AddLine($"Network directory: {directory}");
             job.Succeeded = await NetworkBuildRunner.RunAsync(map, module.Config, directory, false, job.AddLine);
             NetworkGraphCache.Shared.Invalidate(directory);

@@ -542,6 +542,13 @@ public class MapServiceDeploymentManager
                 fi.Delete();
             }
 
+            // the network built for the map
+            var networkDirectory = gView.Server.Services.Network.NetworkServerService.NetworkDirectoryPath(_mapServiceManager.Options, mapName);
+            if (networkDirectory is not null && Directory.Exists(networkDirectory))
+            {
+                Directory.Delete(networkDirectory, true);
+            }
+
             return true;
         }
         catch (Exception ex)

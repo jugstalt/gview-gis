@@ -109,6 +109,11 @@ namespace gView.Server.Services.MapServer
 
             foreach (var folderDirectory in new DirectoryInfo((Options.ServicesPath + "/" + folder).ToPlatformPath()).GetDirectories())
             {
+                if (IsNetworkDirectory(folderDirectory.Name))
+                {
+                    continue;  // a network copied next to a map document is no folder
+                }
+
                 MapService folderService = new MapService(this, _accessService, folderDirectory.FullName, folder, MapServiceType.Folder);
                 if (MapServices.Where(s => s.Fullname == folderService.Fullname && s.Type == folderService.Type).Count() == 0)
                 {
@@ -119,6 +124,11 @@ namespace gView.Server.Services.MapServer
 
             #endregion
         }
+
+        private static bool IsNetworkDirectory(string name)
+            => name.EndsWith(".network", StringComparison.OrdinalIgnoreCase)
+            || name.EndsWith(".network.building", StringComparison.OrdinalIgnoreCase)
+            || name.EndsWith(".network.old", StringComparison.OrdinalIgnoreCase);
 
         public void AddMapService(string mapName, MapServiceType type)
         {

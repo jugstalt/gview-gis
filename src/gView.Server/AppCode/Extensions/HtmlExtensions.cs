@@ -22,6 +22,9 @@ static internal class HtmlExtensions
 {
     #region GeoServices REST
 
+    /// <summary>HttpContext.Items key: (name, relative url) pairs shown as additional buttons on a resource page.</summary>
+    public const string ExtraServiceMethodsKey = "geoservices.extra-service-methods";
+
     static public string GeoServicesObjectToHtml(this object obj,
                 HttpRequest request,
                 UrlHelperService urlHelperService,
@@ -60,6 +63,14 @@ static internal class HtmlExtensions
             }
 
             sb.Append($"<a href='{url}' target='{target}' >{serviceMethodAttribute.Name}</a>");
+        }
+
+        if (request.HttpContext.Items[ExtraServiceMethodsKey] is IEnumerable<(string Name, string Url)> extraMethods)
+        {
+            foreach (var (name, url) in extraMethods)
+            {
+                sb.Append($"<a href='{mapServerService.Options.OnlineResource}{request.Path}/{url}'>{name}</a>");
+            }
         }
 
         sb.Append("<div class='code-block'>");

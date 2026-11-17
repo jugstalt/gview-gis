@@ -1,4 +1,4 @@
-using gView.Framework.Cartography;
+﻿using gView.Framework.Cartography;
 using gView.Framework.Common;
 using gView.Framework.Common.Extensions;
 using gView.Framework.Common.Json;
@@ -39,7 +39,7 @@ using static gView.Interoperability.GeoServices.Rest.DTOs.JsonServicesDTO;
 
 namespace gView.Server.Controllers;
 
-public class GeoServicesRestController : BaseController
+public partial class GeoServicesRestController : BaseController
 {
     private readonly MapServiceManager _mapServerService;
     private readonly UrlHelperService _urlHelperService;
@@ -179,14 +179,15 @@ public class GeoServicesRestController : BaseController
                 var spatialReference = map.Display.SpatialReference;
                 int epsgCode = spatialReference != null ? spatialReference.EpsgCode : 0;
 
-                var networkDirectory = HttpContext.RequestServices.GetService<gView.Server.Services.Network.NetworkServerService>()?.NetworkDirectory(mapService);
-                bool hasNetwork = gView.Server.Services.Network.NetworkServerService.IsBuilt(networkDirectory)
-                    && (await mapService.GetAccessTypes(identity)).HasFlag(AccessTypes.Network);
+                if (await HasNetworkServer(identity, mapService))
+                {
+                    // a link to the NetworkServer resource on the HTML page
+                    HttpContext.Items[HtmlExtensions.ExtraServiceMethodsKey] = new[] { ("NetworkServer", "../networkserver") };
+                }
 
                 return Result(new JsonMapServiceDTO()
                 {
                     CurrentVersion = 10.71,
-                    SupportedExtensions = hasNetwork ? "network" : String.Empty,
                     MapName = String.IsNullOrWhiteSpace(map.Title) ?
                         (map.Name.Contains("/") ? map.Name.Substring(map.Name.LastIndexOf("/") + 1) : map.Name) :
                         map.Title,
@@ -1652,7 +1653,24 @@ public class GeoServicesRestController : BaseController
             serviceTypes.Add("FeatureServer");
         }
 
+        if (await HasNetworkServer(identity, mapService, accessTypes))
+        {
+            serviceTypes.Add("NetworkServer");
+        }
+
         return serviceTypes;
+    }
+
+    /// <summary>Whether the service has a built network the user may search (right "network").</summary>
+    async private Task<bool> HasNetworkServer(IIdentity identity, IMapService mapService, AccessTypes? accessTypes = null)
+    {
+        accessTypes ??= await mapService.GetAccessTypes(identity);
+        if (!accessTypes.Value.HasFlag(AccessTypes.Network))
+        {
+            return false;
+        }
+        var network = HttpContext.RequestServices.GetService<gView.Server.Services.Network.NetworkServerService>();
+        return gView.Server.Services.Network.NetworkServerService.IsBuilt(network?.NetworkDirectory(mapService));
     }
 
     async private Task<IEnumerable<AgsService>> AgsServices(Identity identity, IMapService mapService)
