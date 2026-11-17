@@ -35,7 +35,7 @@ public class NetworkCommand : ICommand
             new RequiredCommandParameter<string>("u") { Description = "build | config-from-mxl | trace | reach | path | supply | info | validate" },
             new CommandParameter<string>("config") { Description = "network config (json); build" },
             new CommandParameter<string>("mxl") { Description = "map (mxl); for build it overrides the map of the config" },
-            new CommandParameter<string>("output") { Description = "build: network directory; config-from-mxl: json file" },
+            new CommandParameter<string>("output") { Description = "build: network directory (default: \"directory\" of the config or <map>.network next to the mxl); config-from-mxl: json file" },
             new CommandParameter<string>("json") { Description = "build: true also writes each shard as json (debugging)" },
             new CommandParameter<string>("network") { Description = "searches: the network directory" },
             new CommandParameter<string>("start") { Description = "trace, reach: nodes (Layer#OID, id or type pattern like [*,Trafo,*]; comma separated)" },
@@ -74,7 +74,7 @@ public class NetworkCommand : ICommand
                 return await NetworkAnalysisCommands.Run(utility, parameters, logger);
             default:
                 logger?.LogLine("Usage:");
-                logger?.LogLine("  -u build (-config <net.json> [-mxl <map.mxl>] | -mxl <map.mxl with network from Carto>) -output <directory> [-json true]");
+                logger?.LogLine("  -u build (-config <net.json> [-mxl <map.mxl>] | -mxl <map.mxl with network from Carto>) [-output <directory>, default: directory of the config or <map>.network] [-json true]");
                 logger?.LogLine("  -u config-from-mxl -mxl <map.mxl> -output <net.json>");
                 logger?.LogLine("  -u trace  -network <dir> -start <nodes> [-filter <pattern>] [-block <nodes>] [-unblock <nodes>] [-out x.csv|x.geojson]");
                 logger?.LogLine("  -u reach  -network <dir> -start <nodes> -max-cost <cost> [-weight <name>] [-out ...]");
@@ -125,6 +125,11 @@ public class NetworkCommand : ICommand
             mxlPath = Path.IsPathRooted(config.Map)
                 ? config.Map
                 : Path.GetFullPath(Path.Combine(Path.GetDirectoryName(Path.GetFullPath(configPath))!, config.Map));
+        }
+
+        if (string.IsNullOrEmpty(output))
+        {
+            output = config.ResolveDirectory(mxlPath);
         }
 
         logger?.LogLine($"Map:    {mxlPath}");

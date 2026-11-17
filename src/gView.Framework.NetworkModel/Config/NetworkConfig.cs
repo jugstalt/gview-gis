@@ -45,6 +45,23 @@ public class NetworkConfig
     /// <summary>The validation rules; written into network.json on build, checked by gView.Cmd -u validate.</summary>
     public List<NetworkRuleConfig> Rules { get; set; } = [];
 
+    /// <summary>
+    /// Where the built network is kept, relative to the map (mxl). Empty: {map name}.network next to the map.
+    /// Build writes there by default, Carto and the server search there.
+    /// </summary>
+    public string? Directory { get; set; }
+
+    /// <summary>The network directory for a map document (see <see cref="Directory"/>).</summary>
+    public string ResolveDirectory(string mapPath)
+    {
+        var mapDirectory = Path.GetDirectoryName(Path.GetFullPath(mapPath))!;
+        if (string.IsNullOrWhiteSpace(Directory))
+        {
+            return Path.Combine(mapDirectory, Path.GetFileNameWithoutExtension(mapPath) + ".network");
+        }
+        return Path.GetFullPath(Path.IsPathRooted(Directory) ? Directory : Path.Combine(mapDirectory, Directory));
+    }
+
     public static JsonSerializerOptions JsonOptions { get; } = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,

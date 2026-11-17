@@ -36,7 +36,8 @@ public sealed class FileNetworkStore : INetworkStore
     /// <summary>Reads one shard back (nodes and edges with their sources).</summary>
     public ShardData ReadShard(long shardId)
     {
-        using var stream = File.OpenRead(Path.Combine(_directory, ShardDirectory, ShardFileName(shardId)));
+        // read completely, so no file stays open and a new build can swap the directory
+        using var stream = new MemoryStream(File.ReadAllBytes(Path.Combine(_directory, ShardDirectory, ShardFileName(shardId))));
         return ShardBinary.Read(stream);
     }
 
@@ -86,31 +87,35 @@ public sealed class FileNetworkStore : INetworkStore
             _edgeCount++;
         }
 
+        /// <summary>
+        /// Writes the whole network into {directory}.building, then swaps it with the directory ({directory}.old is
+        /// deleted, or on the next build when a reader still holds it), so readers never see a half written network.
+        /// </summary>
         public void Commit(NetworkMetadata metadata)
         {
-            Directory.CreateDirectory(_directory);
-            var shardDir = Path.Combine(_directory, ShardDirectory);
-
-            // write into a new directory, then swap, so a failed build leaves the old network intact
-            var tempDir = shardDir + ".new";
-            if (Directory.Exists(tempDir))
+            var target = Path.GetFullPath(_directory).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            var building = target + ".building";
+            var old = target + ".old";
+            TryDelete(old);
+            if (Directory.Exists(building))
             {
-                Directory.Delete(tempDir, true);
+                Directory.Delete(building, true);
             }
-            Directory.CreateDirectory(tempDir);
+            var shardDir = Path.Combine(building, ShardDirectory);
+            Directory.CreateDirectory(shardDir);
 
             var keysById = metadata.ShardKeys.ToDictionary(k => k.Value, k => k.Key);
             metadata.Shards.Clear();
             foreach (var shard in _shards.Values.OrderBy(s => s.Id))
             {
                 var fileName = ShardFileName(shard.Id);
-                using (var stream = File.Create(Path.Combine(tempDir, fileName)))
+                using (var stream = File.Create(Path.Combine(shardDir, fileName)))
                 {
                     ShardBinary.Write(stream, shard);
                 }
                 if (_writeJson)
                 {
-                    File.WriteAllText(Path.Combine(tempDir, $"{shard.Id}.json"), ShardJson.Serialize(shard));
+                    File.WriteAllText(Path.Combine(shardDir, $"{shard.Id}.json"), ShardJson.Serialize(shard));
                 }
                 metadata.Shards.Add(new NetworkShardMetadata
                 {
@@ -124,20 +129,34 @@ public sealed class FileNetworkStore : INetworkStore
             metadata.NodeCount = _nodeCount;
             metadata.EdgeCount = _edgeCount;
 
-            if (Directory.Exists(shardDir))
-            {
-                Directory.Delete(shardDir, true);
-            }
-            Directory.Move(tempDir, shardDir);
-
             NodeIndex.Write(
-                Path.Combine(_directory, NodeIndex.FileName),
+                Path.Combine(building, NodeIndex.FileName),
                 _shards.Values.SelectMany(s => s.Nodes.Select(n => (n.Node.Id, s.Id, n.Node.TypeId))));
 
-            AliasIndex.Write(Path.Combine(_directory, AliasIndex.FileName), _aliases);
+            AliasIndex.Write(Path.Combine(building, AliasIndex.FileName), _aliases);
             metadata.AliasCount = _aliases.Count;
 
-            File.WriteAllText(Path.Combine(_directory, MetadataFile), JsonSerializer.Serialize(metadata, NetworkConfig.JsonOptions));
+            File.WriteAllText(Path.Combine(building, MetadataFile), JsonSerializer.Serialize(metadata, NetworkConfig.JsonOptions));
+
+            if (Directory.Exists(target))
+            {
+                Directory.Move(target, old);
+            }
+            Directory.Move(building, target);
+            TryDelete(old);
+        }
+
+        private static void TryDelete(string directory)
+        {
+            try
+            {
+                if (Directory.Exists(directory))
+                {
+                    Directory.Delete(directory, true);
+                }
+            }
+            catch (IOException) { }
+            catch (UnauthorizedAccessException) { }
         }
 
         public void Dispose()

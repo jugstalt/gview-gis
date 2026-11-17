@@ -1,13 +1,15 @@
 using gView.Framework.NetworkModel.Ids;
 using gView.Framework.NetworkModel.Store;
 using SpatialNET.Network;
+using System.Collections.Concurrent;
 using System.Globalization;
 
 namespace gView.Framework.NetworkModel.Graph;
 
 /// <summary>
 /// The graph of a network kept by <see cref="FileNetworkStore"/>: finds the shard of a node in nodes.idx and loads a
-/// shard only when a search touches it, then keeps it. Not thread-safe; one instance per search or session.
+/// shard only when a search touches it, then keeps it (at most <see cref="MaxLoadedShards"/>, least recently used dropped first).
+/// Thread-safe: loaded shards are read-only and shared, searches keep their state on their own.
 /// </summary>
 public sealed class FileNetworkGraph : IGraph<long, long>
 {
@@ -15,13 +17,15 @@ public sealed class FileNetworkGraph : IGraph<long, long>
     {
         public Dictionary<long, ShardNode> Nodes { get; } = [];
         public Dictionary<long, List<ShardEdge>> EdgesByNode { get; } = [];
+        public Dictionary<long, ShardEdge> EdgesById { get; } = [];
+        public long LastUsed;
     }
 
     private readonly FileNetworkStore _store;
     private readonly NodeIndex _index;
     private readonly AliasIndex _aliases;
-    private readonly Dictionary<long, LoadedShard> _shards = [];
-    private readonly Dictionary<long, ShardEdge> _edges = [];
+    private readonly ConcurrentDictionary<long, Lazy<LoadedShard>> _shards = new();
+    private long _clock;
 
     public FileNetworkGraph(string directory)
     {
@@ -45,6 +49,9 @@ public sealed class FileNetworkGraph : IGraph<long, long>
 
     /// <summary>The number of shards loaded so far.</summary>
     public int LoadedShardCount => _shards.Count;
+
+    /// <summary>How many shards are kept at most; 0 for no limit.</summary>
+    public int MaxLoadedShards { get; set; } = 512;
 
     #region IGraph
 
@@ -102,8 +109,33 @@ public sealed class FileNetworkGraph : IGraph<long, long>
 
     public bool TryGetShardOf(long nodeId, out long shardId) => _index.TryGet(nodeId, out shardId, out _);
 
-    /// <summary>An edge that a search returned (its shard is loaded then).</summary>
-    public bool TryGetEdge(long id, out ShardEdge edge) => _edges.TryGetValue(id, out edge);
+    /// <summary>An edge that a search returned, found in the loaded shards.</summary>
+    public bool TryGetEdge(long id, out ShardEdge edge)
+    {
+        foreach (var shard in _shards.Values)
+        {
+            if (shard.IsValueCreated && shard.Value.EdgesById.TryGetValue(id, out edge))
+            {
+                return true;
+            }
+        }
+        edge = default;
+        return false;
+    }
+
+    /// <summary>An edge at one of its nodes (loads the shard of the node when needed).</summary>
+    public bool TryGetEdge(long id, long nodeId, out ShardEdge edge)
+    {
+        foreach (var e in EdgesOf(nodeId))
+        {
+            if (e.Edge.Id == id)
+            {
+                edge = e;
+                return true;
+            }
+        }
+        return TryGetEdge(id, out edge);
+    }
 
     public IReadOnlyList<ShardEdge> EdgesOf(long nodeId)
         => _index.TryGet(nodeId, out var shardId, out _) && Shard(shardId).EdgesByNode.TryGetValue(nodeId, out var edges)
@@ -123,7 +155,6 @@ public sealed class FileNetworkGraph : IGraph<long, long>
     public void ClearCache()
     {
         _shards.Clear();
-        _edges.Clear();
     }
 
     #endregion
@@ -238,12 +269,42 @@ public sealed class FileNetworkGraph : IGraph<long, long>
 
     private LoadedShard Shard(long shardId)
     {
-        if (_shards.TryGetValue(shardId, out var loaded))
+        var lazy = _shards.GetOrAdd(shardId, id => new Lazy<LoadedShard>(() => Load(id), LazyThreadSafetyMode.ExecutionAndPublication));
+        LoadedShard loaded;
+        try
         {
-            return loaded;
+            loaded = lazy.Value;
         }
+        catch
+        {
+            _shards.TryRemove(new KeyValuePair<long, Lazy<LoadedShard>>(shardId, lazy));
+            throw;
+        }
+        Interlocked.Exchange(ref loaded.LastUsed, Interlocked.Increment(ref _clock));
+        if (MaxLoadedShards > 0 && _shards.Count > MaxLoadedShards)
+        {
+            Evict(shardId);
+        }
+        return loaded;
+    }
 
-        loaded = new LoadedShard();
+    /// <summary>Drops the least recently used shards down to <see cref="MaxLoadedShards"/>; searches holding them keep their copy.</summary>
+    private void Evict(long keep)
+    {
+        var victims = _shards
+            .Where(s => s.Key != keep && s.Value.IsValueCreated)
+            .OrderBy(s => Interlocked.Read(ref s.Value.Value.LastUsed))
+            .Take(Math.Max(0, _shards.Count - MaxLoadedShards))
+            .ToList();
+        foreach (var victim in victims)
+        {
+            _shards.TryRemove(victim);
+        }
+    }
+
+    private LoadedShard Load(long shardId)
+    {
+        var loaded = new LoadedShard();
         var data = _store.ReadShard(shardId);
         foreach (var node in data.Nodes)
         {
@@ -251,14 +312,13 @@ public sealed class FileNetworkGraph : IGraph<long, long>
         }
         foreach (var edge in data.Edges)
         {
-            _edges[edge.Edge.Id] = edge;
+            loaded.EdgesById[edge.Edge.Id] = edge;
             Add(loaded, edge.Edge.From, edge);
             if (edge.Edge.To != edge.Edge.From)
             {
                 Add(loaded, edge.Edge.To, edge);
             }
         }
-        _shards[shardId] = loaded;
         return loaded;
 
         static void Add(LoadedShard shard, long nodeId, ShardEdge edge)

@@ -16,9 +16,6 @@ public sealed record RuleSummary(NetworkRuleConfig Rule, long Checked, long Viol
 /// </summary>
 public sealed class NetworkValidator
 {
-    /// <summary>After this many loaded shards the graph's cache is dropped, so memory stays bounded.</summary>
-    private const int MaxLoadedShards = 64;
-
     private readonly FileNetworkGraph _graph;
     private readonly List<(NetworkRuleConfig Config, NetworkRule Rule)> _rules;
     private readonly Dictionary<string, long> _checked = new(StringComparer.Ordinal);
@@ -93,10 +90,6 @@ public sealed class NetworkValidator
                 yield return violation;
             }
 
-            if (_graph.LoadedShardCount > MaxLoadedShards)
-            {
-                _graph.ClearCache();
-            }
             progress?.Report((++done, total));
         }
     }
