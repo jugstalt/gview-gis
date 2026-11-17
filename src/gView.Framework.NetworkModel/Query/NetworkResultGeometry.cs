@@ -101,6 +101,83 @@ public static class NetworkResultGeometry
         result.Srs = to.Name;
     }
 
+    /// <summary>
+    /// The attributes of the features of the result (nodes with merged points, edges, violations) read from the map,
+    /// per layer path and object id; without the shape. <paramref name="outFields"/>: comma separated field names,
+    /// null or "*" for all fields; each layer gets those of the fields it has, names it does not know are ignored.
+    /// </summary>
+    public static async Task<Dictionary<string, Dictionary<long, Dictionary<string, object?>>>> AttributesAsync(
+        IMap map, NetworkQueryResult result, string? outFields = null, CancellationToken cancellationToken = default)
+    {
+        var attributes = new Dictionary<string, Dictionary<long, Dictionary<string, object?>>>(StringComparer.OrdinalIgnoreCase);
+        var layers = MapLayers.FeatureLayers(map);
+        foreach (var (layerPath, oids) in ObjectIdsByLayer(result))
+        {
+            MapLayer layer;
+            try
+            {
+                layer = MapLayers.Find(layers, layerPath);
+            }
+            catch (InvalidDataException)
+            {
+                continue;
+            }
+
+            var featureClass = layer.Layer.FeatureClass;
+            string subFields = "*";
+            if (!string.IsNullOrWhiteSpace(outFields) && outFields.Trim() != "*")
+            {
+                // the result holds features of several layers: each layer gets the requested fields it has,
+                // the others are left out (a layer without any of them gets empty attributes)
+                var existing = featureClass.Fields?.ToEnumerable().Select(f => f.name).ToList() ?? [];
+                var fields = outFields.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                    .Select(f => existing.FirstOrDefault(e => e.Equals(f, StringComparison.OrdinalIgnoreCase)))
+                    .OfType<string>()
+                    .Where(f => !f.Equals(featureClass.ShapeFieldName, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+                var byOidOnly = new Dictionary<long, Dictionary<string, object?>>();
+                if (fields.Count == 0)
+                {
+                    foreach (var oid in oids)
+                    {
+                        byOidOnly[oid] = [];
+                    }
+                    attributes[layerPath] = byOidOnly;
+                    continue;
+                }
+                subFields = string.Join(",", new[] { featureClass.IDFieldName }.Concat(fields).Distinct(StringComparer.OrdinalIgnoreCase));
+            }
+            bool idRequested = subFields == "*"
+                || (outFields ?? "").Split(',', StringSplitOptions.TrimEntries).Contains(featureClass.IDFieldName, StringComparer.OrdinalIgnoreCase);
+            var byOid = new Dictionary<long, Dictionary<string, object?>>();
+            foreach (var chunk in oids.Chunk(OidsPerQuery))
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var filter = new QueryFilter
+                {
+                    SubFields = subFields,
+                    WhereClause = $"{featureClass.IDFieldName} in ({string.Join(",", chunk)})"
+                };
+                using IFeatureCursor? cursor = await featureClass.GetFeatures(filter);
+                if (cursor is null)
+                {
+                    continue;
+                }
+                IFeature feature;
+                while ((feature = await cursor.NextFeature()) is not null)
+                {
+                    byOid[feature.OID] = feature.Fields
+                        .Where(f => !f.Name.Equals(featureClass.ShapeFieldName, StringComparison.OrdinalIgnoreCase))
+                        .Where(f => idRequested || !f.Name.Equals(featureClass.IDFieldName, StringComparison.OrdinalIgnoreCase))
+                        .GroupBy(f => f.Name, StringComparer.OrdinalIgnoreCase)
+                        .ToDictionary(g => g.Key, g => g.First().Value is DBNull ? null : g.First().Value);
+                }
+            }
+            attributes[layerPath] = byOid;
+        }
+        return attributes;
+    }
+
     /// <summary>The object ids per layer path of every node (with merged points), edge and violation of the result.</summary>
     public static Dictionary<string, HashSet<long>> ObjectIdsByLayer(NetworkQueryResult result)
     {

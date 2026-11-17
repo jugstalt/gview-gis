@@ -101,6 +101,12 @@ public class JsonNetworkSearchOptionsDTO
     [JsonPropertyName("geometry")]
     public bool Geometry { get; set; } = true;
 
+    [JsonPropertyName("attributes")]
+    public bool Attributes { get; set; }
+
+    [JsonPropertyName("outFields")]
+    public string OutFields { get; set; } = "*";
+
     [JsonPropertyName("outSR")]
     public string OutSR { get; set; } = "";
 
@@ -152,6 +158,12 @@ public class JsonNetworkValidateDTO
 
     [JsonPropertyName("geometry")]
     public bool Geometry { get; set; } = true;
+
+    [JsonPropertyName("attributes")]
+    public bool Attributes { get; set; }
+
+    [JsonPropertyName("outFields")]
+    public string OutFields { get; set; } = "*";
 
     [JsonPropertyName("outSR")]
     public string OutSR { get; set; } = "";

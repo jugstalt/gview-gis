@@ -75,7 +75,9 @@ public partial class GeoServicesRestController
                 }
             }
 
-            var (content, contentType) = await NetworkSearch.RunAsync(Network, graph, op, parameters, loadMap, HttpContext.RequestAborted);
+            var mapService = _mapServerService.Instance.GetMapService(id, folder);
+            bool mayReadAttributes = mapService is not null && (await mapService.GetAccessTypes(identity)).HasFlag(AccessTypes.Query);
+            var (content, contentType) = await NetworkSearch.RunAsync(Network, graph, op, parameters, loadMap, HttpContext.RequestAborted, mayReadAttributes);
             return Content(content, contentType, Encoding.UTF8);
         }));
 

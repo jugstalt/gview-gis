@@ -22,7 +22,8 @@ namespace gView.Server.EndPoints.Network;
 /// Runs a network search for the NetworkServer resource
 /// (geoservices/rest/services/[{folder}/]{id}/networkserver/{op}, see GeoServicesRestController):
 /// parameters start, from, to, sources, sinks, node, filter, block, unblock, weight, maxCost, rules (ids),
-/// geometry (true: the real parts of the line features), outSR (EPSG code), f = json | pjson | geojson | csv.
+/// geometry (true: the real parts of the line features), attributes (true: the fields of the features; needs the right
+/// "query"), outFields (comma separated, default all; per layer only the fields it has), outSR (EPSG code), f = json | pjson | geojson | csv.
 /// Limits from appsettings "Network" (see <see cref="NetworkServerOptions"/>).
 /// </summary>
 public static class NetworkSearch
@@ -41,7 +42,7 @@ public static class NetworkSearch
     /// <summary>The result as text with its content type.</summary>
     public static async Task<(string Content, string ContentType)> RunAsync(
         NetworkServerService network, FileNetworkGraph graph, string op, IReadOnlyDictionary<string, string> parameters,
-        Func<Task<IMap?>> loadMap, CancellationToken cancellationToken)
+        Func<Task<IMap?>> loadMap, CancellationToken cancellationToken, bool mayReadAttributes = false)
     {
         var operation = op.ToLowerInvariant();
         if (!NetworkQueryService.Operations.Contains(operation))
@@ -99,6 +100,24 @@ public static class NetworkSearch
             ? await NetworkResultGeometry.EdgeCoordinatesAsync(map, result, cancellationToken)
             : [];
 
+        Dictionary<string, Dictionary<long, Dictionary<string, object?>>>? attributes = null;
+        if ("true".Equals(P("attributes"), StringComparison.OrdinalIgnoreCase))
+        {
+            if (!mayReadAttributes)
+            {
+                throw new NotAuthorizedException("Forbidden: attributes need the right Query");
+            }
+            if ((map ?? await loadMap()) is IMap attributeMap)
+            {
+                attributes = await NetworkResultGeometry.AttributesAsync(attributeMap, result, P("outFields"), cancellationToken);
+            }
+        }
+        IReadOnlyDictionary<string, object?>? Attributes(string? layer, long? oid)
+            => attributes is not null && layer is not null && oid is long id
+               && attributes.TryGetValue(layer, out var byOid) && byOid.TryGetValue(id, out var values)
+                ? values
+                : null;
+
         if (P("outSR") is string outSR)
         {
             var to = SpatialReference.FromID(outSR.Contains(':') ? outSR : $"epsg:{outSR}")
@@ -110,7 +129,7 @@ public static class NetworkSearch
 
         if (format == "geojson")
         {
-            return (NetworkResultWriter.ToGeoJson(result, e => edgeCoordinates.TryGetValue(e.Id, out var c) ? c : null), "application/geo+json");
+            return (NetworkResultWriter.ToGeoJson(result, e => edgeCoordinates.TryGetValue(e.Id, out var c) ? c : null, Attributes), "application/geo+json");
         }
 
         var options = format == "pjson" ? new JsonSerializerOptions(JsonOptions) { WriteIndented = true } : JsonOptions;
@@ -122,13 +141,24 @@ public static class NetworkSearch
             result.Cost,
             result.Srs,
             result.Messages,
-            result.Nodes,
+            Nodes = result.Nodes.Select(n => new
+            {
+                n.Id, n.Label, n.Layer, n.Oid, n.Type, n.Kind, n.Cost, n.Source, n.AliasOf, n.X, n.Y,
+                Attributes = Attributes(n.Layer, n.Oid)
+            }),
             Edges = result.Edges.Select(e => new
             {
                 e.Id, e.Label, e.Layer, e.Oid, e.Type, e.Length, e.FromMeasure, e.ToMeasure, e.From, e.To,
-                Coordinates = edgeCoordinates.TryGetValue(e.Id, out var c) ? c : (IReadOnlyList<double[]>)[[e.FromX, e.FromY], [e.ToX, e.ToY]]
+                Coordinates = edgeCoordinates.TryGetValue(e.Id, out var c) ? c : (IReadOnlyList<double[]>)[[e.FromX, e.FromY], [e.ToX, e.ToY]],
+                Attributes = Attributes(e.Layer, e.Oid)
             }),
-            result.Violations,
+            Violations = result.Violations.Select(v => new
+            {
+                v.Rule, v.Severity, v.Message, v.Kind, v.Node, v.NodeLabel, v.Layer, v.Oid,
+                v.Edge, v.EdgeLabel, v.EdgeLayer, v.EdgeOid, v.Type, v.Count, v.Min, v.Max, v.X, v.Y, v.Aliases,
+                Attributes = Attributes(v.Layer, v.Oid),
+                EdgeAttributes = Attributes(v.EdgeLayer, v.EdgeOid)
+            }),
             result.Rules,
             ObjectIds = NetworkResultGeometry.ObjectIdsByLayer(result),
         }, options), "application/json");

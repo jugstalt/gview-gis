@@ -45,7 +45,10 @@ public static class NetworkResultWriter
     }
 
     /// <summary>Nodes and violations as points, edges as lines (straight, or from <paramref name="edgeCoordinates"/>).</summary>
-    public static string ToGeoJson(NetworkQueryResult result, EdgeCoordinates? edgeCoordinates = null)
+    /// <summary>The attributes of a feature (layer path, object id); null for none.</summary>
+    public delegate IReadOnlyDictionary<string, object?>? FeatureAttributes(string? layer, long? oid);
+
+    public static string ToGeoJson(NetworkQueryResult result, EdgeCoordinates? edgeCoordinates = null, FeatureAttributes? attributes = null)
     {
         var features = new List<object>();
         foreach (var n in result.Nodes.Where(n => !double.IsNaN(n.X)))
@@ -54,7 +57,7 @@ public static class NetworkResultWriter
             {
                 type = "Feature",
                 geometry = new { type = "Point", coordinates = new[] { n.X, n.Y } },
-                properties = new { kind = n.Kind, id = n.Id.ToString(), node = n.Label, layer = n.Layer, oid = n.Oid, type = n.Type, cost = n.Cost, source = n.Source, alias_of = n.AliasOf }
+                properties = new { kind = n.Kind, id = n.Id.ToString(), node = n.Label, layer = n.Layer, oid = n.Oid, type = n.Type, cost = n.Cost, source = n.Source, alias_of = n.AliasOf, attributes = attributes?.Invoke(n.Layer, n.Oid) }
             });
         }
         foreach (var e in result.Edges)
@@ -64,7 +67,7 @@ public static class NetworkResultWriter
             {
                 type = "Feature",
                 geometry = new { type = "LineString", coordinates },
-                properties = new { kind = "Edge", id = e.Id.ToString(), edge = e.Label, layer = e.Layer, oid = e.Oid, type = e.Type, length = e.Length, from_measure = e.FromMeasure, to_measure = e.ToMeasure }
+                properties = new { kind = "Edge", id = e.Id.ToString(), edge = e.Label, layer = e.Layer, oid = e.Oid, type = e.Type, length = e.Length, from_measure = e.FromMeasure, to_measure = e.ToMeasure, attributes = attributes?.Invoke(e.Layer, e.Oid) }
             });
         }
         foreach (var v in result.Violations)
@@ -89,7 +92,9 @@ public static class NetworkResultWriter
                     count = v.Count,
                     min = v.Min,
                     max = v.Max,
-                    aliases = string.Join(";", v.Aliases)
+                    aliases = string.Join(";", v.Aliases),
+                    attributes = attributes?.Invoke(v.Layer, v.Oid),
+                    edge_attributes = attributes?.Invoke(v.EdgeLayer, v.EdgeOid)
                 }
             });
         }
