@@ -1,0 +1,121 @@
+@* Edits type patterns like [*,Kasten,*] | [*,Mast,*] as one row per pattern with one field per facet (suggestions from the facet values). *@
+
+<div class="network-pattern-editor">
+    @if (!string.IsNullOrEmpty(Label))
+    {
+        <div class="mud-typography mud-typography-caption" style="opacity:.7">@Label</div>
+    }
+
+    @if (_rows is null)
+    {
+        @* not in the simple form [a,b,c] | [..]: plain text *@
+        <MudTextField T="string" Margin="Margin.Dense" Value="Value" ValueChanged="TextChanged" />
+    }
+    else
+    {
+        @for (int r = 0; r < _rows.Count; r++)
+        {
+            var row = _rows[r];
+            <div style="display:flex;gap:6px;align-items:center">
+                @for (int f = 0; f < FacetNames.Count; f++)
+                {
+                    int index = f;
+                    var listId = $"{_id}-{f}";
+                    <div style="flex:1">
+                        <MudTextField T="string" Margin="Margin.Dense" Label="@FacetNames[f]" Placeholder="*"
+                                      Value="row[index]" ValueChanged="(string v) => CellChanged(row, index, v)"
+                                      UserAttributes="@(new Dictionary<string, object> { ["list"] = listId })" />
+                        <datalist id="@listId">
+                            <option value="*"></option>
+                            @foreach (var value in Values(f))
+                            {
+                                <option value="@value"></option>
+                            }
+                        </datalist>
+                    </div>
+                }
+                <MudIconButton Icon="@Icons.Material.Filled.Close" Size="MudBlazor.Size.Small" OnClick="() => RemoveRow(row)" title="Remove pattern" />
+            </div>
+        }
+        <MudButton Size="MudBlazor.Size.Small" Variant="Variant.Text" OnClick="AddRow">+ pattern (or)</MudButton>
+    }
+</div>
+
+@code {
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public string? Value { get; set; }
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+    [Parameter] public IReadOnlyList<string> FacetNames { get; set; } = [];
+    [Parameter] public IReadOnlyList<IReadOnlyList<string>> Suggestions { get; set; } = [];
+
+    private readonly string _id = "tp" + Guid.NewGuid().ToString("N")[..8];
+    private List<string[]>? _rows;
+    private string? _lastValue;
+
+    protected override void OnParametersSet()
+    {
+        // re-parse only when the value was changed from outside, not by this editor
+        if (_lastValue is null || _lastValue != (Value ?? ""))
+        {
+            _rows = Parse(Value ?? "");
+            _lastValue = Value ?? "";
+        }
+    }
+
+    private IEnumerable<string> Values(int facet)
+        => facet < Suggestions.Count ? Suggestions[facet] : [];
+
+    private List<string[]>? Parse(string text)
+    {
+        var rows = new List<string[]>();
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return rows;
+        }
+        foreach (var part in text.Split('|', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
+        {
+            if (!part.StartsWith('[') || !part.EndsWith(']'))
+            {
+                return null;
+            }
+            var cells = part[1..^1].Split(',', StringSplitOptions.TrimEntries);
+            if (cells.Length != FacetNames.Count || cells.Any(c => c.Contains('[') || c.Contains(']')))
+            {
+                return null;
+            }
+            rows.Add(cells);
+        }
+        return rows;
+    }
+
+    private Task Publish()
+    {
+        var text = string.Join(" | ", _rows!.Select(r => "[" + string.Join(",", r.Select(c => string.IsNullOrWhiteSpace(c) ? "*" : c.Trim())) + "]"));
+        _lastValue = text;
+        return ValueChanged.InvokeAsync(text);
+    }
+
+    private Task CellChanged(string[] row, int index, string value)
+    {
+        row[index] = value ?? "";
+        return Publish();
+    }
+
+    private Task AddRow()
+    {
+        _rows!.Add(Enumerable.Repeat("*", FacetNames.Count).ToArray());
+        return Publish();
+    }
+
+    private Task RemoveRow(string[] row)
+    {
+        _rows!.Remove(row);
+        return Publish();
+    }
+
+    private Task TextChanged(string text)
+    {
+        _lastValue = null;
+        return ValueChanged.InvokeAsync(text);
+    }
+}

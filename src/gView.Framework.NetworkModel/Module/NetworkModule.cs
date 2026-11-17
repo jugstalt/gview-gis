@@ -4,6 +4,8 @@ using gView.Framework.Core.Geometry;
 using gView.Framework.Core.IO;
 using gView.Framework.NetworkModel.Build;
 using gView.Framework.NetworkModel.Config;
+using gView.Framework.NetworkModel.Graph;
+using gView.Framework.NetworkModel.Store;
 using System.Text.Json;
 
 namespace gView.Framework.NetworkModel.Module;
@@ -155,6 +157,116 @@ public class NetworkModule : IMapApplicationModule, IPersistable
 
     private string? LayerPath(int layerId)
         => Map is null ? null : MapLayers.FeatureLayers(Map).FirstOrDefault(l => l.Id == layerId)?.Path;
+
+    #endregion
+
+    #region Build
+
+    /// <summary>The build started from Carto (running or the last one); null when none was started.</summary>
+    public NetworkBuildState? BuildState { get; private set; }
+
+    public NetworkStatus GetStatus(string? mapPath)
+    {
+        if (string.IsNullOrEmpty(mapPath))
+        {
+            return NetworkStatus.NotBuilt(null);
+        }
+        var directory = Config.ResolveDirectory(mapPath);
+        NetworkMetadata? metadata = null;
+        try
+        {
+            if (File.Exists(Path.Combine(directory, FileNetworkStore.MetadataFile)))
+            {
+                metadata = new FileNetworkStore(directory).ReadMetadata();
+            }
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException) { }
+
+        if (metadata is null)
+        {
+            return NetworkStatus.NotBuilt(directory);
+        }
+
+        string? reason = null;
+        if (File.Exists(mapPath) && File.GetLastWriteTime(mapPath) > metadata.Created)
+        {
+            reason = "The map was saved after the build.";
+        }
+        return new(directory, true, metadata.Created, metadata.NodeCount, metadata.EdgeCount, metadata.Shards.Count, reason is not null, reason);
+    }
+
+    /// <summary>The known values of every facet (fixed values of the config, values of a built network) for pickers.</summary>
+    public List<List<string>> FacetValueSuggestions(string? mapPath)
+    {
+        NetworkMetadata? metadata = null;
+        try
+        {
+            var directory = string.IsNullOrEmpty(mapPath) ? null : Config.ResolveDirectory(mapPath);
+            if (directory is not null && File.Exists(Path.Combine(directory, FileNetworkStore.MetadataFile)))
+            {
+                metadata = new FileNetworkStore(directory).ReadMetadata();
+            }
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException) { }
+
+        return Config.Facets.Select(facet =>
+        {
+            var values = facet.Values.Values.AsEnumerable();
+            var built = metadata?.Facets.FirstOrDefault(f => f.Name.Equals(facet.Name, StringComparison.OrdinalIgnoreCase));
+            if (built is not null)
+            {
+                values = values.Concat(built.Values.Values);
+            }
+            return values.Distinct(StringComparer.OrdinalIgnoreCase).Order(StringComparer.OrdinalIgnoreCase).ToList();
+        }).ToList();
+    }
+
+    /// <summary>Builds the network of the map in the background; false when a build is already running.</summary>
+    public bool StartBuild(string mapPath)
+    {
+        if (Map is null)
+        {
+            throw new InvalidOperationException("The module is not attached to a map.");
+        }
+        if (string.IsNullOrEmpty(mapPath))
+        {
+            throw new InvalidOperationException("Save the map first: the network is built next to it.");
+        }
+        if (BuildState is { Running: true })
+        {
+            return false;
+        }
+
+        Config.Validate();
+        var map = Map;
+        var config = Clone(Config); // later edits must not change a running build
+        var directory = config.ResolveDirectory(mapPath);
+        var state = new NetworkBuildState();
+        BuildState = state;
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(directory)!);
+                state.AddLine($"Network directory: {directory}");
+                state.Succeeded = await NetworkBuildRunner.RunAsync(map, config, directory, false, state.AddLine);
+                NetworkGraphCache.Shared.Invalidate(directory);
+            }
+            catch (Exception ex)
+            {
+                state.Error = ex.Message;
+                state.AddLine($"Error: {ex.Message}");
+                state.Succeeded = false;
+            }
+            finally
+            {
+                state.Finished = DateTime.Now;
+                state.Notify();
+            }
+        });
+        return true;
+    }
 
     #endregion
 

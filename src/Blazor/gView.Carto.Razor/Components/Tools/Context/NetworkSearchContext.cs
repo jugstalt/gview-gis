@@ -1,3 +1,4 @@
+using gView.Framework.NetworkModel.Build;
 using gView.Framework.NetworkModel.Query;
 
 namespace gView.Carto.Razor.Components.Tools.Context;
@@ -36,6 +37,12 @@ public class NetworkSearchContext
     public IReadOnlyList<string> Weights { get; set; } = ["length"];
 
     public string? NetworkDirectory { get; set; }
+
+    /// <summary>Whether the network is built, when and how big; null until known.</summary>
+    public NetworkStatus? Status { get; set; }
+
+    /// <summary>The build started from this map (running or last one).</summary>
+    public NetworkBuildState? Build { get; set; }
 
     public NetworkQueryResult? Result { get; set; }
 

@@ -7,10 +7,15 @@ public enum NetworkSearchAction
     Run,
     Clear,
     ToSelection,
-    ExportGeoJson
+    ExportGeoJson,
+    Build,
+    ZoomToViolation
 }
 
-public class NetworkSearchEventArgs(NetworkSearchAction action) : ToolEventArgs
+public class NetworkSearchEventArgs(NetworkSearchAction action, int index = 0) : ToolEventArgs
 {
     public NetworkSearchAction Action { get; } = action;
+
+    /// <summary>ZoomToViolation: the index in the violations of the result.</summary>
+    public int Index { get; } = index;
 }

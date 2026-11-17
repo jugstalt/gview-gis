@@ -41,6 +41,11 @@
         <div class="title">@(_context.Busy ? "Running..." : "Run")</div>
     </div>
 
+    <div class="@($"carto-tool {(_context.Build?.Running == true ? "selected" : "")}")" title="@BuildTitle" @onclick="() => Fire(NetworkSearchAction.Build)">
+        <div class=@Icons.FromString(_context.Status?.Stale == true ? "basic:refresh" : "basic:tools")></div>
+        <div class="title">@(_context.Build?.Running == true ? "Building..." : _context.Status?.Built == true ? (_context.Status.Stale ? "Rebuild" : "Build") : "Build")</div>
+    </div>
+
     <div class="tool-small-chunk">
         <div class="carto-tool small" title="Remove the result and the picked nodes" @onclick="() => Fire(NetworkSearchAction.Clear)">
             <div class=@Icons.FromString("basic:trashcan-x", IconSize.Small)></div>
@@ -80,13 +85,22 @@
             }
             @if (_context.Operation == "validate")
             {
-                <MudTextField T="string" Label="Rules (ids, empty for all)" Dense="true" @bind-Value="_context.RuleIds" />
+                <MudSelect T="string" Label="Rules (empty = all rules of the map)" Dense="true" MultiSelection="true" Clearable="true"
+                           SelectedValues="SelectedRules" SelectedValuesChanged="SetSelectedRules">
+                    @foreach (var id in RuleList)
+                    {
+                        <MudSelectItem T="string" Value="@id">@id</MudSelectItem>
+                    }
+                </MudSelect>
             }
         </div>
     </MudMenu>
 
-    <MudMenu Label="@ReportLabel" Dense="true" Color="@(string.IsNullOrEmpty(_context.Error) ? Color.Default : Color.Error)">
-        <div style="padding:8px;max-width:640px" @onclick:stopPropagation="true">
+    <MudButton Variant="Variant.Text" Size="MudBlazor.Size.Small" Color="@(string.IsNullOrEmpty(_context.Error) ? Color.Default : Color.Error)" OnClick="() => _showReport = !_showReport">@ReportLabel</MudButton>
+    @if (_showReport)
+    {
+    <div style="position:fixed;right:12px;top:200px;width:460px;max-height:calc(100vh - 230px);overflow:auto;z-index:1300;padding:8px;background:var(--mud-palette-surface);box-shadow:0 4px 16px rgba(0,0,0,.35);border-radius:6px">
+        <div style="text-align:right"><MudIconButton Icon="@MudBlazor.Icons.Material.Filled.Close" Size="MudBlazor.Size.Small" OnClick="() => _showReport = false" title="Close" /></div>
             @if (!string.IsNullOrEmpty(_context.Error))
             {
                 <MudAlert Severity="Severity.Error" Dense="true">@_context.Error</MudAlert>
@@ -99,16 +113,59 @@
             {
                 <pre style="max-height:400px;overflow:auto;font-size:0.75em;margin-top:4px">@string.Join(Environment.NewLine, result.Messages)</pre>
             }
-            else if (string.IsNullOrEmpty(_context.Error) && string.IsNullOrEmpty(_context.Info))
+            @if (_context.Result is NetworkQueryResult { Violations.Count: > 0 } validation)
+            {
+                <div style="max-height:45vh;overflow:auto;margin-top:6px">
+                    <table style="width:100%;font-size:0.75em;border-collapse:collapse">
+                        <tr style="text-align:left"><th>Rule</th><th>Where</th><th>Count</th><th></th></tr>
+                        @for (int i = 0; i < Math.Min(validation.Violations.Count, 300); i++)
+                        {
+                            int index = i;
+                            var violation = validation.Violations[i];
+                            <tr style="cursor:pointer;border-top:1px solid var(--mud-palette-lines-default)" title="Zoom to the violation" @onclick="() => FireZoom(index)">
+                                <td style="color:@(violation.Severity == "Error" ? "var(--mud-palette-error)" : "inherit")">@violation.Rule</td>
+                                <td>@(violation.EdgeLabel ?? violation.NodeLabel)</td>
+                                <td>@violation.Count (@violation.Min..@(violation.Max?.ToString() ?? "*"))</td>
+                                <td>⌖</td>
+                            </tr>
+                        }
+                    </table>
+                    @if (validation.Violations.Count > 300)
+                    {
+                        <div style="font-size:0.75em">First 300 of @validation.Violations.Count violations: export GeoJSON for all.</div>
+                    }
+                </div>
+            }
+            @if (_context.Build is not null)
+            {
+                <div style="font-size:0.8em;margin-top:6px"><b>Build</b> @(_context.Build.Running ? "(running)" : _context.Build.Succeeded == true ? "(finished)" : "(failed)")</div>
+                <pre style="max-height:200px;overflow:auto;font-size:0.75em">@string.Join(Environment.NewLine, _context.Build.Log)</pre>
+            }
+            @if (_context.Result is null && string.IsNullOrEmpty(_context.Error) && string.IsNullOrEmpty(_context.Info) && _context.Build is null)
             {
                 <div style="font-size:0.8em">Pick a node in the map, then Run.</div>
             }
-        </div>
-    </MudMenu>
+    </div>
+    }
 }
 
 @code {
     private NetworkSearchContext? _context;
+    private bool _showReport;
+
+    private IEnumerable<string> RuleList
+        => AppScope.Modules.OfType<gView.Framework.NetworkModel.Module.NetworkModule>().FirstOrDefault(m => m.IsConfigured)?.Config.Rules.Select(r => r.Id) ?? [];
+
+    private IReadOnlyCollection<string> SelectedRules
+        => (_context?.RuleIds ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
+
+    private void SetSelectedRules(IReadOnlyCollection<string>? ids)
+    {
+        if (_context is not null)
+        {
+            _context.RuleIds = string.Join(",", ids ?? []);
+        }
+    }
 
     protected override void OnInitialized()
     {
@@ -130,6 +187,28 @@
     };
 
     private string TargetLabel => _context?.Operation == "supply" ? "Sinks" : "To";
+
+    private string BuildTitle
+    {
+        get
+        {
+            var status = _context?.Status;
+            if (_context?.Build?.Running == true)
+            {
+                return "The network is being built, see Report";
+            }
+            if (status is null || !status.Built)
+            {
+                return "The network is not built yet: build it from the layers and the config of the map";
+            }
+            return $"Built {status.Created:g}: {status.NodeCount} nodes, {status.EdgeCount} edges{(status.Stale ? $". {status.StaleReason}" : "")}. Click to build again.";
+        }
+    }
+
+    private Task FireZoom(int index) => HandleAsync(async () =>
+    {
+        await EventBus.FireToolEventAsync(new NetworkSearchEventArgs(NetworkSearchAction.ZoomToViolation, index));
+    });
 
     private string ReportLabel
     {

@@ -5,171 +5,262 @@
 @using IOPath = System.IO.Path
 
 @inherits BaseHandler
+@implements IDisposable
 @inject ICartoApplicationScopeService AppScope
 
 @if (_module is not null)
 {
     var config = _module.Config;
+    var mapPath = AppScope.Document?.FilePath;
 
     <GvScrollable>
-        <GvCard Title="Network">
-            <GvCardContent>
-                <MudTextField T="string" Label="Name" @bind-Value="config.Name" />
-                <MudTextField T="string" Label="Spatial reference (e.g. epsg:31256; empty = map, must be metric)" @bind-Value="config.Srs" />
-                <MudNumericField T="double" Label="Tolerance (joins line ends and points)" @bind-Value="config.Tolerance" />
-                <MudSelect T="NodeConflictMode" Label="Points of different layers at one place" @bind-Value="config.NodeConflicts">
-                    <MudSelectItem Value="NodeConflictMode.Error">Error: the build stops and lists the conflicts</MudSelectItem>
-                    <MudSelectItem Value="NodeConflictMode.PriorityByToc">Merge: the layer higher in the TOC wins, the others become aliases</MudSelectItem>
-                </MudSelect>
-                <MudNumericField T="double" Label="Grid cell size for nodes outside every shard polygon" @bind-Value="config.FallbackShardCellSize" />
-            </GvCardContent>
-        </GvCard>
+        <MudTabs Elevation="0" Rounded="false" ApplyEffectsToContainer="true" PanelClass="pt-2" KeepPanelsAlive="true">
+            <MudTabPanel Text="General">
+                <GvCard Title="Network">
+                    <GvCardContent>
+                        <MudTextField T="string" Label="Name" @bind-Value="config.Name" />
+                        <MudTextField T="string" Label="Spatial reference (e.g. epsg:31256; empty = map, must be metric)" @bind-Value="config.Srs" />
+                        <MudNumericField T="double" Label="Tolerance (joins line ends and points)" @bind-Value="config.Tolerance" />
+                        <MudSelect T="NodeConflictMode" Label="Points of different layers at one place" @bind-Value="config.NodeConflicts">
+                            <MudSelectItem Value="NodeConflictMode.Error">Error: the build stops and lists the conflicts</MudSelectItem>
+                            <MudSelectItem Value="NodeConflictMode.PriorityByToc">Merge: the layer higher in the TOC wins, the others become aliases</MudSelectItem>
+                        </MudSelect>
+                        <MudNumericField T="double" Label="Grid cell size for nodes outside every shard polygon" @bind-Value="config.FallbackShardCellSize" />
+                    </GvCardContent>
+                </GvCard>
 
-        <GvCard Title="Type facets">
-            <GvCardContent>
-                @GvUtilities.InfoText("Every node and edge type is a combination of facet values. Values not listed get a number automatically. Fixed values: 1=Niederspannung, 2=Mittelspannung")
-                <table style="width:100%">
-                    @for (int i = 0; i < config.Facets.Count; i++)
-                    {
-                        var facet = config.Facets[i];
-                        <tr>
-                            <td style="width:30%"><MudTextField T="string" Label="Facet" @bind-Value="facet.Name" /></td>
-                            <td><MudTextField T="string" Label="Fixed values"
-                                              Value="FacetValuesText(facet)"
-                                              ValueChanged="(string text) => SetFacetValues(facet, text)" /></td>
-                            <td style="width:50px">
-                                <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="() => RemoveFacet(facet)" />
-                            </td>
-                        </tr>
-                    }
-                </table>
-                <MudButton Variant="Variant.Filled" OnClick="AddFacet">Add facet</MudButton>
-            </GvCardContent>
-        </GvCard>
+                <GvCard Title="Type facets">
+                    <GvCardContent>
+                        @GvUtilities.InfoText("Every node and edge type is a combination of facet values. Values not listed get a number automatically. Fixed values: 1=Niederspannung, 2=Mittelspannung")
+                        <table style="width:100%">
+                            @for (int i = 0; i < config.Facets.Count; i++)
+                            {
+                                var facet = config.Facets[i];
+                                <tr>
+                                    <td style="width:30%"><MudTextField T="string" Label="Facet" @bind-Value="facet.Name" /></td>
+                                    <td><MudTextField T="string" Label="Fixed values"
+                                                      Value="FacetValuesText(facet)"
+                                                      ValueChanged="(string text) => SetFacetValues(facet, text)" /></td>
+                                    <td style="width:50px">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="() => RemoveFacet(facet)" />
+                                    </td>
+                                </tr>
+                            }
+                        </table>
+                        <MudButton Variant="Variant.Filled" OnClick="AddFacet">Add facet</MudButton>
+                    </GvCardContent>
+                </GvCard>
 
-        <GvCard Title="Weights">
-            <GvCardContent>
-                @GvUtilities.InfoText("The length is always there. PerLength: value × length, LengthOverValue: length / value, Absolute: value.")
-                <table style="width:100%">
-                    @foreach (var weight in config.Weights)
-                    {
-                        <tr>
-                            <td><MudTextField T="string" Label="Name" @bind-Value="weight.Name" /></td>
-                            <td>
-                                <MudSelect T="WeightKind" Label="Kind" @bind-Value="weight.Kind">
-                                    @foreach (var kind in Enum.GetValues<WeightKind>().Where(k => k != WeightKind.Length))
-                                    {
-                                        <MudSelectItem Value="kind">@kind</MudSelectItem>
-                                    }
-                                </MudSelect>
-                            </td>
-                            <td><MudNumericField T="double?" Label="Fallback" @bind-Value="weight.Fallback" /></td>
-                            <td style="width:50px">
-                                <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="() => config.Weights.Remove(weight)" />
-                            </td>
-                        </tr>
-                    }
-                </table>
-                <MudButton Variant="Variant.Filled" OnClick="AddWeight">Add weight</MudButton>
-            </GvCardContent>
-        </GvCard>
+                <GvCard Title="Weights">
+                    <GvCardContent>
+                        @GvUtilities.InfoText("The length is always there. PerLength: value × length, LengthOverValue: length / value, Absolute: value.")
+                        <table style="width:100%">
+                            @foreach (var weight in config.Weights)
+                            {
+                                <tr>
+                                    <td><MudTextField T="string" Label="Name" @bind-Value="weight.Name" /></td>
+                                    <td>
+                                        <MudSelect T="WeightKind" Label="Kind" @bind-Value="weight.Kind">
+                                            @foreach (var kind in Enum.GetValues<WeightKind>().Where(k => k != WeightKind.Length))
+                                            {
+                                                <MudSelectItem Value="kind">@kind</MudSelectItem>
+                                            }
+                                        </MudSelect>
+                                    </td>
+                                    <td><MudNumericField T="double?" Label="Fallback" @bind-Value="weight.Fallback" /></td>
+                                    <td style="width:50px">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="() => config.Weights.Remove(weight)" />
+                                    </td>
+                                </tr>
+                            }
+                        </table>
+                        <MudButton Variant="Variant.Filled" OnClick="AddWeight">Add weight</MudButton>
+                    </GvCardContent>
+                </GvCard>
+            </MudTabPanel>
 
-        <GvCard Title="Layers">
-            <GvCardContent>
-                @GvUtilities.InfoText("Layers take part only when set in the layer settings (page Network). Layers not listed here are not part of the network.")
-                <table style="width:100%;text-align:left">
-                    <tr><th>Role</th><th>Layer</th><th>Type</th></tr>
-                    @foreach (var node in config.Nodes)
-                    {
-                        <tr><td>Node</td><td>@LayerTitle(node.LayerId, node.Layer)</td><td>@string.Join(" | ", node.Type)</td></tr>
-                    }
-                    @foreach (var edge in config.Edges)
-                    {
-                        <tr><td>Edge</td><td>@LayerTitle(edge.LayerId, edge.Layer)</td><td>@string.Join(" | ", edge.Type)</td></tr>
-                    }
-                    @if (config.Shards is not null)
-                    {
-                        <tr><td>Shards</td><td>@LayerTitle(config.Shards.LayerId, config.Shards.Layer)</td><td>[@config.Shards.Field]</td></tr>
-                    }
-                </table>
-                <MudButton Variant="Variant.Filled" OnClick="AddAllLayers">Add all point and line layers</MudButton>
-            </GvCardContent>
-        </GvCard>
+            <MudTabPanel Text="@($"Layers ({config.Nodes.Count + config.Edges.Count + (config.Shards is null ? 0 : 1)})")">
+                <GvCard Title="Layers">
+                    <GvCardContent>
+                        @GvUtilities.InfoText("Layers take part only when set in the layer settings (page Network). Layers not listed here are not part of the network.")
+                        <table style="width:100%;text-align:left">
+                            <tr><th>Role</th><th>Layer</th><th>Type</th></tr>
+                            @foreach (var node in config.Nodes)
+                            {
+                                <tr><td>Node</td><td>@LayerTitle(node.LayerId, node.Layer)</td><td>@string.Join(" | ", node.Type)</td></tr>
+                            }
+                            @foreach (var edge in config.Edges)
+                            {
+                                <tr><td>Edge</td><td>@LayerTitle(edge.LayerId, edge.Layer)</td><td>@string.Join(" | ", edge.Type)</td></tr>
+                            }
+                            @if (config.Shards is not null)
+                            {
+                                <tr><td>Shards</td><td>@LayerTitle(config.Shards.LayerId, config.Shards.Layer)</td><td>[@config.Shards.Field]</td></tr>
+                            }
+                        </table>
+                        <MudButton Variant="Variant.Filled" OnClick="AddAllLayers">Add all point and line layers</MudButton>
+                    </GvCardContent>
+                </GvCard>
+            </MudTabPanel>
 
-        <GvCard Title="Rules (validation)">
-            <GvCardContent>
-                @GvUtilities.InfoText("Each rule counts the direct neighbours of nodes or edges: subject types (pattern, e.g. [*,Kasten,*]; several with |), counted edge types, allowed min..max (max empty = no limit). Edge rules may look only at ends where the node is / is not of the end types. Checked after the build: gView.Cmd --command Network -u validate -network <dir>")
-                @foreach (var rule in config.Rules)
-                {
-                    <div style="border:1px solid var(--mud-palette-lines-default);border-radius:4px;padding:4px 8px;margin-bottom:8px">
-                        <div style="display:flex;gap:8px;align-items:flex-end">
-                            <div style="flex:2"><MudTextField T="string" Label="Id" @bind-Value="rule.Id" /></div>
-                            <div style="flex:1">
-                                <MudSelect T="RuleSeverity" Label="Severity" @bind-Value="rule.Severity">
-                                    @foreach (var value in Enum.GetValues<RuleSeverity>())
-                                    {
-                                        <MudSelectItem Value="value">@value</MudSelectItem>
-                                    }
-                                </MudSelect>
-                            </div>
-                            <div style="flex:1">
-                                <MudSelect T="RuleSubject" Label="Subject" @bind-Value="rule.Subject">
-                                    @foreach (var value in Enum.GetValues<RuleSubject>())
-                                    {
-                                        <MudSelectItem Value="value">@value</MudSelectItem>
-                                    }
-                                </MudSelect>
-                            </div>
-                            <div style="flex:1"><MudNumericField T="int" Label="Min" @bind-Value="rule.Min" Min="0" /></div>
-                            <div style="flex:1"><MudNumericField T="int?" Label="Max (empty = no limit)" @bind-Value="rule.Max" Min="0" /></div>
-                            <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="() => config.Rules.Remove(rule)" />
+            <MudTabPanel Text="@($"Rules ({config.Rules.Count})")">
+                <GvCard Title="Rules (validation)">
+                    <GvCardContent>
+                        @GvUtilities.InfoText("Each rule counts the direct neighbours of nodes or edges: the subject types, the counted edge types and the allowed min..max (max empty = no limit). Edge rules may look only at ends where the node is / is not of the end types. A pattern has one field per facet, * = any. Checked with the Network Search tool (validate) or gView.Cmd -u validate; the rules are written into the network at build.")
+                        <div style="display:flex;gap:8px;margin-bottom:8px">
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AddRule">Add rule</MudButton>
+                            <MudButton Variant="Variant.Text" OnClick="() => _openRules = config.Rules.ToHashSet()">Expand all</MudButton>
+                            <MudButton Variant="Variant.Text" OnClick="() => _openRules.Clear()">Collapse all</MudButton>
                         </div>
-                        <MudTextField T="string" Label="Subject types (checked nodes/edges, e.g. [*,Kasten,*]; several with |)" @bind-Value="rule.SubjectTypes" />
-                        @if (rule.Subject == RuleSubject.Edge)
-                        {
-                            <div style="display:flex;gap:8px">
-                                <div style="flex:1">
-                                    <MudSelect T="RuleEndFilter" Label="Ends" @bind-Value="rule.EndFilter">
-                                        @foreach (var value in Enum.GetValues<RuleEndFilter>())
-                                        {
-                                            <MudSelectItem Value="value">@value</MudSelectItem>
-                                        }
-                                    </MudSelect>
-                                </div>
-                                <div style="flex:3"><MudTextField T="string" Label="End node types (untyped = line end without point)" @bind-Value="rule.EndTypes" Disabled="rule.EndFilter == RuleEndFilter.All" /></div>
-                            </div>
-                        }
-                        <MudTextField T="string" Label="Counted edge types (several with | = or)" @bind-Value="rule.CountTypes" />
-                        <MudTextField T="string" Label="Description" @bind-Value="rule.Description" />
-                    </div>
-                }
-                <MudButton Variant="Variant.Filled" OnClick="AddRule">Add rule</MudButton>
-                <MudTextField T="string" Label="Rules JSON file" @bind-Value="_rulesPath" />
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="ExportRules">Export rules</MudButton>
-                <MudButton Variant="Variant.Filled" OnClick="ImportRules">Import rules</MudButton>
-            </GvCardContent>
-        </GvCard>
 
-        <GvCard Title="JSON (gView.Cmd)">
-            <GvCardContent>
-                <MudTextField T="string" Label="JSON file" @bind-Value="_jsonPath" />
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Export">Export</MudButton>
-                <MudButton Variant="Variant.Filled" OnClick="Import">Import</MudButton>
-                @if (_messages.Count > 0)
-                {
-                    <MudAlert Severity="_messageSeverity">
-                        @foreach (var message in _messages)
+                        <MudExpansionPanels MultiExpansion="true" Dense="true">
+                            @foreach (var rule in config.Rules)
+                            {
+                                var current = rule;
+                                <MudExpansionPanel Expanded="_openRules.Contains(current)" ExpandedChanged="(bool open) => SetOpen(current, open)">
+                                    <TitleContent>
+                                        <div style="display:flex;gap:8px;align-items:center;width:100%">
+                                            <MudChip T="string" Size="MudBlazor.Size.Small" Color="@SeverityColor(current.Severity)">@current.Severity</MudChip>
+                                            <b>@(string.IsNullOrWhiteSpace(current.Id) ? "(no id)" : current.Id)</b>
+                                            <span style="opacity:.7;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">@RuleSummary(current)</span>
+                                        </div>
+                                    </TitleContent>
+                                    <ChildContent>
+                                        <div style="display:flex;gap:8px;align-items:flex-end">
+                                            <div style="flex:2"><MudTextField T="string" Label="Id" @bind-Value="current.Id" /></div>
+                                            <div style="flex:1">
+                                                <MudSelect T="RuleSeverity" Label="Severity" @bind-Value="current.Severity">
+                                                    @foreach (var value in Enum.GetValues<RuleSeverity>())
+                                                    {
+                                                        <MudSelectItem Value="value">@value</MudSelectItem>
+                                                    }
+                                                </MudSelect>
+                                            </div>
+                                            <div style="flex:1">
+                                                <MudSelect T="RuleSubject" Label="Subject" @bind-Value="current.Subject">
+                                                    @foreach (var value in Enum.GetValues<RuleSubject>())
+                                                    {
+                                                        <MudSelectItem Value="value">@value</MudSelectItem>
+                                                    }
+                                                </MudSelect>
+                                            </div>
+                                            <div style="flex:1"><MudNumericField T="int" Label="Min" @bind-Value="current.Min" Min="0" /></div>
+                                            <div style="flex:1"><MudNumericField T="int?" Label="Max (empty = no limit)" @bind-Value="current.Max" Min="0" /></div>
+                                        </div>
+                                        <NetworkTypePatternEditor Label="@($"Checked {(current.Subject == RuleSubject.Edge ? "edges" : "nodes")} (subject types)")"
+                                                                  @bind-Value="current.SubjectTypes" FacetNames="_facetNames" Suggestions="_suggestions" />
+                                        @if (current.Subject == RuleSubject.Edge)
+                                        {
+                                            <div style="display:flex;gap:8px;margin-top:6px">
+                                                <div style="flex:1">
+                                                    <MudSelect T="RuleEndFilter" Label="Ends" @bind-Value="current.EndFilter">
+                                                        @foreach (var value in Enum.GetValues<RuleEndFilter>())
+                                                        {
+                                                            <MudSelectItem Value="value">@value</MudSelectItem>
+                                                        }
+                                                    </MudSelect>
+                                                </div>
+                                                <div style="flex:3">
+                                                    @if (current.EndFilter != RuleEndFilter.All)
+                                                    {
+                                                        <NetworkTypePatternEditor Label="End node types (empty = line end without point)"
+                                                                                  @bind-Value="current.EndTypes" FacetNames="_facetNames" Suggestions="_suggestions" />
+                                                    }
+                                                </div>
+                                            </div>
+                                        }
+                                        <div style="margin-top:6px">
+                                            <NetworkTypePatternEditor Label="Counted edge types (several patterns = or)"
+                                                                      @bind-Value="current.CountTypes" FacetNames="_facetNames" Suggestions="_suggestions" />
+                                        </div>
+                                        <MudTextField T="string" Label="Description" @bind-Value="current.Description" />
+                                        <div style="display:flex;gap:8px;margin-top:4px">
+                                            <MudButton Size="MudBlazor.Size.Small" OnClick="() => DuplicateRule(current)">Duplicate</MudButton>
+                                            <MudButton Size="MudBlazor.Size.Small" Color="Color.Error" OnClick="() => RemoveRule(current)">Delete</MudButton>
+                                        </div>
+                                    </ChildContent>
+                                </MudExpansionPanel>
+                            }
+                        </MudExpansionPanels>
+
+                        <MudTextField T="string" Label="Rules JSON file" @bind-Value="_rulesPath" />
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="ExportRules">Export rules</MudButton>
+                        <MudButton Variant="Variant.Filled" OnClick="ImportRules">Import rules</MudButton>
+                        @if (!string.IsNullOrEmpty(_rulesCommand))
                         {
-                            <div>@message</div>
+                            <MudText Typo="Typo.body2" Style="font-family:monospace;margin-top:8px">@_rulesCommand</MudText>
                         }
-                    </MudAlert>
+                    </GvCardContent>
+                </GvCard>
+            </MudTabPanel>
+
+            <MudTabPanel Text="Build">
+                @{
+                    var status = _module.GetStatus(mapPath);
+                    var build = _module.BuildState;
                 }
-                @if (!string.IsNullOrEmpty(_command))
-                {
-                    <MudText Typo="Typo.body2" Style="font-family:monospace;margin-top:8px">@_command</MudText>
-                }
-            </GvCardContent>
-        </GvCard>
+                <GvCard Title="Network build">
+                    <GvCardContent>
+                        @if (string.IsNullOrEmpty(mapPath))
+                        {
+                            <MudAlert Severity="Severity.Warning" Dense="true">The map is not saved yet: save it first, the network is built next to it.</MudAlert>
+                        }
+                        else if (!status.Built)
+                        {
+                            <MudAlert Severity="Severity.Info" Dense="true">Not built yet: @status.Directory</MudAlert>
+                        }
+                        else
+                        {
+                            <MudAlert Severity="@(status.Stale ? Severity.Warning : Severity.Success)" Dense="true">
+                                Built @status.Created?.ToString("g"): @status.NodeCount nodes, @status.EdgeCount edges, @status.ShardCount shards
+                                @if (status.Stale)
+                                {
+                                    <div>@status.StaleReason Build again if the data or the config changed.</div>
+                                }
+                                <div style="font-size:.8em;opacity:.8">@status.Directory</div>
+                            </MudAlert>
+                        }
+                        <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="StartBuild"
+                                       Disabled="@(build?.Running == true || string.IsNullOrEmpty(mapPath))">
+                                @(build?.Running == true ? "Building..." : "Build network")
+                            </MudButton>
+                            @if (build is not null && !build.Running)
+                            {
+                                <MudText Typo="Typo.body2" Color="@(build.Succeeded == true ? Color.Success : Color.Error)">
+                                    @(build.Succeeded == true ? "Build finished" : "Build failed: see the log (conflicts.json in the network directory lists conflicts)")
+                                </MudText>
+                            }
+                        </div>
+                        @if (build is not null)
+                        {
+                            <pre style="max-height:320px;overflow:auto;font-size:.75em;margin-top:8px">@string.Join(Environment.NewLine, build.Log)</pre>
+                        }
+                    </GvCardContent>
+                </GvCard>
+
+                <GvCard Title="JSON (gView.Cmd)">
+                    <GvCardContent>
+                        <MudTextField T="string" Label="JSON file" @bind-Value="_jsonPath" />
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Export">Export</MudButton>
+                        <MudButton Variant="Variant.Filled" OnClick="Import">Import</MudButton>
+                        @if (_messages.Count > 0)
+                        {
+                            <MudAlert Severity="_messageSeverity">
+                                @foreach (var message in _messages)
+                                {
+                                    <div>@message</div>
+                                }
+                            </MudAlert>
+                        }
+                        @if (!string.IsNullOrEmpty(_command))
+                        {
+                            <MudText Typo="Typo.body2" Style="font-family:monospace;margin-top:8px">@_command</MudText>
+                        }
+                    </GvCardContent>
+                </GvCard>
+            </MudTabPanel>
+        </MudTabs>
     </GvScrollable>
 }
 
@@ -177,31 +268,105 @@
     [Parameter] public IMapApplicationModule? Instance { get; set; }
 
     private NetworkModule? _module;
+    private NetworkBuildState? _subscribed;
     private string _jsonPath = "";
     private string _rulesPath = "";
+    private string? _rulesCommand;
     private List<string> _messages = [];
     private Severity _messageSeverity = Severity.Info;
     private string? _command;
+    private HashSet<NetworkRuleConfig> _openRules = [];
+    private List<string> _facetNames = [];
+    private IReadOnlyList<IReadOnlyList<string>> _suggestions = [];
 
     protected override void OnParametersSet() => Handle(() =>
     {
         base.OnParametersSet();
         _module = Instance as NetworkModule;
 
-        if (string.IsNullOrEmpty(_jsonPath))
+        var mxl = AppScope.Document?.FilePath;
+        if (string.IsNullOrEmpty(_jsonPath) && !string.IsNullOrEmpty(mxl))
         {
-            var mxl = AppScope.Document?.FilePath;
-            _jsonPath = string.IsNullOrEmpty(mxl)
-                ? ""
-                : IOPath.Combine(IOPath.GetDirectoryName(mxl) ?? "", $"{IOPath.GetFileNameWithoutExtension(mxl)}.network.json");
+            _jsonPath = IOPath.Combine(IOPath.GetDirectoryName(mxl) ?? "", $"{IOPath.GetFileNameWithoutExtension(mxl)}.network.json");
         }
-        if (string.IsNullOrEmpty(_rulesPath))
+        if (string.IsNullOrEmpty(_rulesPath) && !string.IsNullOrEmpty(mxl))
         {
-            var mxl = AppScope.Document?.FilePath;
-            _rulesPath = string.IsNullOrEmpty(mxl)
-                ? ""
-                : IOPath.Combine(IOPath.GetDirectoryName(mxl) ?? "", $"{IOPath.GetFileNameWithoutExtension(mxl)}.rules.json");
+            _rulesPath = IOPath.Combine(IOPath.GetDirectoryName(mxl) ?? "", $"{IOPath.GetFileNameWithoutExtension(mxl)}.rules.json");
         }
+        if (_module is not null)
+        {
+            _facetNames = _module.Config.Facets.Select(f => f.Name).ToList();
+            _suggestions = _module.FacetValueSuggestions(mxl).Select(l => (IReadOnlyList<string>)l).ToList();
+            Subscribe(_module.BuildState);
+        }
+    });
+
+    private void Subscribe(NetworkBuildState? state)
+    {
+        if (ReferenceEquals(state, _subscribed))
+        {
+            return;
+        }
+        if (_subscribed is not null)
+        {
+            _subscribed.Changed -= OnBuildChanged;
+        }
+        _subscribed = state;
+        if (_subscribed is not null)
+        {
+            _subscribed.Changed += OnBuildChanged;
+        }
+    }
+
+    private void OnBuildChanged() => InvokeAsync(StateHasChanged);
+
+    public void Dispose()
+    {
+        if (_subscribed is not null)
+        {
+            _subscribed.Changed -= OnBuildChanged;
+        }
+    }
+
+    private void StartBuild() => Handle(() =>
+    {
+        var mxl = AppScope.Document?.FilePath ?? "";
+        if (!_module!.StartBuild(mxl))
+        {
+            SetMessages(Severity.Info, "A build is already running.");
+        }
+        Subscribe(_module.BuildState);
+    });
+
+    private void SetOpen(NetworkRuleConfig rule, bool open)
+    {
+        if (open) { _openRules.Add(rule); } else { _openRules.Remove(rule); }
+    }
+
+    private static Color SeverityColor(RuleSeverity severity) => severity switch
+    {
+        RuleSeverity.Error => Color.Error,
+        RuleSeverity.Warning => Color.Warning,
+        _ => Color.Info
+    };
+
+    private static string RuleSummary(NetworkRuleConfig rule)
+        => $"{rule.Subject} {rule.SubjectTypes}{(rule.Subject == RuleSubject.Edge && rule.EndFilter != RuleEndFilter.All ? $" ends {rule.EndFilter} {rule.EndTypes}" : "")} → count {rule.CountTypes} {rule.Min}..{(rule.Max?.ToString() ?? "*")}"
+           + (string.IsNullOrWhiteSpace(rule.Description) ? "" : $"  ({rule.Description})");
+
+    private void RemoveRule(NetworkRuleConfig rule) => Handle(() =>
+    {
+        _module!.Config.Rules.Remove(rule);
+        _openRules.Remove(rule);
+    });
+
+    private void DuplicateRule(NetworkRuleConfig rule) => Handle(() =>
+    {
+        var copy = NetworkModule.Clone(rule);
+        copy.Id = Unique(_module!.Config.Rules.Select(r => r.Id), rule.Id + " copy");
+        int index = _module.Config.Rules.IndexOf(rule);
+        _module.Config.Rules.Insert(index + 1, copy);
+        _openRules.Add(copy);
     });
 
     private static string FacetValuesText(FacetConfig facet)
@@ -226,7 +391,11 @@
         _module!.Config.Weights.Add(new WeightConfig { Name = Unique(_module.Config.Weights.Select(w => w.Name), "Weight") }));
 
     private void AddRule() => Handle(() =>
-        _module!.Config.Rules.Add(new NetworkRuleConfig { Id = Unique(_module.Config.Rules.Select(r => r.Id), "rule") }));
+    {
+        var rule = new NetworkRuleConfig { Id = Unique(_module!.Config.Rules.Select(r => r.Id), "rule") };
+        _module.Config.Rules.Add(rule);
+        _openRules.Add(rule);
+    });
 
     private void ExportRules() => Handle(() =>
     {
@@ -236,7 +405,7 @@
         }
         File.WriteAllText(_rulesPath, _module!.ExportRulesJson());
         SetMessages(Severity.Success, $"Written: {_rulesPath} ({_module.Config.Rules.Count} rules)");
-        _command = $"gView.Cmd --command Network -u validate -network <dir> -rules \"{_rulesPath}\" -out \"{IOPath.ChangeExtension(_rulesPath, ".violations.csv")}\"";
+        _rulesCommand = $"gView.Cmd --command Network -u validate -network <dir> -rules \"{_rulesPath}\" -out \"{IOPath.ChangeExtension(_rulesPath, ".violations.csv")}\"";
     });
 
     private void ImportRules() => Handle(() =>
@@ -246,7 +415,8 @@
             throw new FileNotFoundException($"File not found: {_rulesPath}");
         }
         int count = _module!.ImportRulesJson(File.ReadAllText(_rulesPath));
-        _command = null;
+        _rulesCommand = null;
+        _openRules.Clear();
         SetMessages(Severity.Success, $"Imported: {count} rule(s).");
     });
 
@@ -306,6 +476,7 @@
         }
         var problems = _module!.ImportJson(File.ReadAllText(_jsonPath));
         _command = null;
+        _openRules.Clear();
         if (problems.Count == 0)
         {
             SetMessages(Severity.Success, $"Imported: {_module.Config.Nodes.Count} node layer(s), {_module.Config.Edges.Count} edge layer(s).");

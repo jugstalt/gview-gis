@@ -64,17 +64,26 @@ internal class NetworkSearchTool : ICartoTool
         if (_context is not null)
         {
             _context.Error = null;
-            try
-            {
-                var graph = Graph(scope);
-                _context.Weights = new[] { "length" }.Concat(graph.Metadata.Weights.Select(w => w.Name)).ToList();
-            }
-            catch (Exception ex)
-            {
-                _context.Error = ex.Message;
-            }
+            Refresh(scope);
         }
         return Task.FromResult(true);
+    }
+
+    /// <summary>Reads the status of the built network and its weights (Error when it is not built).</summary>
+    private void Refresh(ICartoApplicationScopeService scope)
+    {
+        var module = scope.Modules.OfType<NetworkModule>().FirstOrDefault(m => m.IsConfigured);
+        _context!.Build = module?.BuildState;
+        _context.Status = module?.GetStatus(scope.Document.FilePath);
+        try
+        {
+            var graph = Graph(scope);
+            _context.Weights = new[] { "length" }.Concat(graph.Metadata.Weights.Select(w => w.Name)).ToList();
+        }
+        catch (Exception ex)
+        {
+            _context.Error = ex.Message;
+        }
     }
 
     #endregion
@@ -108,6 +117,8 @@ internal class NetworkSearchTool : ICartoTool
                 NetworkSearchEventArgs { Action: NetworkSearchAction.Clear } => await Clear(scope),
                 NetworkSearchEventArgs { Action: NetworkSearchAction.ToSelection } => await ToSelection(scope),
                 NetworkSearchEventArgs { Action: NetworkSearchAction.ExportGeoJson } => await ExportGeoJson(scope),
+                NetworkSearchEventArgs { Action: NetworkSearchAction.Build } => Build(scope),
+                NetworkSearchEventArgs { Action: NetworkSearchAction.ZoomToViolation } a => await ZoomToViolation(scope, a.Index),
                 _ => await PickNode(scope, eventArgs)
             };
         }
@@ -231,6 +242,8 @@ internal class NetworkSearchTool : ICartoTool
             Filter = NullIfEmpty(context.Filter),
             Block = NullIfEmpty(context.Block),
             RuleIds = NullIfEmpty(context.RuleIds),
+            // the rules of the map (module settings), so they can be tried without building again
+            Rules = context.Operation == "validate" ? NetworkModule.Clone(Module(scope).Config.Rules) : null,
         };
 
         context.Busy = true;
@@ -323,6 +336,57 @@ internal class NetworkSearchTool : ICartoTool
         return true;
     }
 
+    /// <summary>Builds the network in the background (log and state in the module), the panel follows its progress.</summary>
+    private bool Build(ICartoApplicationScopeService scope)
+    {
+        var module = Module(scope);
+        if (!module.StartBuild(scope.Document.FilePath))
+        {
+            _context!.Info = "A build is already running.";
+            return false;
+        }
+
+        var state = module.BuildState!;
+        _context!.Build = state;
+        _context.Info = "Build started, see Report.";
+        state.Changed += () =>
+        {
+            if (!state.Running)
+            {
+                _context.Error = null;
+                Refresh(scope);
+                _context.Info = state.Succeeded == true ? "Build finished." : "Build failed, see Report.";
+            }
+            _context.NotifyChanged();
+        };
+        return true;
+    }
+
+    /// <summary>Zooms to the violation (index in the result) with a little room around it.</summary>
+    private async Task<bool> ZoomToViolation(ICartoApplicationScopeService scope, int index)
+    {
+        if (_context!.Result is not NetworkQueryResult result || index < 0 || index >= result.Violations.Count)
+        {
+            return false;
+        }
+
+        var violation = result.Violations[index];
+        var networkSrs = string.IsNullOrEmpty(result.Srs) ? scope.DisplayService.SpatialReference : SpatialReference.FromID(result.Srs);
+        const double room = 25; // the network is metric
+        var corners = new[] { new Point(violation.X - room, violation.Y - room), new Point(violation.X + room, violation.Y + room) }
+            .Select(p => scope.GeoTransformer.Transform(p, networkSrs, scope.DisplayService.SpatialReference, scope.DisplayService.DatumTransformations) as IPoint)
+            .ToList();
+        if (corners.Any(c => c is null))
+        {
+            return false;
+        }
+
+        await scope.EventBus.FireMapZoomToAsync(new Envelope(
+            Math.Min(corners[0]!.X, corners[1]!.X), Math.Min(corners[0]!.Y, corners[1]!.Y),
+            Math.Max(corners[0]!.X, corners[1]!.X), Math.Max(corners[0]!.Y, corners[1]!.Y)));
+        return true;
+    }
+
     #endregion
 
     #region Helper
@@ -336,12 +400,12 @@ internal class NetworkSearchTool : ICartoTool
         var mapPath = scope.Document.FilePath;
         if (string.IsNullOrEmpty(mapPath))
         {
-            throw new InvalidOperationException("Save the map and build its network first (gView.Cmd -u build -mxl <map>).");
+            throw new InvalidOperationException("Save the map first, the network is built next to it.");
         }
         var directory = Module(scope).Config.ResolveDirectory(mapPath);
         if (!File.Exists(System.IO.Path.Combine(directory, FileNetworkStore.MetadataFile)))
         {
-            throw new InvalidOperationException($"The network is not built: {directory} (gView.Cmd -u build -mxl {System.IO.Path.GetFileName(mapPath)}).");
+            throw new InvalidOperationException($"The network is not built yet: use Build in this tool or on the network module page ({directory}).");
         }
         _context!.NetworkDirectory = directory;
         return NetworkGraphCache.Shared.Get(directory);
