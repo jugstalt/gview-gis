@@ -1,4 +1,4 @@
-@using gView.Blazor.Core
+﻿@using gView.Blazor.Core
 @using gView.Blazor.Core.Extensions
 @using gView.Blazor.Core.Services.Abstraction
 @using Framework.Core.Data.Filters
@@ -144,7 +144,9 @@
             MaximumZoom = tiles.MaxZoom > 0
                 ? tiles.MaxZoom
                 : _mapControlCrs?.Resolutions.Length - 1 ?? tiles.MaxNativeZoom,
-            MaxNativeZoom = tiles.MaxNativeZoom,
+            MaxNativeZoom = tiles.MaxNativeZoom > 0
+                ? tiles.MaxNativeZoom
+                : (CrsService.GetDefaultOrAny().Resolutions?.Length ?? 1) - 1,
             TileSize = tiles.TileSize?.Length == 2 && tiles.TileSize[0] > 0 && tiles.TileSize[1] > 0
                 ? new gView.Razor.Leaflet.Models.Size(tiles.TileSize[0], tiles.TileSize[1])
                 : new gView.Razor.Leaflet.Models.Size(256, 256)
@@ -320,7 +322,7 @@
                 Proj4Parameters =
                     $"{String.Join(" ", _mapControlSRef.Parameters)} {_mapControlSRef.Datum?.Parameter}".Trim(),
                 Origin = crsModel.Origin!,
-                Resolutions = crsModel.Resolutions!,
+                Resolutions = CrsService.ZoomResolutions(crsModel),
                 Bounds = crsModel.Bounds
             };
         }

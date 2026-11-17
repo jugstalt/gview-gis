@@ -242,8 +242,15 @@ window.gViewLeafletInterops = {
                 resolutions: crs.resolutions,
                 origin: crs.origin
             });
+            // clamp zoom to the defined resolutions (touch pinch may overshoot the limits while zooming)
+            const crsScale = lCrs.scale.bind(lCrs), crsZoom = lCrs.zoom.bind(lCrs);
+            const clampZoom = z => Math.max(0, Math.min(crs.resolutions.length - 1, z));
+            lCrs.scale = z => crsScale(clampZoom(z));
+            lCrs.zoom = s => clampZoom(crsZoom(s));
             mapOptions.crs = lCrs;
-            mapOptions.maxZoom = mapOptions.maxZoom || crs.resolutions.length;
+            // last valid zoom index: beyond it Proj4Leaflet has no resolution (NaN => map jumps to world)
+            const lastZoom = crs.resolutions.length - 1;
+            mapOptions.maxZoom = mapOptions.maxZoom ? Math.min(mapOptions.maxZoom, lastZoom) : lastZoom;
         }
 
         //console.log('mapOptions', mapOptions);

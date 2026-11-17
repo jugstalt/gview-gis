@@ -46,6 +46,26 @@ public class MapControlCrsService
         }
     }
 
+    /// <summary>
+    /// The crs resolutions, extended by halved resolutions until MaxScale (96 dpi) is reached
+    /// </summary>
+    public double[] ZoomResolutions(MapControlCrsModel crs)
+    {
+        var resolutions = (crs.Resolutions ?? []).ToList();
+        if (resolutions.Count == 0 || _options.MaxScale <= 0)
+        {
+            return resolutions.ToArray();
+        }
+
+        double maxResolution = _options.MaxScale * 0.0254 / 96.0;
+        while (resolutions[^1] > maxResolution * 1.01 && resolutions.Count < 64)
+        {
+            resolutions.Add(resolutions[^1] / 2.0);
+        }
+
+        return resolutions.ToArray();
+    }
+
     public MapControlCrsModel GetDefaultOrAny()
     {
         if (_crsDict.ContainsKey(_options.Default))

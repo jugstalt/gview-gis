@@ -104,6 +104,10 @@ builder.Services.AddMapControlBackgroundTilesService(config =>
 builder.Services.AddMapControlCrsService(config =>
 {
     config.Default = builder.Configuration["MapControl:Crs"] ?? "webmercator"; // "webmercator_at";
+    if (double.TryParse(builder.Configuration["MapControl:MaxScale"], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var maxScale))
+    {
+        config.MaxScale = maxScale;
+    }
 });
 builder.Services.AddLeafletService();
 

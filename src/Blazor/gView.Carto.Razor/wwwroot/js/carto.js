@@ -1,4 +1,4 @@
-(function () {
+﻿(function () {
     let isTocResizing = false, isDataResizing = false;
     //document.querySelector('.toc-content-splitter').addEventListener('mousedown', function (e) {
     //    isResizing = true;
@@ -51,6 +51,59 @@
 }());
 
 window.cartoInterops = {
+
+    // Ribbon: collapses boxes (in the given order) to a single menu button when the ribbon is too narrow,
+    // and expands them again when there is enough space
+    ribbonObserve: function (element, dotnetRef, order) {
+        if (!element || element._ribbonObserved) return;
+        element._ribbonObserved = true;
+
+        const collapsed = [], expandedWidths = {};
+        let pending = false, scheduled = false;
+
+        const box = (target) => element.querySelector(':scope > .carto-tool-box[data-target="' + target + '"]');
+        const usedWidth = () => [...element.querySelectorAll(':scope > .carto-tool-box')]
+            .reduce((sum, b) => sum + b.offsetWidth + 4 /* margins */, 0);
+
+        const send = () => {
+            pending = true;
+            dotnetRef.invokeMethodAsync('SetCollapsedBoxes', collapsed.slice())
+                .catch(() => { })
+                .finally(() => { pending = false; schedule(); });
+        };
+
+        const check = () => {
+            scheduled = false;
+            if (pending || !element.isConnected) return;
+
+            const free = element.clientWidth - usedWidth();
+            if (free < 0) {
+                const next = order.find(t => !collapsed.includes(t) && box(t));
+                if (next) {
+                    expandedWidths[next] = box(next).offsetWidth;
+                    collapsed.push(next);
+                    send();
+                }
+            } else if (collapsed.length > 0) {
+                const last = collapsed[collapsed.length - 1], lastBox = box(last);
+                const needed = (expandedWidths[last] || 0) - (lastBox ? lastBox.offsetWidth : 0);
+                if (free >= needed + 8 /* hysteresis */) {
+                    collapsed.pop();
+                    send();
+                }
+            }
+        };
+
+        const schedule = () => {
+            if (scheduled) return;
+            scheduled = true;
+            requestAnimationFrame(check);
+        };
+
+        new ResizeObserver(schedule).observe(element);
+        new MutationObserver(schedule).observe(element, { childList: true, subtree: true });
+        schedule();
+    },
 
     refreshMapFrame: function () {
         if (window.gViewLeaflet) {
