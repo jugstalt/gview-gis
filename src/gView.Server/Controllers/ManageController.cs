@@ -1,4 +1,4 @@
-﻿using gView.Framework.Common;
+using gView.Framework.Common;
 using gView.Framework.Core.Common;
 using gView.Framework.Core.Exceptions;
 using gView.Framework.Core.IO;
@@ -13,6 +13,7 @@ using gView.Server.Models;
 using gView.Server.Models.Manage;
 using gView.Server.Services.Logging;
 using gView.Server.Services.MapServer;
+using gView.Server.Services.Network;
 using gView.Server.Services.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -35,15 +36,18 @@ public class ManageController : BaseController
     private readonly LoginManager _loginManager;
     private readonly MapServicesEventLogger _logger;
     private readonly IConfiguration _configuration;
+    private readonly NetworkServerService _network;
 
     public ManageController(MapServiceManager mapServiceManager,
                             MapServiceDeploymentManager mapServiceDeploymentManager,
                             LoginManager loginManager,
                             MapServicesEventLogger logger,
                             EncryptionCertificateService encryptionCertificateService,
-                            IConfiguration configuration)
+                            IConfiguration configuration,
+                            NetworkServerService network)
                             : base(mapServiceManager, loginManager, encryptionCertificateService)
     {
+        _network = network;
         _mapServiceMananger = mapServiceManager;
         _mapServiceDeploymentManager = mapServiceDeploymentManager;
         _loginManager = loginManager;
@@ -258,6 +262,85 @@ public class ManageController : BaseController
             });
         });
     }
+
+    #region Network
+
+    /// <summary>The network of a service: where it is, whether and when it was built, the running or last build.</summary>
+    [HttpGet]
+    public IActionResult ServiceNetwork(string service) => SecureApiCall(() =>
+    {
+        var mapService = _mapServiceMananger.GetMapService(service) ?? throw new MapServerException("Unknown service: " + service);
+        return Json(NetworkStatus(mapService));
+    });
+
+    /// <summary>Starts building the network of a service in the background.</summary>
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult ServiceNetworkBuild(string service) => SecureApiCall(() =>
+    {
+        var mapService = _mapServiceMananger.GetMapService(service) ?? throw new MapServerException("Unknown service: " + service);
+        if (_network.Config(mapService) is null)
+        {
+            throw new MapServerException("The map of the service has no network configured.");
+        }
+        if (_network.StartBuild(mapService) is null)
+        {
+            throw new MapServerException("A build of this network is running already.");
+        }
+        return Json(NetworkStatus(mapService));
+    });
+
+    /// <summary>A report of the last build (build.log, duplicates.json, ...).</summary>
+    [HttpGet]
+    public IActionResult ServiceNetworkReport(string service, string file) => SecureApiCall(() =>
+    {
+        var mapService = _mapServiceMananger.GetMapService(service) ?? throw new MapServerException("Unknown service: " + service);
+        if (!gView.Framework.NetworkModel.Build.NetworkBuildRunner.ReportFiles.Contains(file))
+        {
+            throw new MapServerException("Unknown report: " + file);
+        }
+        var path = Path.Combine(_network.NetworkDirectory(mapService) ?? throw new MapServerException("No network"), file);
+        if (!System.IO.File.Exists(path))
+        {
+            throw new MapServerException("Report not found: " + file);
+        }
+        return File(System.IO.File.ReadAllBytes(path), file.EndsWith(".json") ? "application/json" : "text/plain", file);
+    });
+
+    private object NetworkStatus(IMapService mapService)
+    {
+        var config = _network.Config(mapService);
+        var directory = _network.NetworkDirectory(mapService);
+        var metadata = NetworkServerService.Metadata(directory);
+        var job = _network.Job(mapService);
+        return new
+        {
+            success = true,
+            configured = config is not null,
+            directory,
+            built = metadata is not null,
+            created = metadata?.Created.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"),
+            nodeCount = metadata?.NodeCount,
+            edgeCount = metadata?.EdgeCount,
+            aliasCount = metadata?.AliasCount,
+            shardCount = metadata?.Shards.Count,
+            rules = metadata?.Rules.Count,
+            reports = directory is null
+                ? []
+                : gView.Framework.NetworkModel.Build.NetworkBuildRunner.ReportFiles.Where(f => System.IO.File.Exists(Path.Combine(directory, f))).ToArray(),
+            job = job is null ? null : new
+            {
+                running = job.Running,
+                succeeded = job.Succeeded,
+                error = job.Error,
+                started = job.Started.ToString("yyyy-MM-dd HH:mm:ss"),
+                finished = job.Finished?.ToString("yyyy-MM-dd HH:mm:ss"),
+                log = job.Log
+            }
+        };
+    }
+
+    #endregion
 
     public IActionResult ServiceErrorLogs(string service, string last = "0")
     {
@@ -838,7 +921,8 @@ public class ManageController : BaseController
             runningSince = settings?.Status == MapServiceStatus.Running && mapService.RunningSinceUtc.HasValue ?
                 mapService.RunningSinceUtc.Value.ToShortDateString() + " " + mapService.RunningSinceUtc.Value.ToLongTimeString() + " (UTC)" :
                 String.Empty,
-            hasErrors = hasErrors
+            hasErrors = hasErrors,
+            hasNetwork = _network.Config(mapService) is not null
         };
     }
 

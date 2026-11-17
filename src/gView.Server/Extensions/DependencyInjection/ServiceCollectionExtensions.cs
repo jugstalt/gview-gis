@@ -26,6 +26,7 @@ static public class ServiceCollectionExtensions
         services.AddSingleton<EncryptionCertificateService>();
         services.AddSingleton<JwtAccessTokenService>();
         services.AddSingleton<MapServiceDeploymentManager>();
+        services.AddSingleton<gView.Server.Services.Network.NetworkServerService>();
         
         services.AddTransient<UrlHelperService>();
         services.AddTransient<LoginManager>();

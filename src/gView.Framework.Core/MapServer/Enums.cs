@@ -18,7 +18,8 @@ namespace gView.Framework.Core.MapServer
         None = 0,
         Map = 1,
         Query = 2,
-        Edit = 4
+        Edit = 4,
+        Network = 16
     }
 
     public enum FolderAccessTypes
@@ -27,6 +28,7 @@ namespace gView.Framework.Core.MapServer
         Map = 1,
         Query = 2,
         Edit = 4,
-        Publish = 8
+        Publish = 8,
+        Network = 16
     }
 }

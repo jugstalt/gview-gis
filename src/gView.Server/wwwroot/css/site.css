@@ -1,4 +1,4 @@
-﻿/* Please see documentation at https://docs.microsoft.com/aspnet/core/client-side/bundling-and-minification\ 
+/* Please see documentation at https://docs.microsoft.com/aspnet/core/client-side/bundling-and-minification\ 
 for details on configuring this project to bundle and minify static web assets. */
 body {
     padding-top: 50px;
@@ -1082,3 +1082,10 @@ body.light .html-body form {
     body.light .label{
         color:#333;
     }
+
+.icon.network {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 26'%3E%3Cg stroke='%23222' stroke-width='2' fill='none'%3E%3Cpath d='M5 20 L13 6 L21 20 Z M13 6 L13 14 L5 20 M13 14 L21 20'/%3E%3C/g%3E%3Cg fill='%23222'%3E%3Ccircle cx='5' cy='20' r='3'/%3E%3Ccircle cx='13' cy='6' r='3'/%3E%3Ccircle cx='21' cy='20' r='3'/%3E%3Ccircle cx='13' cy='14' r='2.5'/%3E%3C/g%3E%3C/svg%3E");
+}
+.service-network .network-status td { padding: 2px 8px 2px 0; vertical-align: top; }
+.service-network pre { max-height: 300px; overflow: auto; background: #f4f4f4; padding: 6px; font-size: 0.8em; }
+.service-network .network-reports a { margin-right: 10px; }

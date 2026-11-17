@@ -1,0 +1,187 @@
+@using gView.Carto.Razor.Components.Tools.ToolEvents
+@using gView.Framework.NetworkModel.Query
+
+@inherits BaseHandler
+@implements IDisposable
+
+@inject ICartoApplicationScopeService AppScope
+@inject CartoEventBusService EventBus
+@inject IconService Icons
+
+@if (_context is not null)
+{
+    <MudMenu Label="@_context.Operation" Dense="true" title="Search">
+        @foreach (var operation in NetworkSearchContext.Operations)
+        {
+            <MudMenuItem OnClick="() => OperationChanged(operation)">@operation</MudMenuItem>
+        }
+    </MudMenu>
+
+    @if (_context.NeedsStart)
+    {
+        <div class="@($"carto-tool {(_context.Pick == NetworkSearchPick.Start ? "selected" : "")}")"
+             title="@($"{StartLabel}: click a node in the map{(string.IsNullOrEmpty(_context.Start) ? "" : $" ({_context.Start})")}")"
+             @onclick="() => SetPick(NetworkSearchPick.Start)">
+            <div class=@Icons.FromString("basic:pin")></div>
+            <div class="title">@(string.IsNullOrEmpty(_context.Start) ? StartLabel : Short(_context.Start))</div>
+        </div>
+    }
+    @if (_context.NeedsTarget)
+    {
+        <div class="@($"carto-tool {(_context.Pick == NetworkSearchPick.Target ? "selected" : "")}")"
+             title="@($"{TargetLabel}: click a node in the map{(string.IsNullOrEmpty(_context.Target) ? "" : $" ({_context.Target})")}")"
+             @onclick="() => SetPick(NetworkSearchPick.Target)">
+            <div class=@Icons.FromString("basic:pin")></div>
+            <div class="title">@(string.IsNullOrEmpty(_context.Target) ? TargetLabel : Short(_context.Target))</div>
+        </div>
+    }
+
+    <div class="carto-tool" title="Run the search" @onclick="() => Fire(NetworkSearchAction.Run)">
+        <div class=@Icons.FromString("webgis:construct-edge-intersect")></div>
+        <div class="title">@(_context.Busy ? "Running..." : "Run")</div>
+    </div>
+
+    <div class="tool-small-chunk">
+        <div class="carto-tool small" title="Remove the result and the picked nodes" @onclick="() => Fire(NetworkSearchAction.Clear)">
+            <div class=@Icons.FromString("basic:trashcan-x", IconSize.Small)></div>
+            <div class="title">Clear</div>
+        </div>
+        <div class="carto-tool small" title="Select the features of the result" @onclick="() => Fire(NetworkSearchAction.ToSelection)">
+            <div class=@Icons.FromString("webgis:polygon-selected", IconSize.Small)></div>
+            <div class="title">Select</div>
+        </div>
+        <div class="carto-tool small" title="Write the result as GeoJSON into the results folder of the network" @onclick="() => Fire(NetworkSearchAction.ExportGeoJson)">
+            <div class=@Icons.FromString("basic:disk-white", IconSize.Small)></div>
+            <div class="title">GeoJSON</div>
+        </div>
+    </div>
+
+    <MudMenu Label="Options" Dense="true">
+        <div style="padding:8px;width:320px" @onclick:stopPropagation="true">
+            @if (_context.NeedsStart)
+            {
+                <MudTextField T="string" Label="@($"{StartLabel} (Layer#OID, id or type pattern)")" Dense="true" @bind-Value="_context.Start" />
+            }
+            @if (_context.NeedsTarget)
+            {
+                <MudTextField T="string" Label="@($"{TargetLabel} (Layer#OID, id or type pattern)")" Dense="true" @bind-Value="_context.Target" />
+            }
+            @if (_context.Operation is "trace" or "reach" or "path" or "supply")
+            {
+                <MudSelect T="string" Label="Weight" Dense="true" @bind-Value="_context.Weight">
+                    @foreach (var weight in _context.Weights)
+                    {
+                        <MudSelectItem Value="@weight">@weight</MudSelectItem>
+                    }
+                </MudSelect>
+                <MudTextField T="string" Label="Max. cost" Dense="true" @bind-Value="_context.MaxCost" />
+                <MudTextField T="string" Label="Edge types (pattern)" Dense="true" @bind-Value="_context.Filter" />
+                <MudTextField T="string" Label="Blocked nodes" Dense="true" @bind-Value="_context.Block" />
+            }
+            @if (_context.Operation == "validate")
+            {
+                <MudTextField T="string" Label="Rules (ids, empty for all)" Dense="true" @bind-Value="_context.RuleIds" />
+            }
+        </div>
+    </MudMenu>
+
+    <MudMenu Label="@ReportLabel" Dense="true" Color="@(string.IsNullOrEmpty(_context.Error) ? Color.Default : Color.Error)">
+        <div style="padding:8px;max-width:640px" @onclick:stopPropagation="true">
+            @if (!string.IsNullOrEmpty(_context.Error))
+            {
+                <MudAlert Severity="Severity.Error" Dense="true">@_context.Error</MudAlert>
+            }
+            @if (!string.IsNullOrEmpty(_context.Info))
+            {
+                <MudAlert Severity="Severity.Info" Dense="true">@_context.Info</MudAlert>
+            }
+            @if (_context.Result is NetworkQueryResult result)
+            {
+                <pre style="max-height:400px;overflow:auto;font-size:0.75em;margin-top:4px">@string.Join(Environment.NewLine, result.Messages)</pre>
+            }
+            else if (string.IsNullOrEmpty(_context.Error) && string.IsNullOrEmpty(_context.Info))
+            {
+                <div style="font-size:0.8em">Pick a node in the map, then Run.</div>
+            }
+        </div>
+    </MudMenu>
+}
+
+@code {
+    private NetworkSearchContext? _context;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        _context = AppScope.Tools.GetCurrentToolContext<NetworkSearchContext>();
+        if (_context is not null)
+        {
+            _context.Changed += OnContextChanged;
+        }
+    }
+
+    private string StartLabel => _context?.Operation switch
+    {
+        "path" => "From",
+        "supply" => "Sources",
+        "info" => "Node",
+        _ => "Start"
+    };
+
+    private string TargetLabel => _context?.Operation == "supply" ? "Sinks" : "To";
+
+    private string ReportLabel
+    {
+        get
+        {
+            if (!string.IsNullOrEmpty(_context?.Error))
+            {
+                return "Error";
+            }
+            if (_context?.Result is not NetworkQueryResult result)
+            {
+                return "Report";
+            }
+            return result.Operation == "validate"
+                ? $"Report ({result.Violations.Count} violations)"
+                : $"Report ({result.Nodes.Count(n => n.AliasOf.Length == 0)} nodes, {result.Edges.Count} edges)";
+        }
+    }
+
+    /// <summary>Niederspannung/Kasten#23 -> Kasten#23</summary>
+    private static string Short(string reference) => reference.Contains('#') ? reference[(reference.LastIndexOf('/') + 1)..] : reference;
+
+    private void OnContextChanged() => InvokeAsync(StateHasChanged);
+
+    private void OperationChanged(string operation)
+    {
+        if (_context is null)
+        {
+            return;
+        }
+        _context.Operation = operation;
+        _context.Pick = _context.NeedsStart ? NetworkSearchPick.Start : NetworkSearchPick.None;
+    }
+
+    private void SetPick(NetworkSearchPick pick)
+    {
+        if (_context is not null)
+        {
+            _context.Pick = pick;
+        }
+    }
+
+    private Task Fire(NetworkSearchAction action) => HandleAsync(async () =>
+    {
+        await EventBus.FireToolEventAsync(new NetworkSearchEventArgs(action));
+    });
+
+    public void Dispose()
+    {
+        if (_context is not null)
+        {
+            _context.Changed -= OnContextChanged;
+        }
+    }
+}

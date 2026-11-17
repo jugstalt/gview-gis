@@ -79,9 +79,36 @@ public sealed class NetworkQueryResult
     public List<NetworkResultViolation> Violations { get; } = [];
     public List<NetworkResultRuleSummary> Rules { get; } = [];
 
+    /// <summary>True when the result was cut at a limit (see <see cref="Truncate"/>).</summary>
+    public bool ExceededLimit { get; private set; }
+
+    /// <summary>Keeps at most this many nodes and violations (edges are cut in proportion); marks <see cref="ExceededLimit"/>.</summary>
+    public void Truncate(int maxNodes)
+    {
+        if (maxNodes <= 0 || Nodes.Count + Violations.Count <= maxNodes)
+        {
+            return;
+        }
+        ExceededLimit = true;
+        if (Nodes.Count > maxNodes)
+        {
+            Nodes.RemoveRange(maxNodes, Nodes.Count - maxNodes);
+        }
+        int violations = Math.Max(0, maxNodes - Nodes.Count);
+        if (Violations.Count > violations)
+        {
+            Violations.RemoveRange(violations, Violations.Count - violations);
+        }
+        if (Edges.Count > maxNodes)
+        {
+            Edges.RemoveRange(maxNodes, Edges.Count - maxNodes);
+        }
+        Messages.Add($"Result cut at {maxNodes} nodes.");
+    }
+
     /// <summary>path: the cost of the path.</summary>
     public double? Cost { get; set; }
 
     /// <summary>The spatial reference of the coordinates, e.g. "epsg:31256".</summary>
-    public string? Srs { get; init; }
+    public string? Srs { get; set; }
 }

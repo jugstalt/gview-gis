@@ -136,78 +136,10 @@ public class NetworkCommand : ICommand
         logger?.LogLine($"Output: {output}");
 
         map ??= await LoadMap(mxlPath);
-        var store = new FileNetworkStore(output, "true".Equals(parameters.GetValue<string>("json"), StringComparison.OrdinalIgnoreCase));
-        var service = new NetworkBuildService(message => logger?.LogLine(message));
-
-        NetworkBuildReport report;
-        try
-        {
-            report = await service.BuildAsync(map, config, store);
-        }
-        catch (NetworkBuildException ex)
-        {
-            WriteWarningsAndDuplicates(service, output, logger);
-
-            string Source(object? source) => source is FeatureRef r ? $"{service.LayerOf(r.FeatureClass)} #{r.Oid}" : source?.ToString() ?? "";
-
-            logger?.LogLine($"The data cannot form a network: {ex.Conflicts.Count} conflict(s)");
-            foreach (var group in ex.Conflicts
-                .GroupBy(c => c.Kind == NodeConflictKind.RealNodesTooClose
-                    ? string.Join(" / ", c.Sources.OfType<FeatureRef>().Select(r => service.LayerOf(r.FeatureClass)).Distinct().Order())
-                    : c.Kind.ToString())
-                .OrderByDescending(g => g.Count()))
-            {
-                logger?.LogLine($"  {group.Count(),6}  {group.Key}");
-            }
-            File.WriteAllText(Path.Combine(output, "conflicts.json"), JsonSerializer.Serialize(
-                ex.Conflicts.Select(c => new { Kind = c.Kind.ToString(), c.Location.X, c.Location.Y, Sources = c.Sources.Select(Source) }),
-                NetworkConfig.JsonOptions));
-            logger?.LogLine($"All conflicts: {Path.Combine(output, "conflicts.json")}");
-            return false;
-        }
-
-        WriteWarningsAndDuplicates(service, output, logger);
-        File.Delete(Path.Combine(output, "conflicts.json")); // from an earlier failed build
-
-        foreach (var group in report.Diagnostics.GroupBy(d => d.Kind))
-        {
-            logger?.LogLine($"Diagnostic {group.Key}: {group.Count()}");
-        }
-        File.WriteAllText(Path.Combine(output, "diagnostics.json"), JsonSerializer.Serialize(
-            report.Diagnostics.Select(d => new { Kind = d.Kind.ToString(), d.Location.X, d.Location.Y, d.Message }),
-            NetworkConfig.JsonOptions));
-
-        logger?.LogLine($"Types: {report.Metadata.Types.Count(t => t.Used)} used");
-        foreach (var type in report.Metadata.Types.Where(t => t.Used))
-        {
-            logger?.LogLine($"  {type.Id,4} {type.Kind,-4} {type.Name}");
-        }
-
-        return true;
-    }
-
-    private static void WriteWarningsAndDuplicates(NetworkBuildService service, string output, ICommandLogger? logger)
-    {
-        Directory.CreateDirectory(output);
-        foreach (var warning in service.Warnings)
-        {
-            logger?.LogLine($"Warning: {warning}");
-        }
-        foreach (var group in service.Duplicates.GroupBy(d => d.Layer))
-        {
-            logger?.LogLine($"Duplicates left out {group.Key}: {group.Count()}");
-        }
-        File.WriteAllText(Path.Combine(output, "duplicates.json"), JsonSerializer.Serialize(service.Duplicates, NetworkConfig.JsonOptions));
-
-        if (service.Merged.Count > 0)
-        {
-            logger?.LogLine($"Merged into the point of a layer higher in the TOC: {service.Merged.Count}");
-            foreach (var group in service.Merged.GroupBy(m => $"{m.MergedLayer} -> {m.KeptLayer}").OrderByDescending(g => g.Count()))
-            {
-                logger?.LogLine($"  {group.Count(),6}  {group.Key}");
-            }
-        }
-        File.WriteAllText(Path.Combine(output, "merged.json"), JsonSerializer.Serialize(service.Merged, NetworkConfig.JsonOptions));
+        return await NetworkBuildRunner.RunAsync(
+            map, config, output,
+            "true".Equals(parameters.GetValue<string>("json"), StringComparison.OrdinalIgnoreCase),
+            message => logger?.LogLine(message));
     }
 
     private static async Task<bool> ConfigFromMxl(string mxlPath, string output, ICommandLogger? logger)

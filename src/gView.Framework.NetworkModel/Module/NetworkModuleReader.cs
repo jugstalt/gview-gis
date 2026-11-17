@@ -11,11 +11,11 @@ public sealed class NetworkModuleReader : IPersistable
 {
     private readonly NetworkModule _module = new();
 
-    private NetworkModuleReader(IMap map) => _module.OnCreate(map);
+    private NetworkModuleReader(IMap? map) { if (map is not null) _module.OnCreate(map); }
 
     /// <summary>The network module stored in the document, or null when the document has none (or it is empty).</summary>
     /// <param name="loadMapDocument">Loads the element "MapDocument" with the given reader, e.g. from a fresh XmlStream.</param>
-    public static NetworkModule? Read(IMap map, Action<IPersistable> loadMapDocument)
+    public static NetworkModule? Read(IMap? map, Action<IPersistable> loadMapDocument)
     {
         var reader = new NetworkModuleReader(map);
         loadMapDocument(reader);

@@ -365,6 +365,107 @@ window.gview.manage = (function() {
                     }
                 });
             });
+        if (service.hasNetwork === true) {
+            $('<div>')
+                .addClass('icon clickable network')
+                .attr('title', 'Network')
+                .appendTo($toolbar)
+                .click(function () {
+                    let serviceName = $(this)
+                        .closest('.service')
+                        .attr('data-service');
+                    let timer = null;
+
+                    let renderNetwork = function ($body, result) {
+                        $body.empty();
+                        let $table = $('<table>').addClass('network-status').appendTo($body);
+                        let row = function (label, value) {
+                            $('<tr>').append($('<td>').text(label)).append($('<td>').text(value === null || value === undefined ? '-' : value)).appendTo($table);
+                        };
+                        row('Directory', result.directory);
+                        row('Built', result.built ? result.created : 'not built');
+                        if (result.built) {
+                            row('Nodes / edges', result.nodeCount + ' / ' + result.edgeCount);
+                            row('Merged points', result.aliasCount);
+                            row('Shards', result.shardCount);
+                            row('Rules', result.rules);
+                        }
+
+                        let running = result.job && result.job.running;
+                        $('<button>')
+                            .text(running ? 'Building...' : (result.built ? 'Build again' : 'Build'))
+                            .prop('disabled', running)
+                            .appendTo($body)
+                            .click(function () {
+                                if (!confirm('Build the network of ' + serviceName + ' now? This reads all network layers.')) {
+                                    return;
+                                }
+                                get({
+                                    url: '/manage/servicenetworkbuild?service=' + serviceName,
+                                    type: 'post',
+                                    data: {},
+                                    success: function (result) {
+                                        renderNetwork($body, result);
+                                        poll($body);
+                                    }
+                                });
+                            });
+
+                        if (result.job) {
+                            $('<div>')
+                                .css('margin-top', '8px')
+                                .text('Build started ' + result.job.started +
+                                    (result.job.running ? ' (running)' : ', finished ' + result.job.finished + (result.job.succeeded ? ' - succeeded' : ' - failed')) +
+                                    (result.job.error ? ': ' + result.job.error : ''))
+                                .appendTo($body);
+                            let $log = $('<pre>').text(result.job.log.join('\n')).appendTo($body);
+                            $log.scrollTop($log[0].scrollHeight);
+                        }
+
+                        if (result.reports && result.reports.length > 0) {
+                            let $reports = $('<div>').addClass('network-reports').appendTo($body);
+                            $('<span>').text('Reports: ').appendTo($reports);
+                            $.each(result.reports, function (i, file) {
+                                $('<a>')
+                                    .attr('href', rootUrl + '/manage/servicenetworkreport?service=' + encodeURIComponent(serviceName) + '&file=' + encodeURIComponent(file))
+                                    .attr('target', '_blank')
+                                    .text(file)
+                                    .appendTo($reports);
+                            });
+                        }
+                        return running;
+                    };
+
+                    let poll = function ($body) {
+                        if (timer) clearTimeout(timer);
+                        timer = setTimeout(function () {
+                            if (!$.contains(document, $body[0])) return;  // dialog closed
+                            get({
+                                url: '/manage/servicenetwork?service=' + serviceName,
+                                success: function (result) {
+                                    if (renderNetwork($body, result)) poll($body);
+                                }
+                            });
+                        }, 2000);
+                    };
+
+                    modalDialog({
+                        title: service.name + ' (Network)',
+                        onLoad: function ($body) {
+                            $body.addClass('service-network');
+                            get({
+                                url: '/manage/servicenetwork?service=' + serviceName,
+                                success: function (result) {
+                                    if (renderNetwork($body, result)) poll($body);
+                                }
+                            });
+                        },
+                        onClose: function () {
+                            if (timer) clearTimeout(timer);
+                        }
+                    });
+                });
+        }
         $('<div>')
             .addClass('icon clickable start ' + (service.status === 'running' ? 'gray' : ''))
             .appendTo($toolbar)

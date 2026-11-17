@@ -1,4 +1,4 @@
-﻿using gView.Framework.Core.Exceptions;
+using gView.Framework.Core.Exceptions;
 using gView.Framework.Core.MapServer;
 using gView.Framework.Core.Common;
 using gView.Framework.Common;
@@ -68,6 +68,9 @@ namespace gView.Server.AppCode
         }
 
         public string Folder { get { return _folder; } }
+
+        /// <summary>The map document (mxl) of the service, or the folder.</summary>
+        internal string Filename => _filename;
 
         public string Fullname
         {

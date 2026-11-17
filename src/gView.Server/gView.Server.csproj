@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -75,6 +75,7 @@
     <ProjectReference Include="..\gView.DataSources.TileCache\gView.DataSources.TileCache.csproj" />
     <ProjectReference Include="..\gView.DataSources.VectorTileCache\gView.DataSources.VectorTileCache.csproj" />
     <ProjectReference Include="..\gView.Framework.Data\gView.Framework.Data.csproj" />
+    <ProjectReference Include="..\gView.Framework.NetworkModel\gView.Framework.NetworkModel.csproj" />
     <ProjectReference Include="..\gView.Framework.Db\gView.Framework.Db.csproj" />
     <ProjectReference Include="..\gView.Editor.Core\gView.Editor.Core.csproj" />
     <ProjectReference Include="..\gView.Framework.GeoJsonService\gView.Framework.GeoJsonService.csproj" />

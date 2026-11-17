@@ -1,4 +1,4 @@
-﻿using gView.Framework.Cartography;
+using gView.Framework.Cartography;
 using gView.Framework.Common;
 using gView.Framework.Common.Extensions;
 using gView.Framework.Common.Json;
@@ -8,6 +8,7 @@ using gView.Framework.Core.Data;
 using gView.Framework.Core.Exceptions;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Core.MapServer;
+using Microsoft.Extensions.DependencyInjection;
 using gView.Framework.Data;
 using gView.Interoperability.GeoServices.Request;
 using gView.Interoperability.GeoServices.Rest.DTOs;
@@ -178,9 +179,14 @@ public class GeoServicesRestController : BaseController
                 var spatialReference = map.Display.SpatialReference;
                 int epsgCode = spatialReference != null ? spatialReference.EpsgCode : 0;
 
+                var networkDirectory = HttpContext.RequestServices.GetService<gView.Server.Services.Network.NetworkServerService>()?.NetworkDirectory(mapService);
+                bool hasNetwork = gView.Server.Services.Network.NetworkServerService.IsBuilt(networkDirectory)
+                    && (await mapService.GetAccessTypes(identity)).HasFlag(AccessTypes.Network);
+
                 return Result(new JsonMapServiceDTO()
                 {
                     CurrentVersion = 10.71,
+                    SupportedExtensions = hasNetwork ? "network" : String.Empty,
                     MapName = String.IsNullOrWhiteSpace(map.Title) ?
                         (map.Name.Contains("/") ? map.Name.Substring(map.Name.LastIndexOf("/") + 1) : map.Name) :
                         map.Title,

@@ -115,4 +115,21 @@ public class NetworkQueryTests : IDisposable
         Assert.Equal("second", second.Metadata.Name);
         Assert.False(Directory.Exists(_directory + ".building"));
     }
+
+    [Fact]
+    public void Section_CutsTheLineBetweenTheMeasures_ReversedWhenFromIsGreater()
+    {
+        var path = new gView.Framework.Geometry.Path();
+        path.AddPoint(new gView.Framework.Geometry.Point(0, 0));
+        path.AddPoint(new gView.Framework.Geometry.Point(10, 0));
+        path.AddPoint(new gView.Framework.Geometry.Point(10, 10));
+        var line = new gView.Framework.Geometry.Polyline();
+        line.AddPath(path);
+
+        var section = NetworkResultGeometry.Section(line, 5, 15);
+        Assert.Equal([[5.0, 0.0], [10.0, 0.0], [10.0, 5.0]], section);
+
+        var reversed = NetworkResultGeometry.Section(line, 15, 5);
+        Assert.Equal([[10.0, 5.0], [10.0, 0.0], [5.0, 0.0]], reversed);
+    }
 }

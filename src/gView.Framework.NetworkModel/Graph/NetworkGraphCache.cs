@@ -11,7 +11,10 @@ public sealed class NetworkGraphCache
 {
     public static NetworkGraphCache Shared { get; } = new();
 
-    private sealed record Entry(FileNetworkGraph Graph, DateTime Stamp);
+    private sealed record Entry(FileNetworkGraph Graph, DateTime Stamp)
+    {
+        public long LastUsed = DateTime.UtcNow.Ticks;
+    }
 
     private readonly ConcurrentDictionary<string, Entry> _entries = new(StringComparer.OrdinalIgnoreCase);
     private readonly object _openLock = new();
@@ -19,13 +22,18 @@ public sealed class NetworkGraphCache
     /// <summary>The shard limit of graphs opened from now on; 0 for no limit.</summary>
     public int MaxLoadedShards { get; set; } = 512;
 
+    /// <summary>A network not asked for this long is dropped (checked on every call); null to keep networks.</summary>
+    public TimeSpan? IdleTimeout { get; set; }
+
     public FileNetworkGraph Get(string directory)
     {
         var key = Path.GetFullPath(directory);
+        DropIdle(key);
         var stamp = Stamp(key);
         if (_entries.TryGetValue(key, out var entry) && (entry.Stamp == stamp || stamp == DateTime.MinValue))
         {
             // MinValue: the directory is being swapped right now, keep the old network for this call
+            Interlocked.Exchange(ref entry.LastUsed, DateTime.UtcNow.Ticks);
             return entry.Graph;
         }
 
@@ -51,6 +59,22 @@ public sealed class NetworkGraphCache
         else
         {
             _entries.TryRemove(Path.GetFullPath(directory), out _);
+        }
+    }
+
+    private void DropIdle(string keep)
+    {
+        if (IdleTimeout is not TimeSpan timeout)
+        {
+            return;
+        }
+        long limit = (DateTime.UtcNow - timeout).Ticks;
+        foreach (var (key, entry) in _entries)
+        {
+            if (!key.Equals(keep, StringComparison.OrdinalIgnoreCase) && Interlocked.Read(ref entry.LastUsed) < limit)
+            {
+                _entries.TryRemove(new KeyValuePair<string, Entry>(key, entry));
+            }
         }
     }
 

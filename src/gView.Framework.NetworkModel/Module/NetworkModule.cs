@@ -21,6 +21,9 @@ public class NetworkModule : IMapApplicationModule, IPersistable
 
     public NetworkConfig Config { get; private set; } = CreateDefaultConfig();
 
+    /// <summary>Whether a config was read from a document (then <see cref="OnCreate"/> keeps it).</summary>
+    private bool _loaded;
+
     /// <summary>Whether anything was configured; an empty module is not written into the map document.</summary>
     public bool IsConfigured => Config.Nodes.Count > 0 || Config.Edges.Count > 0 || Config.Shards is not null;
 
@@ -41,8 +44,12 @@ public class NetworkModule : IMapApplicationModule, IPersistable
         if (hook is IMap map)
         {
             Map = map;
-            Config = CreateDefaultConfig();
-            Config.Name = map.Name;
+            // the server loads a module before it calls OnCreate: keep a config read from the document
+            if (!_loaded)
+            {
+                Config = CreateDefaultConfig();
+                Config.Name = map.Name;
+            }
         }
     }
 
@@ -244,6 +251,7 @@ public class NetworkModule : IMapApplicationModule, IPersistable
         try
         {
             Config = JsonSerializer.Deserialize<NetworkConfig>(json, NetworkConfig.JsonOptions) ?? Config;
+            _loaded = true;
         }
         catch
         {
