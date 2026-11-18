@@ -14,7 +14,15 @@ public enum NetworkSearchAction
     /// <summary>Removes a picked item (Index; Target for the target list).</summary>
     RemovePick,
     /// <summary>Zooms to a picked item (Index; Target for the target list).</summary>
-    ZoomToPick
+    ZoomToPick,
+    /// <summary>The area becomes the current map extent.</summary>
+    AreaFromExtent,
+    /// <summary>The area becomes the selected polygon features (all layers, together).</summary>
+    AreaFromSelection,
+    /// <summary>Removes the area: the searches go over the whole network again.</summary>
+    RemoveArea,
+    /// <summary>Zooms to the area.</summary>
+    ZoomToArea
 }
 
 public class NetworkSearchEventArgs(NetworkSearchAction action, int index = 0, bool target = false) : ToolEventArgs

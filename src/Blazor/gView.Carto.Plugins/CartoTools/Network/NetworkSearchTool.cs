@@ -46,7 +46,8 @@ internal class NetworkSearchTool : ICartoTool
 
     public string ToolTip => "Search the network of the map (trace, path, supply, validate)";
 
-    public ToolType ToolType => ToolType.Click;
+    // Ctrl-drag draws a box for the area
+    public ToolType ToolType => ToolType.Click | ToolType.BBox;
 
     public string Icon => "webgis:construct-edge-intersect";
 
@@ -123,6 +124,11 @@ internal class NetworkSearchTool : ICartoTool
                 NetworkSearchEventArgs { Action: NetworkSearchAction.ZoomToViolation } a => await ZoomToViolation(scope, a.Index),
                 NetworkSearchEventArgs { Action: NetworkSearchAction.RemovePick } a => await RemovePick(scope, a.Index, a.Target),
                 NetworkSearchEventArgs { Action: NetworkSearchAction.ZoomToPick } a => await ZoomToPick(scope, a.Index, a.Target),
+                NetworkSearchEventArgs { Action: NetworkSearchAction.AreaFromExtent } => await AreaFromExtent(scope),
+                NetworkSearchEventArgs { Action: NetworkSearchAction.AreaFromSelection } => await AreaFromSelection(scope),
+                NetworkSearchEventArgs { Action: NetworkSearchAction.RemoveArea } => await RemoveArea(scope),
+                NetworkSearchEventArgs { Action: NetworkSearchAction.ZoomToArea } => await ZoomToArea(scope),
+                MapBBoxEventArgs bbox => await AreaFromBox(scope, bbox),
                 _ => await PickNode(scope, eventArgs)
             };
         }
@@ -151,6 +157,10 @@ internal class NetworkSearchTool : ICartoTool
         if (_context!.Pick == NetworkSearchPick.None || scope.DisplayService.SpatialReference is null)
         {
             return false;
+        }
+        if (_context.Pick == NetworkSearchPick.Area)
+        {
+            return await AreaFromFeature(scope, eventArgs);
         }
 
         var envelope = eventArgs.GetGeometry().ToProjectedEnvelope(scope, scope.DisplayService.SpatialReference);
@@ -501,6 +511,7 @@ internal class NetworkSearchTool : ICartoTool
             RuleIds = NullIfEmpty(context.RuleIds),
             // the rules of the map (module settings), so they can be tried without building again
             Rules = context.Operation == "validate" ? NetworkModule.Clone(Module(scope).Config.Rules) : null,
+            Area = context.Operation is "info" ? null : context.Area,
         };
 
         using var cancel = new CancellationTokenSource();
@@ -637,6 +648,191 @@ internal class NetworkSearchTool : ICartoTool
 
         var violation = result.Violations[index];
         return await ZoomToNetworkPoints(scope, result.Srs, [(violation.X, violation.Y)]);
+    }
+
+    #endregion
+
+    #region Area
+
+    /// <summary>Ctrl-drag: the box becomes the area.</summary>
+    private async Task<bool> AreaFromBox(ICartoApplicationScopeService scope, ToolEventArgs eventArgs)
+    {
+        var displaySrs = scope.DisplayService.SpatialReference;
+        if (displaySrs is null || eventArgs.GetGeometry().ToProjectedEnvelope(scope, displaySrs) is not IEnvelope box)
+        {
+            return false;
+        }
+        return await SetArea(scope, [ToNetwork(scope, Graph(scope), BoxPolygon(box))], "box");
+    }
+
+    /// <summary>The current map extent becomes the area.</summary>
+    private async Task<bool> AreaFromExtent(ICartoApplicationScopeService scope)
+    {
+        var bounds = scope.DisplayService.MapBounds;
+        if (scope.DisplayService.SpatialReference is null || bounds is null || bounds.Width <= 0 || bounds.Height <= 0)
+        {
+            _context!.Info = "The map has no extent yet.";
+            return false;
+        }
+        return await SetArea(scope, [ToNetwork(scope, Graph(scope), BoxPolygon(bounds))], "map extent");
+    }
+
+    /// <summary>A click in area mode: the polygon feature under it (visible layers, the top one in the TOC first).</summary>
+    private async Task<bool> AreaFromFeature(ICartoApplicationScopeService scope, ToolEventArgs eventArgs)
+    {
+        var graph = Graph(scope);
+        var displaySrs = scope.DisplayService.SpatialReference!;
+        var networkSrs = NetworkSrs(scope, graph);
+        if (eventArgs.GetGeometry().ToProjectedEnvelope(scope, displaySrs) is not IEnvelope envelope
+            || scope.GeoTransformer.Transform(envelope, displaySrs, networkSrs, scope.DisplayService.DatumTransformations)?.Envelope is not IEnvelope networkEnvelope)
+        {
+            return false;
+        }
+        var center = networkEnvelope.Center;
+
+        foreach (var layer in PolygonLayers(scope).Where(l => l.Layer.Visible).OrderBy(l => l.TocOrder))
+        {
+            var featureClass = layer.Layer.FeatureClass;
+            var filter = new SpatialFilter
+            {
+                SubFields = $"{featureClass.IDFieldName} {featureClass.ShapeFieldName}",
+                FilterSpatialReference = networkSrs,
+                Geometry = networkEnvelope
+            };
+            filter.SetFeatureSpatialReference(networkSrs, scope.DisplayService.DatumTransformations);
+
+            using IFeatureCursor? cursor = await featureClass.GetFeatures(filter);
+            if (cursor is null)
+            {
+                continue;
+            }
+            IFeature feature;
+            while ((feature = await cursor.NextFeature()) is not null)
+            {
+                if (feature.Shape is IPolygon polygon && NetworkArea.FromGeometries([AsPolygon2D(polygon)]).Contains(center.X, center.Y))
+                {
+                    return await SetArea(scope, [polygon], $"{layer.Name}#{feature.OID}");
+                }
+            }
+        }
+        _context!.Info = "No polygon feature at this location (visible polygon layers).";
+        return false;
+    }
+
+    /// <summary>The selected polygon features of all layers become the area together.</summary>
+    private async Task<bool> AreaFromSelection(ICartoApplicationScopeService scope)
+    {
+        var graph = Graph(scope);
+        var networkSrs = NetworkSrs(scope, graph);
+        var polygons = new List<IPolygon>();
+        foreach (var layer in PolygonLayers(scope))
+        {
+            if (layer.Layer is not IFeatureSelection { SelectionSet: IIDSelectionSet { Count: > 0 } selected })
+            {
+                continue;
+            }
+            var featureClass = layer.Layer.FeatureClass;
+            var filter = new RowIDFilter(featureClass.IDFieldName, selected.IDs.ToList())
+            {
+                SubFields = $"{featureClass.IDFieldName} {featureClass.ShapeFieldName}"
+            };
+            filter.SetFeatureSpatialReference(networkSrs, scope.DisplayService.DatumTransformations);
+
+            using IFeatureCursor? cursor = await featureClass.GetFeatures(filter);
+            if (cursor is null)
+            {
+                continue;
+            }
+            IFeature feature;
+            while ((feature = await cursor.NextFeature()) is not null)
+            {
+                if (feature.Shape is IPolygon polygon)
+                {
+                    polygons.Add(polygon);
+                }
+            }
+        }
+        if (polygons.Count == 0)
+        {
+            _context!.Info = "No polygon features selected.";
+            return false;
+        }
+        return await SetArea(scope, polygons, $"selection ({polygons.Count} polygon{(polygons.Count == 1 ? "" : "s")})");
+    }
+
+    /// <summary>Sets the area (polygons in the spatial reference of the network) and draws its outline.</summary>
+    private async Task<bool> SetArea(ICartoApplicationScopeService scope, IReadOnlyList<IPolygon> networkPolygons, string label)
+    {
+        var graph = Graph(scope);
+        _context!.Area = NetworkArea.FromGeometries(networkPolygons.Select(AsPolygon2D));
+        _context.AreaLabel = label;
+        _context.Info = $"Area: {label}";
+        // back to picking nodes, the area stays until it is removed
+        _context.Pick = _context.NeedsStart ? NetworkSearchPick.Start : NetworkSearchPick.None;
+
+        var graphics = scope.Document.Map.Display.GraphicsContainer.Elements;
+        graphics.Remove(typeof(GraphicNetworkArea));
+        var networkSrs = NetworkSrs(scope, graph);
+        foreach (var polygon in networkPolygons)
+        {
+            if (scope.GeoTransformer.Transform(polygon, networkSrs, scope.DisplayService.SpatialReference, scope.DisplayService.DatumTransformations) is IPolygon displayed)
+            {
+                graphics.Add(new GraphicNetworkArea(displayed));
+            }
+        }
+        await scope.EventBus.FireRefreshMapAsync(DrawPhase.Graphics);
+        return true;
+    }
+
+    private async Task<bool> RemoveArea(ICartoApplicationScopeService scope)
+    {
+        _context!.Area = null;
+        _context.AreaLabel = null;
+        if (_context.Pick == NetworkSearchPick.Area)
+        {
+            _context.Pick = _context.NeedsStart ? NetworkSearchPick.Start : NetworkSearchPick.None;
+        }
+        scope.Document.Map.Display.GraphicsContainer.Elements.Remove(typeof(GraphicNetworkArea));
+        await scope.EventBus.FireRefreshMapAsync(DrawPhase.Graphics);
+        return true;
+    }
+
+    private async Task<bool> ZoomToArea(ICartoApplicationScopeService scope)
+    {
+        if (_context!.Area is not NetworkArea area || area.Kind == NetworkAreaKind.Shards)
+        {
+            return false;
+        }
+        return await ZoomToNetworkPoints(scope, Graph(scope).Metadata.Srs, [(area.MinX, area.MinY), (area.MaxX, area.MaxY)]);
+    }
+
+    private static IEnumerable<MapLayer> PolygonLayers(ICartoApplicationScopeService scope)
+        => MapLayers.FeatureLayers(scope.Document.Map).Where(l => l.Layer.FeatureClass?.GeometryType == GeometryType.Polygon);
+
+    private static IPolygon BoxPolygon(IEnvelope box)
+    {
+        var ring = new Ring();
+        ring.AddPoint(new Point(box.MinX, box.MinY));
+        ring.AddPoint(new Point(box.MaxX, box.MinY));
+        ring.AddPoint(new Point(box.MaxX, box.MaxY));
+        ring.AddPoint(new Point(box.MinX, box.MaxY));
+        ring.AddPoint(new Point(box.MinX, box.MinY));
+        return new Polygon(ring);
+    }
+
+    /// <summary>A display polygon in the spatial reference of the network.</summary>
+    private static IPolygon ToNetwork(ICartoApplicationScopeService scope, FileNetworkGraph graph, IPolygon polygon)
+        => scope.GeoTransformer.Transform(polygon, scope.DisplayService.SpatialReference, NetworkSrs(scope, graph), scope.DisplayService.DatumTransformations) as IPolygon
+           ?? throw new InvalidOperationException("The area can't be projected into the spatial reference of the network.");
+
+    /// <summary>gView polygons are SpatialNET polygons too (other implementations are copied).</summary>
+    private static SpatialNET.IGeometry2D AsPolygon2D(IPolygon polygon)
+        => polygon as SpatialNET.IPolygon2D ?? new Polygon(polygon);
+
+    private static ISpatialReference NetworkSrs(ICartoApplicationScopeService scope, FileNetworkGraph graph)
+    {
+        var displaySrs = scope.DisplayService.SpatialReference ?? throw new InvalidOperationException("The map has no spatial reference.");
+        return string.IsNullOrEmpty(graph.Metadata.Srs) ? displaySrs : SpatialReference.FromID(graph.Metadata.Srs) ?? displaySrs;
     }
 
     #endregion

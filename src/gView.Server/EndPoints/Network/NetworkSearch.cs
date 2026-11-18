@@ -23,7 +23,9 @@ namespace gView.Server.EndPoints.Network;
 /// Runs a network search for the NetworkServer resource
 /// (geoservices/rest/services/[{folder}/]{id}/networkserver/{op}, see GeoServicesRestController):
 /// parameters start, from, to, sources, sinks, node, filter, block, unblock, disable (edges), weight, maxCost, rules (ids),
-/// x, y, radius, count (nearest), inSR (EPSG code of x/y and of the @x,y node references; default the network's),
+/// x, y, radius, count (nearest), area (searches and validate: only the nodes inside take part; xmin,ymin,xmax,ymax,
+/// GeoJSON or Esri JSON polygon, WKT POLYGON/MULTIPOLYGON or shard:key1,key2),
+/// inSR (EPSG code of x/y, the @x,y node references and the area; default the network's),
 /// geometry (true: the real parts of the line features), snap (true: line ends set onto the nodes), attributes (true: the fields of the features; needs the right
 /// "query"), outFields (comma separated, default all; per layer only the fields it has), outSR (EPSG code), f = json | pjson | geojson | csv.
 /// Limits from appsettings "Network" (see <see cref="NetworkServerOptions"/>).
@@ -81,6 +83,20 @@ public static class NetworkSearch
         }
         string? Nodes(string name) => P(name) is string value ? NetworkLocations.Transform(value, toNetwork) : null;
 
+        NetworkArea? area;
+        try
+        {
+            area = P("area") is string areaText ? NetworkArea.Parse(areaText) : null;
+        }
+        catch (ArgumentException ex)
+        {
+            throw new MapServerException(ex.Message);
+        }
+        if (area is not null && inTransformer is not null)
+        {
+            area = area.Transform(toNetwork);
+        }
+
         var (x, y) = Number("x") is double x0 && Number("y") is double y0 ? toNetwork(x0, y0) : (double.NaN, double.NaN);
         var maxCost = Number("maxCost") ?? Number("max-cost");
         var request = new NetworkQueryRequest
@@ -102,6 +118,7 @@ public static class NetworkSearch
             Y = double.IsNaN(y) ? null : y,
             Radius = Number("radius"),
             Count = Number("count") is double count ? (int)count : null,
+            Area = area,
         };
 
         NetworkQueryResult result;

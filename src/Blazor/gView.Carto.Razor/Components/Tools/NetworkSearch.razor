@@ -38,6 +38,33 @@
         </div>
     }
 
+    @if (_context.Operation != "info")
+    {
+        <div class="@($"carto-tool {(_context.Pick == NetworkSearchPick.Area ? "selected" : "")}")"
+             title="@($"Area: click a polygon feature in the map (e.g. a station polygon) or Ctrl-drag a box; only the nodes inside take part{(_context.Area is null ? "" : $"\nNow: {_context.AreaLabel}")}")"
+             @onclick="() => SetPick(NetworkSearchPick.Area)">
+            <div class=@Icons.FromString("webgis:polygon")></div>
+            <div class="title">@(_context.Area is null ? "Area" : "Area ✓")</div>
+        </div>
+        <div class="tool-small-chunk">
+            <div class="carto-tool small" title="The current map extent becomes the area" @onclick="() => Fire(NetworkSearchAction.AreaFromExtent)">
+                <div class=@Icons.FromString("webgis:extent", IconSize.Small)></div>
+                <div class="title">Extent</div>
+            </div>
+            <div class="carto-tool small" title="The selected polygon features become the area" @onclick="() => Fire(NetworkSearchAction.AreaFromSelection)">
+                <div class=@Icons.FromString("webgis:polygon-selected", IconSize.Small)></div>
+                <div class="title">Selection</div>
+            </div>
+            @if (_context.Area is not null)
+            {
+                <div class="carto-tool small" title="@($"Remove the area ({_context.AreaLabel}): the whole network again")" @onclick="() => Fire(NetworkSearchAction.RemoveArea)">
+                    <div class=@Icons.FromString("basic:trashcan-x", IconSize.Small)></div>
+                    <div class="title">No area</div>
+                </div>
+            }
+        </div>
+    }
+
     @if (_context.Busy)
     {
         <div class="carto-tool selected" title="@($"Cancel the search{(string.IsNullOrEmpty(_context.Progress) ? "" : $" ({_context.Progress})")}")" @onclick="() => Fire(NetworkSearchAction.Cancel)">
@@ -137,6 +164,14 @@
                     <MudProgressCircular Size="MudBlazor.Size.Small" Indeterminate="true" />
                     <span style="flex:1">@(_context.Progress ?? "running...")</span>
                     <MudButton Variant="Variant.Outlined" Size="MudBlazor.Size.Small" OnClick="() => Fire(NetworkSearchAction.Cancel)">Cancel</MudButton>
+                </div>
+            }
+            @if (_context.Area is not null)
+            {
+                <div style="display:flex;align-items:center;margin-top:6px;font-size:0.8em">
+                    <span style="flex:1"><b>Area</b> @_context.AreaLabel <span style="color:var(--mud-palette-text-secondary)">(only the nodes inside take part)</span></span>
+                    <span style="width:22px;cursor:pointer;text-align:center" title="Zoom to the area" @onclick="() => Fire(NetworkSearchAction.ZoomToArea)">⌖</span>
+                    <span style="width:22px;cursor:pointer;text-align:center" title="Remove the area" @onclick="() => Fire(NetworkSearchAction.RemoveArea)">✕</span>
                 </div>
             }
             @if (_context.NeedsStart && _context.StartItems.Count > 0)

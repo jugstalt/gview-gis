@@ -97,6 +97,11 @@ public class JsonNetworkSearchOptionsDTO
     [JsonPropertyName("disable")]
     public string Disable { get; set; } = "";
 
+    /// <summary>Only the nodes inside take part: xmin,ymin,xmax,ymax, GeoJSON/Esri JSON polygon, WKT or shard:key1,key2 (in inSR).</summary>
+    [JsonPropertyName("area")]
+    [FormInput(FormInputAttribute.InputTypes.TextBox)]
+    public string Area { get; set; } = "";
+
     [JsonPropertyName("weight")]
     public string Weight { get; set; } = "";
 
@@ -204,6 +209,14 @@ public class JsonNetworkValidateDTO
 {
     [JsonPropertyName("rules")]
     public string Rules { get; set; } = "";
+
+    /// <summary>Only the nodes inside and the edges with an end inside are checked (in inSR).</summary>
+    [JsonPropertyName("area")]
+    [FormInput(FormInputAttribute.InputTypes.TextBox)]
+    public string Area { get; set; } = "";
+
+    [JsonPropertyName("inSR")]
+    public string InSR { get; set; } = "";
 
     [JsonPropertyName("geometry")]
     public bool Geometry { get; set; } = true;

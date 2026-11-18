@@ -226,8 +226,11 @@ public sealed class NetworkArea
     /// <summary>Passed to the readers instead of relying on GeometryFactory.Default (gView does not set it); 2D is enough for an area.</summary>
     private static readonly IGeometryFactory Factory = new ImpGeometryFactory(supportsZ: false, supportsM: false);
 
-    /// <summary>One polygon per geometry; a MultiPolygon is one polygon with the rings of all its parts (they do not overlap, even-odd holds).</summary>
-    private static NetworkArea FromGeometries(IEnumerable<IGeometry2D> geometries)
+    /// <summary>
+    /// One polygon per geometry (e.g. gView polygons, which are SpatialNET polygons too); a MultiPolygon is one polygon
+    /// with the rings of all its parts (they do not overlap, even-odd holds). Other geometries are an error.
+    /// </summary>
+    public static NetworkArea FromGeometries(IEnumerable<IGeometry2D> geometries)
         => FromPolygons(geometries.Select(geometry => geometry is IPolygon2D polygon
             ? Enumerable.Range(0, polygon.RingCount).Select(r => Points(polygon[r]))
             : throw new ArgumentException($"area: a {geometry.GetType().Name} is no polygon; use Polygon or MultiPolygon.")));

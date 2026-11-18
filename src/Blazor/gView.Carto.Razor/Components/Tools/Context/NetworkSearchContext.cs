@@ -8,7 +8,9 @@ public enum NetworkSearchPick
 {
     None,
     Start,
-    Target
+    Target,
+    /// <summary>A click takes the polygon feature under it as the area, Ctrl-drag a box.</summary>
+    Area
 }
 
 /// <summary>A node or edge picked in the map: its reference for the search and a readable label.</summary>
@@ -54,6 +56,12 @@ public class NetworkSearchContext
 
     /// <summary>Edges switched off for trace, reach, path and supply.</summary>
     public string? Disable { get; set; }
+
+    /// <summary>Only the nodes inside take part (in the spatial reference of the network); stays set until removed.</summary>
+    public NetworkArea? Area { get; set; }
+
+    /// <summary>What the area is, e.g. "Stationspolygon#4711", "box", "map extent", "selection (3 polygons)".</summary>
+    public string? AreaLabel { get; set; }
 
     /// <summary>GeoJSON export: the line ends set onto the nodes, so the file is a valid network.</summary>
     public bool SnapExport { get; set; }
