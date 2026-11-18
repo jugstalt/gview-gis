@@ -45,10 +45,75 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     [leaflet-gl-vectortiles](https://github.com/jugstalt/leaflet-gl-vectortiles) draws gView vector
     tiles of any grid into Leaflet maps of the same projection (e.g. Proj4Leaflet maps in GK M34).
   - Test viewer for OpenLayers: `src/Playgrounds/VectorTilesViewer/index.html`.
+- Networks (SpatialNET): utility and street networks built from the point and line layers of a map,
+  searched in gView.Cmd, Carto and gView Server (new project `gView.Framework.NetworkModel`).
+  - Config: `NetworkConfig` (JSON) with the node and edge layers, type facets (e.g. Ebene,
+    Objektart, Bauart; values from fields or templates), weights, tolerance, shard polygons and
+    the network directory (default `{map}.network` next to the mxl). Kept in the map as
+    `NetworkModule`; Carto edits it on the module page (tabs General, Layers, Rules, Build, JSON
+    import/export, pattern pickers per facet) and on a Network page in the layer settings.
+  - Build: gView.Cmd `Network -u build` (or `-u config-from-mxl` for a config from a map), from
+    the Carto module page and the search tool (status and live log), and from the server admin
+    page (background job per service, status, reports). One binary file per shard plus
+    `nodes.idx` and `network.json`, written into `{dir}.building` and swapped in atomically.
+    Duplicate points of one layer are left out; points of different layers at one place stop the
+    build (`NodeConflicts = Error`) or are merged by TOC priority (`PriorityByToc`, the others
+    become aliases, `aliases.idx`, `merged.json`). Node and edge ids follow from the features and
+    stay the same between builds.
+  - Searches (`NetworkQueryService`, shared by all three): `trace`, `reach`, `path`, `supply`,
+    `info` and `validate`, with type filters, blocked nodes, weights and a maximum cost. Nodes are
+    given as `Layer#OID`, id or type pattern (e.g. `[*,Trafo,*]`); merged points stand for their
+    node. Results as CSV or GeoJSON with the real parts of the line features (measures).
+    `FileNetworkGraph` loads shards on demand and keeps them in an LRU cache;
+    `NetworkGraphCache` opens the network again after a rebuild.
+  - Rules: neighbour count rules in the config (and `network.json`), checked by
+    `validate` with a summary per rule and the violations (also of merged points); never at build.
+  - gView Server: NetworkServer as its own resource
+    `geoservices/rest/services/[{folder}/]{id}/networkserver` and `/{op}` (HTML forms without
+    parameters), listed as service type when the network is built and the user has the new right
+    `network`, linked from the MapServer page. Parameters as in the CLI plus `outSR`, `geometry`
+    and `attributes=true` (fields of the original features, `outFields`, needs the right `query`).
+    Networks live in `{services-folder}/networks/{folder}/{service}.network` and are removed
+    with the service. Limits in appsettings `Network`: `MaxResultNodes` (50000), `TimeoutSeconds`
+    (120), `MaxParallel` (2), `MaxLoadedShards` (512), `IdleMinutes` (30).
+  - Carto: "Network Search" tool: click a node, choose the search, the result is drawn with the
+    real line parts and can become the selection or a GeoJSON file in `{network}/results`;
+    validate uses the rules of the map without a rebuild and lists the violations (click zooms),
+    the report is a side panel.
+- Networks: line ends that only arise when the network is built (helper nodes, e.g. where a
+  Leitung hangs on an Anlagen Verbinder at a station) can be picked and used as start nodes, and a
+  branch can be switched off to see which customers lose their supply.
+  - Build: the network directory gets `spatial.idx` (every node, line end and merged point at its
+    location) and `edges.idx` (every edge id); networks built before have to be built again.
+  - References: `@x,y[~radius]` means the nearest node (also a line end, default radius 10 x the
+    build tolerance), edges are given as `Layer#OID` (every part of the line), `Layer#OID/part`
+    or id. Line ends are labelled with their lines, e.g. `end of Verbinder#12, Leitung#3456`.
+  - Type patterns can be negated with a leading `!`, e.g. the filter `![*,Anlagen Verbinder,*]`
+    keeps a trace from a line end on its branch instead of running back over the station.
+  - Searches (`NetworkQueryService`, gView.Cmd, NetworkServer, Carto): `disable` switches edges off
+    for one search; new operation `outage` switches edges off and reports the affected customers
+    (supplied before, not after; only the connected part of the network is computed), the
+    customers still supplied through a mesh and the dead edges; new operation `nearest` lists the
+    nodes nearest to `x`/`y`. Supply and outage default to the new network config settings
+    `supplySources` and `customers` (Carto: network module, tab General, card "Supply").
+  - NetworkServer: `inSR` for `x`/`y` and the `@x,y` references, `snap=true` sets the line ends
+    of the result exactly onto the nodes (a valid network for power flow software; a shift over
+    the build tolerance is reported), forms for `outage` and `nearest`; edges have a `kind` and
+    GeoJSON edges `from_node`/`to_node`.
+  - Carto network search: a click picks the nearest node of the network (real node, line end or
+    merged point) instead of only the points of the node layers; outage picks the line part
+    under the click, draws the switched off edge red and the dead edges orange; GeoJSON export
+    can snap the line ends onto the nodes.
+- Carto: the map zooms deeper than the resolutions of the coordinate system, down to the setting
+  `MapControl:MaxScale` (default 1:10); the resolutions beyond the last one are extrapolated and
+  background tiles are upscaled beyond their native zoom.
+- Carto: when the window gets narrow, the ribbon boxes collapse into menu buttons (File first, then
+  Map) instead of wrapping out of sight.
+- Carto: "Clear Selection" tool for the whole map and for the selected layer.
 
 ## Changed
 
-- Geometry: SpatialNET packages updated to 0.10.0-preview.4.
+- Geometry: SpatialNET packages updated to 0.10.0-preview.6.
 - Polygon labels (`SimpleLabelRenderer`, `ChartLabelRenderer`): all polygons now take the SpatialNET path
   that was only used for polygons with more than 12000 vertices before (the limit where Clipper and the ring
   raster became too slow or crashed). The label point is found first (`FastPolygonLabel`) and the polygon is only
@@ -77,6 +142,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   level's scale.
 - Geometry: `PointCollection`/`MultiPoint` can be enumerated as `IEnumerable<IPoint>` (the
   generic enumerator threw `NotImplementedException`).
+- Carto: a touch pinch zoom past the last resolution no longer resets the map to the world extent
+  (max. zoom was off by one, the zoom is now clamped in the coordinate system).
+- gView Server: services added by publishing get the full path of their mxl, so their `.settings`
+  are written next to it instead of into the working directory.
+- Network module: keeps its loaded config when the server calls `OnCreate` after `Load`.
 
 ## 9.26.4301
 
