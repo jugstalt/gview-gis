@@ -5,6 +5,8 @@ namespace gView.Carto.Razor.Components.Tools.ToolEvents;
 public enum NetworkSearchAction
 {
     Run,
+    /// <summary>Cancels the run in progress.</summary>
+    Cancel,
     Clear,
     ToSelection,
     ExportGeoJson,

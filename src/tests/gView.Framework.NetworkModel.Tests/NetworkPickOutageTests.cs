@@ -270,6 +270,30 @@ public class NetworkPickOutageTests : IDisposable
     }
 
     [Fact]
+    public void Run_ReportsProgress_AndStopsWhenCancelled()
+    {
+        Build();
+        var lines = new List<string>();
+        var progress = new SyncLines(lines);
+
+        Service().Run("trace", new NetworkQueryRequest { Start = "Trafo#1" }, progress);
+        Assert.Contains(lines, l => l.StartsWith("trace: ") && l.EndsWith("node(s) found"));
+
+        using var cancel = new CancellationTokenSource();
+        cancel.Cancel();
+        foreach (var operation in new[] { "trace", "reach", "outage" })
+        {
+            Assert.ThrowsAny<OperationCanceledException>(() => Service().Run(operation,
+                new NetworkQueryRequest { Start = "Trafo#1", Disable = "Leitung#20", MaxCost = 100 }, progress, cancel.Token));
+        }
+    }
+
+    private sealed class SyncLines(List<string> lines) : IProgress<string>
+    {
+        public void Report(string value) => lines.Add(value);
+    }
+
+    [Fact]
     public void Locations_AreTransformed_TheRestStays()
     {
         var text = NetworkLocations.Transform("Trafo#1, @1.5,2 ~3, [*,Kunde,*], @-4e1, 5", (x, y) => (x * 10, y * 10));

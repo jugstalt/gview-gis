@@ -113,7 +113,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     (label and reference, ✕ removes one, ⌖ zooms to it, also to typed `Layer#OID` and `@x,y`) with a
     copy button for the references, opens after Run and copies the result (text plus the nodes tab
     separated, e.g. for Excel; validate only the text). Networks are built only from the network module
-    page; the Build button of the tool is gone.
+    page; the Build button of the tool is gone. A running search can be cancelled (Run becomes Cancel)
+    and shows where it stands (e.g. `trace: 28,672 node(s) found`, `supply: 120/840 source(s)`).
+  - Searches (`NetworkQueryService.Run`) report their progress and stop on cancellation, also on the
+    server when its timeout is reached (before, a search kept running in the background); gView.Cmd
+    prints the progress lines.
 - Carto: the map zooms deeper than the resolutions of the coordinate system, down to the setting
   `MapControl:MaxScale` (default 1:10); the resolutions beyond the last one are extrapolated and
   background tiles are upscaled beyond their native zoom.

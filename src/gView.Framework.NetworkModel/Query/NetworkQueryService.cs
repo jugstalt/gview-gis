@@ -22,14 +22,18 @@ public sealed class NetworkQueryService
 
     public FileNetworkGraph Graph => _graph;
 
+    /// <summary>
+    /// Runs an operation. <paramref name="progress"/> gets a line now and then while it runs (nodes found so far, sources
+    /// done, ...); <paramref name="cancellationToken"/> stops it (<see cref="OperationCanceledException"/>).
+    /// </summary>
     public NetworkQueryResult Run(string operation, NetworkQueryRequest request, IProgress<string>? progress = null, CancellationToken cancellationToken = default)
         => operation.ToLowerInvariant() switch
         {
-            "trace" => Trace(request),
-            "reach" => Reach(request),
-            "path" => Path(request),
-            "supply" => Supply(request, progress),
-            "outage" => Outage(request),
+            "trace" => Trace(request, progress, cancellationToken),
+            "reach" => Reach(request, progress, cancellationToken),
+            "path" => Path(request, progress, cancellationToken),
+            "supply" => Supply(request, progress, cancellationToken),
+            "outage" => Outage(request, progress, cancellationToken),
             "info" => Info(request),
             "nearest" => Nearest(request),
             "validate" => Validate(request, progress, cancellationToken),
@@ -38,27 +42,28 @@ public sealed class NetworkQueryService
 
     #region Operations
 
-    public NetworkQueryResult Trace(NetworkQueryRequest request)
+    public NetworkQueryResult Trace(NetworkQueryRequest request, IProgress<string>? progress = null, CancellationToken cancellationToken = default)
     {
+        var watch = new Watch(progress, cancellationToken);
         var result = NewResult("trace");
         var sources = _graph.ResolveNodes(Required(request.Start, "start"));
         result.Messages.Add($"Trace from {sources.Count} source(s)");
 
         var options = Options(request);
-        var hits = _graph.Trace(sources, options).ToList();
+        var hits = watch.Count(_graph.Trace(sources, options, cancellationToken), "trace", "node(s) found").ToList();
         foreach (var group in hits.GroupBy(h => h.Kind).OrderBy(g => g.Key))
         {
             result.Messages.Add($"  {group.Key,-12} {group.Count()}");
         }
         AddTypes(result, hits.Where(h => h.Kind == TraceHitKind.Reached).Select(h => h.TypeId));
 
-        foreach (var hit in hits)
+        foreach (var hit in watch.Count(hits, "result", "node(s) labelled"))
         {
             AddNode(result, hit.Node, hit.TypeId, hit.Cost, hit.Kind.ToString(), _graph.NodeLabel(hit.Source));
         }
         if (request.WithEdges)
         {
-            foreach (var edge in _graph.TraceEdges(sources, options).DistinctBy(e => e.Edge.Id))
+            foreach (var edge in watch.Count(_graph.TraceEdges(sources, options, cancellationToken), "edges", "edge(s) found").DistinctBy(e => e.Edge.Id))
             {
                 AddEdge(result, edge.Edge.Id, edge.Edge.From);
             }
@@ -66,18 +71,19 @@ public sealed class NetworkQueryService
         return result;
     }
 
-    public NetworkQueryResult Reach(NetworkQueryRequest request)
+    public NetworkQueryResult Reach(NetworkQueryRequest request, IProgress<string>? progress = null, CancellationToken cancellationToken = default)
     {
+        var watch = new Watch(progress, cancellationToken);
         var result = NewResult("reach");
         var starts = _graph.ResolveNodes(Required(request.Start, "start"));
         var options = Options(request);
         result.Messages.Add($"Reach from {starts.Count} start(s), max cost {options.MaxCost}, weight {options.Weight.Name}");
 
-        var reached = _graph.Reach(starts, options).ToList();
+        var reached = watch.Count(_graph.Reach(starts, options, cancellationToken), "reach", "node(s) reached").ToList();
         result.Messages.Add($"  reached {reached.Count} node(s), max cost {(reached.Count > 0 ? reached.Max(r => r.Cost) : 0):0.###}");
         AddTypes(result, reached.Select(r => r.TypeId));
 
-        foreach (var r in reached)
+        foreach (var r in watch.Count(reached, "result", "node(s) labelled"))
         {
             AddNode(result, r.Node, r.TypeId, r.Cost, r.Blocked ? "Blocked" : r.IsStart ? "Start" : "Reached", _graph.NodeLabel(r.Start));
         }
@@ -91,14 +97,15 @@ public sealed class NetworkQueryService
         return result;
     }
 
-    public NetworkQueryResult Path(NetworkQueryRequest request)
+    public NetworkQueryResult Path(NetworkQueryRequest request, IProgress<string>? progress = null, CancellationToken cancellationToken = default)
     {
         var result = NewResult("path");
         var from = _graph.ResolveNode(Required(request.From, "from"));
         var to = _graph.ResolveNode(Required(request.To, "to"));
         var options = Options(request);
 
-        var path = _graph.ShortestPath(from, to, options);
+        progress?.Report("path: searching...");
+        var path = _graph.ShortestPath(from, to, options, cancellationToken);
         if (path is null)
         {
             result.Messages.Add($"No path from {_graph.NodeLabel(from)} to {_graph.NodeLabel(to)}.");
@@ -120,21 +127,14 @@ public sealed class NetworkQueryService
         return result;
     }
 
-    public NetworkQueryResult Supply(NetworkQueryRequest request, IProgress<string>? progress = null)
+    public NetworkQueryResult Supply(NetworkQueryRequest request, IProgress<string>? progress = null, CancellationToken cancellationToken = default)
     {
         var result = NewResult("supply");
         var sources = _graph.ResolveNodes(Required(request.Sources ?? _graph.Metadata.SupplySources, "sources"));
         var sinks = _graph.ResolveNodes(Required(request.Sinks ?? _graph.Metadata.Customers, "sinks"));
         result.Messages.Add($"Supply: {sources.Count} source(s), {sinks.Count} sink(s), {sinks.Sum(s => _graph.AliasesOf(s).Count)} merged point(s) at the sinks");
 
-        var supplyProgress = progress is null ? null : new SyncProgress<SupplyProgress>(p =>
-        {
-            if (p.SourcesDone % 1000 == 0 || p.SourcesDone == p.SourcesTotal)
-            {
-                progress.Report($"  {p.SourcesDone}/{p.SourcesTotal} sources");
-            }
-        });
-        var supply = _graph.Supply(sources, sinks, Options(request), supplyProgress).ToList();
+        var supply = _graph.Supply(sources, sinks, Options(request), SupplyProgress(progress, "supply"), cancellationToken).ToList();
 
         int unsupplied = supply.Count(s => s.Sources.Count == 0);
         int multiple = supply.Count(s => s.Sources.Count > 1);
@@ -159,8 +159,9 @@ public sealed class NetworkQueryService
     /// Switches the edges of <see cref="NetworkQueryRequest.Disable"/> off and reports the customers (sinks) that lose
     /// their supply. Only the part of the network connected to those edges is computed: supply with and without them.
     /// </summary>
-    public NetworkQueryResult Outage(NetworkQueryRequest request)
+    public NetworkQueryResult Outage(NetworkQueryRequest request, IProgress<string>? progress = null, CancellationToken cancellationToken = default)
     {
+        var watch = new Watch(progress, cancellationToken);
         var result = NewResult("outage");
         var disabled = _graph.ResolveEdges(Required(request.Disable, "disable"));
         var sourcesPattern = Required(request.Sources ?? _graph.Metadata.SupplySources, "sources");
@@ -180,13 +181,14 @@ public sealed class NetworkQueryService
             }
         }
         // without the directions of the edges: from a box the way back to the station runs against them
-        var component = new UndirectedGraph(_graph).Reach(ends.ToList(), normal with { MaxCost = double.PositiveInfinity }).Select(r => r.Node).ToHashSet();
+        var component = watch.Count(new UndirectedGraph(_graph).Reach(ends.ToList(), normal with { MaxCost = double.PositiveInfinity }, cancellationToken), "connected part", "node(s) found")
+            .Select(r => r.Node).ToHashSet();
         var sources = _graph.ResolveNodes(sourcesPattern).Where(component.Contains).ToList();
         var sinks = _graph.ResolveNodes(sinksPattern).Where(component.Contains).ToList();
         result.Messages.Add($"Outage: {disabled.Count} edge(s) switched off, {component.Count} node(s) connected, {sources.Count} source(s), {sinks.Count} customer(s) there");
 
-        var before = _graph.Supply(sources, sinks, normal).ToDictionary(s => s.Sink, s => s.Sources);
-        var after = _graph.Supply(sources, sinks, switchedOff).ToDictionary(s => s.Sink, s => s.Sources);
+        var before = _graph.Supply(sources, sinks, normal, SupplyProgress(progress, "supply before"), cancellationToken).ToDictionary(s => s.Sink, s => s.Sources);
+        var after = _graph.Supply(sources, sinks, switchedOff, SupplyProgress(progress, "supply after"), cancellationToken).ToDictionary(s => s.Sink, s => s.Sources);
 
         var affected = sinks.Where(s => before[s].Count > 0 && after[s].Count == 0).ToList();
         int stillSupplied = sinks.Count(s => before[s].Count > 0 && after[s].Count > 0);
@@ -203,8 +205,8 @@ public sealed class NetworkQueryService
 
         if (request.WithEdges)
         {
-            var supplied = _graph.TraceEdges(sources, normal).Select(e => e.Edge.Id).ToHashSet();
-            var stillLive = _graph.TraceEdges(sources, switchedOff).Select(e => e.Edge.Id).ToHashSet();
+            var supplied = watch.Count(_graph.TraceEdges(sources, normal, cancellationToken), "edges before", "edge(s) found").Select(e => e.Edge.Id).ToHashSet();
+            var stillLive = watch.Count(_graph.TraceEdges(sources, switchedOff, cancellationToken), "edges after", "edge(s) found").Select(e => e.Edge.Id).ToHashSet();
             foreach (var id in disabled)
             {
                 if (_graph.TryFindEdge(id, out var edge))
@@ -476,6 +478,50 @@ public sealed class NetworkQueryService
 
         public IEnumerable<GraphEdge<long, long>> GetEdges(IReadOnlyCollection<long> nodeIds)
             => graph.GetEdges(nodeIds).Select(e => e.Direction == EdgeDirection.Both ? e : e with { Direction = EdgeDirection.Both });
+    }
+
+    /// <summary>The supply progress as lines: sources done of all, at most about 4 per second.</summary>
+    private static IProgress<SupplyProgress>? SupplyProgress(IProgress<string>? progress, string phase)
+    {
+        if (progress is null)
+        {
+            return null;
+        }
+        long last = 0;
+        return new SyncProgress<SupplyProgress>(p =>
+        {
+            long now = Environment.TickCount64;
+            if (now - last >= 250 || p.SourcesDone == p.SourcesTotal)
+            {
+                last = now;
+                progress.Report($"{phase}: {p.SourcesDone}/{p.SourcesTotal} source(s)");
+            }
+        });
+    }
+
+    /// <summary>Counts what a search streams, reports the count at most about 4 times a second and stops on cancellation.</summary>
+    private sealed class Watch(IProgress<string>? progress, CancellationToken cancellationToken)
+    {
+        public IEnumerable<T> Count<T>(IEnumerable<T> items, string phase, string what)
+        {
+            long count = 0, last = Environment.TickCount64;
+            foreach (var item in items)
+            {
+                count++;
+                if ((count & 255) == 0)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    long now = Environment.TickCount64;
+                    if (progress is not null && now - last >= 250)
+                    {
+                        last = now;
+                        progress.Report($"{phase}: {count.ToString("N0", CultureInfo.InvariantCulture)} {what}");
+                    }
+                }
+                yield return item;
+            }
+            progress?.Report($"{phase}: {count.ToString("N0", CultureInfo.InvariantCulture)} {what}");
+        }
     }
 
     private sealed class SyncProgress<T>(Action<T> report) : IProgress<T>

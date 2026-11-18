@@ -83,6 +83,9 @@ public class NetworkSearchContext
 
     public bool Busy { get; set; }
 
+    /// <summary>While a run is busy: where it stands, e.g. "trace: 12,000 node(s) found".</summary>
+    public string? Progress { get; set; }
+
     /// <summary>Raised by the tool when the state changed (result, picked node), so the panel renders again.</summary>
     public event Action? Changed;
 

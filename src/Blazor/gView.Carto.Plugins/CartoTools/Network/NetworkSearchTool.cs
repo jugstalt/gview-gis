@@ -116,6 +116,7 @@ internal class NetworkSearchTool : ICartoTool
             return eventArgs switch
             {
                 NetworkSearchEventArgs { Action: NetworkSearchAction.Run } => await Run(scope),
+                NetworkSearchEventArgs { Action: NetworkSearchAction.Cancel } => CancelRun(),
                 NetworkSearchEventArgs { Action: NetworkSearchAction.Clear } => await Clear(scope),
                 NetworkSearchEventArgs { Action: NetworkSearchAction.ToSelection } => await ToSelection(scope),
                 NetworkSearchEventArgs { Action: NetworkSearchAction.ExportGeoJson } => await ExportGeoJson(scope),
@@ -502,23 +503,52 @@ internal class NetworkSearchTool : ICartoTool
             Rules = context.Operation == "validate" ? NetworkModule.Clone(Module(scope).Config.Rules) : null,
         };
 
+        using var cancel = new CancellationTokenSource();
+        _runCancel = cancel;
         context.Busy = true;
         context.Result = null;
+        context.Progress = "starting...";
         context.NotifyChanged();
+        var progress = new Progress(line =>
+        {
+            context.Progress = line;
+            context.NotifyChanged();
+        });
 
-        NetworkQueryResult result;
         try
         {
-            result = await Task.Run(() => new NetworkQueryService(graph).Run(context.Operation, request));
+            var result = await Task.Run(() => new NetworkQueryService(graph).Run(context.Operation, request, progress, cancel.Token), cancel.Token);
+            context.Result = result;
+            context.Progress = "drawing the result...";
+            context.NotifyChanged();
+            await Draw(scope, result, cancel.Token);
+        }
+        catch (OperationCanceledException) when (cancel.IsCancellationRequested)
+        {
+            context.Info = $"Cancelled{(string.IsNullOrEmpty(context.Progress) ? "" : $" ({context.Progress})")}.";
         }
         finally
         {
+            _runCancel = null;
             context.Busy = false;
+            context.Progress = null;
         }
-        context.Result = result;
-
-        await Draw(scope, result);
         return true;
+    }
+
+    /// <summary>The run in progress, to cancel it.</summary>
+    private CancellationTokenSource? _runCancel;
+
+    private bool CancelRun()
+    {
+        _runCancel?.Cancel();
+        return true;
+    }
+
+    /// <summary>Progress lines from the search thread (not tied to a synchronization context).</summary>
+    private sealed class Progress(Action<string> report) : IProgress<string>
+    {
+        public void Report(string value) => report(value);
     }
 
     private async Task<bool> Clear(ICartoApplicationScopeService scope)
@@ -643,7 +673,7 @@ internal class NetworkSearchTool : ICartoTool
     }
 
     /// <summary>The edges as the parts of their lines, nodes and violations as points, in the display's spatial reference.</summary>
-    private static async Task Draw(ICartoApplicationScopeService scope, NetworkQueryResult result)
+    private static async Task Draw(ICartoApplicationScopeService scope, NetworkQueryResult result, CancellationToken cancellationToken = default)
     {
         RemoveResultGraphics(scope);
 
@@ -653,7 +683,7 @@ internal class NetworkSearchTool : ICartoTool
         IGeometry ToDisplay(IGeometry geometry)
             => scope.GeoTransformer.Transform(geometry, networkSrs, scope.DisplayService.SpatialReference, scope.DisplayService.DatumTransformations);
 
-        var coordinates = await NetworkResultGeometry.EdgeCoordinatesAsync(map, result);
+        var coordinates = await NetworkResultGeometry.EdgeCoordinatesAsync(map, result, cancellationToken);
         foreach (var edge in result.Edges)
         {
             var points = coordinates.TryGetValue(edge.Id, out var c) ? c : [[edge.FromX, edge.FromY], [edge.ToX, edge.ToY]];

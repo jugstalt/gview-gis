@@ -38,10 +38,20 @@
         </div>
     }
 
-    <div class="carto-tool" title="Run the search" @onclick="Run">
-        <div class=@Icons.FromString("webgis:construct-edge-intersect")></div>
-        <div class="title">@(_context.Busy ? "Running..." : "Run")</div>
-    </div>
+    @if (_context.Busy)
+    {
+        <div class="carto-tool selected" title="@($"Cancel the search{(string.IsNullOrEmpty(_context.Progress) ? "" : $" ({_context.Progress})")}")" @onclick="() => Fire(NetworkSearchAction.Cancel)">
+            <div class=@Icons.FromString("basic:round-x")></div>
+            <div class="title">Cancel</div>
+        </div>
+    }
+    else
+    {
+        <div class="carto-tool" title="Run the search" @onclick="Run">
+            <div class=@Icons.FromString("webgis:construct-edge-intersect")></div>
+            <div class="title">Run</div>
+        </div>
+    }
 
 
     <div class="tool-small-chunk">
@@ -120,6 +130,14 @@
             @if (!string.IsNullOrEmpty(_context.Info))
             {
                 <MudAlert Severity="Severity.Info" Dense="true">@_context.Info</MudAlert>
+            }
+            @if (_context.Busy)
+            {
+                <div style="display:flex;align-items:center;gap:8px;margin-top:4px;font-size:0.8em">
+                    <MudProgressCircular Size="MudBlazor.Size.Small" Indeterminate="true" />
+                    <span style="flex:1">@(_context.Progress ?? "running...")</span>
+                    <MudButton Variant="Variant.Outlined" Size="MudBlazor.Size.Small" OnClick="() => Fire(NetworkSearchAction.Cancel)">Cancel</MudButton>
+                </div>
             }
             @if (_context.NeedsStart && _context.StartItems.Count > 0)
             {
