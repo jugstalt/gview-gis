@@ -1,4 +1,5 @@
 @using gView.Carto.Razor.Components.Tools.ToolEvents
+@using gView.Framework.NetworkModel.Graph
 @using gView.Framework.NetworkModel.Query
 
 @inherits BaseHandler
@@ -7,6 +8,7 @@
 @inject ICartoApplicationScopeService AppScope
 @inject CartoEventBusService EventBus
 @inject IconService Icons
+@inject IJSRuntime JS
 
 @if (_context is not null)
 {
@@ -20,31 +22,27 @@
     @if (_context.NeedsStart)
     {
         <div class="@($"carto-tool {(_context.Pick == NetworkSearchPick.Start ? "selected" : "")}")"
-             title="@($"{StartLabel}: click {(_context.PicksEdge ? "a line" : "a node or a line end")} in the map{(_context.StartAllowsMany ? ", Ctrl-click adds or removes one" : "")}{(string.IsNullOrEmpty(_context.Start) ? "" : $" ({_context.StartLabel ?? _context.Start})")}")"
+             title="@($"{StartLabel}: click {(_context.PicksEdge ? "a line" : "a node or a line end")} in the map{(_context.StartAllowsMany ? ", Ctrl-click adds or removes one" : "")}{PickedTooltip(_context.StartItems)}")"
              @onclick="() => SetPick(NetworkSearchPick.Start)">
             <div class=@Icons.FromString("basic:pin")></div>
-            <div class="title">@(string.IsNullOrEmpty(_context.Start) ? StartLabel : Short(_context.Start, _context.StartLabel))</div>
+            <div class="title">@PickedCount(_context.StartItems, _context.PicksEdge, StartLabel)</div>
         </div>
     }
     @if (_context.NeedsTarget)
     {
         <div class="@($"carto-tool {(_context.Pick == NetworkSearchPick.Target ? "selected" : "")}")"
-             title="@($"{TargetLabel}: click a node or a line end in the map{(_context.TargetAllowsMany ? ", Ctrl-click adds or removes one" : "")}{(string.IsNullOrEmpty(_context.Target) ? "" : $" ({_context.TargetLabel ?? _context.Target})")}")"
+             title="@($"{TargetLabel}: click a node or a line end in the map{(_context.TargetAllowsMany ? ", Ctrl-click adds or removes one" : "")}{PickedTooltip(_context.TargetItems)}")"
              @onclick="() => SetPick(NetworkSearchPick.Target)">
             <div class=@Icons.FromString("basic:pin")></div>
-            <div class="title">@(string.IsNullOrEmpty(_context.Target) ? TargetLabel : Short(_context.Target, _context.TargetLabel))</div>
+            <div class="title">@PickedCount(_context.TargetItems, false, TargetLabel)</div>
         </div>
     }
 
-    <div class="carto-tool" title="Run the search" @onclick="() => Fire(NetworkSearchAction.Run)">
+    <div class="carto-tool" title="Run the search" @onclick="Run">
         <div class=@Icons.FromString("webgis:construct-edge-intersect")></div>
         <div class="title">@(_context.Busy ? "Running..." : "Run")</div>
     </div>
 
-    <div class="@($"carto-tool {(_context.Build?.Running == true ? "selected" : "")}")" title="@BuildTitle" @onclick="() => Fire(NetworkSearchAction.Build)">
-        <div class=@Icons.FromString(_context.Status?.Stale == true ? "basic:refresh" : "basic:tools")></div>
-        <div class="title">@(_context.Build?.Running == true ? "Building..." : _context.Status?.Built == true ? (_context.Status.Stale ? "Rebuild" : "Build") : "Build")</div>
-    </div>
 
     <div class="tool-small-chunk">
         <div class="carto-tool small" title="Remove the result and the picked nodes" @onclick="() => Fire(NetworkSearchAction.Clear)">
@@ -66,12 +64,12 @@
             @if (_context.NeedsStart)
             {
                 <MudTextField T="string" Label="@(_context.PicksEdge ? $"{StartLabel} (Layer#OID or Layer#OID/part)" : $"{StartLabel} (Layer#OID, id, type pattern or @x,y)")" Dense="true"
-                              Value="_context.Start" ValueChanged="@((string v) => { _context.Start = v; _context.StartLabel = null; _context.StartItems.Clear(); })" />
+                              Value="_context.Start" ValueChanged="@((string v) => { _context.Start = v; _context.StartLabel = null; Typed(_context.StartItems, v); })" />
             }
             @if (_context.NeedsTarget)
             {
                 <MudTextField T="string" Label="@($"{TargetLabel} (Layer#OID, id, type pattern or @x,y; empty = module default)")" Dense="true"
-                              Value="_context.Target" ValueChanged="@((string v) => { _context.Target = v; _context.TargetLabel = null; _context.TargetItems.Clear(); })" />
+                              Value="_context.Target" ValueChanged="@((string v) => { _context.Target = v; _context.TargetLabel = null; Typed(_context.TargetItems, v); })" />
             }
             @if (_context.Operation == "outage")
             {
@@ -123,9 +121,23 @@
             {
                 <MudAlert Severity="Severity.Info" Dense="true">@_context.Info</MudAlert>
             }
+            @if (_context.NeedsStart && _context.StartItems.Count > 0)
+            {
+                @PickedList(_context.StartItems, StartLabel, false)
+            }
+            @if (_context.NeedsTarget && _context.TargetItems.Count > 0)
+            {
+                @PickedList(_context.TargetItems, TargetLabel, true)
+            }
             @if (_context.Result is NetworkQueryResult result)
             {
-                <pre style="max-height:400px;overflow:auto;font-size:0.75em;margin-top:4px">@string.Join(Environment.NewLine, result.Messages)</pre>
+                <div style="display:flex;align-items:center;margin-top:6px;font-size:0.8em">
+                    <b style="flex:1">Result</b>
+                    <MudIconButton Icon="@MudBlazor.Icons.Material.Filled.ContentCopy" Size="MudBlazor.Size.Small"
+                                   title="@(result.Operation == "validate" ? "Copy the summary" : "Copy the text and the nodes of the result (tab separated, e.g. for Excel)")"
+                                   OnClick="CopyResult" />
+                </div>
+                <pre style="max-height:400px;overflow:auto;font-size:0.75em;margin-top:0">@string.Join(Environment.NewLine, result.Messages)</pre>
             }
             @if (_context.Result is NetworkQueryResult { Violations.Count: > 0 } validation)
             {
@@ -205,22 +217,6 @@
 
     private string TargetLabel => _context?.Operation == "supply" ? "Sinks" : "To";
 
-    private string BuildTitle
-    {
-        get
-        {
-            var status = _context?.Status;
-            if (_context?.Build?.Running == true)
-            {
-                return "The network is being built, see Report";
-            }
-            if (status is null || !status.Built)
-            {
-                return "The network is not built yet: build it from the layers and the config of the map";
-            }
-            return $"Built {status.Created:g}: {status.NodeCount} nodes, {status.EdgeCount} edges{(status.Stale ? $". {status.StaleReason}" : "")}. Click to build again.";
-        }
-    }
 
     private Task FireZoom(int index) => HandleAsync(async () =>
     {
@@ -237,7 +233,8 @@
             }
             if (_context?.Result is not NetworkQueryResult result)
             {
-                return "Report";
+                int picked = (_context?.StartItems.Count ?? 0) + (_context?.NeedsTarget == true ? _context.TargetItems.Count : 0);
+                return picked > 0 ? $"Report ({picked} picked)" : "Report";
             }
             return result.Operation == "validate"
                 ? $"Report ({result.Violations.Count} violations)"
@@ -245,21 +242,104 @@
         }
     }
 
-    /// <summary>Niederspannung/Kasten#23 -> Kasten#23, Leitung#5/0 stays; an edge end shows its label.</summary>
-    private static string Short(string reference, string? label = null)
+    /// <summary>The caption of a pin button: how many are picked ("1 edge", "3 nodes"), the details are in the report.</summary>
+    private static string PickedCount(List<NetworkPickedItem> items, bool edges, string empty)
+        => items.Count == 0 ? empty : $"{items.Count} {(edges ? "edge" : "node")}{(items.Count == 1 ? "" : "s")}";
+
+    private static string PickedTooltip(List<NetworkPickedItem> items)
+        => items.Count == 0 ? "" : ":" + string.Concat(items.Select(i => $"\n{i.Label}"));
+
+    /// <summary>Text typed into the field becomes the picked items, one per reference.</summary>
+    private static void Typed(List<NetworkPickedItem> items, string? text)
     {
-        if ((reference.StartsWith('@') || reference.Contains(',')) && !string.IsNullOrEmpty(label))
+        items.Clear();
+        foreach (var reference in FileNetworkGraph.SplitReferences(text ?? ""))
         {
-            return label.Length > 28 ? label[..27] + "…" : label;
+            items.Add(new NetworkPickedItem(reference, reference));
         }
-        if (!reference.Contains('#'))
-        {
-            return reference;
-        }
-        var hash = reference.LastIndexOf('#');
-        var layer = reference[..hash];
-        return $"{layer[(layer.LastIndexOf('/') + 1)..]}{reference[hash..]}";
     }
+
+    private RenderFragment PickedList(List<NetworkPickedItem> items, string title, bool target) => __builder =>
+    {
+        <div style="display:flex;align-items:center;margin-top:6px;font-size:0.8em">
+            <b style="flex:1">@title (@items.Count)</b>
+            <MudIconButton Icon="@MudBlazor.Icons.Material.Filled.ContentCopy" Size="MudBlazor.Size.Small"
+                           title="Copy the references (comma separated, for the field, disable= or -disable)"
+                           OnClick="() => Copy(string.Join(SeparatorText, items.Select(i => i.Reference)))" />
+        </div>
+        <table style="width:100%;font-size:0.75em;border-collapse:collapse">
+            @for (int i = 0; i < items.Count; i++)
+            {
+                int index = i;
+                var item = items[i];
+                bool zoomable = item.Reference.Contains('#') || item.Reference.StartsWith('@') || long.TryParse(item.Reference, out _);
+                <tr style="border-top:1px solid var(--mud-palette-lines-default)">
+                    <td style="word-break:break-word">
+                        @item.Label
+                        @if (item.Label != item.Reference)
+                        {
+                            <div style="color:var(--mud-palette-text-secondary)">@item.Reference</div>
+                        }
+                    </td>
+                    <td style="width:22px;cursor:pointer;text-align:center" title="@(zoomable ? "Zoom to it" : "A type pattern has no single place")"
+                        @onclick="() => FirePick(NetworkSearchAction.ZoomToPick, index, target)">@(zoomable ? "⌖" : "")</td>
+                    <td style="width:22px;cursor:pointer;text-align:center" title="Remove"
+                        @onclick="() => FirePick(NetworkSearchAction.RemovePick, index, target)">✕</td>
+                </tr>
+            }
+        </table>
+    };
+
+    private const string SeparatorText = ", ";
+
+    private Task FirePick(NetworkSearchAction action, int index, bool target) => HandleAsync(async () =>
+    {
+        await EventBus.FireToolEventAsync(new NetworkSearchEventArgs(action, index, target));
+    });
+
+    /// <summary>Runs the search and shows the report with its result.</summary>
+    private Task Run() => HandleAsync(async () =>
+    {
+        _showReport = true;
+        await EventBus.FireToolEventAsync(new NetworkSearchEventArgs(NetworkSearchAction.Run));
+    });
+
+    /// <summary>
+    /// The result for the clipboard: the text as comment lines, then one tab separated row per node of a feature (with the
+    /// merged points); validate only the text.
+    /// </summary>
+    private Task CopyResult()
+    {
+        if (_context?.Result is not NetworkQueryResult result)
+        {
+            return Task.CompletedTask;
+        }
+        var sb = new System.Text.StringBuilder();
+        bool validate = result.Operation == "validate";
+        foreach (var line in result.Messages)
+        {
+            sb.Append(validate ? "" : "# ").AppendLine(line);
+        }
+        if (!validate)
+        {
+            sb.AppendLine("label\tlayer\toid\ttype\tkind\tmerged into");
+            foreach (var n in result.Nodes.Where(n => n.Layer is not null))
+            {
+                sb.Append(n.Label).Append('\t').Append(n.Layer).Append('\t').Append(n.Oid).Append('\t')
+                  .Append(n.Type).Append('\t').Append(n.Kind).Append('\t').AppendLine(n.AliasOf);
+            }
+        }
+        return Copy(sb.ToString());
+    }
+
+    private Task Copy(string text) => HandleAsync(async () =>
+    {
+        await JS.InvokeVoidAsync("navigator.clipboard.writeText", text);
+        if (_context is not null)
+        {
+            _context.Info = "Copied to the clipboard.";
+        }
+    });
 
     private void OnContextChanged() => InvokeAsync(StateHasChanged);
 

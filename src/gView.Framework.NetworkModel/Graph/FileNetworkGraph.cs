@@ -351,7 +351,7 @@ public sealed class FileNetworkGraph : IGraph<long, long>
     }
 
     /// <summary>Splits at commas outside of [ ] (patterns contain commas); the first comma after @ belongs to the location.</summary>
-    private static IEnumerable<string> SplitReferences(string references)
+    public static IEnumerable<string> SplitReferences(string references)
     {
         int depth = 0, start = 0;
         bool locationComma = false;

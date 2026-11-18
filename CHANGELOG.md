@@ -109,6 +109,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     edges to switch off (outage), several starts (trace, reach), sources and sinks (supply).
     Map clicks in Carto now carry the Ctrl key (`MapClickEventArgs.CtrlKey`); a Ctrl-click without
     dragging is a click again (the Ctrl box of the Leaflet map swallowed it), Ctrl-drag still draws a box.
+    The pin buttons show how many are picked ("1 edge", "3 nodes"); the report lists the picked items
+    (label and reference, ✕ removes one, ⌖ zooms to it, also to typed `Layer#OID` and `@x,y`) with a
+    copy button for the references, opens after Run and copies the result (text plus the nodes tab
+    separated, e.g. for Excel; validate only the text). Networks are built only from the network module
+    page; the Build button of the tool is gone.
 - Carto: the map zooms deeper than the resolutions of the coordinate system, down to the setting
   `MapControl:MaxScale` (default 1:10); the resolutions beyond the last one are extrapolated and
   background tiles are upscaled beyond their native zoom.

@@ -119,8 +119,9 @@ internal class NetworkSearchTool : ICartoTool
                 NetworkSearchEventArgs { Action: NetworkSearchAction.Clear } => await Clear(scope),
                 NetworkSearchEventArgs { Action: NetworkSearchAction.ToSelection } => await ToSelection(scope),
                 NetworkSearchEventArgs { Action: NetworkSearchAction.ExportGeoJson } => await ExportGeoJson(scope),
-                NetworkSearchEventArgs { Action: NetworkSearchAction.Build } => Build(scope),
                 NetworkSearchEventArgs { Action: NetworkSearchAction.ZoomToViolation } a => await ZoomToViolation(scope, a.Index),
+                NetworkSearchEventArgs { Action: NetworkSearchAction.RemovePick } a => await RemovePick(scope, a.Index, a.Target),
+                NetworkSearchEventArgs { Action: NetworkSearchAction.ZoomToPick } a => await ZoomToPick(scope, a.Index, a.Target),
                 _ => await PickNode(scope, eventArgs)
             };
         }
@@ -201,12 +202,13 @@ internal class NetworkSearchTool : ICartoTool
         }
 
         _pickPoints[reference] = displayPoint;
+        _pickLocations[reference] = (location.X, location.Y);
         bool ctrl = eventArgs is MapClickEventArgs { CtrlKey: true };
         if (_context.Pick == NetworkSearchPick.Start)
         {
-            bool added = Pick(_context.StartItems, _context.Start, reference, label, ctrl && _context.StartAllowsMany);
+            Pick(_context.StartItems, _context.Start, reference, label, ctrl && _context.StartAllowsMany);
             (_context.Start, _context.StartLabel) = Summary(_context.StartItems);
-            _context.Info = $"{(added ? "Picked" : "Removed")}: {label}{(_context.StartItems.Count > 1 ? $" ({_context.StartItems.Count} picked)" : "")}";
+            _context.Info = null; // the picked items are listed in the report
             if (_context.Operation == "path")
             {
                 _context.Pick = NetworkSearchPick.Target;
@@ -214,9 +216,9 @@ internal class NetworkSearchTool : ICartoTool
         }
         else
         {
-            bool added = Pick(_context.TargetItems, _context.Target, reference, label, ctrl && _context.TargetAllowsMany);
+            Pick(_context.TargetItems, _context.Target, reference, label, ctrl && _context.TargetAllowsMany);
             (_context.Target, _context.TargetLabel) = Summary(_context.TargetItems);
-            _context.Info = $"{(added ? "Picked" : "Removed")}: {label}{(_context.TargetItems.Count > 1 ? $" ({_context.TargetItems.Count} picked)" : "")}";
+            _context.Info = null;
         }
         DrawPicks(scope);
 
@@ -226,6 +228,106 @@ internal class NetworkSearchTool : ICartoTool
 
     /// <summary>The display locations of the picked references, for the markers.</summary>
     private readonly Dictionary<string, IPoint> _pickPoints = [];
+
+    /// <summary>The locations of the picked references in the spatial reference of the network, for zooming.</summary>
+    private readonly Dictionary<string, (double X, double Y)> _pickLocations = [];
+
+    /// <summary>Removes a picked item (✕ in the report).</summary>
+    private async Task<bool> RemovePick(ICartoApplicationScopeService scope, int index, bool target)
+    {
+        var items = target ? _context!.TargetItems : _context!.StartItems;
+        if (index < 0 || index >= items.Count)
+        {
+            return false;
+        }
+        items.RemoveAt(index);
+        if (target)
+        {
+            (_context.Target, _context.TargetLabel) = Summary(items);
+        }
+        else
+        {
+            (_context.Start, _context.StartLabel) = Summary(items);
+        }
+        DrawPicks(scope);
+        await scope.EventBus.FireRefreshMapAsync(DrawPhase.Graphics);
+        return true;
+    }
+
+    /// <summary>
+    /// Zooms to a picked item: where it was clicked, or for a typed Layer#OID or @x,y where the network has it
+    /// (a node, or the ends of the edges of a line); type patterns have no place.
+    /// </summary>
+    private async Task<bool> ZoomToPick(ICartoApplicationScopeService scope, int index, bool target)
+    {
+        var items = target ? _context!.TargetItems : _context!.StartItems;
+        if (index < 0 || index >= items.Count)
+        {
+            return false;
+        }
+        var reference = items[index].Reference;
+        var graph = Graph(scope);
+        var points = new List<(double X, double Y)>();
+        if (_pickLocations.TryGetValue(reference, out var picked))
+        {
+            points.Add(picked);
+        }
+        else if (!target && _context.PicksEdge)
+        {
+            foreach (var id in graph.ResolveEdges(reference))
+            {
+                if (graph.TryFindEdge(id, out var edge))
+                {
+                    foreach (var node in new[] { edge.Edge.From, edge.Edge.To })
+                    {
+                        if (graph.TryGetNode(node, out var n))
+                        {
+                            points.Add((n.Node.Location.X, n.Node.Location.Y));
+                        }
+                    }
+                }
+            }
+        }
+        else if (reference.Contains('#') || reference.StartsWith('@') || long.TryParse(reference, out _))
+        {
+            foreach (var id in graph.ResolveNodes(reference))
+            {
+                if (graph.TryGetNode(id, out var n))
+                {
+                    points.Add((n.Node.Location.X, n.Node.Location.Y));
+                }
+            }
+        }
+        if (points.Count == 0)
+        {
+            _context.Info = $"{reference} has no single place to zoom to.";
+            return false;
+        }
+        return await ZoomToNetworkPoints(scope, graph.Metadata.Srs, points);
+    }
+
+    /// <summary>Zooms to points in the spatial reference of the network with a little room around them.</summary>
+    private static async Task<bool> ZoomToNetworkPoints(ICartoApplicationScopeService scope, string? srs, IReadOnlyCollection<(double X, double Y)> points)
+    {
+        var networkSrs = string.IsNullOrEmpty(srs) ? scope.DisplayService.SpatialReference : SpatialReference.FromID(srs);
+        const double room = 25; // the network is metric
+        var corners = new[]
+            {
+                new Point(points.Min(p => p.X) - room, points.Min(p => p.Y) - room),
+                new Point(points.Max(p => p.X) + room, points.Max(p => p.Y) + room)
+            }
+            .Select(p => scope.GeoTransformer.Transform(p, networkSrs, scope.DisplayService.SpatialReference, scope.DisplayService.DatumTransformations) as IPoint)
+            .ToList();
+        if (corners.Any(c => c is null))
+        {
+            return false;
+        }
+
+        await scope.EventBus.FireMapZoomToAsync(new Envelope(
+            Math.Min(corners[0]!.X, corners[1]!.X), Math.Min(corners[0]!.Y, corners[1]!.Y),
+            Math.Max(corners[0]!.X, corners[1]!.X), Math.Max(corners[0]!.Y, corners[1]!.Y)));
+        return true;
+    }
 
     /// <summary>
     /// A click replaces the picked items, a Ctrl-click adds the item or removes it when it is picked already. Text typed into
@@ -431,6 +533,7 @@ internal class NetworkSearchTool : ICartoTool
         _context.StartItems.Clear();
         _context.TargetItems.Clear();
         _pickPoints.Clear();
+        _pickLocations.Clear();
         _context.Info = null;
         _context.Pick = NetworkSearchPick.Start;
 
@@ -494,32 +597,6 @@ internal class NetworkSearchTool : ICartoTool
         return true;
     }
 
-    /// <summary>Builds the network in the background (log and state in the module), the panel follows its progress.</summary>
-    private bool Build(ICartoApplicationScopeService scope)
-    {
-        var module = Module(scope);
-        if (!module.StartBuild(scope.Document.FilePath))
-        {
-            _context!.Info = "A build is already running.";
-            return false;
-        }
-
-        var state = module.BuildState!;
-        _context!.Build = state;
-        _context.Info = "Build started, see Report.";
-        state.Changed += () =>
-        {
-            if (!state.Running)
-            {
-                _context.Error = null;
-                Refresh(scope);
-                _context.Info = state.Succeeded == true ? "Build finished." : "Build failed, see Report.";
-            }
-            _context.NotifyChanged();
-        };
-        return true;
-    }
-
     /// <summary>Zooms to the violation (index in the result) with a little room around it.</summary>
     private async Task<bool> ZoomToViolation(ICartoApplicationScopeService scope, int index)
     {
@@ -529,20 +606,7 @@ internal class NetworkSearchTool : ICartoTool
         }
 
         var violation = result.Violations[index];
-        var networkSrs = string.IsNullOrEmpty(result.Srs) ? scope.DisplayService.SpatialReference : SpatialReference.FromID(result.Srs);
-        const double room = 25; // the network is metric
-        var corners = new[] { new Point(violation.X - room, violation.Y - room), new Point(violation.X + room, violation.Y + room) }
-            .Select(p => scope.GeoTransformer.Transform(p, networkSrs, scope.DisplayService.SpatialReference, scope.DisplayService.DatumTransformations) as IPoint)
-            .ToList();
-        if (corners.Any(c => c is null))
-        {
-            return false;
-        }
-
-        await scope.EventBus.FireMapZoomToAsync(new Envelope(
-            Math.Min(corners[0]!.X, corners[1]!.X), Math.Min(corners[0]!.Y, corners[1]!.Y),
-            Math.Max(corners[0]!.X, corners[1]!.X), Math.Max(corners[0]!.Y, corners[1]!.Y)));
-        return true;
+        return await ZoomToNetworkPoints(scope, result.Srs, [(violation.X, violation.Y)]);
     }
 
     #endregion
@@ -563,7 +627,7 @@ internal class NetworkSearchTool : ICartoTool
         var directory = Module(scope).Config.ResolveDirectory(mapPath);
         if (!File.Exists(System.IO.Path.Combine(directory, FileNetworkStore.MetadataFile)))
         {
-            throw new InvalidOperationException($"The network is not built yet: use Build in this tool or on the network module page ({directory}).");
+            throw new InvalidOperationException($"The network is not built yet: build it on the network module page (Map, Modules, Network, tab Build) ({directory}).");
         }
         _context!.NetworkDirectory = directory;
         return NetworkGraphCache.Shared.Get(directory);
