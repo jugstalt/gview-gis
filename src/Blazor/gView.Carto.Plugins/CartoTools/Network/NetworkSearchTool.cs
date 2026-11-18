@@ -16,6 +16,7 @@ using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
 using gView.Framework.NetworkModel.Build;
 using gView.Framework.NetworkModel.Graph;
+using gView.Framework.NetworkModel.Ids;
 using gView.Framework.NetworkModel.Module;
 using gView.Framework.NetworkModel.Query;
 using gView.Framework.NetworkModel.Store;
@@ -25,9 +26,9 @@ using System.Globalization;
 namespace gView.Carto.Plugins.CartoTools.Network;
 
 /// <summary>
-/// Searches on the SpatialNET network of the map (NetworkModule, built into its network directory): click a node,
-/// choose trace, reach, path, supply, info or validate; the result is drawn with the real line parts and can become
-/// the selection or a GeoJSON file.
+/// Searches on the SpatialNET network of the map (NetworkModule, built into its network directory): click a node (also
+/// an edge end, found in the spatial index of the network) or for outage a line, choose trace, reach, path, supply,
+/// outage, info or validate; the result is drawn with the real line parts and can become the selection or a GeoJSON file.
 /// </summary>
 [RegisterPlugIn("B3A1C7E2-5D84-4F0B-9E61-2C7A9D5F3B18")]
 internal class NetworkSearchTool : ICartoTool
@@ -35,6 +36,7 @@ internal class NetworkSearchTool : ICartoTool
     private static readonly ArgbColor EdgeColor = ArgbColor.FromArgb(200, 0, 120, 255);
     private static readonly ArgbColor NodeColor = ArgbColor.FromArgb(230, 0, 90, 200);
     private static readonly ArgbColor ProblemColor = ArgbColor.FromArgb(230, 220, 30, 30);
+    private static readonly ArgbColor DeadColor = ArgbColor.FromArgb(220, 255, 150, 0);
 
     private NetworkSearchContext? _context;
 
@@ -138,7 +140,10 @@ internal class NetworkSearchTool : ICartoTool
 
     #region Actions
 
-    /// <summary>Snaps the click to the nearest point of the node layers and sets it as start or target.</summary>
+    /// <summary>
+    /// Snaps the click to the nearest node of the network (real nodes, edge ends, merged points) and sets it as start or
+    /// target; for outage it picks the part of the line under the click as the edge to switch off.
+    /// </summary>
     private async Task<bool> PickNode(ICartoApplicationScopeService scope, ToolEventArgs eventArgs)
     {
         if (_context!.Pick == NetworkSearchPick.None || scope.DisplayService.SpatialReference is null)
@@ -152,23 +157,95 @@ internal class NetworkSearchTool : ICartoTool
             return false;
         }
 
-        var module = Module(scope);
-        var layers = MapLayers.FeatureLayers(scope.Document.Map);
-        var nodeLayerIds = module.Config.Nodes.Select(n => n.LayerId).OfType<int>().ToHashSet();
+        var graph = Graph(scope);
+        var displaySrs = scope.DisplayService.SpatialReference;
+        var networkSrs = string.IsNullOrEmpty(graph.Metadata.Srs) ? displaySrs : SpatialReference.FromID(graph.Metadata.Srs) ?? displaySrs;
+        if (scope.GeoTransformer.Transform(envelope, displaySrs, networkSrs, scope.DisplayService.DatumTransformations)?.Envelope is not IEnvelope networkEnvelope)
+        {
+            return false;
+        }
+        var center = networkEnvelope.Center;
+        double radius = Math.Max(networkEnvelope.Width, networkEnvelope.Height) / 2;
 
-        string? best = null;
-        IPoint? bestPoint = null;
-        double bestDistance = double.MaxValue;
-        foreach (var layer in layers.Where(l => nodeLayerIds.Contains(l.Id)))
+        string reference, label;
+        IPoint location;
+        if (_context.PicksEdge)
+        {
+            var edge = await PickEdge(scope, graph, networkEnvelope, networkSrs);
+            if (edge is null)
+            {
+                _context.Info = "No network line at this location.";
+                return false;
+            }
+            (reference, label, location) = edge.Value;
+        }
+        else
+        {
+            var hit = graph.Nearest(center.X, center.Y, radius).FirstOrDefault();
+            if (hit == default)
+            {
+                _context.Info = "No network node at this location.";
+                return false;
+            }
+            var entry = hit.Entry;
+            bool helper = NetworkIds.IsHelper(entry.Node);
+            // edge ends have no feature: they are taken by their location; real nodes and merged points by Layer#OID
+            reference = helper ? NetworkLocations.Reference(entry.X, entry.Y) : graph.NodeLabel(entry.Id);
+            label = entry.Id == entry.Node ? graph.NodeLabel(entry.Node) : $"{graph.NodeLabel(entry.Id)} (on {graph.NodeLabel(entry.Node)})";
+            location = new Point(entry.X, entry.Y);
+        }
+
+        if (scope.GeoTransformer.Transform(location, networkSrs, displaySrs, scope.DisplayService.DatumTransformations) is not IPoint displayPoint)
+        {
+            return false;
+        }
+
+        var graphics = scope.Document.Map.Display.GraphicsContainer.Elements;
+        _context.Info = $"Picked: {label}";
+        if (_context.Pick == NetworkSearchPick.Start)
+        {
+            (_context.Start, _context.StartLabel) = (reference, label);
+            graphics.Remove(typeof(GraphicStartPoint));
+            graphics.Add(new GraphicStartPoint(displayPoint));
+            if (_context.Operation == "path")
+            {
+                _context.Pick = NetworkSearchPick.Target;
+            }
+        }
+        else
+        {
+            (_context.Target, _context.TargetLabel) = (reference, label);
+            graphics.Remove(typeof(GraphicTargetPoint));
+            graphics.Add(new GraphicTargetPoint(displayPoint));
+        }
+
+        await scope.EventBus.FireRefreshMapAsync(DrawPhase.Graphics);
+        return true;
+    }
+
+    /// <summary>
+    /// The part of a network line nearest to the click: Layer#OID/part (the edge between two nodes, not the whole line),
+    /// its label and the point on the line, in the spatial reference of the network.
+    /// </summary>
+    private async Task<(string Reference, string Label, IPoint Location)?> PickEdge(
+        ICartoApplicationScopeService scope, FileNetworkGraph graph, IEnvelope networkEnvelope, ISpatialReference networkSrs)
+    {
+        var module = Module(scope);
+        var edgeLayerIds = module.Config.Edges.Select(e => e.LayerId).OfType<int>().ToHashSet();
+        var center = networkEnvelope.Center;
+
+        (MapLayer Layer, long Oid, double Distance, double Measure, IPoint Point)? best = null;
+        foreach (var layer in MapLayers.FeatureLayers(scope.Document.Map).Where(l => edgeLayerIds.Contains(l.Id)))
         {
             var featureClass = layer.Layer.FeatureClass;
             var filter = new SpatialFilter
             {
                 SubFields = $"{featureClass.IDFieldName} {featureClass.ShapeFieldName}",
-                FilterSpatialReference = scope.DisplayService.SpatialReference,
-                Geometry = envelope
+                FilterSpatialReference = networkSrs,
+                Geometry = networkEnvelope
             };
-            filter.SetFeatureSpatialReference(scope.DisplayService.SpatialReference, scope.DisplayService.DatumTransformations);
+            // measures are lengths in the network's spatial reference
+            filter.SetFeatureSpatialReference(networkSrs, scope.DisplayService.DatumTransformations);
 
             using IFeatureCursor? cursor = await featureClass.GetFeatures(filter);
             if (cursor is null)
@@ -178,64 +255,83 @@ internal class NetworkSearchTool : ICartoTool
             IFeature feature;
             while ((feature = await cursor.NextFeature()) is not null)
             {
-                var point = feature.Shape switch
+                if (feature.Shape is IPolyline polyline && Closest(polyline, center) is var (distance, measure, point) && (best is null || distance < best.Value.Distance))
                 {
-                    IPoint p => p,
-                    IMultiPoint mp when mp.PointCount > 0 => mp[0],
-                    _ => null
-                };
-                if (point is null)
-                {
-                    continue;
-                }
-                double distance = envelope.Center.Distance(point);
-                if (distance < bestDistance)
-                {
-                    (bestDistance, best, bestPoint) = (distance, $"{layer.Path}#{feature.OID}", point);
+                    best = (layer, feature.OID, distance, measure, point);
                 }
             }
         }
-
-        if (best is null || bestPoint is null)
+        if (best is not { } found)
         {
-            _context.Info = "No network node at this location.";
-            return false;
+            return null;
         }
 
-        var graphics = scope.Document.Map.Display.GraphicsContainer.Elements;
-        _context.Info = null;
-        if (_context.Pick == NetworkSearchPick.Start)
+        var featureClassIndex = graph.Metadata.FeatureClasses
+            .FirstOrDefault(f => f.Kind == SpatialNET.Network.ElementKind.Edge && f.Layer.Equals(found.Layer.Path, StringComparison.OrdinalIgnoreCase))?.Index
+            ?? throw new InvalidOperationException($"{found.Layer.Path} is not in the built network; build it again.");
+        foreach (var id in graph.EdgePartsOf(featureClassIndex, found.Oid))
         {
-            _context.Start = best;
-            graphics.Remove(typeof(GraphicStartPoint));
-            graphics.Add(new GraphicStartPoint(bestPoint));
-            if (_context.Operation == "path")
+            if (graph.TryFindEdge(id, out var edge)
+                && found.Measure >= Math.Min(edge.FromMeasure, edge.ToMeasure) - 1e-6
+                && found.Measure <= Math.Max(edge.FromMeasure, edge.ToMeasure) + 1e-6)
             {
-                _context.Pick = NetworkSearchPick.Target;
+                var label = graph.EdgeLabel(id);
+                return (label, label, found.Point);
             }
         }
-        else
-        {
-            _context.Target = best;
-            graphics.Remove(typeof(GraphicTargetPoint));
-            graphics.Add(new GraphicTargetPoint(bestPoint));
-        }
+        throw new InvalidOperationException($"{found.Layer.Path}#{found.Oid} is no edge of the built network (left out by a filter, or the network is out of date).");
+    }
 
-        await scope.EventBus.FireRefreshMapAsync(DrawPhase.Graphics);
-        return true;
+    /// <summary>The distance of a point to a line, the measure (length from the line's start) and the point on the line nearest to it.</summary>
+    private static (double Distance, double Measure, IPoint Point)? Closest(IPolyline polyline, IPoint p)
+    {
+        (double Distance, double Measure, IPoint Point)? best = null;
+        double measure = 0;
+        for (int i = 0; i < polyline.PathCount; i++)
+        {
+            var path = polyline[i];
+            for (int j = 1; j < path.PointCount; j++)
+            {
+                var a = path[j - 1];
+                var b = path[j];
+                double dx = b.X - a.X, dy = b.Y - a.Y, length2 = dx * dx + dy * dy;
+                double t = length2 == 0 ? 0 : Math.Clamp(((p.X - a.X) * dx + (p.Y - a.Y) * dy) / length2, 0, 1);
+                double x = a.X + dx * t, y = a.Y + dy * t;
+                double distance = Math.Sqrt((p.X - x) * (p.X - x) + (p.Y - y) * (p.Y - y));
+                if (best is null || distance < best.Value.Distance)
+                {
+                    best = (distance, measure + Math.Sqrt(length2) * t, new Point(x, y));
+                }
+                measure += Math.Sqrt(length2);
+            }
+        }
+        return best;
     }
 
     private async Task<bool> Run(ICartoApplicationScopeService scope)
     {
         var context = _context!;
         var graph = Graph(scope);
+        var config = Module(scope).Config;
         var request = new NetworkQueryRequest
         {
             Start = context.Operation is "trace" or "reach" ? context.Start : null,
             From = context.Operation == "path" ? context.Start : null,
             To = context.Operation == "path" ? context.Target : null,
-            Sources = context.Operation == "supply" ? context.Start : null,
-            Sinks = context.Operation == "supply" ? context.Target : null,
+            // supply and outage: the defaults of the map's network module (they may differ from the built network)
+            Sources = context.Operation switch
+            {
+                "supply" => NullIfEmpty(context.Start) ?? config.SupplySources,
+                "outage" => NullIfEmpty(context.Sources) ?? config.SupplySources,
+                _ => null
+            },
+            Sinks = context.Operation switch
+            {
+                "supply" => NullIfEmpty(context.Target) ?? config.Customers,
+                "outage" => NullIfEmpty(context.Customers) ?? config.Customers,
+                _ => null
+            },
+            Disable = context.Operation == "outage" ? context.Start : NullIfEmpty(context.Disable),
             Node = context.Operation == "info" ? context.Start : null,
             Weight = context.Weight,
             MaxCost = string.IsNullOrWhiteSpace(context.MaxCost) ? null : double.Parse(context.MaxCost.Replace(',', '.'), CultureInfo.InvariantCulture),
@@ -273,7 +369,7 @@ internal class NetworkSearchTool : ICartoTool
         graphics.Remove(typeof(GraphicTargetPoint));
 
         _context!.Result = null;
-        _context.Start = _context.Target = null;
+        _context.Start = _context.Target = _context.StartLabel = _context.TargetLabel = null;
         _context.Info = null;
         _context.Pick = NetworkSearchPick.Start;
 
@@ -326,7 +422,8 @@ internal class NetworkSearchTool : ICartoTool
             return false;
         }
 
-        var coordinates = await NetworkResultGeometry.EdgeCoordinatesAsync(scope.Document.Map, result);
+        var coordinates = await NetworkResultGeometry.EdgeCoordinatesAsync(scope.Document.Map, result,
+            snap: _context.SnapExport, tolerance: Graph(scope).Metadata.Tolerance);
         var directory = System.IO.Path.Combine(_context.NetworkDirectory, "results");
         Directory.CreateDirectory(directory);
         var path = System.IO.Path.Combine(directory, $"{result.Operation}-{DateTime.Now:yyyyMMdd-HHmmss}.geojson");
@@ -444,13 +541,18 @@ internal class NetworkSearchTool : ICartoTool
             polyline.AddPath(path);
             if (ToDisplay(polyline) is IPolyline displayed)
             {
-                graphics.Add(new GraphicNetworkResultEdge(displayed, EdgeColor));
+                graphics.Add(new GraphicNetworkResultEdge(displayed, edge.Kind switch
+                {
+                    "Disabled" => ProblemColor,
+                    "Dead" => DeadColor,
+                    _ => EdgeColor
+                }));
             }
         }
 
         foreach (var node in result.Nodes.Where(n => n.AliasOf.Length == 0 && !double.IsNaN(n.X)))
         {
-            var problem = node.Kind is "NotSupplied" or "Multiple" or "Blocked";
+            var problem = node.Kind is "NotSupplied" or "Multiple" or "Blocked" or "Affected";
             if (ToDisplay(new Point(node.X, node.Y)) is IPoint point)
             {
                 graphics.Add(new GraphicNetworkResultNode(point, problem ? ProblemColor : NodeColor, problem ? 10 : 7));

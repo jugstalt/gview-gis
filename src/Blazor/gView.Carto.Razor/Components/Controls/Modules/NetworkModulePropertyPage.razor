@@ -29,6 +29,14 @@
                     </GvCardContent>
                 </GvCard>
 
+                <GvCard Title="Supply">
+                    <GvCardContent>
+                        @GvUtilities.InfoText("The defaults of supply and outage (node patterns, e.g. [*,Trafo,*] and [*,Kunde,*]); a search may give others. Written into the built network for the server.")
+                        <MudTextField T="string" Label="Supply sources (node pattern)" @bind-Value="config.SupplySources" />
+                        <MudTextField T="string" Label="Customers (node pattern)" @bind-Value="config.Customers" />
+                    </GvCardContent>
+                </GvCard>
+
                 <GvCard Title="Type facets">
                     <GvCardContent>
                         @GvUtilities.InfoText("Every node and edge type is a combination of facet values. Values not listed get a number automatically. Fixed values: 1=Niederspannung, 2=Mittelspannung")

@@ -2,6 +2,7 @@
 
 using gView.Framework.Core.Carto;
 using gView.Framework.Core.Exceptions;
+using gView.Framework.Core.Geometry;
 using gView.Framework.Geometry;
 using gView.Framework.NetworkModel.Graph;
 using gView.Framework.NetworkModel.Query;
@@ -21,8 +22,9 @@ namespace gView.Server.EndPoints.Network;
 /// <summary>
 /// Runs a network search for the NetworkServer resource
 /// (geoservices/rest/services/[{folder}/]{id}/networkserver/{op}, see GeoServicesRestController):
-/// parameters start, from, to, sources, sinks, node, filter, block, unblock, weight, maxCost, rules (ids),
-/// geometry (true: the real parts of the line features), attributes (true: the fields of the features; needs the right
+/// parameters start, from, to, sources, sinks, node, filter, block, unblock, disable (edges), weight, maxCost, rules (ids),
+/// x, y, radius, count (nearest), inSR (EPSG code of x/y and of the @x,y node references; default the network's),
+/// geometry (true: the real parts of the line features), snap (true: line ends set onto the nodes), attributes (true: the fields of the features; needs the right
 /// "query"), outFields (comma separated, default all; per layer only the fields it has), outSR (EPSG code), f = json | pjson | geojson | csv.
 /// Limits from appsettings "Network" (see <see cref="NetworkServerOptions"/>).
 /// </summary>
@@ -52,21 +54,54 @@ public static class NetworkSearch
 
         string? P(string name) => parameters.TryGetValue(name, out var v) && !string.IsNullOrWhiteSpace(v) ? v : null;
 
-        var maxCost = P("maxCost") ?? P("max-cost");
+        double? Number(string name)
+        {
+            var value = P(name);
+            if (value is null)
+            {
+                return null;
+            }
+            return double.TryParse(value.Replace(',', '.'), NumberStyles.Float, CultureInfo.InvariantCulture, out var number)
+                ? number
+                : throw new MapServerException($"{name}: '{value}' is no number.");
+        }
+
+        // inSR: x/y and the @x,y node references are given in another spatial reference than the network
+        Func<double, double, (double X, double Y)> toNetwork = (x, y) => (x, y);
+        using var inTransformer = P("inSR") is string inSR ? GeometricTransformerFactory.Create((await loadMap())?.Display?.DatumTransformations) : null;
+        if (inTransformer is not null)
+        {
+            var inSRText = P("inSR")!;
+            var from = SpatialReference.FromID(inSRText.Contains(':') ? inSRText : $"epsg:{inSRText}")
+                       ?? throw new MapServerException($"Unknown spatial reference {inSRText}");
+            var to = (string.IsNullOrEmpty(graph.Metadata.Srs) ? null : SpatialReference.FromID(graph.Metadata.Srs))
+                     ?? throw new MapServerException("The network has no spatial reference, inSR can't be used.");
+            inTransformer.SetSpatialReferences(from, to);
+            toNetwork = (x, y) => inTransformer.Transform2D(new Point(x, y)) is IPoint p ? (p.X, p.Y) : throw new MapServerException($"{x}, {y} can't be projected.");
+        }
+        string? Nodes(string name) => P(name) is string value ? NetworkLocations.Transform(value, toNetwork) : null;
+
+        var (x, y) = Number("x") is double x0 && Number("y") is double y0 ? toNetwork(x0, y0) : (double.NaN, double.NaN);
+        var maxCost = Number("maxCost") ?? Number("max-cost");
         var request = new NetworkQueryRequest
         {
-            Start = P("start"),
-            From = P("from"),
-            To = P("to"),
-            Sources = P("sources"),
-            Sinks = P("sinks"),
-            Node = P("node"),
+            Start = Nodes("start"),
+            From = Nodes("from"),
+            To = Nodes("to"),
+            Sources = Nodes("sources"),
+            Sinks = Nodes("sinks"),
+            Node = Nodes("node"),
             Filter = P("filter"),
-            Block = P("block"),
-            Unblock = P("unblock"),
+            Block = Nodes("block"),
+            Unblock = Nodes("unblock"),
+            Disable = P("disable"),
             Weight = P("weight"),
-            MaxCost = maxCost is null ? null : double.Parse(maxCost.Replace(',', '.'), CultureInfo.InvariantCulture),
+            MaxCost = maxCost,
             RuleIds = P("rules") ?? P("rule"),
+            X = double.IsNaN(x) ? null : x,
+            Y = double.IsNaN(y) ? null : y,
+            Radius = Number("radius"),
+            Count = Number("count") is double count ? (int)count : null,
         };
 
         NetworkQueryResult result;
@@ -97,7 +132,8 @@ public static class NetworkSearch
         var withGeometry = !"false".Equals(P("geometry"), StringComparison.OrdinalIgnoreCase);
         var map = withGeometry && result.Edges.Count > 0 ? await loadMap() : null;
         var edgeCoordinates = map is not null
-            ? await NetworkResultGeometry.EdgeCoordinatesAsync(map, result, cancellationToken)
+            ? await NetworkResultGeometry.EdgeCoordinatesAsync(map, result, cancellationToken,
+                snap: "true".Equals(P("snap"), StringComparison.OrdinalIgnoreCase), tolerance: graph.Metadata.Tolerance)
             : [];
 
         Dictionary<string, Dictionary<long, Dictionary<string, object?>>>? attributes = null;
@@ -148,7 +184,7 @@ public static class NetworkSearch
             }),
             Edges = result.Edges.Select(e => new
             {
-                e.Id, e.Label, e.Layer, e.Oid, e.Type, e.Length, e.FromMeasure, e.ToMeasure, e.From, e.To,
+                e.Id, e.Label, e.Kind, e.Layer, e.Oid, e.Type, e.Length, e.FromMeasure, e.ToMeasure, e.From, e.To,
                 Coordinates = edgeCoordinates.TryGetValue(e.Id, out var c) ? c : (IReadOnlyList<double[]>)[[e.FromX, e.FromY], [e.ToX, e.ToY]],
                 Attributes = Attributes(e.Layer, e.Oid)
             }),

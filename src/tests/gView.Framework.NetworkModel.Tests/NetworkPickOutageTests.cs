@@ -207,6 +207,14 @@ public class NetworkPickOutageTests : IDisposable
     }
 
     [Fact]
+    public void Locations_AreTransformed_TheRestStays()
+    {
+        var text = NetworkLocations.Transform("Trafo#1, @1.5,2 ~3, [*,Kunde,*], @-4e1, 5", (x, y) => (x * 10, y * 10));
+
+        Assert.Equal("Trafo#1, @15,20 ~3, [*,Kunde,*], @-400,50", text);
+    }
+
+    [Fact]
     public void Snap_SetsTheEndsOfASectionOntoTheNodes()
     {
         var result = new NetworkQueryResult();

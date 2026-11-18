@@ -152,11 +152,9 @@ public class JsonNetworkSupplyDTO : JsonNetworkSearchOptionsDTO
     public string Sinks { get; set; } = "";
 }
 
+/// <summary>outage: the edges to switch off are "disable"; sources and sinks default to the config of the network.</summary>
 public class JsonNetworkOutageDTO : JsonNetworkSearchOptionsDTO
 {
-    [JsonPropertyName("disable")]
-    public new string Disable { get; set; } = "";
-
     [JsonPropertyName("sources")]
     public string Sources { get; set; } = "";
 

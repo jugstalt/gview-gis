@@ -20,19 +20,19 @@
     @if (_context.NeedsStart)
     {
         <div class="@($"carto-tool {(_context.Pick == NetworkSearchPick.Start ? "selected" : "")}")"
-             title="@($"{StartLabel}: click a node in the map{(string.IsNullOrEmpty(_context.Start) ? "" : $" ({_context.Start})")}")"
+             title="@($"{StartLabel}: click {(_context.PicksEdge ? "a line" : "a node or a line end")} in the map{(string.IsNullOrEmpty(_context.Start) ? "" : $" ({_context.StartLabel ?? _context.Start})")}")"
              @onclick="() => SetPick(NetworkSearchPick.Start)">
             <div class=@Icons.FromString("basic:pin")></div>
-            <div class="title">@(string.IsNullOrEmpty(_context.Start) ? StartLabel : Short(_context.Start))</div>
+            <div class="title">@(string.IsNullOrEmpty(_context.Start) ? StartLabel : Short(_context.Start, _context.StartLabel))</div>
         </div>
     }
     @if (_context.NeedsTarget)
     {
         <div class="@($"carto-tool {(_context.Pick == NetworkSearchPick.Target ? "selected" : "")}")"
-             title="@($"{TargetLabel}: click a node in the map{(string.IsNullOrEmpty(_context.Target) ? "" : $" ({_context.Target})")}")"
+             title="@($"{TargetLabel}: click a node or a line end in the map{(string.IsNullOrEmpty(_context.Target) ? "" : $" ({_context.TargetLabel ?? _context.Target})")}")"
              @onclick="() => SetPick(NetworkSearchPick.Target)">
             <div class=@Icons.FromString("basic:pin")></div>
-            <div class="title">@(string.IsNullOrEmpty(_context.Target) ? TargetLabel : Short(_context.Target))</div>
+            <div class="title">@(string.IsNullOrEmpty(_context.Target) ? TargetLabel : Short(_context.Target, _context.TargetLabel))</div>
         </div>
     }
 
@@ -65,11 +65,20 @@
         <div style="padding:8px;width:320px" @onclick:stopPropagation="true">
             @if (_context.NeedsStart)
             {
-                <MudTextField T="string" Label="@($"{StartLabel} (Layer#OID, id or type pattern)")" Dense="true" @bind-Value="_context.Start" />
+                <MudTextField T="string" Label="@(_context.PicksEdge ? $"{StartLabel} (Layer#OID or Layer#OID/part)" : $"{StartLabel} (Layer#OID, id, type pattern or @x,y)")" Dense="true"
+                              Value="_context.Start" ValueChanged="@((string v) => { _context.Start = v; _context.StartLabel = null; })" />
             }
             @if (_context.NeedsTarget)
             {
-                <MudTextField T="string" Label="@($"{TargetLabel} (Layer#OID, id or type pattern)")" Dense="true" @bind-Value="_context.Target" />
+                <MudTextField T="string" Label="@($"{TargetLabel} (Layer#OID, id, type pattern or @x,y; empty = module default)")" Dense="true"
+                              Value="_context.Target" ValueChanged="@((string v) => { _context.Target = v; _context.TargetLabel = null; })" />
+            }
+            @if (_context.Operation == "outage")
+            {
+                <MudTextField T="string" Label="@($"Sources (empty = {ModuleConfig?.SupplySources ?? "not set in the network module"})")" Dense="true" @bind-Value="_context.Sources" />
+                <MudTextField T="string" Label="@($"Customers (empty = {ModuleConfig?.Customers ?? "not set in the network module"})")" Dense="true" @bind-Value="_context.Customers" />
+                <MudTextField T="string" Label="Edge types (pattern, e.g. ![*,Anlagen Verbinder,*])" Dense="true" @bind-Value="_context.Filter" />
+                <MudTextField T="string" Label="Blocked nodes" Dense="true" @bind-Value="_context.Block" />
             }
             @if (_context.Operation is "trace" or "reach" or "path" or "supply")
             {
@@ -80,8 +89,13 @@
                     }
                 </MudSelect>
                 <MudTextField T="string" Label="Max. cost" Dense="true" @bind-Value="_context.MaxCost" />
-                <MudTextField T="string" Label="Edge types (pattern)" Dense="true" @bind-Value="_context.Filter" />
+                <MudTextField T="string" Label="Edge types (pattern, e.g. ![*,Anlagen Verbinder,*])" Dense="true" @bind-Value="_context.Filter" />
                 <MudTextField T="string" Label="Blocked nodes" Dense="true" @bind-Value="_context.Block" />
+                <MudTextField T="string" Label="Edges switched off (Layer#OID[/part])" Dense="true" @bind-Value="_context.Disable" />
+            }
+            @if (_context.Operation != "validate")
+            {
+                <MudCheckBox T="bool" Label="GeoJSON export: snap line ends onto the nodes" Dense="true" @bind-Value="_context.SnapExport" />
             }
             @if (_context.Operation == "validate")
             {
@@ -153,8 +167,10 @@
     private NetworkSearchContext? _context;
     private bool _showReport;
 
-    private IEnumerable<string> RuleList
-        => AppScope.Modules.OfType<gView.Framework.NetworkModel.Module.NetworkModule>().FirstOrDefault(m => m.IsConfigured)?.Config.Rules.Select(r => r.Id) ?? [];
+    private gView.Framework.NetworkModel.Config.NetworkConfig? ModuleConfig
+        => AppScope.Modules.OfType<gView.Framework.NetworkModel.Module.NetworkModule>().FirstOrDefault(m => m.IsConfigured)?.Config;
+
+    private IEnumerable<string> RuleList => ModuleConfig?.Rules.Select(r => r.Id) ?? [];
 
     private IReadOnlyCollection<string> SelectedRules
         => (_context?.RuleIds ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
@@ -183,6 +199,7 @@
         "path" => "From",
         "supply" => "Sources",
         "info" => "Node",
+        "outage" => "Switch off",
         _ => "Start"
     };
 
@@ -228,8 +245,21 @@
         }
     }
 
-    /// <summary>Niederspannung/Kasten#23 -> Kasten#23</summary>
-    private static string Short(string reference) => reference.Contains('#') ? reference[(reference.LastIndexOf('/') + 1)..] : reference;
+    /// <summary>Niederspannung/Kasten#23 -> Kasten#23, Leitung#5/0 stays; an edge end shows its label.</summary>
+    private static string Short(string reference, string? label = null)
+    {
+        if (reference.StartsWith('@') && !string.IsNullOrEmpty(label))
+        {
+            return label.Length > 28 ? label[..27] + "…" : label;
+        }
+        if (!reference.Contains('#'))
+        {
+            return reference;
+        }
+        var hash = reference.LastIndexOf('#');
+        var layer = reference[..hash];
+        return $"{layer[(layer.LastIndexOf('/') + 1)..]}{reference[hash..]}";
+    }
 
     private void OnContextChanged() => InvokeAsync(StateHasChanged);
 
@@ -239,7 +269,13 @@
         {
             return;
         }
+        bool pickedEdge = _context.PicksEdge;
         _context.Operation = operation;
+        if (pickedEdge != _context.PicksEdge)
+        {
+            // an edge to switch off is no start node and the other way round
+            _context.Start = _context.StartLabel = null;
+        }
         _context.Pick = _context.NeedsStart ? NetworkSearchPick.Start : NetworkSearchPick.None;
     }
 
