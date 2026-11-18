@@ -181,6 +181,60 @@ public sealed class FileNetworkGraph : IGraph<long, long>
         }
     }
 
+    /// <summary>Reads these shards from the store, one after the other, without keeping them.</summary>
+    public IEnumerable<ShardData> ReadShards(IEnumerable<long> shardIds)
+    {
+        foreach (var id in shardIds)
+        {
+            yield return _store.ReadShard(id);
+        }
+    }
+
+    /// <summary>
+    /// The nodes (real and helper nodes, not merged points) inside the area: by location for a box or polygon
+    /// (on the border within the build tolerance counts as inside), by shard for shard keys.
+    /// </summary>
+    public HashSet<long> NodesIn(Query.NetworkArea area)
+    {
+        if (area.Kind == Query.NetworkAreaKind.Shards)
+        {
+            var shards = new HashSet<long>();
+            foreach (var key in area.ShardKeys)
+            {
+                var matches = Metadata.Shards.Where(s => key.Equals(s.Key, StringComparison.OrdinalIgnoreCase)).ToList();
+                if (matches.Count == 0)
+                {
+                    throw new ArgumentException($"area: no shard '{key}' in the network.");
+                }
+                shards.UnionWith(matches.Select(s => s.Id));
+            }
+            return _index.NodesOfShards(shards).ToHashSet();
+        }
+
+        double tolerance = Math.Max(Metadata.Tolerance, 0);
+        return _spatial.Value
+            .Within(area.MinX - tolerance, area.MinY - tolerance, area.MaxX + tolerance, area.MaxY + tolerance)
+            .Where(e => e.Id == e.Node && area.Contains(e.X, e.Y, tolerance))
+            .Select(e => e.Node)
+            .ToHashSet();
+    }
+
+    /// <summary>Whether a node reference is a type pattern (it may mean many nodes) and not one node (Layer#OID, id, @x,y).</summary>
+    public static bool IsTypePattern(string reference)
+    {
+        reference = reference.Trim();
+        if (reference.StartsWith('@'))
+        {
+            return false;
+        }
+        int hash = reference.LastIndexOf('#');
+        if (hash > 0 && long.TryParse(reference[(hash + 1)..], NumberStyles.Integer, CultureInfo.InvariantCulture, out _))
+        {
+            return false;
+        }
+        return !long.TryParse(reference, NumberStyles.Integer, CultureInfo.InvariantCulture, out _);
+    }
+
     /// <summary>Drops the loaded shards; they are loaded again when a search touches them.</summary>
     public void ClearCache()
     {

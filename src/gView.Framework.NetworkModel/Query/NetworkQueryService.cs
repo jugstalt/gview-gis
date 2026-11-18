@@ -46,10 +46,11 @@ public sealed class NetworkQueryService
     {
         var watch = new Watch(progress, cancellationToken);
         var result = NewResult("trace");
-        var sources = _graph.ResolveNodes(Required(request.Start, "start"));
+        var scope = Scope(request, result);
+        var sources = Nodes(Required(request.Start, "start"), "start", scope, result);
         result.Messages.Add($"Trace from {sources.Count} source(s)");
 
-        var options = Options(request);
+        var options = Options(request, scope);
         var hits = watch.Count(_graph.Trace(sources, options, cancellationToken), "trace", "node(s) found").ToList();
         foreach (var group in hits.GroupBy(h => h.Kind).OrderBy(g => g.Key))
         {
@@ -68,6 +69,7 @@ public sealed class NetworkQueryService
                 AddEdge(result, edge.Edge.Id, edge.Edge.From);
             }
         }
+        AddBoundary(result, scope, request.WithEdges);
         return result;
     }
 
@@ -75,8 +77,9 @@ public sealed class NetworkQueryService
     {
         var watch = new Watch(progress, cancellationToken);
         var result = NewResult("reach");
-        var starts = _graph.ResolveNodes(Required(request.Start, "start"));
-        var options = Options(request);
+        var scope = Scope(request, result);
+        var starts = Nodes(Required(request.Start, "start"), "start", scope, result);
+        var options = Options(request, scope);
         result.Messages.Add($"Reach from {starts.Count} start(s), max cost {options.MaxCost}, weight {options.Weight.Name}");
 
         var reached = watch.Count(_graph.Reach(starts, options, cancellationToken), "reach", "node(s) reached").ToList();
@@ -94,15 +97,17 @@ public sealed class NetworkQueryService
                 AddEdge(result, r.Via, r.Node);
             }
         }
+        AddBoundary(result, scope, request.WithEdges);
         return result;
     }
 
     public NetworkQueryResult Path(NetworkQueryRequest request, IProgress<string>? progress = null, CancellationToken cancellationToken = default)
     {
         var result = NewResult("path");
-        var from = _graph.ResolveNode(Required(request.From, "from"));
-        var to = _graph.ResolveNode(Required(request.To, "to"));
-        var options = Options(request);
+        var scope = Scope(request, result);
+        var from = Inside(_graph.ResolveNode(Required(request.From, "from")), request.From!, "from", scope);
+        var to = Inside(_graph.ResolveNode(Required(request.To, "to")), request.To!, "to", scope);
+        var options = Options(request, scope);
 
         progress?.Report("path: searching...");
         var path = _graph.ShortestPath(from, to, options, cancellationToken);
@@ -130,11 +135,12 @@ public sealed class NetworkQueryService
     public NetworkQueryResult Supply(NetworkQueryRequest request, IProgress<string>? progress = null, CancellationToken cancellationToken = default)
     {
         var result = NewResult("supply");
-        var sources = _graph.ResolveNodes(Required(request.Sources ?? _graph.Metadata.SupplySources, "sources"));
-        var sinks = _graph.ResolveNodes(Required(request.Sinks ?? _graph.Metadata.Customers, "sinks"));
+        var scope = Scope(request, result);
+        var sources = Nodes(Required(request.Sources ?? _graph.Metadata.SupplySources, "sources"), "source", scope, result);
+        var sinks = Nodes(Required(request.Sinks ?? _graph.Metadata.Customers, "sinks"), "sink", scope, result);
         result.Messages.Add($"Supply: {sources.Count} source(s), {sinks.Count} sink(s), {sinks.Sum(s => _graph.AliasesOf(s).Count)} merged point(s) at the sinks");
 
-        var supply = _graph.Supply(sources, sinks, Options(request), SupplyProgress(progress, "supply"), cancellationToken).ToList();
+        var supply = _graph.Supply(sources, sinks, Options(request, scope), SupplyProgress(progress, "supply"), cancellationToken).ToList();
 
         int unsupplied = supply.Count(s => s.Sources.Count == 0);
         int multiple = supply.Count(s => s.Sources.Count > 1);
@@ -152,6 +158,7 @@ public sealed class NetworkQueryService
                 s.Sources.Count == 0 ? "NotSupplied" : s.Sources.Count == 1 ? "Supplied" : "Multiple",
                 string.Join(" ", s.Sources.Select(_graph.NodeLabel)));
         }
+        AddBoundary(result, scope, request.WithEdges);
         return result;
     }
 
@@ -163,12 +170,13 @@ public sealed class NetworkQueryService
     {
         var watch = new Watch(progress, cancellationToken);
         var result = NewResult("outage");
+        var scope = Scope(request, result);
         var disabled = _graph.ResolveEdges(Required(request.Disable, "disable"));
         var sourcesPattern = Required(request.Sources ?? _graph.Metadata.SupplySources, "sources");
         var sinksPattern = Required(request.Sinks ?? _graph.Metadata.Customers, "sinks");
 
-        var normal = Options(request, withDisable: false);
-        var switchedOff = Options(request);
+        var normal = Options(request, scope, withDisable: false);
+        var switchedOff = Options(request, scope);
 
         // the connected part around the switched off edges, as it is without switching them off
         var ends = new HashSet<long>();
@@ -176,6 +184,10 @@ public sealed class NetworkQueryService
         {
             if (_graph.TryFindEdge(id, out var edge))
             {
+                if (scope is not null && !(scope.Contains(edge.Edge.From) && scope.Contains(edge.Edge.To)))
+                {
+                    throw new ArgumentException($"disable: {_graph.EdgeLabel(id)} is (partly) outside the area.");
+                }
                 ends.Add(edge.Edge.From);
                 ends.Add(edge.Edge.To);
             }
@@ -183,8 +195,8 @@ public sealed class NetworkQueryService
         // without the directions of the edges: from a box the way back to the station runs against them
         var component = watch.Count(new UndirectedGraph(_graph).Reach(ends.ToList(), normal with { MaxCost = double.PositiveInfinity }, cancellationToken), "connected part", "node(s) found")
             .Select(r => r.Node).ToHashSet();
-        var sources = _graph.ResolveNodes(sourcesPattern).Where(component.Contains).ToList();
-        var sinks = _graph.ResolveNodes(sinksPattern).Where(component.Contains).ToList();
+        var sources = Nodes(sourcesPattern, "source", scope, result).Where(component.Contains).ToList();
+        var sinks = Nodes(sinksPattern, "sink", scope, result).Where(component.Contains).ToList();
         result.Messages.Add($"Outage: {disabled.Count} edge(s) switched off, {component.Count} node(s) connected, {sources.Count} source(s), {sinks.Count} customer(s) there");
 
         var before = _graph.Supply(sources, sinks, normal, SupplyProgress(progress, "supply before"), cancellationToken).ToDictionary(s => s.Sink, s => s.Sources);
@@ -222,6 +234,7 @@ public sealed class NetworkQueryService
                 }
             }
         }
+        AddBoundary(result, scope, request.WithEdges);
         return result;
     }
 
@@ -320,8 +333,9 @@ public sealed class NetworkQueryService
             return result;
         }
         result.Messages.Add($"Validate: {rules.Count} rule(s) from {(request.Rules is null ? "network.json" : "the request")}");
+        var scope = Scope(request, result);
 
-        var validator = new NetworkValidator(_graph, rules);
+        var validator = new NetworkValidator(_graph, rules) { Area = scope?.Nodes };
         var shardProgress = progress is null ? null : new SyncProgress<(int Done, int Total)>(p =>
         {
             if (p.Done % 500 == 0 || p.Done == p.Total)
@@ -371,7 +385,76 @@ public sealed class NetworkQueryService
 
     private NetworkQueryResult NewResult(string operation) => new() { Operation = operation, Srs = _graph.Metadata.Srs };
 
-    private TraversalOptions<long, long> Options(NetworkQueryRequest request, bool withDisable = true)
+    /// <summary>The area of the request resolved to its nodes; null without an area.</summary>
+    private NetworkAreaScope? Scope(NetworkQueryRequest request, NetworkQueryResult result)
+    {
+        if (request.Area is null)
+        {
+            return null;
+        }
+        var scope = new NetworkAreaScope(request.Area, _graph.NodesIn(request.Area));
+        result.Messages.Add($"Area: {request.Area.Description}, {scope.Count} node(s) inside");
+        return scope;
+    }
+
+    /// <summary>
+    /// Resolves node references; with an area, nodes of a type pattern outside are left out (with a message) and an
+    /// explicit node (Layer#OID, id, @x,y) outside is an error.
+    /// </summary>
+    private IReadOnlyList<long> Nodes(string references, string what, NetworkAreaScope? scope, NetworkQueryResult result)
+    {
+        if (scope is null)
+        {
+            return _graph.ResolveNodes(references);
+        }
+        var ids = new List<long>();
+        int left = 0;
+        foreach (var reference in FileNetworkGraph.SplitReferences(references))
+        {
+            var resolved = _graph.ResolveNodes(reference);
+            if (FileNetworkGraph.IsTypePattern(reference))
+            {
+                ids.AddRange(resolved.Where(scope.Contains));
+                left += resolved.Count(id => !scope.Contains(id));
+            }
+            else
+            {
+                ids.AddRange(resolved.Select(id => Inside(id, reference, what, scope)));
+            }
+        }
+        if (left > 0)
+        {
+            result.Messages.Add($"  {left} {what} node(s) outside the area left out");
+        }
+        return ids.Distinct().ToList();
+    }
+
+    private long Inside(long id, string reference, string what, NetworkAreaScope? scope)
+        => scope is null || scope.Contains(id)
+            ? id
+            : throw new ArgumentException($"{what}: {reference} ({_graph.NodeLabel(id)}) is outside the area.");
+
+    /// <summary>The edges leaving the area that the search came to: a message and, when edges are wanted, the edges as Boundary.</summary>
+    private void AddBoundary(NetworkQueryResult result, NetworkAreaScope? scope, bool withEdges)
+    {
+        if (scope is null)
+        {
+            return;
+        }
+        result.Messages.Add($"  boundary edges: {scope.Boundary.Count} (leave the area, not followed)");
+        if (withEdges)
+        {
+            foreach (var (edgeId, inside) in scope.Boundary.OrderBy(b => b.Key))
+            {
+                if (_graph.TryGetEdge(edgeId, inside, out var edge))
+                {
+                    AddEdge(result, edge, "Boundary");
+                }
+            }
+        }
+    }
+
+    private TraversalOptions<long, long> Options(NetworkQueryRequest request, NetworkAreaScope? scope, bool withDisable = true)
     {
         var options = new TraversalOptions<long, long>();
 
@@ -406,6 +489,10 @@ public sealed class NetworkQueryService
                 state.Unblock(id);
             }
             options = options with { State = state };
+        }
+        if (scope is not null)
+        {
+            options = options with { State = scope.Wrap(options.State) };
         }
         return options;
     }

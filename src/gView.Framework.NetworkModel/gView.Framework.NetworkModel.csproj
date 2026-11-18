@@ -11,6 +11,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="SpatialNET.Imp" Version="0.10.0-preview.6" />
+    <PackageReference Include="SpatialNET.IO" Version="0.10.0-preview.6" />
     <PackageReference Include="SpatialNET.Network" Version="0.10.0-preview.6" />
     <PackageReference Include="SpatialNET.Network.Building" Version="0.10.0-preview.6" />
   </ItemGroup>

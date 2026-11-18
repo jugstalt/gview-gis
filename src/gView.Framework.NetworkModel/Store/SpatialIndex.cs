@@ -79,6 +79,50 @@ public sealed class SpatialIndex
         return hits.OrderBy(h => h.Distance).ThenBy(h => h.Entry.Id == h.Entry.Node ? 0 : 1).ThenBy(h => h.Entry.Id).Take(count).ToList();
     }
 
+    /// <summary>The points within the box (border included), in no particular order.</summary>
+    public IEnumerable<SpatialEntry> Within(double minX, double minY, double maxX, double maxY)
+    {
+        if (_ids.Length == 0 || !(maxX >= minX) || !(maxY >= minY))
+        {
+            yield break;
+        }
+        long ix0 = CellIndex(minX, _originX), ix1 = CellIndex(maxX, _originX);
+        long iy0 = CellIndex(minY, _originY), iy1 = CellIndex(maxY, _originY);
+        double cells = (double)(ix1 - ix0 + 1) * (iy1 - iy0 + 1);
+        if (cells > _ids.Length)
+        {
+            // a box over (nearly) the whole network: going through all points is faster than through the cells
+            for (int i = 0; i < _ids.Length; i++)
+            {
+                if (_xs[i] >= minX && _xs[i] <= maxX && _ys[i] >= minY && _ys[i] <= maxY)
+                {
+                    yield return new SpatialEntry(_ids[i], _nodes[i], _xs[i], _ys[i]);
+                }
+            }
+            yield break;
+        }
+        for (long ix = ix0; ix <= ix1; ix++)
+        {
+            for (long iy = iy0; iy <= iy1; iy++)
+            {
+                long cell = CellKey(ix, iy);
+                int i = Array.BinarySearch(_cells, cell);
+                if (i < 0)
+                {
+                    continue;
+                }
+                while (i > 0 && _cells[i - 1] == cell) i--;
+                for (; i < _cells.Length && _cells[i] == cell; i++)
+                {
+                    if (_xs[i] >= minX && _xs[i] <= maxX && _ys[i] >= minY && _ys[i] <= maxY)
+                    {
+                        yield return new SpatialEntry(_ids[i], _nodes[i], _xs[i], _ys[i]);
+                    }
+                }
+            }
+        }
+    }
+
     private long CellIndex(double value, double origin) => (long)Math.Floor((value - origin) / _cellSize);
 
     // 32 bits per axis: a network is never wider than 4 billion cells

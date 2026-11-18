@@ -52,6 +52,8 @@ public class NetworkCommand : ICommand
             new CommandParameter<string>("filter") { Description = "searches: only edges of these types (pattern)" },
             new CommandParameter<string>("block") { Description = "searches: nodes blocked for this search" },
             new CommandParameter<string>("unblock") { Description = "searches: nodes opened for this search" },
+            new CommandParameter<string>("area") { Description = "searches, validate: only this area: xmin,ymin,xmax,ymax | GeoJSON/Esri JSON polygon | WKT POLYGON/MULTIPOLYGON | shard:key1,key2 (network srs)" },
+            new CommandParameter<string>("area-file") { Description = "searches, validate: a file with the area (instead of -area)" },
             new CommandParameter<string>("weight") { Description = "searches: weight name (default length)" },
             new CommandParameter<string>("max-cost") { Description = "searches: stop at this cost" },
             new CommandParameter<string>("out") { Description = "searches, validate: result file (.csv or .geojson)" },
@@ -93,6 +95,7 @@ public class NetworkCommand : ICommand
                 logger?.LogLine("  -u validate -network <dir> [-rules <rules.json>] [-rule <id,...>] [-out x.csv|x.geojson]");
                 logger?.LogLine("  nodes: Layer#OID (Trafo#5929), node id, type pattern ([*,Trafo,*], ![*,Kunde,*]) or @x,y[~radius] (nearest node, also edge ends), comma separated");
                 logger?.LogLine("  edges: Layer#OID (every part of the line), Layer#OID/part or edge id, comma separated");
+                logger?.LogLine("  searches and validate take [-area <xmin,ymin,xmax,ymax | json | wkt | shard:keys> | -area-file <file>]: only the nodes inside take part");
                 return false;
         }
     }

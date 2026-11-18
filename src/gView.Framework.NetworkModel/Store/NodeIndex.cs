@@ -52,6 +52,18 @@ public sealed class NodeIndex
         }
     }
 
+    /// <summary>The ids of all nodes in these shards, ascending.</summary>
+    public IEnumerable<long> NodesOfShards(IReadOnlySet<long> shards)
+    {
+        for (int i = 0; i < _ids.Length; i++)
+        {
+            if (shards.Contains(_shards[i]))
+            {
+                yield return _ids[i];
+            }
+        }
+    }
+
     public static void Write(string path, IEnumerable<(long Id, long Shard, int TypeId)> nodes)
     {
         var sorted = nodes.OrderBy(n => n.Id).ToArray();

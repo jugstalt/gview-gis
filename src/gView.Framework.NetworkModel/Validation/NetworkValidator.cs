@@ -1,5 +1,6 @@
 using gView.Framework.NetworkModel.Config;
 using gView.Framework.NetworkModel.Graph;
+using gView.Framework.NetworkModel.Store;
 using SpatialNET.Network;
 
 namespace gView.Framework.NetworkModel.Validation;
@@ -50,6 +51,12 @@ public sealed class NetworkValidator
 
     public IReadOnlyList<NetworkRule> Rules => _rules.Select(r => r.Rule).ToList();
 
+    /// <summary>
+    /// Only the nodes for which this is true are checked, and the edges with at least one such end; their neighbors
+    /// count whether inside or not. Only the shards of those nodes are read. Null: the whole network.
+    /// </summary>
+    public IReadOnlySet<long>? Area { get; init; }
+
     /// <summary>The violations of every rule, shard by shard. <see cref="Summaries"/> is complete once enumerated.</summary>
     public IEnumerable<RuleViolation<long, long>> Validate(IProgress<(int Done, int Total)>? progress = null, CancellationToken cancellationToken = default)
     {
@@ -58,18 +65,43 @@ public sealed class NetworkValidator
         var rules = _rules.Select(r => r.Rule).ToList();
         var nodeRules = rules.Where(r => r.Subject == RuleSubject.Node).ToList();
         var edgeRules = rules.Where(r => r.Subject == RuleSubject.Edge).ToList();
+        Func<long, bool>? area = Area is null ? null : Area.Contains;
 
-        int done = 0, total = _graph.Metadata.Shards.Count;
-        foreach (var shard in _graph.ReadShards())
+        IEnumerable<ShardData> shards;
+        int done = 0, total;
+        var seenEdges = new HashSet<long>();
+        if (area is null)
+        {
+            shards = _graph.ReadShards();
+            total = _graph.Metadata.Shards.Count;
+        }
+        else
+        {
+            // the shards with nodes inside (an edge leaving such a shard is stored in it too)
+            var shardIds = Area!
+                .Select(id => _graph.TryGetShardOf(id, out var shard) ? shard : (long?)null)
+                .OfType<long>()
+                .Distinct()
+                .Order()
+                .ToList();
+            shards = _graph.ReadShards(shardIds);
+            total = shardIds.Count;
+        }
+
+        foreach (var shard in shards)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
+            var nodes = area is null ? shard.Nodes : shard.Nodes.Where(n => area(n.Node.Id)).ToList();
             foreach (var rule in nodeRules)
             {
-                Add(_checked, rule.Id, shard.Nodes.Count(n => rule.SubjectTypes.Contains(n.Node.TypeId)));
+                Add(_checked, rule.Id, nodes.Count(n => rule.SubjectTypes.Contains(n.Node.TypeId)));
             }
             // an edge between two shards is stored in both, it is checked in the shard of its from node
-            var edges = shard.Edges.Where(e => e.FromShard == shard.Id).Select(e => e.Edge).ToList();
+            // (with an area: once, in the first shard read that holds it)
+            var edges = area is null
+                ? shard.Edges.Where(e => e.FromShard == shard.Id).Select(e => e.Edge).ToList()
+                : shard.Edges.Where(e => (area(e.Edge.From) || area(e.Edge.To)) && seenEdges.Add(e.Edge.Id)).Select(e => e.Edge).ToList();
             foreach (var rule in edgeRules)
             {
                 Add(_checked, rule.Id, edges.Count(e => rule.SubjectTypes.Contains(e.TypeId)));
@@ -78,7 +110,7 @@ public sealed class NetworkValidator
             var violations = new List<RuleViolation<long, long>>();
             if (nodeRules.Count > 0)
             {
-                violations.AddRange(_graph.ValidateNodes(shard.Nodes.Select(n => n.Node.Id), nodeRules, cancellationToken));
+                violations.AddRange(_graph.ValidateNodes(nodes.Select(n => n.Node.Id), nodeRules, cancellationToken));
             }
             if (edgeRules.Count > 0)
             {

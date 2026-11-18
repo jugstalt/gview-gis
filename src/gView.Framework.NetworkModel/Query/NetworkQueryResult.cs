@@ -50,6 +50,14 @@ public sealed record NetworkQueryRequest
     /// <summary>validate: only these rule ids (comma separated).</summary>
     public string? RuleIds { get; init; }
 
+    /// <summary>
+    /// trace, reach, path, supply, outage, validate: only the part of the network inside this area. Nodes outside do not
+    /// exist for the search; edges leaving the area are reported as Boundary. Explicit nodes (Layer#OID, id, @x,y)
+    /// outside are an error, nodes of a type pattern outside are left out. validate checks the nodes inside and the edges
+    /// with an end inside (with all their neighbors).
+    /// </summary>
+    public NetworkArea? Area { get; init; }
+
     /// <summary>Whether the edges a search went along are wanted (trace computes them extra).</summary>
     public bool WithEdges { get; init; } = true;
 }
@@ -69,7 +77,7 @@ public sealed record NetworkResultNode(long Id, string Label, string? Layer, lon
 /// <summary>An edge of a result: a part of a line feature between two measures.</summary>
 public sealed record NetworkResultEdge(long Id, string Label, string Layer, long Oid, string Type, double Length, double FromMeasure, double ToMeasure, long From, long To, double FromX, double FromY, double ToX, double ToY)
 {
-    /// <summary>What the edge is in the result: Edge, or for outage Disabled (switched off) and Dead (no supply any more).</summary>
+    /// <summary>What the edge is in the result: Edge, Boundary (leaves the area of the search, not followed), or for outage Disabled (switched off) and Dead (no supply any more).</summary>
     public string Kind { get; init; } = "Edge";
 }
 

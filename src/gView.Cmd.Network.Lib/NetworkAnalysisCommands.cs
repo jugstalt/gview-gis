@@ -44,6 +44,7 @@ internal static class NetworkAnalysisCommands
             MaxCost = string.IsNullOrEmpty(maxCost) ? null : double.Parse(maxCost.Replace(',', '.'), CultureInfo.InvariantCulture),
             Rules = string.IsNullOrEmpty(rulesPath) ? null : LoadRules(rulesPath),
             RuleIds = Optional(parameters, "rule"),
+            Area = Area(parameters),
             WithEdges = !string.IsNullOrEmpty(outPath),
         };
 
@@ -80,6 +81,22 @@ internal static class NetworkAnalysisCommands
             }
         }
         return element.Deserialize<List<NetworkRuleConfig>>(NetworkConfig.JsonOptions) ?? [];
+    }
+
+    /// <summary>-area (text) or -area-file (a file holding the text, e.g. GeoJSON or WKT).</summary>
+    private static NetworkArea? Area(IDictionary<string, object> parameters)
+    {
+        var text = Optional(parameters, "area");
+        var file = Optional(parameters, "area-file");
+        if (!string.IsNullOrWhiteSpace(text) && !string.IsNullOrWhiteSpace(file))
+        {
+            throw new ArgumentException("Use -area or -area-file, not both.");
+        }
+        if (!string.IsNullOrWhiteSpace(file))
+        {
+            text = File.ReadAllText(file);
+        }
+        return string.IsNullOrWhiteSpace(text) ? null : NetworkArea.Parse(text);
     }
 
     private sealed class SyncProgress<T>(Action<T> report) : IProgress<T>
