@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<!--
+  PROTOTYPE — throwaway, not part of the build (lives outside wwwroot).
+  Three variants of the gView.Server v9 admin UI, switchable via ?variant=A|B|C (and ?page=...).
+  Manage/Security run the real, unchanged ../wwwroot/js/manage.js against a stubbed $.ajax.
+  Open this file directly in a browser.
+-->
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>gView Server v9 – UI prototype</title>
+    <link rel="stylesheet" href="base.css" />
+    <link rel="stylesheet" id="variant-css" href="variant-a.css" />
+</head>
+<body>
+    <div id="app"></div>
+
+    <script src="../wwwroot/lib/jquery/dist/jquery.js"></script>
+    <script src="../wwwroot/js/manage.js"></script>
+    <script src="proto.js"></script>
+</body>
+</html>

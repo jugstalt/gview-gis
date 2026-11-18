@@ -2,73 +2,60 @@
 @inject gView.Server.Services.Hosting.UrlHelperService UrlHelperService
 @inject gView.Server.Services.Security.LoginManager LoginManager
 @{
+    var rootUrl = UrlHelperService.AppRootUrl(this.Context.Request);
     var username = LoginManager.LoginUsername(this.Context.Request);
     var isManageUser = LoginManager.IsManageUser(this.Context.Request);
+    var controller = (ViewContext.RouteData.Values["controller"] as string ?? "").ToLowerInvariant();
+    var action = (ViewContext.RouteData.Values["action"] as string ?? "").ToLowerInvariant();
+
+    string Active(bool isActive) => isActive ? "active" : "";
 }
 
-<div class="webportal-layout-sidebar">
-    <ul class="webportal-layout-sidebar-items top">
-        <li class="webportal-layout-sidebar-item portal">
-            <img src="~/images/icons/home-26-w.png" />
-            <a asp-area=""
-               asp-controller="Home"
-               asp-action="Index">Home</a>
-        </li>
+<aside class="app-side">
+    <a class="app-brand" asp-area="" asp-controller="Home" asp-action="Index">
+        <span class="ico ico-map"></span>
+        <span>gView<b>Server</b></span>
+        <em>v@(gView.Framework.Common.SystemInfo.Version.Major)</em>
+    </a>
 
-        <li class="webportal-layout-sidebar-item hr">
-            <hr />
-            <div class="text">Services</div>
-        </li>
-    </ul>
-    <ul class="webportal-layout-sidebar-items center">
-        <li class="webportal-layout-sidebar-item resource">
-            <img src="~/images/icons/browse-26-w.png" />
-            <a asp-area=""
-               asp-controller="BrowseServices"
-               asp-action="Index">Browse Services</a>
-        </li>
-        <li class="webportal-layout-sidebar-item resource">
-            <img src="~/images/icons/code-26-w.png" />
-            <a href="@(UrlHelperService.AppRootUrl(this.Context.Request))/geoservices/rest/services">GeoServices (REST)</a>
-        </li>
+    <nav class="app-nav">
+        <a class="@Active(controller == "home" && action == "index")" asp-area="" asp-controller="Home" asp-action="Index">
+            <span class="ico ico-home"></span><span>Home</span>
+        </a>
+        <div class="app-nav-label">Services</div>
+        <a class="@Active(controller == "browseservices")" asp-area="" asp-controller="BrowseServices" asp-action="Index">
+            <span class="ico ico-layers"></span><span>Browse Services</span>
+        </a>
+        <a class="@Active(controller.StartsWith("geoservices"))" href="@rootUrl/geoservices/rest/services">
+            <span class="ico ico-code"></span><span>GeoServices (REST)</span>
+        </a>
+        <a href="@rootUrl/ogcapi?f=html">
+            <span class="ico ico-plug"></span><span>OGC API</span>
+        </a>
         @if (isManageUser || (Globals.AllowFormsLogin && (isManageUser == true || String.IsNullOrWhiteSpace(username))))
         {
-            <li class="webportal-layout-sidebar-item resource">
-                <img src="~/images/icons/manage-50-w.png" />
-                <a asp-area=""
-                   asp-controller="Manage"
-                   asp-action="Index">Manage</a>
-            </li>
+            <a class="@Active(controller == "manage")" asp-area="" asp-controller="Manage" asp-action="Index">
+                <span class="ico ico-shield"></span><span>Manage</span>
+            </a>
         }
-    </ul>
+    </nav>
 
-    <ul class="webportal-layout-sidebar-items bottom">
+    <nav class="app-nav bottom">
         @if (!String.IsNullOrWhiteSpace(username))
         {
-            <li class="webportal-layout-sidebar-item hr">
-                <hr />
-                <div class="text">@username</div>
-            </li>
-
-            <li class="webportal-layout-sidebar-item logout">
-                <img src="~/images/icons/logout-26-w.png" />
-                <a asp-area=""
-                   asp-controller="Token"
-                   asp-action="Logout">Logout</a>
-            </li>
+            <div class="app-user" title="Logged in"><span class="ico ico-users"></span><span>@username</span></div>
+            <a asp-area="" asp-controller="Token" asp-action="Logout">
+                <span class="ico ico-logout"></span><span>Logout</span>
+            </a>
         }
         else if (Globals.AllowFormsLogin)
         {
-            <li class="webportal-layout-sidebar-item logout">
-                <img src="~/images/icons/login-26-w.png" />
-                <a asp-area=""
-                   asp-controller="Token"
-                   asp-action="Login">Login</a>
-            </li>
+            <a class="@Active(controller == "token" && action == "login")" asp-area="" asp-controller="Token" asp-action="Login">
+                <span class="ico ico-login"></span><span>Login</span>
+            </a>
         }
-        <li class="webportal-layout-sidebar-item resource">
-            <img src="~/images/icons/settings-g-26.png" />
-            <a href="@(UrlHelperService.AppRootUrl(this.Context.Request))/home/about">About</a>
-        </li>
-    </ul>
-</div>
+        <a class="@Active(controller == "home" && action == "about")" href="@rootUrl/home/about">
+            <span class="ico ico-info"></span><span>About</span>
+        </a>
+    </nav>
+</aside>

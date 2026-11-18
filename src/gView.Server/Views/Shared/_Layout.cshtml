@@ -2,105 +2,91 @@
 @using gView.Framework.Common
 
 @inject gView.Server.Services.Hosting.UrlHelperService UrlHelperService
-@inject gView.Server.Services.Security.LoginManager LoginManager
+@{
+    var rootUrl = UrlHelperService.AppRootUrl(this.Context.Request);
+    var title = ViewData["Title"] as string;
+    var crumbs = ViewData["menuItems"] as Dictionary<string, string>;
+}
 <!DOCTYPE html>
-<html>
+<html lang="en" data-theme="light" data-theme-pref="system">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>gView.Server</title>
+    <title>@(String.IsNullOrEmpty(title) ? "gView Server" : $"{title} · gView Server")</title>
+    <script>
+        (function () {
+            var pref = 'system';
+            try { pref = localStorage.getItem('gview-server-theme') || 'system'; } catch (e) { }
+            var dark = pref === 'dark' || (pref === 'system' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-theme-pref', pref);
+        })();
+    </script>
 
-    <environment include="Development">
-        <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
-        <link rel="stylesheet" href="~/lib/webportal-layout/webportal-layout.css" />
-        <link rel="stylesheet" href="~/css/site.css?@(SystemInfo.Version.ToString())" />
-    </environment>
-    <environment exclude="Development">
-        <link rel="stylesheet" href="https://ajax.aspnetcdn.com/ajax/bootstrap/3.3.7/css/bootstrap.min.css"
-              asp-fallback-href="~/lib/bootstrap/dist/css/bootstrap.min.css"
-              asp-fallback-test-class="sr-only" asp-fallback-test-property="position" asp-fallback-test-value="absolute" />
-        <link rel="stylesheet" href="~/css/site.min.css?@(SystemInfo.Version.ToString())" asp-append-version="true" />
-    </environment>
+    <link rel="stylesheet" href="~/css/site.css?@(SystemInfo.Version.ToString())" />
 </head>
 <body>
-    @{
-        var username = LoginManager.LoginUsername(this.Context.Request);
-    }
-    <nav class="webportal-layout-header navbar navbar-inverse navbar-fixed-top">
-        <div class="navbar-header">
-            <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand">
-                <div class="gview-header-brand">gView Server</div>
-            </a>
-        </div>
-        <div class="gview-colormode-button" onclick="window.gview.server.toggleDarkMode()">
-            ☼
-        </div>
-    </nav>
-
     <partial name="_CookieConsentPartial" />
 
-    <div class="webportal-layout-container page-has-header page-has-footer">
+    <div class="app">
         <partial name="_portalSidebarPartial" />
-        <div class="webportal-layout-main">
-            <div class="webportal-layout-main-container">
-                @RenderBody()
-            </div>
-        </div>
-    </div>
 
-    <div class="webportal-layout-footer">
-        <div style="float:left">
-            <table>
-                <tr>
-                    <td><strong>Grpahics&nbsp;|&nbsp;</strong></td>
-                    <td>Rendering: @(gView.GraphicsEngine.Current.Engine.EngineDisplayName)</td>
-                    @if (gView.GraphicsEngine.Current.Encoder != null)
+        <div class="app-main">
+            <header class="app-top">
+                <nav class="app-crumb" aria-label="Breadcrumb">
+                    <a href="@rootUrl/">gView Server</a>
+                    @if (crumbs != null && crumbs.Count > 0)
                     {
-                    <td>&nbsp;|&nbsp;</td>
-                    <td>Encoding: @(gView.GraphicsEngine.Current.Encoder.EngineName)</td>
+                        foreach (var crumb in crumbs)
+                        {
+                            <span class="ico ico-chevron"></span>
+                            <a href="@crumb.Value">@crumb.Key</a>
+                        }
                     }
-                    <td>&nbsp;|&nbsp;</td>
-                    <td><strong>Proj&nbsp;|&nbsp;</strong></td>
-                    <td>Engine: @gView.Framework.Geometry.GeometricTransformerFactory.TransformerType</td>
-                </tr>
-            </table>
-        </div>
+                    else if (!String.IsNullOrEmpty(title))
+                    {
+                        <span class="ico ico-chevron"></span>
+                        <span>@title</span>
+                    }
+                </nav>
+                <div class="theme-switch" role="group" aria-label="Color mode">
+                    <button type="button" data-theme-set="light" title="Light" onclick="gview.server.setTheme('light')"><span class="ico ico-sun"></span></button>
+                    <button type="button" data-theme-set="system" title="System" onclick="gview.server.setTheme('system')"><span class="ico ico-monitor"></span></button>
+                    <button type="button" data-theme-set="dark" title="Dark" onclick="gview.server.setTheme('dark')"><span class="ico ico-moon"></span></button>
+                </div>
+            </header>
 
-        <div class="version">
-            Version: @SystemInfo.Version.ToString()
+            <main class="app-content">
+                @RenderBody()
+            </main>
+
+            <footer class="app-foot">
+                <span>Rendering: @(gView.GraphicsEngine.Current.Engine.EngineDisplayName)</span>
+                @if (gView.GraphicsEngine.Current.Encoder != null)
+                {
+                    <span>Encoding: @(gView.GraphicsEngine.Current.Encoder.EngineName)</span>
+                }
+                <span>Projection: @gView.Framework.Geometry.GeometricTransformerFactory.TransformerType</span>
+                <span class="grow"></span>
+                <span>Version @SystemInfo.Version.ToString()</span>
+            </footer>
         </div>
     </div>
 
     <environment include="Development">
         <script src="~/lib/jquery/dist/jquery.js"></script>
-        <script src="~/lib/bootstrap/dist/js/bootstrap.js"></script>
-        <script src="~/lib/bootbox.js/bootbox.js"></script>
-        <script src="~/lib/webportal-layout/webportal-layout.js"></script>
-        <script src="~/js/site.js?@(SystemInfo.Version.ToString())" asp-append-version="true"></script>
+        <script src="~/js/site.js?@(SystemInfo.Version.ToString())"></script>
     </environment>
     <environment exclude="Development">
-        <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-3.3.1.min.js"
-                asp-fallback-src="~/lib/jquery/dist/jquery.min.js"
-                asp-fallback-test="window.jQuery"
-                crossorigin="anonymous"
-                integrity="sha384-tsQFqpEReu7ZLhBV2VZlAu7zcOV+rXbYlF2cqB8txI/8aZajjp4Bqd+V6D5IgvKT">
-        </script>
-        <script src="https://ajax.aspnetcdn.com/ajax/bootstrap/3.3.7/bootstrap.min.js"
-                asp-fallback-src="~/lib/bootstrap/dist/js/bootstrap.min.js"
-                asp-fallback-test="window.jQuery && window.jQuery.fn && window.jQuery.fn.modal"
-                crossorigin="anonymous"
-                integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa">
-        </script>
-        <script src="~/lib/bootbox.js/bootbox.min.js"></script>
-        <script src="~/lib/webportal-layout/webportal-layout.js"></script>
-        <script src="~/js/site.min.js?@(SystemInfo.Version.ToString())" asp-append-version="true"></script>
+        <script src="~/lib/jquery/dist/jquery.min.js"></script>
+        <script src="~/js/site.min.js?@(SystemInfo.Version.ToString())"></script>
     </environment>
 
     @RenderSection("Scripts", required: false)
 
     <script type="text/javascript">
         (function () {
-            window.gview.server.setRootUrl('@(UrlHelperService.AppRootUrl(this.Context.Request))')
+            window.gview.server.setRootUrl('@(rootUrl)')
         })();
     </script>
 </body>

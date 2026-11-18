@@ -36,12 +36,15 @@
     } catch {}
 
 }
+@{
+    ViewData["Title"] = "About";
+}
 <div class="page-about">
 
-    <h1>gView Server</h1>
-    <h3>Version: @SystemInfo.Version.ToString()</h3>
-    <a href="https://github.com/jugstalt/gview5" target="_blank">Github...</a>
-    <br /><br /><br />
+    <div class="page-head">
+        <h1>gView Server <span class="path">@SystemInfo.Version.ToString()</span></h1>
+        <a class="btn" href="https://github.com/jugstalt/gview5" target="_blank"><span class="ico ico-external"></span> GitHub</a>
+    </div>
 
     <pre class="gview-license">
 @license

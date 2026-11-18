@@ -1,44 +1,16 @@
 ﻿@inject gView.Server.Services.Hosting.UrlHelperService UrlHelperService
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Manage";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-@*<nav class="navbar navbar-inverse navbar-fixed-top">
-        <div class="container">
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                    <span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                <a asp-area="" asp-controller="Manage" asp-action="Index" class="navbar-brand">gView.Server</a>
-            </div>
-            <div class="navbar-collapse collapse">
-                <ul class="nav navbar-nav">
-                    <li><a href="" onclick="window.gview.manage.pageServices(); return false;">Services</a></li>
-                    <li><a href="" onclick="window.gview.manage.pageSecurity(); return false;">Security</a></li>
-                </ul>
-            </div>
-        </div>
-    </nav>*@
-
-<h1>Manage</h1>
-<table style="font-size:1.5em">
-    <tr>
-        <td>
-            <a href="" onclick="window.gview.manage.pageServices(); return false;">Services</a>
-        </td>
-        <td>
-            &nbsp;/&nbsp;
-        </td>
-        <td>
-            <a href="" onclick="window.gview.manage.pageSecurity(); return false;">Security</a>
-        </td>
-    </tr>
-</table>
-<br/>
+<div class="page-head">
+    <h1>Manage</h1>
+</div>
+<nav class="manage-tabs">
+    <a href="" class="active" data-page="services" onclick="window.gview.manage.pageServices(); return false;"><span class="ico ico-server"></span>Services</a>
+    <a href="" data-page="security" onclick="window.gview.manage.pageSecurity(); return false;"><span class="ico ico-users"></span>Security</a>
+</nav>
 <div class="gview-manage-body">
 
 </div>
@@ -55,6 +27,10 @@
     </environment>
 
     <script type="text/javascript">
+
+        $('.manage-tabs a').click(function () {
+            $(this).addClass('active').siblings().removeClass('active');
+        });
 
         window.require = { paths: { vs: '@(UrlHelperService.AppRootUrl(this.Context.Request))/lib/monaco-editor/min/vs' } };
 

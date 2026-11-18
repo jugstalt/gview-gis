@@ -1,12 +1,15 @@
 ﻿@model BrowseServicesServiceModel
 
 @{
-    ViewData["Title"] = "ServiceCaps";
+    ViewData["Title"] = "Interfaces";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h2>Interfaces: @Model.MapService.Name</h2>
+<div class="page-head">
+    <h1>Interfaces <span class="path">@Model.MapService.Fullname</span></h1>
+</div>
 
+<div class="table-scroll">
 <table class="service-capabilities">
     <tr>
         <th>Name</th>
@@ -26,7 +29,7 @@
             <td colspan="3" class="interpreter-name">
                 @(interpeter.IdentityLongName)
             </td>
-            <td style="text-align:right" class="interpreter-name">
+            <td class="interpreter-name">
                 #@(interpeter.IdentityName.ToUpper())
             </td>
         </tr>
@@ -44,6 +47,7 @@
 
     }
 </table>
+</div>
 
 @section Scripts {
     <script type="text/javascript">

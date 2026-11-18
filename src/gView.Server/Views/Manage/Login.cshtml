@@ -1,7 +1,7 @@
 ﻿@inject gView.Server.Services.Hosting.UrlHelperService UrlHelperService
 @{
     ViewData["Title"] = "Login (Manager)";
-    ViewData["SubTitle"] = "gView 5 Server";
+    ViewData["SubTitle"] = "gView Server";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
@@ -11,18 +11,11 @@
 
 <div class="gview-login-panel">
     <div class="title">
-        <table>
-            <tr>
-                <td>
-                    <img src="~/images/logos/gis_logo_no_border.png" />
-                </td>
-                <td>
-                    <h3>@ViewData["Title"]</h3>
-                    <br />
-                    <div>@ViewData["SubTitle"]</div>
-                </td>
-            </tr>
-        </table>
+        <div class="login-logo"><span class="ico ico-map"></span></div>
+        <div>
+            <h3>@ViewData["Title"]</h3>
+            <div class="subtitle">@ViewData["SubTitle"]</div>
+        </div>
     </div>
     @if (!String.IsNullOrWhiteSpace(Model.ErrorMessage))
     {
@@ -30,7 +23,7 @@
             @Model.ErrorMessage
         </div>
     }
-    <form action="@(UrlHelperService.AppRootUrl(this.Context.Request))/Manage/Login" method="post" class="form-horizontal">
+    <form action="@(UrlHelperService.AppRootUrl(this.Context.Request))/Manage/Login" method="post">
         @*<h4>Use a local account to log in.</h4>*@
         @Html.AntiForgeryToken()
         
@@ -51,19 +44,6 @@
             </div>
         </div>
 
-        <table style="margin:20px 0px;width:100%">
-            <tr>
-                <td></td>
-                <td style="text-align:right">
-                    <div style="display:inline-block;margin-right:10px">
-                        <button type="submit" class="btn btn-primary">
-                            Login
-                        </button>
-                    </div>
-                </td>
-            </tr>
-
-
-        </table>
+        <button type="submit" class="btn btn-primary">Login</button>
     </form>
 </div>

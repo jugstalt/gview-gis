@@ -2,32 +2,50 @@
 @inject gView.Server.Services.Hosting.UrlHelperService UrlHelperService
 @inject gView.Server.Services.Security.LoginManager LoginManager
 @{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Home";
+    var rootUrl = UrlHelperService.AppRootUrl(this.Context.Request);
     var username = LoginManager.LoginUsername(this.Context.Request);
     var isManageUser = LoginManager.IsManageUser(this.Context.Request);
     var hasManagerLogin = LoginManager.HasManagerLogin();
 }
 
-<div>
-    <div class="main-logo">
-        <div class="text">gView Server</div>
-    </div>
-    <div class="main-nav-panels">
-        <a class="main-nav-panel browse @(!hasManagerLogin ? "disabled":"")" 
-           asp-area="" 
-           asp-controller="BrowseServices" 
-           asp-action="Index">
-            <div class="text">Browse Services</div>
-        </a>
-        <a class="main-nav-panel geoservices @(!hasManagerLogin ? "disabled":"")" 
-           href="@(UrlHelperService.AppRootUrl(this.Context.Request))/geoservices/rest/services">
-            <div class="text">GeoServices (REST)</div>
-        </a>
-        @if (isManageUser || (Globals.AllowFormsLogin && (isManageUser == true || String.IsNullOrWhiteSpace(username))))
-        {
-        <a class="main-nav-panel manage @(!hasManagerLogin ? "required":"")" asp-area="" asp-controller="Manage" asp-action="Index">
-            <div class="text">Manage</div>
-        </a>
-        }
-    </div>
+<div class="page-head">
+    <h1>gView Server <span class="path">@SystemInfo.Version.ToString()</span></h1>
 </div>
+
+<div class="quicklinks">
+    <a class="@(!hasManagerLogin ? "disabled" : "")" asp-area="" asp-controller="BrowseServices" asp-action="Index">
+        <div class="ql-icon"><span class="ico ico-layers"></span></div>
+        <b>Browse Services</b>
+        <span>Folders, services and all their interfaces</span>
+    </a>
+    <a class="@(!hasManagerLogin ? "disabled" : "")" href="@rootUrl/geoservices/rest/services">
+        <div class="ql-icon"><span class="ico ico-code"></span></div>
+        <b>GeoServices (REST)</b>
+        <span>/geoservices/rest/services</span>
+    </a>
+    <a href="@rootUrl/ogcapi?f=html">
+        <div class="ql-icon"><span class="ico ico-plug"></span></div>
+        <b>OGC API</b>
+        <span>/ogcapi</span>
+    </a>
+    @if (isManageUser || (Globals.AllowFormsLogin && (isManageUser == true || String.IsNullOrWhiteSpace(username))))
+    {
+        <a class="@(!hasManagerLogin ? "required" : "")" asp-area="" asp-controller="Manage" asp-action="Index">
+            <div class="ql-icon"><span class="ico ico-shield"></span></div>
+            <b>Manage</b>
+            <span>Services, security, metadata, networks</span>
+        </a>
+    }
+</div>
+
+<h2 class="section-title">Engine</h2>
+<table class="kv">
+    <tr><td>Rendering</td><td>@(gView.GraphicsEngine.Current.Engine.EngineDisplayName)</td></tr>
+    @if (gView.GraphicsEngine.Current.Encoder != null)
+    {
+        <tr><td>Encoding</td><td>@(gView.GraphicsEngine.Current.Encoder.EngineName)</td></tr>
+    }
+    <tr><td>Projection</td><td>@gView.Framework.Geometry.GeometricTransformerFactory.TransformerType</td></tr>
+    <tr><td>Version</td><td>@SystemInfo.Version.ToString()</td></tr>
+</table>

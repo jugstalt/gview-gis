@@ -1,0 +1,63 @@
+/* PROTOTYPE — shared bits only: reset, icon mapping for manage.js classes, prototype switcher.
+   Everything about layout, colour and density lives in variant-*.css. */
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; height: 100%; }
+body { -webkit-font-smoothing: antialiased; }
+button, input, select, textarea { font: inherit; color: inherit; }
+a { color: inherit; }
+svg.ico { width: 1.15em; height: 1.15em; flex: none; vertical-align: -0.2em; }
+.grow { flex: 1 1 auto; }
+
+/* ---- icons for markup emitted by manage.js / Razor (mask => icon takes currentColor) */
+.icon, .button-delete-service, .gview-manage-body .folder.add::before {
+    -webkit-mask: var(--ico) center / 18px 18px no-repeat;
+    mask: var(--ico) center / 18px 18px no-repeat;
+    background-color: currentColor;
+}
+.icon.log { --ico: var(--ico-log); }
+.icon.security0 { --ico: var(--ico-unlock); }
+.icon.security1 { --ico: var(--ico-lock); }
+.icon.network { --ico: var(--ico-network); }
+.icon.start { --ico: var(--ico-play); }
+.icon.stop { --ico: var(--ico-stop); }
+.icon.settings { --ico: var(--ico-settings); }
+.icon.refresh { --ico: var(--ico-refresh); }
+.icon.publish { --ico: var(--ico-upload); }
+.button-delete-service { --ico: var(--ico-trash); }
+.gview-manage-body .folder.add::before { --ico: var(--ico-folderplus); content: ""; display: inline-block; width: 18px; height: 18px; vertical-align: -4px; margin-right: 8px; }
+.icon.loading { animation: proto-spin 0.9s linear infinite; }
+@keyframes proto-spin { to { transform: rotate(360deg); } }
+
+/* ---- status dots (services, tree, KPIs) */
+.dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--st-idle, #999); flex: none; }
+.dot.running { background: var(--st-running, #2a9d55); }
+.dot.stopped { background: var(--st-stopped, #c0392b); }
+.dot.idle { background: var(--st-idle, #b58a00); }
+
+/* ---- modal mechanics (visuals per variant) */
+.gview5-modal-blocker { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 16px; }
+.gview5-modal-blocker .modal-dialog { display: flex; flex-direction: column; max-height: calc(100vh - 32px); width: min(900px, 100%); }
+.gview5-modal-blocker .modal-dialog.modal-small { width: min(440px, 100%); }
+.gview5-modal-blocker .modal-body { overflow: auto; flex: 1 1 auto; }
+.proto-monaco { width: 100%; height: 100%; min-height: 260px; font-family: ui-monospace, Consolas, monospace; font-size: 13px; resize: none; }
+
+.gview5-form-body { display: none; }
+form.open .gview5-form-body { display: block; }
+
+/* ---- theme switch mechanics */
+.theme-switch { display: inline-flex; }
+.theme-switch button { display: inline-flex; align-items: center; justify-content: center; border: 0; background: none; cursor: pointer; }
+
+/* ---- prototype switcher — deliberately NOT part of any design */
+.proto-bar {
+    position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 5000;
+    display: flex; align-items: center; gap: 8px; padding: 6px 8px;
+    background: #111; color: #fff; border-radius: 999px; box-shadow: 0 6px 24px rgba(0,0,0,.35);
+    font: 13px/1.2 system-ui, sans-serif; white-space: nowrap; max-width: calc(100vw - 16px);
+}
+.proto-bar span { overflow: hidden; text-overflow: ellipsis; }
+.proto-bar button { width: 28px; height: 28px; border-radius: 50%; border: 0; background: #fff; color: #111; font-size: 18px; line-height: 1; cursor: pointer; }
+.proto-bar select { background: #333; color: #fff; border: 0; border-radius: 999px; padding: 4px 8px; }
+.proto-bar b { background: #ff0; color: #111; border-radius: 4px; padding: 0 5px; }
+@media (max-width: 600px) { .proto-bar span { display: none; } }
