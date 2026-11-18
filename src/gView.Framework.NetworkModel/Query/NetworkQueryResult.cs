@@ -2,8 +2,9 @@ namespace gView.Framework.NetworkModel.Query;
 
 /// <summary>
 /// What a search needs; which fields count depends on the operation:
-/// trace/reach: Start; path: From, To; supply: Sources, Sinks; info: Node; validate: Rules (default: the rules of network.json), RuleIds.
-/// Nodes are Layer#OID, raw ids or type patterns, comma separated.
+/// trace/reach: Start; path: From, To; supply: Sources, Sinks; info: Node; validate: Rules (default: the rules of network.json), RuleIds;
+/// nearest: X, Y, Radius, Count; outage: Disable, Sources, Sinks (supply and outage default to SupplySources/Customers of network.json).
+/// Nodes are Layer#OID, raw ids, type patterns or @x,y[~radius], comma separated; edges Layer#OID[/part] or raw ids.
 /// </summary>
 public sealed record NetworkQueryRequest
 {
@@ -22,6 +23,21 @@ public sealed record NetworkQueryRequest
 
     /// <summary>Nodes opened for this search.</summary>
     public string? Unblock { get; init; }
+
+    /// <summary>Edges switched off for this search (Layer#OID = every part of the line, Layer#OID/part, raw ids); outage: the edges to switch off.</summary>
+    public string? Disable { get; init; }
+
+    /// <summary>nearest: the location, in the spatial reference of the network.</summary>
+    public double? X { get; init; }
+
+    /// <summary>nearest: the location, in the spatial reference of the network.</summary>
+    public double? Y { get; init; }
+
+    /// <summary>nearest: the search radius; default 10 x the build tolerance.</summary>
+    public double? Radius { get; init; }
+
+    /// <summary>nearest: how many nodes at most; default 1.</summary>
+    public int? Count { get; init; }
 
     /// <summary>The weight name; default length.</summary>
     public string? Weight { get; init; }
@@ -51,7 +67,11 @@ public sealed record NetworkQueryRequest
 public sealed record NetworkResultNode(long Id, string Label, string? Layer, long? Oid, string Type, string Kind, double Cost, string Source, string AliasOf, double X, double Y);
 
 /// <summary>An edge of a result: a part of a line feature between two measures.</summary>
-public sealed record NetworkResultEdge(long Id, string Label, string Layer, long Oid, string Type, double Length, double FromMeasure, double ToMeasure, long From, long To, double FromX, double FromY, double ToX, double ToY);
+public sealed record NetworkResultEdge(long Id, string Label, string Layer, long Oid, string Type, double Length, double FromMeasure, double ToMeasure, long From, long To, double FromX, double FromY, double ToX, double ToY)
+{
+    /// <summary>What the edge is in the result: Edge, or for outage Disabled (switched off) and Dead (no supply any more).</summary>
+    public string Kind { get; init; } = "Edge";
+}
 
 /// <summary>A rule violation at a node or an edge.</summary>
 public sealed record NetworkResultViolation(

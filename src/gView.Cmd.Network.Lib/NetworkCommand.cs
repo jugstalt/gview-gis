@@ -26,23 +26,28 @@ public class NetworkCommand : ICommand
 {
     public string Name => "Network";
 
-    public string Description => "Build and search SpatialNET networks (-u build | config-from-mxl | trace | reach | path | supply | info | validate)";
+    public string Description => "Build and search SpatialNET networks (-u build | config-from-mxl | trace | reach | path | supply | outage | info | nearest | validate)";
 
     public string ExecutableName => "";
 
     public IEnumerable<ICommandParameterDescription> ParameterDescriptions =>
         [
-            new RequiredCommandParameter<string>("u") { Description = "build | config-from-mxl | trace | reach | path | supply | info | validate" },
+            new RequiredCommandParameter<string>("u") { Description = "build | config-from-mxl | trace | reach | path | supply | outage | info | nearest | validate" },
             new CommandParameter<string>("config") { Description = "network config (json); build" },
             new CommandParameter<string>("mxl") { Description = "map (mxl); for build it overrides the map of the config" },
             new CommandParameter<string>("output") { Description = "build: network directory (default: \"directory\" of the config or <map>.network next to the mxl); config-from-mxl: json file" },
             new CommandParameter<string>("json") { Description = "build: true also writes each shard as json (debugging)" },
             new CommandParameter<string>("network") { Description = "searches: the network directory" },
-            new CommandParameter<string>("start") { Description = "trace, reach: nodes (Layer#OID, id or type pattern like [*,Trafo,*]; comma separated)" },
+            new CommandParameter<string>("start") { Description = "trace, reach: nodes (Layer#OID, id, type pattern like [*,Trafo,*] or @x,y[~radius]; comma separated)" },
             new CommandParameter<string>("from") { Description = "path: start node" },
             new CommandParameter<string>("to") { Description = "path: end node" },
-            new CommandParameter<string>("sources") { Description = "supply: source nodes" },
-            new CommandParameter<string>("sinks") { Description = "supply: sink nodes" },
+            new CommandParameter<string>("sources") { Description = "supply, outage: source nodes (default: supplySources of the config)" },
+            new CommandParameter<string>("sinks") { Description = "supply, outage: sink nodes (default: customers of the config)" },
+            new CommandParameter<string>("disable") { Description = "searches: edges switched off (Layer#OID, Layer#OID/part, id); outage: the edges to switch off" },
+            new CommandParameter<string>("x") { Description = "nearest: x in the spatial reference of the network" },
+            new CommandParameter<string>("y") { Description = "nearest: y in the spatial reference of the network" },
+            new CommandParameter<string>("radius") { Description = "nearest: search radius (default 10 x tolerance)" },
+            new CommandParameter<string>("count") { Description = "nearest: number of nodes (default 1)" },
             new CommandParameter<string>("node") { Description = "info: the node" },
             new CommandParameter<string>("filter") { Description = "searches: only edges of these types (pattern)" },
             new CommandParameter<string>("block") { Description = "searches: nodes blocked for this search" },
@@ -69,7 +74,9 @@ public class NetworkCommand : ICommand
             case "reach":
             case "path":
             case "supply":
+            case "outage":
             case "info":
+            case "nearest":
             case "validate":
                 return await NetworkAnalysisCommands.Run(utility, parameters, logger);
             default:
@@ -80,9 +87,12 @@ public class NetworkCommand : ICommand
                 logger?.LogLine("  -u reach  -network <dir> -start <nodes> -max-cost <cost> [-weight <name>] [-out ...]");
                 logger?.LogLine("  -u path   -network <dir> -from <node> -to <node> [-weight <name>] [-out ...]");
                 logger?.LogLine("  -u supply -network <dir> -sources <nodes> -sinks <nodes> [-out ...]");
+                logger?.LogLine("  -u outage -network <dir> -disable <edges> [-sources <nodes>] [-sinks <nodes>] [-filter <pattern>] [-out ...]");
                 logger?.LogLine("  -u info   -network <dir> -node <node>");
+                logger?.LogLine("  -u nearest -network <dir> -x <x> -y <y> [-radius <r>] [-count <n>]");
                 logger?.LogLine("  -u validate -network <dir> [-rules <rules.json>] [-rule <id,...>] [-out x.csv|x.geojson]");
-                logger?.LogLine("  nodes: Layer#OID (Trafo#5929), node id, or type pattern ([*,Trafo,*]), comma separated");
+                logger?.LogLine("  nodes: Layer#OID (Trafo#5929), node id, type pattern ([*,Trafo,*], ![*,Kunde,*]) or @x,y[~radius] (nearest node, also edge ends), comma separated");
+                logger?.LogLine("  edges: Layer#OID (every part of the line), Layer#OID/part or edge id, comma separated");
                 return false;
         }
     }

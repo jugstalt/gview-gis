@@ -8,7 +8,9 @@ namespace gView.Server.Models.Network;
 [ServiceMethod("Reach", "reach")]
 [ServiceMethod("Path", "path")]
 [ServiceMethod("Supply", "supply")]
+[ServiceMethod("Outage", "outage")]
 [ServiceMethod("Info", "info")]
+[ServiceMethod("Nearest", "nearest")]
 [ServiceMethod("Validate", "validate")]
 public class JsonNetworkServerDTO
 {
@@ -92,6 +94,9 @@ public class JsonNetworkSearchOptionsDTO
     [JsonPropertyName("unblock")]
     public string Unblock { get; set; } = "";
 
+    [JsonPropertyName("disable")]
+    public string Disable { get; set; } = "";
+
     [JsonPropertyName("weight")]
     public string Weight { get; set; } = "";
 
@@ -101,11 +106,17 @@ public class JsonNetworkSearchOptionsDTO
     [JsonPropertyName("geometry")]
     public bool Geometry { get; set; } = true;
 
+    [JsonPropertyName("snap")]
+    public bool Snap { get; set; }
+
     [JsonPropertyName("attributes")]
     public bool Attributes { get; set; }
 
     [JsonPropertyName("outFields")]
     public string OutFields { get; set; } = "*";
+
+    [JsonPropertyName("inSR")]
+    public string InSR { get; set; } = "";
 
     [JsonPropertyName("outSR")]
     public string OutSR { get; set; } = "";
@@ -141,13 +152,53 @@ public class JsonNetworkSupplyDTO : JsonNetworkSearchOptionsDTO
     public string Sinks { get; set; } = "";
 }
 
+public class JsonNetworkOutageDTO : JsonNetworkSearchOptionsDTO
+{
+    [JsonPropertyName("disable")]
+    public new string Disable { get; set; } = "";
+
+    [JsonPropertyName("sources")]
+    public string Sources { get; set; } = "";
+
+    [JsonPropertyName("sinks")]
+    public string Sinks { get; set; } = "";
+}
+
 public class JsonNetworkInfoDTO
 {
     [JsonPropertyName("node")]
     public string Node { get; set; } = "";
 
+    [JsonPropertyName("inSR")]
+    public string InSR { get; set; } = "";
+
     [JsonPropertyName("f")]
     [FormInput(Values = new[] { "pjson", "json" })]
+    public string F { get; set; } = "pjson";
+}
+
+public class JsonNetworkNearestDTO
+{
+    [JsonPropertyName("x")]
+    public string X { get; set; } = "";
+
+    [JsonPropertyName("y")]
+    public string Y { get; set; } = "";
+
+    [JsonPropertyName("radius")]
+    public string Radius { get; set; } = "";
+
+    [JsonPropertyName("count")]
+    public string Count { get; set; } = "1";
+
+    [JsonPropertyName("inSR")]
+    public string InSR { get; set; } = "";
+
+    [JsonPropertyName("outSR")]
+    public string OutSR { get; set; } = "";
+
+    [JsonPropertyName("f")]
+    [FormInput(Values = new[] { "pjson", "json", "geojson", "csv" })]
     public string F { get; set; } = "pjson";
 }
 

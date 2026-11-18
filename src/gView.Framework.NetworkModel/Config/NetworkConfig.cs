@@ -45,6 +45,12 @@ public class NetworkConfig
     /// <summary>The validation rules; written into network.json on build, checked by gView.Cmd -u validate.</summary>
     public List<NetworkRuleConfig> Rules { get; set; } = [];
 
+    /// <summary>The default sources of supply and outage, a node pattern, e.g. [*,Trafo,*]; written into network.json on build.</summary>
+    public string? SupplySources { get; set; }
+
+    /// <summary>The default customers (sinks) of supply and outage, a node pattern, e.g. [*,Kunde,*]; written into network.json on build.</summary>
+    public string? Customers { get; set; }
+
     /// <summary>
     /// Where the built network is kept, relative to the map (mxl). Empty: {map name}.network next to the map.
     /// Build writes there by default, Carto and the server search there.

@@ -78,7 +78,9 @@ public sealed class NetworkBuildService
             Tolerance = config.Tolerance,
             Weights = weights.Select(w => new NetworkWeightMetadata { Id = w.Id, Name = w.Name, Kind = w.Kind, Fallback = w.Fallback }).ToList(),
             ShardKeys = new(previous?.ShardKeys ?? [], StringComparer.OrdinalIgnoreCase),
-            Rules = config.Rules
+            Rules = config.Rules,
+            SupplySources = config.SupplySources,
+            Customers = config.Customers
         };
         Metadata = metadata;
 

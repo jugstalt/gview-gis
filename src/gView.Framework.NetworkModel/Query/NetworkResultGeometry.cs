@@ -16,9 +16,12 @@ public static class NetworkResultGeometry
     /// <summary>
     /// The coordinates of every edge of the result in the spatial reference of the network: the part of its line feature
     /// between its measures. Edges whose layer or feature is not in the map are left out (written as straight lines).
+    /// With <paramref name="snap"/> the ends of every part are set onto the location of its from and to node, so the
+    /// result is a valid network (line ends meet exactly in the nodes); a shift over <paramref name="tolerance"/> is
+    /// reported in the messages.
     /// </summary>
     public static async Task<Dictionary<long, IReadOnlyList<double[]>>> EdgeCoordinatesAsync(
-        IMap map, NetworkQueryResult result, CancellationToken cancellationToken = default)
+        IMap map, NetworkQueryResult result, CancellationToken cancellationToken = default, bool snap = false, double tolerance = 0)
     {
         var coordinates = new Dictionary<long, IReadOnlyList<double[]>>();
         if (result.Edges.Count == 0)
@@ -48,12 +51,39 @@ public static class NetworkResultGeometry
                     var section = Section(polyline, edge.FromMeasure, edge.ToMeasure);
                     if (section.Count >= 2)
                     {
-                        coordinates[edge.Id] = section;
+                        coordinates[edge.Id] = snap ? Snap(result, edge, section, tolerance) : section;
                     }
                 }
             }
         }
         return coordinates;
+    }
+
+    /// <summary>The section with its first point on the from node and its last point on the to node.</summary>
+    private static IReadOnlyList<double[]> Snap(NetworkQueryResult result, NetworkResultEdge edge, IReadOnlyList<double[]> section, double tolerance)
+    {
+        var snapped = section.Select(c => c).ToList();
+        double shift = 0;
+        if (!double.IsNaN(edge.FromX) && !double.IsNaN(edge.FromY))
+        {
+            shift = Math.Max(shift, Distance(snapped[0], edge.FromX, edge.FromY));
+            snapped[0] = [edge.FromX, edge.FromY];
+        }
+        if (!double.IsNaN(edge.ToX) && !double.IsNaN(edge.ToY))
+        {
+            shift = Math.Max(shift, Distance(snapped[^1], edge.ToX, edge.ToY));
+            snapped[^1] = [edge.ToX, edge.ToY];
+        }
+        if (tolerance > 0 && shift > tolerance)
+        {
+            lock (result.Messages)
+            {
+                result.Messages.Add($"Snap: {edge.Label} moved by {shift:0.###} (more than the tolerance {tolerance:0.###})");
+            }
+        }
+        return snapped;
+
+        static double Distance(double[] c, double x, double y) => Math.Sqrt((c[0] - x) * (c[0] - x) + (c[1] - y) * (c[1] - y));
     }
 
     /// <summary>

@@ -22,13 +22,17 @@ public sealed class FileNetworkGraph : IGraph<long, long>
     }
 
     private readonly FileNetworkStore _store;
+    private readonly string _directory;
     private readonly NodeIndex _index;
     private readonly AliasIndex _aliases;
+    private readonly Lazy<SpatialIndex> _spatial;
+    private readonly Lazy<EdgeIndex> _edgeIndex;
     private readonly ConcurrentDictionary<long, Lazy<LoadedShard>> _shards = new();
     private long _clock;
 
     public FileNetworkGraph(string directory)
     {
+        _directory = directory;
         _store = new FileNetworkStore(directory);
         Metadata = _store.ReadMetadata() ?? throw new FileNotFoundException($"No network in {directory} ({FileNetworkStore.MetadataFile} missing).");
         var indexPath = Path.Combine(directory, NodeIndex.FileName);
@@ -38,6 +42,8 @@ public sealed class FileNetworkGraph : IGraph<long, long>
         }
         _index = NodeIndex.Read(indexPath);
         _aliases = AliasIndex.Read(Path.Combine(directory, AliasIndex.FileName));
+        _spatial = new Lazy<SpatialIndex>(() => SpatialIndex.Read(RequiredIndex(SpatialIndex.FileName)), LazyThreadSafetyMode.ExecutionAndPublication);
+        _edgeIndex = new Lazy<EdgeIndex>(() => EdgeIndex.Read(RequiredIndex(EdgeIndex.FileName)), LazyThreadSafetyMode.ExecutionAndPublication);
         Types = new TypeRegistry(
             Metadata.Facets.Select(f => new Facet(f.Name, f.Values)).ToList(),
             Metadata.Types.Select(t => new NetworkType(t.Id, t.Kind, t.Facets, t.Name)));
@@ -109,6 +115,30 @@ public sealed class FileNetworkGraph : IGraph<long, long>
 
     public bool TryGetShardOf(long nodeId, out long shardId) => _index.TryGet(nodeId, out shardId, out _);
 
+    /// <summary>
+    /// The nodes nearest to x/y (in the spatial reference of the network) within the radius, nearest first: real nodes,
+    /// helper nodes (edge ends) and merged points, which stand for their node. Default radius: <see cref="DefaultSearchRadius"/>.
+    /// </summary>
+    public IReadOnlyList<SpatialHit> Nearest(double x, double y, double? radius = null, int count = 1)
+        => _spatial.Value.Nearest(x, y, radius ?? DefaultSearchRadius, count);
+
+    /// <summary>The radius of @x,y and nearest without one: 10 x the build tolerance.</summary>
+    public double DefaultSearchRadius => Metadata.Tolerance > 0 ? Metadata.Tolerance * 10 : 1;
+
+    /// <summary>The ids of all parts of a line feature (empty when the feature is no edge of the network).</summary>
+    public IReadOnlyList<long> EdgePartsOf(int featureClass, long oid) => _edgeIndex.Value.PartsOf(featureClass, oid);
+
+    /// <summary>Any edge by id (loads the shard of its from node when needed).</summary>
+    public bool TryFindEdge(long id, out ShardEdge edge)
+    {
+        if (_edgeIndex.Value.TryGet(id, out var shardId) && Shard(shardId).EdgesById.TryGetValue(id, out edge))
+        {
+            return true;
+        }
+        edge = default;
+        return false;
+    }
+
     /// <summary>An edge that a search returned, found in the loaded shards.</summary>
     public bool TryGetEdge(long id, out ShardEdge edge)
     {
@@ -163,8 +193,10 @@ public sealed class FileNetworkGraph : IGraph<long, long>
 
     /// <summary>
     /// Resolves a comma separated list of node references: Layer#OID (e.g. Trafo#5929, Niederspannung/Kasten#23660),
-    /// a raw node id, or a type pattern (e.g. [*,Trafo,*], Niederspannung.Kasten), which means every node of that type.
-    /// A merged point (alias) resolves to the node it was merged into.
+    /// a raw node id, a type pattern (e.g. [*,Trafo,*], Niederspannung.Kasten, ![*,Kunde,*]), which means every node of
+    /// that type, or a location @x,y[~radius]: the nearest node, also a helper node at edge ends (in the spatial reference
+    /// of the network, default radius <see cref="DefaultSearchRadius"/>). A merged point (alias) resolves to the node it
+    /// was merged into.
     /// </summary>
     public IReadOnlyList<long> ResolveNodes(string references)
     {
@@ -184,6 +216,17 @@ public sealed class FileNetworkGraph : IGraph<long, long>
 
     private IEnumerable<long> ResolveNodeReference(string reference)
     {
+        if (reference.StartsWith('@'))
+        {
+            var (x, y, radius) = ParseLocation(reference);
+            var hits = Nearest(x, y, radius);
+            if (hits.Count == 0)
+            {
+                throw new ArgumentException($"No network node within {(radius ?? DefaultSearchRadius).ToString("0.###", CultureInfo.InvariantCulture)} of {reference}.");
+            }
+            return [hits[0].Entry.Node];
+        }
+
         int hash = reference.LastIndexOf('#');
         if (hash > 0 && long.TryParse(reference[(hash + 1)..], NumberStyles.Integer, CultureInfo.InvariantCulture, out var oid))
         {
@@ -225,14 +268,103 @@ public sealed class FileNetworkGraph : IGraph<long, long>
         return _index.NodesOfTypes(types.Contains).Concat(_aliases.NodesOfAliasTypes(types.Contains)).Distinct().ToList();
     }
 
-    /// <summary>Splits at commas outside of [ ] (patterns contain commas).</summary>
+    /// <summary>
+    /// Resolves a comma separated list of edge references: Layer#OID (every part of the line), Layer#OID/part or a raw
+    /// edge id.
+    /// </summary>
+    public IReadOnlyList<long> ResolveEdges(string references)
+    {
+        var result = new List<long>();
+        foreach (var reference in SplitReferences(references))
+        {
+            result.AddRange(ResolveEdgeReference(reference));
+        }
+        return result.Distinct().ToList();
+    }
+
+    private IReadOnlyList<long> ResolveEdgeReference(string reference)
+    {
+        int hash = reference.LastIndexOf('#');
+        if (hash > 0)
+        {
+            var layer = reference[..hash].Trim();
+            var rest = reference[(hash + 1)..];
+            int slash = rest.IndexOf('/');
+            if (!long.TryParse(slash < 0 ? rest : rest[..slash], NumberStyles.Integer, CultureInfo.InvariantCulture, out var oid))
+            {
+                throw new ArgumentException($"'{reference}' is no edge reference (Layer#OID or Layer#OID/part).");
+            }
+            var featureClasses = Metadata.FeatureClasses
+                .Where(f => f.Kind == ElementKind.Edge
+                         && (f.Layer.Equals(layer, StringComparison.OrdinalIgnoreCase)
+                          || f.Layer.Split('/')[^1].Equals(layer, StringComparison.OrdinalIgnoreCase)))
+                .ToList();
+            if (featureClasses.Count != 1)
+            {
+                throw new ArgumentException(featureClasses.Count == 0
+                    ? $"No edge layer '{layer}' in the network. Edge layers: {string.Join(", ", Metadata.FeatureClasses.Where(f => f.Kind == ElementKind.Edge).Select(f => f.Layer))}"
+                    : $"Layer name '{layer}' is ambiguous, use the path: {string.Join(", ", featureClasses.Select(f => f.Layer))}");
+            }
+            if (slash < 0)
+            {
+                var parts = EdgePartsOf(featureClasses[0].Index, oid);
+                return parts.Count > 0 ? parts : throw new ArgumentException($"{reference} is not an edge of the network (left out by a filter?).");
+            }
+            if (!int.TryParse(rest[(slash + 1)..], NumberStyles.Integer, CultureInfo.InvariantCulture, out var part) || part < 0 || part >= NetworkIds.MaxParts)
+            {
+                throw new ArgumentException($"'{reference}': invalid part.");
+            }
+            var id = NetworkIds.Compose(featureClasses[0].Index, oid, part);
+            return _edgeIndex.Value.TryGet(id, out _) ? [id] : throw new ArgumentException($"{reference} is not an edge of the network.");
+        }
+
+        if (long.TryParse(reference, NumberStyles.Integer, CultureInfo.InvariantCulture, out var rawId))
+        {
+            return _edgeIndex.Value.TryGet(rawId, out _) ? [rawId] : throw new ArgumentException($"Edge id {rawId} is not in the network.");
+        }
+        throw new ArgumentException($"'{reference}' is no edge reference (Layer#OID, Layer#OID/part or an edge id).");
+    }
+
+    /// <summary>@x,y or @x,y~radius.</summary>
+    private static (double X, double Y, double? Radius) ParseLocation(string reference)
+    {
+        var text = reference[1..];
+        double? radius = null;
+        int tilde = text.IndexOf('~');
+        if (tilde >= 0)
+        {
+            if (!double.TryParse(text[(tilde + 1)..], NumberStyles.Float, CultureInfo.InvariantCulture, out var r) || r < 0)
+            {
+                throw new ArgumentException($"'{reference}': invalid radius.");
+            }
+            radius = r;
+            text = text[..tilde];
+        }
+        var parts = text.Split(',', StringSplitOptions.TrimEntries);
+        if (parts.Length != 2
+            || !double.TryParse(parts[0], NumberStyles.Float, CultureInfo.InvariantCulture, out var x)
+            || !double.TryParse(parts[1], NumberStyles.Float, CultureInfo.InvariantCulture, out var y))
+        {
+            throw new ArgumentException($"'{reference}' is no location; use @x,y or @x,y~radius.");
+        }
+        return (x, y, radius);
+    }
+
+    /// <summary>Splits at commas outside of [ ] (patterns contain commas); the first comma after @ belongs to the location.</summary>
     private static IEnumerable<string> SplitReferences(string references)
     {
         int depth = 0, start = 0;
+        bool locationComma = false;
         for (int i = 0; i <= references.Length; i++)
         {
+            if (i < references.Length && references[i] == ',' && depth == 0 && !locationComma && references[start..i].TrimStart().StartsWith('@'))
+            {
+                locationComma = true;
+                continue;
+            }
             if (i == references.Length || (references[i] == ',' && depth == 0))
             {
+                locationComma = false;
                 var part = references[start..i].Trim();
                 if (part.Length > 0)
                 {
@@ -245,16 +377,25 @@ public sealed class FileNetworkGraph : IGraph<long, long>
         }
     }
 
-    /// <summary>A readable name: Layer#OID for real nodes, "helper" for helper nodes.</summary>
+    /// <summary>
+    /// A readable name: Layer#OID for real nodes; for helper nodes (edge ends) the lines that meet there,
+    /// e.g. "end of Verbinder#12, Leitung#3456".
+    /// </summary>
     public string NodeLabel(long id)
     {
         var (fc, oid, _) = NetworkIds.Decompose(id);
         if (fc == NetworkIds.HelperFeatureClass)
         {
-            return "helper";
+            var lines = EdgesOf(id).Select(e => FeatureLabel(e.Source)).Distinct().ToList();
+            return lines.Count == 0
+                ? "helper"
+                : $"end of {string.Join(", ", lines.Take(4))}{(lines.Count > 4 ? $" (+{lines.Count - 4})" : "")}";
         }
         return $"{Metadata.FeatureClasses.FirstOrDefault(f => f.Index == fc)?.Layer ?? fc.ToString()}#{oid}";
     }
+
+    private string FeatureLabel(FeatureRef source)
+        => $"{Metadata.FeatureClasses.FirstOrDefault(f => f.Index == source.FeatureClass)?.Layer.Split('/')[^1] ?? source.FeatureClass.ToString()}#{source.Oid}";
 
     /// <summary>A readable name: Layer#OID/part.</summary>
     public string EdgeLabel(long id)
@@ -266,6 +407,14 @@ public sealed class FileNetworkGraph : IGraph<long, long>
     public string TypeName(int typeId) => typeId == 0 ? "untyped" : Types.Display(typeId);
 
     #endregion
+
+    private string RequiredIndex(string fileName)
+    {
+        var path = Path.Combine(_directory, fileName);
+        return File.Exists(path)
+            ? path
+            : throw new FileNotFoundException($"The network has no {fileName} (built before edge ends could be picked); build the network again.");
+    }
 
     private LoadedShard Shard(long shardId)
     {

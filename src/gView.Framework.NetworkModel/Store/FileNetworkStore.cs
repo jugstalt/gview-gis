@@ -7,7 +7,8 @@ namespace gView.Framework.NetworkModel.Store;
 
 /// <summary>
 /// Keeps a network in a directory: network.json (metadata) and shards/{id}.bin, one binary file per shard
-/// (optionally shards/{id}.json for debugging). An edge between two shards is stored in both.
+/// (optionally shards/{id}.json for debugging), plus nodes.idx, edges.idx, aliases.idx and spatial.idx.
+/// An edge between two shards is stored in both.
 /// </summary>
 public sealed class FileNetworkStore : INetworkStore
 {
@@ -49,6 +50,7 @@ public sealed class FileNetworkStore : INetworkStore
         private readonly bool _writeJson;
         private readonly Dictionary<long, ShardData> _shards = [];
         private readonly List<(long AliasId, long NodeId, int TypeId)> _aliases = [];
+        private readonly List<SpatialEntry> _points = [];
         private int _nodeCount, _edgeCount;
 
         public Writer(string directory, bool writeJson)
@@ -70,9 +72,11 @@ public sealed class FileNetworkStore : INetworkStore
         {
             Shard(node.Shard).Nodes.Add(new ShardNode(node.Node, node.IsHelper, node.IsHelper ? null : node.Source));
             _nodeCount++;
+            _points.Add(new SpatialEntry(node.Node.Id, node.Node.Id, node.Node.Location.X, node.Node.Location.Y));
             foreach (var merged in node.Merged ?? [])
             {
                 _aliases.Add((merged.Id, node.Node.Id, merged.TypeId));
+                _points.Add(new SpatialEntry(merged.Id, node.Node.Id, merged.Location.X, merged.Location.Y));
             }
         }
 
@@ -133,7 +137,12 @@ public sealed class FileNetworkStore : INetworkStore
                 Path.Combine(building, NodeIndex.FileName),
                 _shards.Values.SelectMany(s => s.Nodes.Select(n => (n.Node.Id, s.Id, n.Node.TypeId))));
 
+            EdgeIndex.Write(
+                Path.Combine(building, EdgeIndex.FileName),
+                _shards.Values.SelectMany(s => s.Edges.Where(e => e.FromShard == s.Id).Select(e => (e.Edge.Id, s.Id))));
+
             AliasIndex.Write(Path.Combine(building, AliasIndex.FileName), _aliases);
+            SpatialIndex.Write(Path.Combine(building, SpatialIndex.FileName), _points, metadata.Tolerance);
             metadata.AliasCount = _aliases.Count;
 
             File.WriteAllText(Path.Combine(building, MetadataFile), JsonSerializer.Serialize(metadata, NetworkConfig.JsonOptions));
@@ -163,6 +172,7 @@ public sealed class FileNetworkStore : INetworkStore
         {
             _shards.Clear();
             _aliases.Clear();
+            _points.Clear();
         }
     }
 }

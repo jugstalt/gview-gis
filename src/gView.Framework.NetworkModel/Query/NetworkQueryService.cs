@@ -9,12 +9,12 @@ using System.Globalization;
 namespace gView.Framework.NetworkModel.Query;
 
 /// <summary>
-/// The searches on a built network (trace, reach, path, supply, info, validate) for gView.Cmd, Carto and the server.
+/// The searches on a built network (trace, reach, path, supply, outage, info, nearest, validate) for gView.Cmd, Carto and the server.
 /// Thread-safe as long as the graph is: every call keeps its own state.
 /// </summary>
 public sealed class NetworkQueryService
 {
-    public static readonly IReadOnlyList<string> Operations = ["trace", "reach", "path", "supply", "info", "validate"];
+    public static readonly IReadOnlyList<string> Operations = ["trace", "reach", "path", "supply", "outage", "info", "nearest", "validate"];
 
     private readonly FileNetworkGraph _graph;
 
@@ -29,7 +29,9 @@ public sealed class NetworkQueryService
             "reach" => Reach(request),
             "path" => Path(request),
             "supply" => Supply(request, progress),
+            "outage" => Outage(request),
             "info" => Info(request),
+            "nearest" => Nearest(request),
             "validate" => Validate(request, progress, cancellationToken),
             _ => throw new ArgumentException($"Unknown operation '{operation}'. Operations: {string.Join(", ", Operations)}")
         };
@@ -121,8 +123,8 @@ public sealed class NetworkQueryService
     public NetworkQueryResult Supply(NetworkQueryRequest request, IProgress<string>? progress = null)
     {
         var result = NewResult("supply");
-        var sources = _graph.ResolveNodes(Required(request.Sources, "sources"));
-        var sinks = _graph.ResolveNodes(Required(request.Sinks, "sinks"));
+        var sources = _graph.ResolveNodes(Required(request.Sources ?? _graph.Metadata.SupplySources, "sources"));
+        var sinks = _graph.ResolveNodes(Required(request.Sinks ?? _graph.Metadata.Customers, "sinks"));
         result.Messages.Add($"Supply: {sources.Count} source(s), {sinks.Count} sink(s), {sinks.Sum(s => _graph.AliasesOf(s).Count)} merged point(s) at the sinks");
 
         var supplyProgress = progress is null ? null : new SyncProgress<SupplyProgress>(p =>
@@ -149,6 +151,103 @@ public sealed class NetworkQueryService
             AddNode(result, s.Sink, NodeType(s.Sink), 0,
                 s.Sources.Count == 0 ? "NotSupplied" : s.Sources.Count == 1 ? "Supplied" : "Multiple",
                 string.Join(" ", s.Sources.Select(_graph.NodeLabel)));
+        }
+        return result;
+    }
+
+    /// <summary>
+    /// Switches the edges of <see cref="NetworkQueryRequest.Disable"/> off and reports the customers (sinks) that lose
+    /// their supply. Only the part of the network connected to those edges is computed: supply with and without them.
+    /// </summary>
+    public NetworkQueryResult Outage(NetworkQueryRequest request)
+    {
+        var result = NewResult("outage");
+        var disabled = _graph.ResolveEdges(Required(request.Disable, "disable"));
+        var sourcesPattern = Required(request.Sources ?? _graph.Metadata.SupplySources, "sources");
+        var sinksPattern = Required(request.Sinks ?? _graph.Metadata.Customers, "sinks");
+
+        var normal = Options(request, withDisable: false);
+        var switchedOff = Options(request);
+
+        // the connected part around the switched off edges, as it is without switching them off
+        var ends = new HashSet<long>();
+        foreach (var id in disabled)
+        {
+            if (_graph.TryFindEdge(id, out var edge))
+            {
+                ends.Add(edge.Edge.From);
+                ends.Add(edge.Edge.To);
+            }
+        }
+        var component = _graph.Reach(ends.ToList(), normal with { MaxCost = double.PositiveInfinity }).Select(r => r.Node).ToHashSet();
+        var sources = _graph.ResolveNodes(sourcesPattern).Where(component.Contains).ToList();
+        var sinks = _graph.ResolveNodes(sinksPattern).Where(component.Contains).ToList();
+        result.Messages.Add($"Outage: {disabled.Count} edge(s) switched off, {component.Count} node(s) connected, {sources.Count} source(s), {sinks.Count} customer(s) there");
+
+        var before = _graph.Supply(sources, sinks, normal).ToDictionary(s => s.Sink, s => s.Sources);
+        var after = _graph.Supply(sources, sinks, switchedOff).ToDictionary(s => s.Sink, s => s.Sources);
+
+        var affected = sinks.Where(s => before[s].Count > 0 && after[s].Count == 0).ToList();
+        int stillSupplied = sinks.Count(s => before[s].Count > 0 && after[s].Count > 0);
+        int unsuppliedBefore = sinks.Count(s => before[s].Count == 0);
+        result.Messages.Add($"  affected:              {affected.Count} ({affected.Sum(s => 1 + _graph.AliasesOf(s).Count)} point(s) with the merged ones)");
+        result.Messages.Add($"  still supplied:        {stillSupplied}");
+        result.Messages.Add($"  not supplied before:   {unsuppliedBefore}");
+        AddTypes(result, affected.Select(NodeType));
+
+        foreach (var sink in affected)
+        {
+            AddNode(result, sink, NodeType(sink), 0, "Affected", string.Join(" ", before[sink].Select(_graph.NodeLabel)));
+        }
+
+        if (request.WithEdges)
+        {
+            var supplied = _graph.TraceEdges(sources, normal).Select(e => e.Edge.Id).ToHashSet();
+            var stillLive = _graph.TraceEdges(sources, switchedOff).Select(e => e.Edge.Id).ToHashSet();
+            foreach (var id in disabled)
+            {
+                if (_graph.TryFindEdge(id, out var edge))
+                {
+                    AddEdge(result, edge, "Disabled");
+                }
+            }
+            foreach (var id in supplied.Where(id => !stillLive.Contains(id) && !disabled.Contains(id)))
+            {
+                if (_graph.TryFindEdge(id, out var edge))
+                {
+                    AddEdge(result, edge, "Dead");
+                }
+            }
+        }
+        return result;
+    }
+
+    /// <summary>The nodes nearest to a location (real nodes, edge ends, merged points standing for their node).</summary>
+    public NetworkQueryResult Nearest(NetworkQueryRequest request)
+    {
+        var result = NewResult("nearest");
+        if (request.X is not double x || request.Y is not double y)
+        {
+            throw new ArgumentException("x and y are required.");
+        }
+        int count = Math.Max(1, request.Count ?? 1);
+        double radius = request.Radius ?? _graph.DefaultSearchRadius;
+        // several merged points may stand for one node: ask for more, keep each node once
+        var hits = _graph.Nearest(x, y, radius, count * 4 + 8)
+            .GroupBy(h => h.Entry.Node)
+            .Select(g => g.First())
+            .Take(count)
+            .ToList();
+        result.Messages.Add($"Nearest to {x.ToString("0.###", CultureInfo.InvariantCulture)}, {y.ToString("0.###", CultureInfo.InvariantCulture)} within {radius:0.###}: {hits.Count} node(s)");
+        if (hits.Count == 0)
+        {
+            result.Success = false;
+        }
+        foreach (var hit in hits)
+        {
+            var node = hit.Entry.Node;
+            result.Messages.Add($"  {hit.Distance,10:0.###}  {_graph.NodeLabel(node)} ({_graph.TypeName(NodeType(node))})");
+            AddNode(result, node, NodeType(node), hit.Distance, "Nearest", "");
         }
         return result;
     }
@@ -269,7 +368,7 @@ public sealed class NetworkQueryService
 
     private NetworkQueryResult NewResult(string operation) => new() { Operation = operation, Srs = _graph.Metadata.Srs };
 
-    private TraversalOptions<long, long> Options(NetworkQueryRequest request)
+    private TraversalOptions<long, long> Options(NetworkQueryRequest request, bool withDisable = true)
     {
         var options = new TraversalOptions<long, long>();
 
@@ -287,9 +386,14 @@ public sealed class NetworkQueryService
         {
             options = options with { EdgeTypes = _graph.Types.Edges(request.Filter) };
         }
-        if (!string.IsNullOrEmpty(request.Block) || !string.IsNullOrEmpty(request.Unblock))
+        bool disable = withDisable && !string.IsNullOrEmpty(request.Disable);
+        if (!string.IsNullOrEmpty(request.Block) || !string.IsNullOrEmpty(request.Unblock) || disable)
         {
             var state = new NetworkState<long, long>();
+            foreach (var id in disable ? _graph.ResolveEdges(request.Disable!) : [])
+            {
+                state.Disable(id);
+            }
             foreach (var id in string.IsNullOrEmpty(request.Block) ? [] : _graph.ResolveNodes(request.Block))
             {
                 state.Block(id);
@@ -349,7 +453,7 @@ public sealed class NetworkQueryService
         }
     }
 
-    private void AddEdge(NetworkQueryResult result, ShardEdge edge)
+    private void AddEdge(NetworkQueryResult result, ShardEdge edge, string kind = "Edge")
     {
         var e = edge.Edge;
         var (fromX, fromY) = Location(e.From);
@@ -358,7 +462,7 @@ public sealed class NetworkQueryService
         result.Edges.Add(new NetworkResultEdge(
             e.Id, _graph.EdgeLabel(e.Id), layer, edge.Source.Oid, _graph.TypeName(e.TypeId), e.Length,
             edge.FromMeasure, edge.ToMeasure, e.From, e.To,
-            fromX, fromY, toX, toY));
+            fromX, fromY, toX, toY) { Kind = kind });
     }
 
     private (double X, double Y) Location(long nodeId)

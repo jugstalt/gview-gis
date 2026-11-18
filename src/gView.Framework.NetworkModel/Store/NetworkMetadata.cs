@@ -27,6 +27,12 @@ public class NetworkMetadata
 
     /// <summary>The validation rules of the config at build time; gView.Cmd -u validate checks them unless -rules is given.</summary>
     public List<NetworkRuleConfig> Rules { get; set; } = [];
+
+    /// <summary>The default sources of supply and outage (node pattern) of the config at build time.</summary>
+    public string? SupplySources { get; set; }
+
+    /// <summary>The default customers (sinks) of supply and outage (node pattern) of the config at build time.</summary>
+    public string? Customers { get; set; }
 }
 
 public class NetworkFacetMetadata

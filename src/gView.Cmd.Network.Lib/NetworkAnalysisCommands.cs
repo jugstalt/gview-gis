@@ -9,8 +9,8 @@ using System.Text.Json;
 namespace gView.Cmd.Network.Lib;
 
 /// <summary>
-/// Searches on a built network with <see cref="NetworkQueryService"/>: trace, reach, path, supply, info, validate.
-/// Nodes are given as Layer#OID, raw id, or type pattern ([*,Trafo,*]).
+/// Searches on a built network with <see cref="NetworkQueryService"/>: trace, reach, path, supply, outage, info, nearest, validate.
+/// Nodes are given as Layer#OID, raw id, type pattern ([*,Trafo,*]) or @x,y[~radius].
 /// </summary>
 internal static class NetworkAnalysisCommands
 {
@@ -35,6 +35,11 @@ internal static class NetworkAnalysisCommands
             Filter = Optional(parameters, "filter"),
             Block = Optional(parameters, "block"),
             Unblock = Optional(parameters, "unblock"),
+            Disable = Optional(parameters, "disable"),
+            X = Number(parameters, "x"),
+            Y = Number(parameters, "y"),
+            Radius = Number(parameters, "radius"),
+            Count = Number(parameters, "count") is double count ? (int)count : null,
             Weight = Optional(parameters, "weight"),
             MaxCost = string.IsNullOrEmpty(maxCost) ? null : double.Parse(maxCost.Replace(',', '.'), CultureInfo.InvariantCulture),
             Rules = string.IsNullOrEmpty(rulesPath) ? null : LoadRules(rulesPath),
@@ -84,6 +89,12 @@ internal static class NetworkAnalysisCommands
 
     private static string? Optional(IDictionary<string, object> parameters, string name)
         => parameters.TryGetValue(name, out var value) ? value?.ToString() : null;
+
+    private static double? Number(IDictionary<string, object> parameters, string name)
+    {
+        var value = Optional(parameters, name);
+        return string.IsNullOrWhiteSpace(value) ? null : double.Parse(value.Replace(',', '.'), CultureInfo.InvariantCulture);
+    }
 
     private static string Required(IDictionary<string, object> parameters, string name)
     {

@@ -67,7 +67,7 @@ public static class NetworkResultWriter
             {
                 type = "Feature",
                 geometry = new { type = "LineString", coordinates },
-                properties = new { kind = "Edge", id = e.Id.ToString(), edge = e.Label, layer = e.Layer, oid = e.Oid, type = e.Type, length = e.Length, from_measure = e.FromMeasure, to_measure = e.ToMeasure, attributes = attributes?.Invoke(e.Layer, e.Oid) }
+                properties = new { kind = e.Kind, id = e.Id.ToString(), edge = e.Label, layer = e.Layer, oid = e.Oid, type = e.Type, length = e.Length, from_measure = e.FromMeasure, to_measure = e.ToMeasure, from_node = e.From.ToString(), to_node = e.To.ToString(), attributes = attributes?.Invoke(e.Layer, e.Oid) }
             });
         }
         foreach (var v in result.Violations)
