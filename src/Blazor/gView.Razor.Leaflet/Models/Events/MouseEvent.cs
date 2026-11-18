@@ -11,6 +11,10 @@ public class MouseEvent : Event
 
     public Point2d ContainerPoint { get; set; }
 
+    /// <summary>Ctrl or Cmd was held (from the browser event).</summary>
+    public bool CtrlKey { get; set; }
+
+    public bool ShiftKey { get; set; }
 }
 
 public class BBoxEvent : Event

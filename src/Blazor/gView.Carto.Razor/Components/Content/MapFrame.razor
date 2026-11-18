@@ -242,7 +242,7 @@
 
     private Task HandleMapClick(LMap sender, BlazorLeaflet.Models.Events.MouseEvent e)
         => e.LatLng is not null
-        ? EventBus.FireMapClickAsync(new Point(e.LatLng.Lng, e.LatLng.Lat) { Srs = 4326 })
+        ? EventBus.FireMapClickAsync(new Point(e.LatLng.Lng, e.LatLng.Lat) { Srs = 4326 }, e.CtrlKey)
         : Task.CompletedTask;
 
     private Task HandleBBox(LMap sender, BlazorLeaflet.Models.Events.BBoxEvent e)

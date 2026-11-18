@@ -179,7 +179,8 @@ public sealed class NetworkQueryService
                 ends.Add(edge.Edge.To);
             }
         }
-        var component = _graph.Reach(ends.ToList(), normal with { MaxCost = double.PositiveInfinity }).Select(r => r.Node).ToHashSet();
+        // without the directions of the edges: from a box the way back to the station runs against them
+        var component = new UndirectedGraph(_graph).Reach(ends.ToList(), normal with { MaxCost = double.PositiveInfinity }).Select(r => r.Node).ToHashSet();
         var sources = _graph.ResolveNodes(sourcesPattern).Where(component.Contains).ToList();
         var sinks = _graph.ResolveNodes(sinksPattern).Where(component.Contains).ToList();
         result.Messages.Add($"Outage: {disabled.Count} edge(s) switched off, {component.Count} node(s) connected, {sources.Count} source(s), {sinks.Count} customer(s) there");
@@ -467,6 +468,15 @@ public sealed class NetworkQueryService
 
     private (double X, double Y) Location(long nodeId)
         => _graph.TryGetNode(nodeId, out var node) ? (node.Node.Location.X, node.Node.Location.Y) : (double.NaN, double.NaN);
+
+    /// <summary>The graph with every edge walkable both ways (finding what is connected, whatever the flow direction).</summary>
+    private sealed class UndirectedGraph(IGraph<long, long> graph) : IGraph<long, long>
+    {
+        public IEnumerable<GraphNode<long>> GetNodes(IReadOnlyCollection<long> ids) => graph.GetNodes(ids);
+
+        public IEnumerable<GraphEdge<long, long>> GetEdges(IReadOnlyCollection<long> nodeIds)
+            => graph.GetEdges(nodeIds).Select(e => e.Direction == EdgeDirection.Both ? e : e with { Direction = EdgeDirection.Both });
+    }
 
     private sealed class SyncProgress<T>(Action<T> report) : IProgress<T>
     {

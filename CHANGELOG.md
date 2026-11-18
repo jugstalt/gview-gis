@@ -92,7 +92,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     keeps a trace from a line end on its branch instead of running back over the station.
   - Searches (`NetworkQueryService`, gView.Cmd, NetworkServer, Carto): `disable` switches edges off
     for one search; new operation `outage` switches edges off and reports the affected customers
-    (supplied before, not after; only the connected part of the network is computed), the
+    (supplied before, not after; only the connected part of the network is computed, found
+    without the directions of the edges so a box finds its station also in networks with
+    directed lines, while the supply itself follows the directions), the
     customers still supplied through a mesh and the dead edges; new operation `nearest` lists the
     nodes nearest to `x`/`y`. Supply and outage default to the new network config settings
     `supplySources` and `customers` (Carto: network module, tab General, card "Supply").
@@ -103,7 +105,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - Carto network search: a click picks the nearest node of the network (real node, line end or
     merged point) instead of only the points of the node layers; outage picks the line part
     under the click, draws the switched off edge red and the dead edges orange; GeoJSON export
-    can snap the line ends onto the nodes.
+    can snap the line ends onto the nodes. Ctrl-click adds a pick or removes it again: several
+    edges to switch off (outage), several starts (trace, reach), sources and sinks (supply).
+    Map clicks in Carto now carry the Ctrl key (`MapClickEventArgs.CtrlKey`); a Ctrl-click without
+    dragging is a click again (the Ctrl box of the Leaflet map swallowed it), Ctrl-drag still draws a box.
 - Carto: the map zooms deeper than the resolutions of the coordinate system, down to the setting
   `MapControl:MaxScale` (default 1:10); the resolutions beyond the last one are extrapolated and
   background tiles are upscaled beyond their native zoom.

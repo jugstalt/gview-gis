@@ -20,7 +20,7 @@
     @if (_context.NeedsStart)
     {
         <div class="@($"carto-tool {(_context.Pick == NetworkSearchPick.Start ? "selected" : "")}")"
-             title="@($"{StartLabel}: click {(_context.PicksEdge ? "a line" : "a node or a line end")} in the map{(string.IsNullOrEmpty(_context.Start) ? "" : $" ({_context.StartLabel ?? _context.Start})")}")"
+             title="@($"{StartLabel}: click {(_context.PicksEdge ? "a line" : "a node or a line end")} in the map{(_context.StartAllowsMany ? ", Ctrl-click adds or removes one" : "")}{(string.IsNullOrEmpty(_context.Start) ? "" : $" ({_context.StartLabel ?? _context.Start})")}")"
              @onclick="() => SetPick(NetworkSearchPick.Start)">
             <div class=@Icons.FromString("basic:pin")></div>
             <div class="title">@(string.IsNullOrEmpty(_context.Start) ? StartLabel : Short(_context.Start, _context.StartLabel))</div>
@@ -29,7 +29,7 @@
     @if (_context.NeedsTarget)
     {
         <div class="@($"carto-tool {(_context.Pick == NetworkSearchPick.Target ? "selected" : "")}")"
-             title="@($"{TargetLabel}: click a node or a line end in the map{(string.IsNullOrEmpty(_context.Target) ? "" : $" ({_context.TargetLabel ?? _context.Target})")}")"
+             title="@($"{TargetLabel}: click a node or a line end in the map{(_context.TargetAllowsMany ? ", Ctrl-click adds or removes one" : "")}{(string.IsNullOrEmpty(_context.Target) ? "" : $" ({_context.TargetLabel ?? _context.Target})")}")"
              @onclick="() => SetPick(NetworkSearchPick.Target)">
             <div class=@Icons.FromString("basic:pin")></div>
             <div class="title">@(string.IsNullOrEmpty(_context.Target) ? TargetLabel : Short(_context.Target, _context.TargetLabel))</div>
@@ -66,12 +66,12 @@
             @if (_context.NeedsStart)
             {
                 <MudTextField T="string" Label="@(_context.PicksEdge ? $"{StartLabel} (Layer#OID or Layer#OID/part)" : $"{StartLabel} (Layer#OID, id, type pattern or @x,y)")" Dense="true"
-                              Value="_context.Start" ValueChanged="@((string v) => { _context.Start = v; _context.StartLabel = null; })" />
+                              Value="_context.Start" ValueChanged="@((string v) => { _context.Start = v; _context.StartLabel = null; _context.StartItems.Clear(); })" />
             }
             @if (_context.NeedsTarget)
             {
                 <MudTextField T="string" Label="@($"{TargetLabel} (Layer#OID, id, type pattern or @x,y; empty = module default)")" Dense="true"
-                              Value="_context.Target" ValueChanged="@((string v) => { _context.Target = v; _context.TargetLabel = null; })" />
+                              Value="_context.Target" ValueChanged="@((string v) => { _context.Target = v; _context.TargetLabel = null; _context.TargetItems.Clear(); })" />
             }
             @if (_context.Operation == "outage")
             {
@@ -248,7 +248,7 @@
     /// <summary>Niederspannung/Kasten#23 -> Kasten#23, Leitung#5/0 stays; an edge end shows its label.</summary>
     private static string Short(string reference, string? label = null)
     {
-        if (reference.StartsWith('@') && !string.IsNullOrEmpty(label))
+        if ((reference.StartsWith('@') || reference.Contains(',')) && !string.IsNullOrEmpty(label))
         {
             return label.Length > 28 ? label[..27] + "…" : label;
         }
@@ -275,6 +275,7 @@
         {
             // an edge to switch off is no start node and the other way round
             _context.Start = _context.StartLabel = null;
+            _context.StartItems.Clear();
         }
         _context.Pick = _context.NeedsStart ? NetworkSearchPick.Start : NetworkSearchPick.None;
     }

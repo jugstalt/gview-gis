@@ -11,6 +11,9 @@ public enum NetworkSearchPick
     Target
 }
 
+/// <summary>A node or edge picked in the map: its reference for the search and a readable label.</summary>
+public sealed record NetworkPickedItem(string Reference, string Label);
+
 /// <summary>The state of the network search tool (SpatialNET network of the map, see NetworkModule).</summary>
 public class NetworkSearchContext
 {
@@ -36,6 +39,12 @@ public class NetworkSearchContext
 
     /// <summary>The label of the picked target.</summary>
     public string? TargetLabel { get; set; }
+
+    /// <summary>The start nodes (or outage edges) picked in the map, Ctrl-click adds or removes one; empty when typed.</summary>
+    public List<NetworkPickedItem> StartItems { get; } = [];
+
+    /// <summary>The targets picked in the map (supply sinks with Ctrl-click).</summary>
+    public List<NetworkPickedItem> TargetItems { get; } = [];
 
     /// <summary>outage: the sources; empty for the supply sources of the network module.</summary>
     public string? Sources { get; set; }
@@ -80,6 +89,12 @@ public class NetworkSearchContext
     public void NotifyChanged() => Changed?.Invoke();
 
     public bool NeedsTarget => Operation is "path" or "supply";
+
+    /// <summary>Whether Ctrl-click may pick several starts: trace/reach starts, supply sources, outage edges.</summary>
+    public bool StartAllowsMany => Operation is "trace" or "reach" or "supply" or "outage";
+
+    /// <summary>Whether Ctrl-click may pick several targets: supply sinks.</summary>
+    public bool TargetAllowsMany => Operation == "supply";
 
     /// <summary>outage: a click picks an edge (the branch to switch off), not a node.</summary>
     public bool PicksEdge => Operation == "outage";

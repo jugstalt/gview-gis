@@ -200,13 +200,13 @@ internal class NetworkSearchTool : ICartoTool
             return false;
         }
 
-        var graphics = scope.Document.Map.Display.GraphicsContainer.Elements;
-        _context.Info = $"Picked: {label}";
+        _pickPoints[reference] = displayPoint;
+        bool ctrl = eventArgs is MapClickEventArgs { CtrlKey: true };
         if (_context.Pick == NetworkSearchPick.Start)
         {
-            (_context.Start, _context.StartLabel) = (reference, label);
-            graphics.Remove(typeof(GraphicStartPoint));
-            graphics.Add(new GraphicStartPoint(displayPoint));
+            bool added = Pick(_context.StartItems, _context.Start, reference, label, ctrl && _context.StartAllowsMany);
+            (_context.Start, _context.StartLabel) = Summary(_context.StartItems);
+            _context.Info = $"{(added ? "Picked" : "Removed")}: {label}{(_context.StartItems.Count > 1 ? $" ({_context.StartItems.Count} picked)" : "")}";
             if (_context.Operation == "path")
             {
                 _context.Pick = NetworkSearchPick.Target;
@@ -214,13 +214,71 @@ internal class NetworkSearchTool : ICartoTool
         }
         else
         {
-            (_context.Target, _context.TargetLabel) = (reference, label);
-            graphics.Remove(typeof(GraphicTargetPoint));
-            graphics.Add(new GraphicTargetPoint(displayPoint));
+            bool added = Pick(_context.TargetItems, _context.Target, reference, label, ctrl && _context.TargetAllowsMany);
+            (_context.Target, _context.TargetLabel) = Summary(_context.TargetItems);
+            _context.Info = $"{(added ? "Picked" : "Removed")}: {label}{(_context.TargetItems.Count > 1 ? $" ({_context.TargetItems.Count} picked)" : "")}";
         }
+        DrawPicks(scope);
 
         await scope.EventBus.FireRefreshMapAsync(DrawPhase.Graphics);
         return true;
+    }
+
+    /// <summary>The display locations of the picked references, for the markers.</summary>
+    private readonly Dictionary<string, IPoint> _pickPoints = [];
+
+    /// <summary>
+    /// A click replaces the picked items, a Ctrl-click adds the item or removes it when it is picked already. Text typed into
+    /// the field before is kept as one item. Returns false when the item was removed.
+    /// </summary>
+    private static bool Pick(List<NetworkPickedItem> items, string? current, string reference, string label, bool toggle)
+    {
+        if (!toggle)
+        {
+            items.Clear();
+            items.Add(new NetworkPickedItem(reference, label));
+            return true;
+        }
+        if (items.Count == 0 && !string.IsNullOrWhiteSpace(current))
+        {
+            items.Add(new NetworkPickedItem(current, current));
+        }
+        if (items.RemoveAll(i => i.Reference == reference) > 0)
+        {
+            return false;
+        }
+        items.Add(new NetworkPickedItem(reference, label));
+        return true;
+    }
+
+    /// <summary>The references for the search and the label of the button: the item, or how many.</summary>
+    private (string? References, string? Label) Summary(List<NetworkPickedItem> items) => items.Count switch
+    {
+        0 => (null, null),
+        1 => (items[0].Reference, items[0].Label),
+        _ => (string.Join(", ", items.Select(i => i.Reference)), $"{items.Count} {(_context!.PicksEdge ? "edges" : "nodes")}")
+    };
+
+    /// <summary>One marker per picked start and target.</summary>
+    private void DrawPicks(ICartoApplicationScopeService scope)
+    {
+        var graphics = scope.Document.Map.Display.GraphicsContainer.Elements;
+        graphics.Remove(typeof(GraphicStartPoint));
+        graphics.Remove(typeof(GraphicTargetPoint));
+        foreach (var item in _context!.StartItems)
+        {
+            if (_pickPoints.TryGetValue(item.Reference, out var point))
+            {
+                graphics.Add(new GraphicStartPoint(point));
+            }
+        }
+        foreach (var item in _context.TargetItems)
+        {
+            if (_pickPoints.TryGetValue(item.Reference, out var point))
+            {
+                graphics.Add(new GraphicTargetPoint(point));
+            }
+        }
     }
 
     /// <summary>
@@ -370,6 +428,9 @@ internal class NetworkSearchTool : ICartoTool
 
         _context!.Result = null;
         _context.Start = _context.Target = _context.StartLabel = _context.TargetLabel = null;
+        _context.StartItems.Clear();
+        _context.TargetItems.Clear();
+        _pickPoints.Clear();
         _context.Info = null;
         _context.Pick = NetworkSearchPick.Start;
 

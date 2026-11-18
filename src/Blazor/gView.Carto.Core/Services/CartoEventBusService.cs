@@ -72,9 +72,10 @@ public class CartoEventBusService
     public Task FireMapMouseMoveAsync(IPoint latLng, IPoint layerPoint)
         => OnMapMouseMoveAsync?.FireAsync(latLng, layerPoint) ?? Task.CompletedTask;
 
-    public event Func<IPoint, Task>? OnMapClickAsync;
-    public Task FireMapClickAsync(IPoint point)
-        => OnMapClickAsync?.FireAsync(point) ?? Task.CompletedTask;
+    /// <summary>A click into the map; the bool is true when Ctrl (or Cmd) was held.</summary>
+    public event Func<IPoint, bool, Task>? OnMapClickAsync;
+    public Task FireMapClickAsync(IPoint point, bool ctrlKey = false)
+        => OnMapClickAsync?.FireAsync(point, ctrlKey) ?? Task.CompletedTask;
 
     public event Func<IEnvelope, Task>? OnMapBBoxAsync;
     public Task FireMapBBoxAsync(IEnvelope bbox)

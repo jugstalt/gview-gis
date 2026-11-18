@@ -309,12 +309,12 @@ public class CartoApplicationScopeService : ApplictionBusyHandlerAndCache, ICart
     private Task HandleCartoDocumentTouchedAsync(ICartoDocument cartoDocument)
         => _settings.StoreMapDocumentLastAccess(cartoDocument.FilePath);
 
-    private Task HandleMapClickAsync(IPoint point)
+    private Task HandleMapClickAsync(IPoint point, bool ctrlKey)
     {
         if (Tools.CurrentTool?.ToolType.HasFlag(ToolType.Click) == true)
         {
             return Tools.CurrentTool.OnEvent(this,
-                new MapClickEventArgs() { Point = point });
+                new MapClickEventArgs() { Point = point, CtrlKey = ctrlKey });
         }
 
         return Task.CompletedTask;

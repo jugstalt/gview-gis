@@ -207,6 +207,69 @@ public class NetworkPickOutageTests : IDisposable
     }
 
     [Fact]
+    public void Outage_OfABoxConnector_ReportsOnlyTheHouseBehindIt()
+    {
+        // Trafo#1 -V#10- end(5,0) -L#20- end(15,-1) -KV#34- Kasten#2 (15,0) -KV#28- end(15,1) -HA#40- Kunde#6
+        //                                                    Kasten#2 -KV#33- end(16,0) -L#21- Kunde#3
+        var ids = new NetworkIds(Tolerance);
+        long trafo = NetworkIds.NodeId(new FeatureRef(TrafoFc, 1)), kasten = NetworkIds.NodeId(new FeatureRef(KastenFc, 2));
+        long kunde3 = NetworkIds.NodeId(new FeatureRef(KundeFc, 3)), kunde6 = NetworkIds.NodeId(new FeatureRef(KundeFc, 6));
+        long e1 = ids.NewHelperNode(new Coordinate(5, 0)), e2 = ids.NewHelperNode(new Coordinate(15, -1));
+        long e3 = ids.NewHelperNode(new Coordinate(15, 1)), e4 = ids.NewHelperNode(new Coordinate(16, 0));
+        var metadata = new NetworkMetadata
+        {
+            Name = "box",
+            Tolerance = Tolerance,
+            SupplySources = "[Trafo]",
+            Customers = "[Kunde]",
+            Facets = [new NetworkFacetMetadata { Name = "Objektart", Values = new() { [1] = "Trafo", [2] = "Kasten", [3] = "Kunde", [4] = "Verbinder", [5] = "Leitung" } }],
+            Types =
+            [
+                new NetworkTypeMetadata { Id = TrafoType, Kind = ElementKind.Node, Facets = [1], Used = true },
+                new NetworkTypeMetadata { Id = KastenType, Kind = ElementKind.Node, Facets = [2], Used = true },
+                new NetworkTypeMetadata { Id = KundeType, Kind = ElementKind.Node, Facets = [3], Used = true },
+                new NetworkTypeMetadata { Id = VerbinderType, Kind = ElementKind.Edge, Facets = [4], Used = true },
+                new NetworkTypeMetadata { Id = LeitungType, Kind = ElementKind.Edge, Facets = [5], Used = true },
+            ],
+            FeatureClasses =
+            [
+                new NetworkFeatureClassMetadata { Index = TrafoFc, Layer = "NS/Trafo", Kind = ElementKind.Node },
+                new NetworkFeatureClassMetadata { Index = KastenFc, Layer = "NS/Kasten", Kind = ElementKind.Node },
+                new NetworkFeatureClassMetadata { Index = KundeFc, Layer = "NS/Kunde", Kind = ElementKind.Node },
+                new NetworkFeatureClassMetadata { Index = VerbinderFc, Layer = "NS/Verbinder", Kind = ElementKind.Edge },
+                new NetworkFeatureClassMetadata { Index = LeitungFc, Layer = "NS/Leitung", Kind = ElementKind.Edge },
+            ],
+        };
+        using (var writer = new FileNetworkStore(_directory).CreateWriter())
+        {
+            void Node(long id, int type, double x, double y, bool helper = false)
+                => writer.WriteNode(new BuiltNode<long, FeatureRef>(new GraphNode<long>(id, type, new Coordinate(x, y)), 1, helper, helper ? default : new FeatureRef(NetworkIds.Decompose(id).FeatureClass, NetworkIds.Decompose(id).Oid)));
+            void Edge(int fc, long oid, long from, long to, int type)
+            {
+                // lines are directed away from the station (as in a network built with a direction for lines)
+                var direction = type == LeitungType ? EdgeDirection.Forward : EdgeDirection.Both;
+                var edge = new GraphEdge<long, long>(NetworkIds.Compose(fc, oid), from, to, type, 1, direction, false, Array.Empty<EdgeWeight>());
+                writer.WriteEdge(new BuiltEdge<long, long, FeatureRef>(edge, new FeatureRef(fc, oid), 0, 1, 1, 1));
+            }
+            Node(trafo, TrafoType, 0, 0); Node(kasten, KastenType, 15, 0); Node(kunde3, KundeType, 25, 0); Node(kunde6, KundeType, 15, 10);
+            Node(e1, 0, 5, 0, true); Node(e2, 0, 15, -1, true); Node(e3, 0, 15, 1, true); Node(e4, 0, 16, 0, true);
+            Edge(VerbinderFc, 10, trafo, e1, VerbinderType);
+            Edge(LeitungFc, 20, e1, e2, LeitungType);
+            Edge(VerbinderFc, 34, e2, kasten, VerbinderType);
+            Edge(VerbinderFc, 28, kasten, e3, VerbinderType);
+            Edge(LeitungFc, 40, e3, kunde6, LeitungType);
+            Edge(VerbinderFc, 33, kasten, e4, VerbinderType);
+            Edge(LeitungFc, 21, e4, kunde3, LeitungType);
+            writer.Commit(metadata);
+        }
+
+        var result = Service().Run("outage", new NetworkQueryRequest { Disable = "NS/Verbinder#28/0" });
+
+        Assert.Contains(result.Messages, m => m.Contains("1 source(s)"));
+        Assert.Equal(["NS/Kunde#6"], result.Nodes.Where(n => n.Kind == "Affected").Select(n => n.Label));
+    }
+
+    [Fact]
     public void Locations_AreTransformed_TheRestStays()
     {
         var text = NetworkLocations.Transform("Trafo#1, @1.5,2 ~3, [*,Kunde,*], @-4e1, 5", (x, y) => (x * 10, y * 10));

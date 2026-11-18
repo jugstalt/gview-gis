@@ -43,6 +43,13 @@ var gViewLeaflet = new function () {
             }
         }
 
+        // the modifier keys of mouse events (originalEvent itself can't be serialized)
+        const original = eventArgs.originalEvent;
+        if (original && typeof original.ctrlKey === "boolean") {
+            copy.ctrlKey = original.ctrlKey || original.metaKey === true;
+            copy.shiftKey = original.shiftKey === true;
+        }
+
         return copy;
     };
 
@@ -155,6 +162,30 @@ var gViewLeaflet = new function () {
             }
         });
         map.on('mouseup', function (e) {
+            // Ctrl + click without dragging is a click with Ctrl (e.g. add to a selection), not a box: the box
+            // handling swallows the browser's click, so it is fired here
+            if (bboxStartLatLng && toolBoxLayer && e.containerPoint) {
+                const start = map.latLngToContainerPoint(bboxStartLatLng);
+                if (start.distanceTo(e.containerPoint) < 4) {
+                    map.removeLayer(toolBoxLayer);
+                    _disableBBoxToolHandling(map);
+                    bboxStartLatLng = null;
+
+                    // a click of the browser that may still follow must not count twice
+                    const container = map.getContainer();
+                    const swallow = function (ev) { ev.stopPropagation(); };
+                    container.addEventListener('click', swallow, true);
+                    setTimeout(function () { container.removeEventListener('click', swallow, true); }, 0);
+
+                    map.fire('click', {
+                        latlng: e.latlng,
+                        layerPoint: e.layerPoint,
+                        containerPoint: e.containerPoint,
+                        originalEvent: e.originalEvent
+                    });
+                    return;
+                }
+            }
             finishAndFireBbox();
         });
         map.on('mouseout', function (e) {
