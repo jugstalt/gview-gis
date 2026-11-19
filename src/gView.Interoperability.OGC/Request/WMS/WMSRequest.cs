@@ -6,6 +6,7 @@ using gView.Framework.Core.Exceptions;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Core.MapServer;
 using gView.Framework.Core.Common;
+using gView.Framework.Core.Xml;
 using gView.Framework.Data;
 using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
@@ -1054,7 +1055,15 @@ namespace gView.Interoperability.OGC
         private string TransformXML(string xml, string xslPath)
         {
             XslCompiledTransform transformer = new XslCompiledTransform();
-            transformer.Load(xslPath);
+
+            // xslPath is validated (WMSParameterDescriptor.GetInfoFormatXslPath).
+            // No DTDs, no XmlResolver: xsl:include/xsl:import can not load other files;
+            // XsltSettings.Default: no document() function, no embedded scripts
+            using (var xslStream = File.OpenRead(xslPath))
+            using (var xslReader = SafeXml.CreateReader(xslStream))
+            {
+                transformer.Load(xslReader, XsltSettings.Default, null);
+            }
 
             StringReader xmlStream = new StringReader(xml);
             XPathDocument xpathdoc = new XPathDocument(xmlStream);
@@ -1062,6 +1071,7 @@ namespace gView.Interoperability.OGC
             MemoryStream ms = new MemoryStream();
             XmlTextWriter xWriter = new XmlTextWriter(ms, System.Text.Encoding.UTF8);
             transformer.Transform(xpathdoc, xWriter);
+            xWriter.Flush();
 
             ms.Position = 0;
             StreamReader sr = new StreamReader(ms);
@@ -1242,10 +1252,13 @@ namespace gView.Interoperability.OGC
                     StringBuilder xml = new StringBuilder();
                     GetFeatureResponseXML(features, xml);
 
+                    // throws MapServerException (client message) for invalid values / paths outside {EtcPath}/wms/getfeatureinfo
+                    string xslPath = WMSParameterDescriptor.GetInfoFormatXslPath(_mapServer.EtcPath, formatXsl);
+
                     string output = String.Empty;
                     try
                     {
-                        output = this.TransformXML(xml.ToString(), $"{_mapServer.EtcPath}/wms/getfeatureinfo/{formatXsl}");
+                        output = this.TransformXML(xml.ToString(), xslPath);
 
                         /*
                         var xslTrans = new XslCompiledTransform();

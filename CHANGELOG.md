@@ -235,6 +235,11 @@ gView Server hardening for internet-facing installations, see
   `definitionExpression` with other functions, subqueries or unknown fields are rejected.
 - WFS: the KVP `FILTER` parameter is parsed as filter XML instead of being loaded as url or file
   path (also in 8.26.4001).
+- WMS `GetFeatureInfo` with `INFO_FORMAT=xsl/{name}.xsl`: only a file name of `a-z 0-9 _ . -`
+  in `{etc}/wms/getfeatureinfo/xsl` is accepted, other values (`..`, paths, urls) are an
+  `InvalidFormat` error (`WMSParameterDescriptor.GetInfoFormatXslPath`); no more loading of
+  arbitrary XML/XSL files on the server. The stylesheet is loaded without DTDs, `xsl:include`/
+  `xsl:import`, `document()` and scripts.
 - XML input (ArcXML, WFS POST, `SLD_BODY`, SLD, OGC filter/GML) and responses of remote services
   (WMS/WFS/ArcIMS/gView clients) are parsed without DTD processing and without resolving external
   resources (`XmlDocumentExtensions.LoadXmlSafe`, `SafeXml`): no entity expansion

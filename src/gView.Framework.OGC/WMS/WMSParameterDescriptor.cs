@@ -1,4 +1,5 @@
 ﻿using gView.Framework.Common;
+using gView.Framework.Core.Exceptions;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Geometry;
 using gView.Framework.OGC.Exceptions;
@@ -10,6 +11,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace gView.Framework.OGC.WMS;
 
@@ -537,6 +539,10 @@ public class WMSParameterDescriptor
                         default:
                             if (request["INFOFORMAT"].ToLower().StartsWith("xsl/"))
                             {
+                                if (!IsValidInfoFormatXsl(request["INFOFORMAT"].ToLower()))
+                                {
+                                    return WriteError(InvalidInfoFormatXslMessage, "InvalidFormat");
+                                }
                                 this.InfoFormat = WMSInfoFormat.xsl;
                                 this.InfoFormatXsl = request["INFOFORMAT"].ToLower();
                             }
@@ -571,6 +577,10 @@ public class WMSParameterDescriptor
                         default:
                             if (request["INFO_FORMAT"].ToLower().StartsWith("xsl/"))
                             {
+                                if (!IsValidInfoFormatXsl(request["INFO_FORMAT"].ToLower()))
+                                {
+                                    return WriteError(InvalidInfoFormatXslMessage, "InvalidFormat");
+                                }
                                 this.InfoFormat = WMSInfoFormat.xsl;
                                 this.InfoFormatXsl = request["INFO_FORMAT"].ToLower();
                             }
@@ -600,6 +610,48 @@ public class WMSParameterDescriptor
         {
             throw new ParseParametersException(parseResult.data, parseResult.contentType);
         }
+    }
+
+    #endregion
+
+    #region InfoFormat Xsl
+
+    private const string InvalidInfoFormatXslMessage = "invalid INFO_FORMAT parameter, xsl format must be: xsl/{name}.xsl (name: a-z, 0-9, _ . -)"; // no xml special chars: inserted unescaped into exception reports
+
+    // only a single file name in the xsl/ folder: no further path separators, no drive, no url
+    private static readonly Regex InfoFormatXslRegex =
+        new Regex(@"^xsl/[a-z0-9_.\-]+\.xsl\z", RegexOptions.CultureInvariant);
+
+    /// <summary>
+    /// INFO_FORMAT=xsl/&lt;name&gt;.xsl (lower case) with name of [a-z0-9_.-], no ".."
+    /// </summary>
+    public static bool IsValidInfoFormatXsl(string infoFormatXsl)
+        => !String.IsNullOrEmpty(infoFormatXsl)
+        && InfoFormatXslRegex.IsMatch(infoFormatXsl)
+        && !infoFormatXsl.Contains("..");
+
+    /// <summary>
+    /// Full path of the xsl file: {etcPath}/wms/getfeatureinfo/xsl/&lt;name&gt;.xsl.
+    /// Throws a <see cref="MapServerException"/> if the value is invalid or the path leaves {etcPath}/wms/getfeatureinfo
+    /// </summary>
+    public static string GetInfoFormatXslPath(string etcPath, string infoFormatXsl)
+    {
+        if (String.IsNullOrEmpty(etcPath) || !IsValidInfoFormatXsl(infoFormatXsl))
+        {
+            throw new MapServerException(InvalidInfoFormatXslMessage);
+        }
+
+        var rootDirectory = System.IO.Path.TrimEndingDirectorySeparator(
+            System.IO.Path.GetFullPath(System.IO.Path.Combine(etcPath, "wms", "getfeatureinfo"))) + System.IO.Path.DirectorySeparatorChar;
+        var fullPath = System.IO.Path.GetFullPath(System.IO.Path.Combine(rootDirectory, infoFormatXsl));
+
+        if (!fullPath.StartsWith(rootDirectory,
+                OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal))
+        {
+            throw new MapServerException(InvalidInfoFormatXslMessage);
+        }
+
+        return fullPath;
     }
 
     #endregion
