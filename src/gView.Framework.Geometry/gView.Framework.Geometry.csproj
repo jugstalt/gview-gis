@@ -13,6 +13,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- projections database (SpatialReference.FromID): copied to the output/publish directory of every project referencing this library -->
+    <None Remove="proj.db" />
+    <Content Include="proj.db">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Proj4Net.Core" Version="2.26.4702" />
   </ItemGroup>
 

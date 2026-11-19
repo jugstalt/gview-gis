@@ -19,10 +19,6 @@
 -->
   
   <ItemGroup>
-    <None Remove="proj.db" />
-  </ItemGroup>
-
-  <ItemGroup>
     <InternalsVisibleTo Include="gView.Server.Tests" />
   </ItemGroup>
   
@@ -30,12 +26,6 @@
     <_WebToolingArtifacts Remove="Properties\PublishProfiles\docker-linux64.pubxml" />
     <_WebToolingArtifacts Remove="Properties\PublishProfiles\linux64.pubxml" />
     <_WebToolingArtifacts Remove="Properties\PublishProfiles\win64.pubxml" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="proj.db">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
 
   <ItemGroup>
