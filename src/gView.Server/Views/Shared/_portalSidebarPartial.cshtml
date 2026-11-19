@@ -47,6 +47,16 @@
             <a asp-area="" asp-controller="Token" asp-action="Logout">
                 <span class="ico ico-logout"></span><span>Logout</span>
             </a>
+            @if (isManageUser && Globals.AllowFormsLogin && this.Context.Request.IsFromAdminNetwork())
+            {
+                <form method="post" action="@rootUrl/manage/signouteverywhere"
+                      onsubmit="return confirm('End all sessions of this admin on all devices?');">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="app-nav-link" title="Ends all sessions of this admin on all devices">
+                        <span class="ico ico-lock"></span><span>Sign out everywhere</span>
+                    </button>
+                </form>
+            }
         }
         else if (Globals.AllowFormsLogin)
         {

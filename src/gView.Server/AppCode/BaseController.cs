@@ -38,22 +38,10 @@ namespace gView.Server.AppCode
         #region Security
 
         protected void SetAuthCookie(AuthToken authToken)
-        {
-            var cookieOptions = new CookieOptions()
-            {
-                Expires = null,
-                Secure = true,
-                HttpOnly = true,
-                SameSite = SameSiteMode.Lax
-            };
-
-            this.Response.Cookies.Append(Globals.AuthCookieName, _encryptionCertificate.ToToken(authToken), cookieOptions);
-        }
+            => AuthCookie.Append(this.Response, _encryptionCertificate.ToToken(authToken));
 
         protected void RemoveAuthCookie()
-        {
-            this.Response.Cookies.Delete(Globals.AuthCookieName);
-        }
+            => AuthCookie.Remove(this.Response);
 
         #endregion
 

@@ -31,6 +31,12 @@ namespace gView.Server.AppCode
         public long Expire { get; }
         public AuthTypes AuthType { get; }
 
+        /// <summary>
+        /// The security stamp of the login at login time (see <see cref="LoginStamp"/>).
+        /// Null for tokens that are not issued from a login file (OIDC, url tokens).
+        /// </summary>
+        public string Stamp { get; init; }
+
         public bool IsAnonymous => String.IsNullOrWhiteSpace(this.Username);
         public bool IsManageUser => this.IsAnonymous == false && this.AuthType == AuthTypes.Manage;
         public bool IsTokenUser => this.IsAnonymous == false && this.AuthType == AuthTypes.Tokenuser;
@@ -57,7 +63,7 @@ namespace gView.Server.AppCode
             {
                 if (SecureCrypto.FixedTimeEquals(password, stored))
                 {
-                    return new AuthToken(username, authType, new TimeSpan(0, expireMiniutes, 0));
+                    return new AuthToken(username, authType, new TimeSpan(0, expireMiniutes, 0)) { Stamp = LoginStamp.Compute(fi) };
                 }
 
                 return null;
@@ -67,7 +73,7 @@ namespace gView.Server.AppCode
                 || SecureCrypto.VerifyPassword(password, stored, username, out bool needsRehash) && Rehash(fi, password, needsRehash))
             {
                 PasswordVerificationCache.SetVerified(fi.FullName, password, File.ReadAllText(fi.FullName));
-                return new AuthToken(username, authType, new TimeSpan(0, expireMiniutes, 0));
+                return new AuthToken(username, authType, new TimeSpan(0, expireMiniutes, 0)) { Stamp = LoginStamp.Compute(fi) };
             }
 
             return null;
@@ -84,6 +90,7 @@ namespace gView.Server.AppCode
                 try
                 {
                     File.WriteAllText(fi.FullName, SecureCrypto.HashPassword(password));
+                    LoginStamp.Invalidate(fi);
                 }
                 catch { }
             }

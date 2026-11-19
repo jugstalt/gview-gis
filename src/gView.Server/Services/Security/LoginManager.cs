@@ -126,6 +126,7 @@ namespace gView.Server.Services.Security
                 : SecureCrypto.HashPassword(newPassword);
 
             File.WriteAllText(fi.FullName, hashedPassword);
+            LoginStamp.Invalidate(fi);  // ends all sessions and tokens of the user
         }
 
         public void DeleteTokenLogin(string username)
@@ -138,6 +139,7 @@ namespace gView.Server.Services.Security
             }
 
             fi.Delete();
+            LoginStamp.Delete(fi);
         }
 
         public IEnumerable<string> GetTokenUsernames(bool fullUrlToken = true)
@@ -182,6 +184,47 @@ namespace gView.Server.Services.Security
 
             return names;
         }
+
+        #region Security Stamp
+
+        /// <summary>
+        /// Is the token still valid for its login: was it issued with the current
+        /// security stamp (no password change, no "sign out everywhere" since)?
+        /// Tokens without a login file behind them (OIDC) are not checked here.
+        /// </summary>
+        public bool HasCurrentStamp(AuthToken authToken)
+        {
+            if (authToken is null || authToken.IsAnonymous)
+            {
+                return true;
+            }
+
+            var current = LoginStamp.Current(LoginFolder(authToken.AuthType), authToken.Username);
+
+            return current is not null && SecureCrypto.FixedTimeEquals(current, authToken.Stamp);
+        }
+
+        /// <summary>
+        /// Ends every session and token of the user of this token.
+        /// </summary>
+        public void SignOutEverywhere(AuthToken authToken)
+        {
+            if (authToken is null || authToken.IsAnonymous)
+            {
+                return;
+            }
+
+            LoginStamp.Renew(LoginFolder(authToken.AuthType), authToken.Username);
+        }
+
+        private string LoginFolder(AuthToken.AuthTypes authType) => authType switch
+        {
+            AuthToken.AuthTypes.Manage => Path.Combine(_mapServerService.Options.LoginManagerRootPath, "manage"),
+            AuthToken.AuthTypes.Tokenuser => Path.Combine(_mapServerService.Options.LoginManagerRootPath, "token"),
+            _ => null
+        };
+
+        #endregion
 
         #region Request
 
@@ -283,7 +326,7 @@ namespace gView.Server.Services.Security
             {
                 expireMiniutes = expireMiniutes <= 0 ? 30 : expireMiniutes;
 
-                return new AuthToken(username, authType, new TimeSpan(0, expireMiniutes, 0));
+                return new AuthToken(username, authType, new TimeSpan(0, expireMiniutes, 0)) { Stamp = LoginStamp.Compute(fi) };
             }
 
             return null;

@@ -1,4 +1,5 @@
-﻿using gView.Server.AppCode.Extensions;
+﻿using gView.Framework.Core.Exceptions;
+using gView.Server.AppCode.Extensions;
 using gView.Server.Extensions;
 using gView.Server.Services.Security;
 using Microsoft.AspNetCore.Http;
@@ -21,7 +22,7 @@ public class TokenAuthenticationMiddleware
         _encryptionCertService = encryptionCertService;
     }
 
-    public async Task InvokeAsync(HttpContext context)
+    public async Task InvokeAsync(HttpContext context, LoginManager loginManager)
     {
         if (context.User.ApplyAuthenticationMiddleware())
         {
@@ -30,6 +31,12 @@ public class TokenAuthenticationMiddleware
             if (!String.IsNullOrEmpty(token))
             {
                 var authToken = _encryptionCertService.FromToken(token);
+
+                // password changed or "sign out everywhere" since the token was issued
+                if (!loginManager.HasCurrentStamp(authToken))
+                {
+                    throw new InvalidTokenException();
+                }
 
                 context.User = authToken.ToClaimsPrincipal();
             }

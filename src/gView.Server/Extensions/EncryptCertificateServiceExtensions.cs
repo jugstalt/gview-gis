@@ -13,7 +13,8 @@ namespace gView.Server.Extensions
         {
             return SecureCrypto.EncryptToken(
                 ecs.GetCertificate(),
-                Guid.NewGuid().ToString("N") + "|" + authToken.Username + "|" + (int)authToken.AuthType + "|" + authToken.Expire.ToString(), resultType: SecureCrypto.ResultType.Base62);
+                Guid.NewGuid().ToString("N") + "|" + authToken.Username + "|" + (int)authToken.AuthType + "|" + authToken.Expire.ToString() + "|" + authToken.Stamp,
+                resultType: SecureCrypto.ResultType.Base62);
         }
 
         static public AuthToken FromToken(this EncryptionCertificateService ecs, string token)
@@ -26,7 +27,11 @@ namespace gView.Server.Extensions
                 return new AuthToken(
                     at[1],
                     (AuthTypes)int.Parse(at[2]),
-                    long.Parse(at[3]));
+                    long.Parse(at[3]))
+                {
+                    // tokens issued before security stamps have none: they are rejected
+                    Stamp = at.Length > 4 ? at[4] : null
+                };
             }
             catch
             {

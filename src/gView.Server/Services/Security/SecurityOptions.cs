@@ -18,7 +18,8 @@ namespace gView.Server.Services.Security;
 ///   "known-proxies": [ "10.0.0.5" ],
 ///   "known-networks": [ "10.0.0.0/8" ],
 ///   "manage": {
-///     "allowed-networks": [ "10.1.5.0/24" ]   // "*" = everywhere
+///     "allowed-networks": [ "10.1.5.0/24" ],  // "*" = everywhere
+///     "session-hours": 8                      // admin login, renewed while active
 ///   },
 ///   "cors": {
 ///     "allowed-origins": [ "*" ]              // or [ "https://maps.example.com" ]
@@ -77,6 +78,11 @@ public class SecurityOptions
     /// True, if manage:allowed-networks is set in the configuration.
     /// </summary>
     public bool ManageAllowedNetworksConfigured { get; init; }
+
+    /// <summary>
+    /// Lifetime of an admin (form) login; renewed while the admin is active.
+    /// </summary>
+    public int ManageSessionHours { get; init; } = 8;
 
     /// <summary>
     /// Origins allowed to call the services from a browser (CORS); null = any origin.
@@ -151,6 +157,7 @@ public class SecurityOptions
             ManageAllowedNetworks = manageEverywhere
                 ? null
                 : (manageNetworks.Length > 0 ? manageNetworks : DefaultTrustedNetworks).Select(ParseNetwork).ToArray(),
+            ManageSessionHours = int.TryParse(section["manage:session-hours"], out int hours) && hours > 0 ? hours : 8,
             CorsAllowedOrigins = corsOrigins.Length == 0 || corsOrigins.Contains("*")
                 ? null
                 : corsOrigins.Select(o => o.TrimEnd('/')).ToArray(),

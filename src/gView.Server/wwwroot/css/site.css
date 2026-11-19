@@ -91,7 +91,7 @@ hr { border: 0; border-top: 1px solid var(--border); }
 .ico { display: inline-block; width: 18px; height: 18px; flex: none; vertical-align: -4px; }
 .ico-home { --ico: var(--ico-home); } .ico-layers { --ico: var(--ico-layers); } .ico-code { --ico: var(--ico-code); }
 .ico-shield { --ico: var(--ico-shield); } .ico-server { --ico: var(--ico-server); } .ico-users { --ico: var(--ico-users); }
-.ico-login { --ico: var(--ico-login); } .ico-logout { --ico: var(--ico-logout); } .ico-info { --ico: var(--ico-info); }
+.ico-lock { --ico: var(--ico-lock); } .ico-login { --ico: var(--ico-login); } .ico-logout { --ico: var(--ico-logout); } .ico-info { --ico: var(--ico-info); }
 .ico-map { --ico: var(--ico-map); } .ico-sun { --ico: var(--ico-sun); } .ico-moon { --ico: var(--ico-moon); }
 .ico-monitor { --ico: var(--ico-monitor); } .ico-chevron { --ico: var(--ico-chevron); } .ico-search { --ico: var(--ico-search); }
 .ico-upload { --ico: var(--ico-upload); } .ico-folder { --ico: var(--ico-folder); } .ico-folderplus { --ico: var(--ico-folderplus); }
@@ -111,6 +111,9 @@ hr { border: 0; border-top: 1px solid var(--border); }
 .app-nav-label { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; padding: 14px 10px 4px; opacity: .6; }
 .app-nav a, .app-user { display: flex; align-items: center; gap: 12px; padding: 8px 10px; border-radius: 6px; }
 .app-nav a:hover { background: var(--side-2); color: #fff; }
+.app-nav form { margin: 0; }
+.app-nav button.app-nav-link { display: flex; align-items: center; gap: 12px; padding: 8px 10px; border-radius: 6px; width: 100%; background: none; border: 0; color: inherit; font: inherit; cursor: pointer; text-align: left; }
+.app-nav button.app-nav-link:hover { background: var(--side-2); color: #fff; }
 .app-nav a.active { background: var(--side-2); color: var(--side-active); box-shadow: inset 3px 0 0 var(--accent); }
 .app-nav.bottom { margin-top: auto; border-top: 1px solid var(--side-2); padding-top: 10px; }
 .app-user { color: #fff; }
@@ -141,7 +144,7 @@ html[data-theme-pref="system"] .theme-switch [data-theme-set="system"] { backgro
     .app { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr; }
     .app-side { position: static; height: auto; flex-direction: row; align-items: center; padding: 6px 8px; overflow-x: auto; gap: 4px; }
     .app-brand { padding: 6px; }
-    .app-brand span:not(.ico), .app-brand em, .app-nav a span:not(.ico), .app-nav-label, .app-user { display: none; }
+    .app-brand span:not(.ico), .app-brand em, .app-nav a span:not(.ico), .app-nav button span:not(.ico), .app-nav-label, .app-user { display: none; }
     .app-nav, .app-nav.bottom { flex-direction: row; margin: 0; border: 0; padding: 0; }
     .app-nav.bottom { margin-left: auto; }
     .app-top { padding: 0 16px; }

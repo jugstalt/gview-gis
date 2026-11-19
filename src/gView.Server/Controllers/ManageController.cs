@@ -18,6 +18,7 @@ using gView.Server.Services.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -143,7 +144,7 @@ public class ManageController : BaseController
             var authToken = _loginManager.GetManagerAuthToken(
                 model.Username.Trim(),
                 model.Password.Trim(),
-                exipreMinutes: 60 * 24);
+                exipreMinutes: 60 * this.HttpContext.RequestServices.GetRequiredService<SecurityOptions>().ManageSessionHours);
 
             if (authToken == null)
             {
@@ -168,6 +169,24 @@ public class ManageController : BaseController
     public IActionResult OidcLogin()
     {
         return RedirectToAction("Index");
+    }
+
+    /// <summary>
+    /// Ends all sessions of the current admin on all devices (new security stamp).
+    /// </summary>
+    [HttpPost]
+    public IActionResult SignOutEverywhere()
+    {
+        var authToken = _loginManager.GetAuthToken(this.Request);
+
+        if (authToken.IsManageUser && authToken.Stamp is not null)
+        {
+            _loginManager.SignOutEverywhere(authToken);
+        }
+
+        base.RemoveAuthCookie();
+
+        return RedirectToAction("Login");
     }
 
     #endregion

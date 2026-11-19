@@ -11,6 +11,7 @@ static public class AuthTokenExtensions
     private const string StopAuthenticationPropagationClaimType = "stop_auth_propagation";
     private const string AuthTypeClaimType = "auth_type";
     private const string ExpiresClaimType = "expires_in";
+    private const string StampClaimType = "security_stamp";
 
     static public ClaimsPrincipal ToClaimsPrincipal(
                 this AuthToken authToken,
@@ -19,8 +20,14 @@ static public class AuthTokenExtensions
     {
         List<Claim> claims = new List<Claim>();
 
+        // stable over token renewals (expires_in changes): antiforgery tokens are bound to it
+        claims.Add(new Claim(ClaimTypes.NameIdentifier, $"{authToken.AuthType}:{authToken.Username}"));
         claims.Add(new Claim(AuthTypeClaimType, authToken.AuthType.ToString()));
         claims.Add(new Claim(ExpiresClaimType, authToken.Expire.ToString()));
+        if (!String.IsNullOrEmpty(authToken.Stamp))
+        {
+            claims.Add(new Claim(StampClaimType, authToken.Stamp));
+        }
 
         if (stopAuthenicationMiddlewarePropagation)
         {
@@ -48,7 +55,10 @@ static public class AuthTokenExtensions
                 claimsPrincipal.Identity.Name,
                 Enum.Parse<AuthToken.AuthTypes>(claimsPrincipal.Claims.First(c => c.Type == AuthTypeClaimType).Value),
                 long.Parse(claimsPrincipal.Claims.First(c => c.Type == ExpiresClaimType).Value)
-            );
+            )
+            {
+                Stamp = claimsPrincipal.Claims.FirstOrDefault(c => c.Type == StampClaimType)?.Value
+            };
         }
         catch
         {
