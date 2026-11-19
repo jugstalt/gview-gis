@@ -92,6 +92,11 @@ namespace gView.Server.Services.Security
 
         #region Token Logins
 
+        /// <summary>
+        /// Listed instead of the secret part of a hashed url token: "token-name~(hidden)".
+        /// </summary>
+        public const string HiddenUrlTokenSuffix = "~(hidden)";
+
         public void CreateTokenLogin(string username, string password)
         {
             if (GetManageAndTokenUsernames().Where(u => username.Equals(u, StringComparison.InvariantCultureIgnoreCase)).Count() > 0)
@@ -122,7 +127,7 @@ namespace gView.Server.Services.Security
             }
 
             var hashedPassword = username.UserNameIsUrlToken()
-                ? newPassword  // do not hash tokens
+                ? SecureCrypto.HashSecret(newPassword)  // url tokens: long random secrets
                 : SecureCrypto.HashPassword(newPassword);
 
             File.WriteAllText(fi.FullName, hashedPassword);
@@ -152,9 +157,16 @@ namespace gView.Server.Services.Security
                          .Select(f =>
                          {
                              var username = f.Name.Substring(0, f.Name.Length - f.Extension.Length);
-                             return fullUrlToken && username.UserNameIsUrlToken()
-                                        ? File.ReadAllText(f.FullName)
-                                        : username;
+                             if (!fullUrlToken || !username.UserNameIsUrlToken())
+                             {
+                                 return username;
+                             }
+
+                             // hashed url tokens are shown only once, when they are created
+                             var stored = File.ReadAllText(f.FullName);
+                             return stored.StartsWith(SecureCrypto.Sha256Prefix, StringComparison.Ordinal)
+                                 ? $"{username}{HiddenUrlTokenSuffix}"
+                                 : stored;
                          });
             }
 
@@ -338,7 +350,7 @@ namespace gView.Server.Services.Security
             password.ValidatePassword();
 
             var hashedPassword = username.UserNameIsUrlToken()
-                ? password
+                ? SecureCrypto.HashSecret(password)  // url tokens: long random secrets
                 : SecureCrypto.HashPassword(password);
 
             File.WriteAllText(Path.Combine(path, $"{username}.lgn"), hashedPassword);

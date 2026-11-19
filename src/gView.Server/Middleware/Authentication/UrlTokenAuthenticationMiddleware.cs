@@ -1,4 +1,5 @@
-﻿using gView.Server.AppCode;
+﻿using gView.Framework.Core.Exceptions;
+using gView.Server.AppCode;
 using gView.Server.AppCode.Extensions;
 using gView.Server.Extensions;
 using gView.Server.Services.MapServer;
@@ -24,6 +25,13 @@ public class UrlTokenAuthenticationMiddleware
     }
 
     public async Task InvokeAsync(HttpContext context)
+        => await AuthenticateAsync(context, _next, _mapServerService.Options.LoginManagerRootPath);
+
+    /// <summary>
+    /// geoservices(token-name~secret)/rest/...: the url token logs in as its token user.
+    /// A wrong or unknown url token is an invalid token, not an anonymous request.
+    /// </summary>
+    internal static async Task AuthenticateAsync(HttpContext context, RequestDelegate next, string loginManagerRootPath)
     {
         if (context.User.ApplyAuthenticationMiddleware())
         {
@@ -31,13 +39,19 @@ public class UrlTokenAuthenticationMiddleware
 
             if (!String.IsNullOrEmpty(urlToken))
             {
-                var urlTokenName = urlToken.NameOfUrlToken();
-                var path = Path.Combine(_mapServerService.Options.LoginManagerRootPath, "token");
+                if (!urlToken.IsValueUrlToken())
+                {
+                    throw new InvalidTokenException();
+                }
 
-                var authToken = AuthToken.Create(path, urlTokenName, urlToken, AuthToken.AuthTypes.Tokenuser);
+                var path = Path.Combine(loginManagerRootPath, "token");
+                var authToken = AuthToken.Create(path, urlToken.NameOfUrlToken(), urlToken, AuthToken.AuthTypes.Tokenuser)
+                    ?? throw new InvalidTokenException();
+
+                context.User = authToken.ToClaimsPrincipal();
             }
         }
 
-        await _next(context);
+        await next(context);
     }
 }

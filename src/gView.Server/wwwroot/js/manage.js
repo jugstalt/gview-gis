@@ -990,6 +990,13 @@ window.gview.manage = (function() {
         }
     };
 
+    // url tokens are stored hashed: the server returns a new token only once
+    let showNewUrlToken = function (result) {
+        if (result && result.token) {
+            prompt('Copy the new url token now. It is stored hashed and cannot be shown again:', result.token);
+        }
+    };
+
     let pageUrlToken = function (urlToken) {
         let $page = $('.urltoken-properties').empty();
 
@@ -1004,7 +1011,8 @@ window.gview.manage = (function() {
                 .click(function () {
                     postForm($form, {
                         url: '/manage/urltokencreate',
-                        success: function () {
+                        success: function (result) {
+                            showNewUrlToken(result);
                             pageSecurity();
                         }
                     });
@@ -1019,7 +1027,8 @@ window.gview.manage = (function() {
                     if (confirm('Are you sure? Recycle Token?')) {
                         postForm($form, {
                             url: '/manage/urltokenrecycle',
-                            success: function () {
+                            success: function (result) {
+                                showNewUrlToken(result);
                                 pageSecurity('.urltoken.' + urlToken.split(UrlTokenSplitter)[0]);
                             }
                         });

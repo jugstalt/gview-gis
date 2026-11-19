@@ -61,8 +61,22 @@ namespace gView.Server.AppCode
 
             if (username.UserNameIsUrlToken())
             {
-                if (SecureCrypto.FixedTimeEquals(password, stored))
+                if (SecureCrypto.VerifySecret(password, stored))
                 {
+                    return new AuthToken(username, authType, new TimeSpan(0, expireMiniutes, 0)) { Stamp = LoginStamp.Compute(fi) };
+                }
+
+                // url tokens created before v9 are stored in plain text: hash them on first use
+                if (!stored.StartsWith(SecureCrypto.Sha256Prefix, StringComparison.Ordinal)
+                    && SecureCrypto.FixedTimeEquals(password, stored))
+                {
+                    try
+                    {
+                        File.WriteAllText(fi.FullName, SecureCrypto.HashSecret(password));
+                        LoginStamp.Invalidate(fi);
+                    }
+                    catch { }
+
                     return new AuthToken(username, authType, new TimeSpan(0, expireMiniutes, 0)) { Stamp = LoginStamp.Compute(fi) };
                 }
 

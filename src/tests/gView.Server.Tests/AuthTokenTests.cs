@@ -70,11 +70,11 @@ public class AuthTokenTests : IDisposable
     }
 
     [Fact]
-    public void Create_UrlToken_ComparesPlainValue()
+    public void Create_UrlToken_ComparesValue()
     {
         File.WriteAllText(Path.Combine(_folder, "token-abc.lgn"), "token-abc~xyz");
 
-        Assert.NotNull(AuthToken.Create(_folder, "token-abc", "token-abc~xyz", AuthToken.AuthTypes.Tokenuser));
         Assert.Null(AuthToken.Create(_folder, "token-abc", "token-abc~xy", AuthToken.AuthTypes.Tokenuser));
+        Assert.NotNull(AuthToken.Create(_folder, "token-abc", "token-abc~xyz", AuthToken.AuthTypes.Tokenuser));
     }
 }

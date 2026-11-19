@@ -840,7 +840,8 @@ public class ManageController : BaseController
 
             _loginManager.CreateTokenLogin(tokenName, token);
 
-            return Json(new { success = true });
+            // only stored hashed: this is the only time the token can be shown
+            return Json(new { success = true, token });
         });
     });
 
@@ -856,7 +857,8 @@ public class ManageController : BaseController
 
             _loginManager.ChangeTokenUserPassword(tokenName, token);
 
-            return Json(new { success = true });
+            // only stored hashed: this is the only time the token can be shown
+            return Json(new { success = true, token });
         });
     }
 

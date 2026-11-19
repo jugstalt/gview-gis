@@ -2,6 +2,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace gView.Server.Extensions;
 
@@ -16,6 +17,42 @@ static internal class StringExtensions
         token.IsValueUrlToken()
             ? token.Split('~')[0]
             : throw new Exception("Invalid url token");
+
+    private static readonly Regex SecretParameterRegex = new(
+        @"(?<key>[?&](?:token|access[-_]?token|password|pwd|passwd|client[-_]?secret|secret)=)[^&\s""']*",
+        RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+    private static readonly Regex SecretJsonRegex = new(
+        @"(?<key>""(?:token|access[-_]?token|password|pwd|passwd|client[-_]?secret|secret)""\s*:\s*"")[^""]*",
+        RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+    private static readonly Regex UrlTokenRegex = new(
+        @"(?<key>geoservices\([^)~/\s]*~)[^)/\s]*",
+        RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+    private static readonly Regex AuthorizationRegex = new(
+        @"(?<key>\b(?:Basic|Bearer)\s+)[A-Za-z0-9\-._~+/]+=*",
+        RegexOptions.Compiled);
+
+    /// <summary>
+    /// Masks secrets before a message is written to a log: token, password and secret
+    /// parameters (query strings, form bodies, json), url tokens
+    /// (<c>geoservices(token-name~***)</c>) and Authorization header values.
+    /// </summary>
+    static public string MaskSecrets(this string message)
+    {
+        if (String.IsNullOrEmpty(message))
+        {
+            return message;
+        }
+
+        message = SecretParameterRegex.Replace(message, "${key}***");
+        message = SecretJsonRegex.Replace(message, "${key}***");
+        message = UrlTokenRegex.Replace(message, "${key}***");
+        message = AuthorizationRegex.Replace(message, "${key}***");
+
+        return message;
+    }
 
     /// <summary>
     /// The login file (<c>&lt;folder&gt;/&lt;username&gt;.lgn</c>) of a user, or null when the

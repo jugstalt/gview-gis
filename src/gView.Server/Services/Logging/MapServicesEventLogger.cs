@@ -1,5 +1,6 @@
 ﻿using gView.Framework.Core.MapServer;
 using gView.Framework.Core.Common;
+using gView.Server.Extensions;
 using gView.Server.Services.MapServer;
 using System;
 using System.Collections.Generic;
@@ -29,6 +30,7 @@ namespace gView.Server.Services.Logging
             try
             {
                 mapName = mapName?.ToLower() ?? String.Empty;
+                message = message.MaskSecrets();  // request logs contain query strings with tokens
 
                 if (!String.IsNullOrWhiteSpace(_mapServerService.Options.LoggingRootPath))
                 {

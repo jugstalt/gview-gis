@@ -308,6 +308,20 @@ namespace gView.Framework.Security
             return false;
         }
 
+        public const string Sha256Prefix = "sha256$";
+
+        /// <summary>
+        /// Hash for long random secrets (url tokens): no salt and iterations needed,
+        /// they cannot be guessed, and they are checked on every request.
+        /// </summary>
+        public static string HashSecret(string secret)
+            => Sha256Prefix + Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(secret ?? String.Empty)));
+
+        public static bool VerifySecret(string secret, string hash)
+            => hash is not null
+               && hash.StartsWith(Sha256Prefix, StringComparison.Ordinal)
+               && FixedTimeEquals(HashSecret(secret), hash.Trim());
+
         public const string Pbkdf2Prefix = "pbkdf2-sha256$";
         public const int Pbkdf2Iterations = 100_000;
 
