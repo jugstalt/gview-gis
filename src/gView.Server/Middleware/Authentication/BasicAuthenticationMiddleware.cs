@@ -2,6 +2,7 @@
 using gView.Server.AppCode.Extensions;
 using gView.Server.Extensions;
 using gView.Server.Services.MapServer;
+using gView.Server.Services.Security;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.IO;
@@ -23,16 +24,18 @@ public class BasicAuthenticationMiddleware
         _mapServerService = mapServerService;
     }
 
-    public async Task InvokeAsync(HttpContext context)
+    public async Task InvokeAsync(HttpContext context, LoginManager loginManager)
     {
         if (context.User.ApplyAuthenticationMiddleware())
         {
             if (!String.IsNullOrEmpty(context.Request.Headers["Authorization"]))
             {
                 var userPwd = context.Request.Headers["Authorization"].ToString().FromAuthorizationHeader();
-                var path = Path.Combine(_mapServerService.Options.LoginManagerRootPath, "token");
 
-                var authToken = AuthToken.Create(path, userPwd.username, userPwd.password, AuthToken.AuthTypes.Tokenuser);
+                // throttled like every other password check (see LoginThrottleService)
+                var authToken = String.IsNullOrEmpty(userPwd.username)
+                    ? null
+                    : loginManager.GetAuthToken(userPwd.username, userPwd.password);
 
                 if (authToken is not null)
                 {

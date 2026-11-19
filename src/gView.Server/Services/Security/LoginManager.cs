@@ -14,35 +14,55 @@ using System.Linq;
 
 namespace gView.Server.Services.Security
 {
-    public class LoginManager
+    public class LoginManager : IManagerLoginStore
     {
         private readonly MapServiceManager _mapServerService;
         private readonly MapServiceAccessService _mapServiceAccessService;
         private readonly EncryptionCertificateService _encryptionCertService;
+        private readonly LoginThrottleService _loginThrottle;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         public LoginManager(
-                    MapServiceManager mapServerService, 
+                    MapServiceManager mapServerService,
                     MapServiceAccessService mapServiceAccessService,
-                    EncryptionCertificateService encryptionCertService
+                    EncryptionCertificateService encryptionCertService,
+                    LoginThrottleService loginThrottle,
+                    IHttpContextAccessor httpContextAccessor
             )
         {
             _mapServerService = mapServerService;
             _mapServiceAccessService = mapServiceAccessService;
             _encryptionCertService = encryptionCertService;
+            _loginThrottle = loginThrottle;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         #region Manager Logins
 
-        public AuthToken GetManagerAuthToken(string username, string password, int exipreMinutes = 30, bool createIfFirst = false)
+        public AuthToken GetManagerAuthToken(string username, string password, int exipreMinutes = 30)
         {
             var di = new DirectoryInfo(_mapServerService.Options.LoginManagerRootPath + "/manage");
-            if (createIfFirst && di.GetFiles().Count() == 0)
+            username = username?.Trim().ToLower();  // admin logins are always created lowercase
+
+            return Throttled(username, () => AuthToken.Create(di.FullName, username, password, AppCode.AuthToken.AuthTypes.Manage, exipreMinutes));
+        }
+
+        /// <summary>
+        /// Creates the first admin login. Only allowed while no admin exists
+        /// (see <see cref="AdminSetupService"/>).
+        /// </summary>
+        public void CreateFirstManagerLogin(string username, string password)
+        {
+            if (HasManagerLogin())
             {
-                CreateLogin(di.FullName, username.ToLower(), password);
-                _encryptionCertService.GetCertificate("crypto0");  // Create the Service if not exits
+                throw new MapServerException("An admin login already exists");
             }
 
-            return AuthToken.Create(di.FullName, username, password, AppCode.AuthToken.AuthTypes.Manage, exipreMinutes);
+            var di = new DirectoryInfo(_mapServerService.Options.LoginManagerRootPath + "/manage");
+            di.Create();
+
+            CreateLogin(di.FullName, username?.Trim().ToLower(), password);
+            _encryptionCertService.GetCertificate("crypto0");  // Create the Service if not exits
         }
 
         public bool HasManagerLogin()
@@ -79,13 +99,14 @@ namespace gView.Server.Services.Security
                 throw new MapServerException("User '" + username + "' already exists");
             }
 
-            var fi = new FileInfo(Path.Combine(_mapServerService.Options.LoginManagerRootPath, "token", $"{username}.lgn"));
+            var fi = TokenLoginFile(username);
 
             if (fi.Exists)
             {
                 throw new MapServerException($"User '{username}' already exists");
             }
 
+            fi.Directory.Create();
             CreateLogin(fi.Directory.FullName, username, password);
         }
 
@@ -93,7 +114,7 @@ namespace gView.Server.Services.Security
         {
             newPassword.ValidatePassword();
 
-            var fi = new FileInfo(Path.Combine(_mapServerService.Options.LoginManagerRootPath, "token", $"{username}.lgn"));
+            var fi = TokenLoginFile(username);
 
             if (!fi.Exists)
             {
@@ -102,14 +123,14 @@ namespace gView.Server.Services.Security
 
             var hashedPassword = username.UserNameIsUrlToken()
                 ? newPassword  // do not hash tokens
-                : SecureCrypto.Hash64(newPassword, username);
+                : SecureCrypto.HashPassword(newPassword);
 
             File.WriteAllText(fi.FullName, hashedPassword);
         }
 
         public void DeleteTokenLogin(string username)
         {
-            var fi = new FileInfo(Path.Combine(_mapServerService.Options.LoginManagerRootPath, "token", $"{username}.lgn"));
+            var fi = TokenLoginFile(username);
 
             if (!fi.Exists)
             {
@@ -141,7 +162,7 @@ namespace gView.Server.Services.Security
         public AuthToken GetAuthToken(string username, string password, int expireMinutes = 30)
         {
             var di = new DirectoryInfo(_mapServerService.Options.LoginManagerRootPath + "/token");
-            return AuthToken.Create(di.FullName, username, password, AppCode.AuthToken.AuthTypes.Tokenuser, expireMinutes);
+            return Throttled(username, () => AuthToken.Create(di.FullName, username, password, AppCode.AuthToken.AuthTypes.Tokenuser, expireMinutes));
         }
 
         public AuthToken CreateUserAuthTokenWithoutPasswordCheck(string username, int expireMinutes = 30)
@@ -218,11 +239,47 @@ namespace gView.Server.Services.Security
 
         #region Helper
 
+        /// <summary>
+        /// Checks a password, unless the user or the client IP is locked after too many
+        /// failures. A locked login fails like a wrong password.
+        /// </summary>
+        private AuthToken Throttled(string username, Func<AuthToken> login)
+        {
+            if (String.IsNullOrWhiteSpace(username))
+            {
+                return null;
+            }
+
+            var ip = _httpContextAccessor?.HttpContext?.Connection?.RemoteIpAddress?.ToString();
+
+            if (_loginThrottle.IsBlocked(ip, username))
+            {
+                return null;
+            }
+
+            var authToken = login();
+
+            if (authToken is null)
+            {
+                _loginThrottle.Failed(ip, username);
+            }
+            else
+            {
+                _loginThrottle.Succeeded(username);
+            }
+
+            return authToken;
+        }
+
+        private FileInfo TokenLoginFile(string username)
+            => username.ToLoginFile(Path.Combine(_mapServerService.Options.LoginManagerRootPath, "token"))
+               ?? throw new MapServerException("Invalid username");
+
         private AuthToken CreateAuthTokenWithoutPasswordCheck(string path, string username, AuthToken.AuthTypes authType, int expireMiniutes = 30)
         {
-            var fi = new FileInfo(Path.Combine(path, $"{username}.lgn"));
+            var fi = username.ToLoginFile(path);
 
-            if (fi.Exists)
+            if (fi?.Exists == true)
             {
                 expireMiniutes = expireMiniutes <= 0 ? 30 : expireMiniutes;
 
@@ -239,7 +296,7 @@ namespace gView.Server.Services.Security
 
             var hashedPassword = username.UserNameIsUrlToken()
                 ? password
-                : SecureCrypto.Hash64(password, username);
+                : SecureCrypto.HashPassword(password);
 
             File.WriteAllText(Path.Combine(path, $"{username}.lgn"), hashedPassword);
         }

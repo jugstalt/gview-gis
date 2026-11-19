@@ -28,6 +28,10 @@ static public class ServiceCollectionExtensions
         services.AddSingleton<MapServiceDeploymentManager>();
         services.AddSingleton<gView.Server.Services.Network.NetworkServerService>();
         
+        services.AddHttpContextAccessor();
+        services.AddSingleton<LoginThrottleService>();
+        services.AddSingleton<AdminSetupService>();
+
         services.AddTransient<UrlHelperService>();
         services.AddTransient<LoginManager>();
         services.AddTransient<AccessControlService>();

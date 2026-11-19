@@ -1,4 +1,4 @@
-using gView.Framework.Common;
+﻿using gView.Framework.Common;
 using gView.Framework.Core.Common;
 using gView.Framework.Core.Exceptions;
 using gView.Framework.Core.IO;
@@ -37,6 +37,7 @@ public class ManageController : BaseController
     private readonly MapServicesEventLogger _logger;
     private readonly IConfiguration _configuration;
     private readonly NetworkServerService _network;
+    private readonly AdminSetupService _adminSetup;
 
     public ManageController(MapServiceManager mapServiceManager,
                             MapServiceDeploymentManager mapServiceDeploymentManager,
@@ -44,10 +45,12 @@ public class ManageController : BaseController
                             MapServicesEventLogger logger,
                             EncryptionCertificateService encryptionCertificateService,
                             IConfiguration configuration,
-                            NetworkServerService network)
+                            NetworkServerService network,
+                            AdminSetupService adminSetup)
                             : base(mapServiceManager, loginManager, encryptionCertificateService)
     {
         _network = network;
+        _adminSetup = adminSetup;
         _mapServiceMananger = mapServiceManager;
         _mapServiceDeploymentManager = mapServiceDeploymentManager;
         _loginManager = loginManager;
@@ -92,7 +95,10 @@ public class ManageController : BaseController
             return RedirectToAction("Index", "Home");
         }
 
-        return View(new ManageLoginModel());
+        return View(new ManageLoginModel()
+        {
+            SetupRequired = _adminSetup.IsSetupRequired(_loginManager)
+        });
     }
 
     [HttpPost]
@@ -119,11 +125,23 @@ public class ManageController : BaseController
                 throw new Exception("Password is required...");
             }
 
+            if (_adminSetup.IsSetupRequired(_loginManager))
+            {
+                model.SetupRequired = true;
+
+                _adminSetup.CreateFirstAdmin(
+                    _loginManager,
+                    this.HttpContext.Connection.RemoteIpAddress?.ToString(),
+                    model.SetupCode,
+                    model.Username.Trim(),
+                    model.Password.Trim(),
+                    model.PasswordRepeat?.Trim());
+            }
+
             var authToken = _loginManager.GetManagerAuthToken(
                 model.Username.Trim(),
                 model.Password.Trim(),
-                exipreMinutes: 60 * 24,
-                createIfFirst: true);
+                exipreMinutes: 60 * 24);
 
             if (authToken == null)
             {
@@ -152,13 +170,13 @@ public class ManageController : BaseController
 
     #endregion
 
-    public IActionResult Collect()
+    public IActionResult Collect() => SecureApiCall(() =>
     {
         var mem1 = GC.GetTotalMemory(false) / 1024.0 / 1024.0;
         GC.Collect();
         var mem2 = GC.GetTotalMemory(true) / 1024.0 / 1024.0;
         return Json(new { succeeded = true, mem1 = mem1, mem2 = mem2 });
-    }
+    });
 
     #region Services
 
@@ -189,10 +207,11 @@ public class ManageController : BaseController
     async public Task<IActionResult> Services(string folder)
     {
         folder = folder ?? String.Empty;
-        _mapServiceMananger.ReloadServices(folder, true);
 
         return await SecureApiCall(async () =>
         {
+            _mapServiceMananger.ReloadServices(folder, true);
+
             var servicesInFolder = _mapServiceMananger.MapServices
                 .Where(s => s.Type != MapServiceType.Folder &&
                                 s.Folder == folder);

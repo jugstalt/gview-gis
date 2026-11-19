@@ -27,6 +27,21 @@
         @*<h4>Use a local account to log in.</h4>*@
         @Html.AntiForgeryToken()
         
+        @if (Model.SetupRequired)
+        {
+            <div class="attribute">
+                <div>
+                    No admin login exists yet. Enter the setup code from the server log
+                    (or set GVIEW_ADMIN_USER and GVIEW_ADMIN_PASSWORD) to create the admin.
+                </div>
+            </div>
+            <div class="attribute">
+                <div>
+                    <div class="label">Setup code</div>
+                    <input asp-for="SetupCode" class="form-control" autocomplete="off" placeholder="XXXX-XXXX-XXXX" />
+                </div>
+            </div>
+        }
         <div asp-validation-summary="All" class="text-danger"></div>
         <div class="attribute">
             <div>
@@ -43,7 +58,16 @@
                 <span asp-validation-for="Password" class="text-danger"></span>
             </div>
         </div>
+        @if (Model.SetupRequired)
+        {
+            <div class="attribute">
+                <div>
+                    <div class="label">Repeat password</div>
+                    <input asp-for="PasswordRepeat" class="form-control" placeholder="Repeat password" />
+                </div>
+            </div>
+        }
 
-        <button type="submit" class="btn btn-primary">Login</button>
+        <button type="submit" class="btn btn-primary">@(Model.SetupRequired ? "Create admin" : "Login")</button>
     </form>
 </div>
