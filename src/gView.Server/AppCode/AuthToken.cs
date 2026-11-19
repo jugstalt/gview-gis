@@ -43,29 +43,52 @@ namespace gView.Server.AppCode
 
         public static AuthToken Create(string path, string username, string password, AuthToken.AuthTypes authType, int expireMiniutes = 30)
         {
-            var fi = new FileInfo(Path.Combine(path, $"{username}.lgn"));
+            var fi = username?.ToLoginFile(path);
 
-            if (fi.Exists)
+            if (fi is null || !fi.Exists || String.IsNullOrEmpty(password))
             {
-                expireMiniutes = expireMiniutes <= 0 ? 30 : expireMiniutes;
+                return null;
+            }
 
-                if (username.UserNameIsUrlToken())
+            expireMiniutes = expireMiniutes <= 0 ? 30 : expireMiniutes;
+            var stored = File.ReadAllText(fi.FullName);
+
+            if (username.UserNameIsUrlToken())
+            {
+                if (SecureCrypto.FixedTimeEquals(password, stored))
                 {
-                    if (password == File.ReadAllText(fi.FullName))
-                    {
-                        return new AuthToken(username, authType, new TimeSpan(0, expireMiniutes, 0));
-                    }
+                    return new AuthToken(username, authType, new TimeSpan(0, expireMiniutes, 0));
                 }
-                else
-                {
-                    if (SecureCrypto.VerifyPassword(password, File.ReadAllText(fi.FullName), username))
-                    {
-                        return new AuthToken(username, authType, new TimeSpan(0, expireMiniutes, 0));
-                    }
-                }
+
+                return null;
+            }
+
+            if (PasswordVerificationCache.IsVerified(fi.FullName, password, stored)
+                || SecureCrypto.VerifyPassword(password, stored, username, out bool needsRehash) && Rehash(fi, password, needsRehash))
+            {
+                PasswordVerificationCache.SetVerified(fi.FullName, password, File.ReadAllText(fi.FullName));
+                return new AuthToken(username, authType, new TimeSpan(0, expireMiniutes, 0));
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Replaces a legacy (SHA256) hash with the current PBKDF2 hash after a successful login.
+        /// Always returns true: a failed rewrite must not fail the login.
+        /// </summary>
+        private static bool Rehash(FileInfo fi, string password, bool needsRehash)
+        {
+            if (needsRehash)
+            {
+                try
+                {
+                    File.WriteAllText(fi.FullName, SecureCrypto.HashPassword(password));
+                }
+                catch { }
+            }
+
+            return true;
         }
 
 

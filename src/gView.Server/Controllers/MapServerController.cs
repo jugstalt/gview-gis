@@ -236,8 +236,7 @@ namespace gView.Server.Controllers
         {
             try
             {
-                string user = String.Empty, pwd = String.Empty;
-                // var request = Request(out user, out pwd);
+                var (user, pwd) = GetRequestCredentials();
 
                 name = String.IsNullOrWhiteSpace(folder) ? name : folder + "/" + name;
 
@@ -259,8 +258,7 @@ namespace gView.Server.Controllers
         {
             try
             {
-                string user = String.Empty, pwd = String.Empty;
-                // var request = Request(out user, out pwd);
+                var (user, pwd) = GetRequestCredentials();
 
                 name = String.IsNullOrWhiteSpace(folder) ? name : folder + "/" + name;
 
@@ -287,8 +285,7 @@ namespace gView.Server.Controllers
 
                 name = String.IsNullOrWhiteSpace(folder) ? name : folder + "/" + name;
 
-                string user = String.Empty, pwd = String.Empty;
-                // var request = Request(out user, out pwd);
+                var (user, pwd) = GetRequestCredentials();
 
                 bool ret = await _mapServiceDeploymentMananger.SetMetadata(name, input, user, pwd);
 

@@ -244,13 +244,97 @@ namespace gView.Framework.Security
         }
 
         public static bool VerifyPassword(string cleanPassword, string hash, string username = "")
+            => VerifyPassword(cleanPassword, hash, username, out _);
+
+        /// <summary>
+        /// Verifies a password against a stored hash. Supports the current
+        /// PBKDF2 format (see <see cref="HashPassword"/>) and the legacy
+        /// single SHA256 format (<see cref="Hash64"/>); <paramref name="needsRehash"/>
+        /// is true when the password matched a hash that should be replaced.
+        /// </summary>
+        public static bool VerifyPassword(string cleanPassword, string hash, string username, out bool needsRehash)
         {
-            if (Hash64(cleanPassword + username?.Trim().ToLower()) == hash)
+            needsRehash = false;
+
+            if (cleanPassword is null || String.IsNullOrWhiteSpace(hash))
             {
+                return false;
+            }
+
+            hash = hash.Trim();
+
+            if (hash.StartsWith(Pbkdf2Prefix, StringComparison.Ordinal))
+            {
+                var parts = hash.Split('$');
+                if (parts.Length != 4
+                    || !int.TryParse(parts[1], out int iterations)
+                    || iterations <= 0)
+                {
+                    return false;
+                }
+
+                byte[] salt, expected;
+                try
+                {
+                    salt = Convert.FromBase64String(parts[2]);
+                    expected = Convert.FromBase64String(parts[3]);
+                }
+                catch (FormatException)
+                {
+                    return false;
+                }
+
+                var actual = Rfc2898DeriveBytes.Pbkdf2(
+                    Encoding.UTF8.GetBytes(cleanPassword), salt, iterations, HashAlgorithmName.SHA256, expected.Length);
+
+                if (!CryptographicOperations.FixedTimeEquals(actual, expected))
+                {
+                    return false;
+                }
+
+                needsRehash = iterations < Pbkdf2Iterations;
+                return true;
+            }
+
+            // legacy: SHA256(password + username)
+            if (CryptographicOperations.FixedTimeEquals(
+                    Encoding.UTF8.GetBytes(Hash64(cleanPassword, username)),
+                    Encoding.UTF8.GetBytes(hash)))
+            {
+                needsRehash = true;
                 return true;
             }
 
             return false;
+        }
+
+        public const string Pbkdf2Prefix = "pbkdf2-sha256$";
+        public const int Pbkdf2Iterations = 100_000;
+
+        /// <summary>
+        /// Hashes a password with PBKDF2-SHA256 and a random salt:
+        /// <c>pbkdf2-sha256$&lt;iterations&gt;$&lt;salt&gt;$&lt;hash&gt;</c> (base64).
+        /// </summary>
+        public static string HashPassword(string password)
+        {
+            var salt = RandomNumberGenerator.GetBytes(16);
+            var hash = Rfc2898DeriveBytes.Pbkdf2(
+                Encoding.UTF8.GetBytes(password), salt, Pbkdf2Iterations, HashAlgorithmName.SHA256, 32);
+
+            return $"{Pbkdf2Prefix}{Pbkdf2Iterations}${Convert.ToBase64String(salt)}${Convert.ToBase64String(hash)}";
+        }
+
+        /// <summary>
+        /// Compares two secrets (e.g. url tokens) in constant time.
+        /// </summary>
+        public static bool FixedTimeEquals(string a, string b)
+        {
+            if (a is null || b is null)
+            {
+                return false;
+            }
+
+            return CryptographicOperations.FixedTimeEquals(Encoding.UTF8.GetBytes(a), Encoding.UTF8.GetBytes(b));
         }
 
         #endregion

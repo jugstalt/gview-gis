@@ -27,6 +27,10 @@ static public class ServiceCollectionExtensions
         services.AddSingleton<JwtAccessTokenService>();
         services.AddSingleton<MapServiceDeploymentManager>();
         
+        services.AddHttpContextAccessor();
+        services.AddSingleton<LoginThrottleService>();
+        services.AddSingleton<AdminSetupService>();
+
         services.AddTransient<UrlHelperService>();
         services.AddTransient<LoginManager>();
         services.AddTransient<AccessControlService>();

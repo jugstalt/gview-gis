@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using gView.Server.Services.MapServer;
+using gView.Server.Services.Security;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace gView.Server.Extensions;
@@ -14,6 +17,23 @@ static internal class WebApplicationExtensions
         foreach (var url in builder.Configuration["urls"]?.Split(';') ?? [])
         {
             logger.LogInformation("Listen to {url}", url);
+        }
+
+        return app;
+    }
+
+    /// <summary>
+    /// Creates the first admin from the environment or prints the setup code
+    /// (see <see cref="AdminSetupService"/>).
+    /// </summary>
+    public static WebApplication InitializeAdminSetup(this WebApplication app)
+    {
+        if (app.Services.GetRequiredService<MapServiceManager>().Options.IsValid)
+        {
+            using var scope = app.Services.CreateScope();
+
+            app.Services.GetRequiredService<AdminSetupService>()
+                .Initialize(scope.ServiceProvider.GetRequiredService<LoginManager>());
         }
 
         return app;
