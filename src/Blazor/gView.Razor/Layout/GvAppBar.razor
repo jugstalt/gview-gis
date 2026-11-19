@@ -1,0 +1,95 @@
+@using gView.Blazor.Core.Services.Abstraction
+@using gView.Blazor.Core.Models
+@using gView.Framework.Common
+@implements IDisposable
+
+@inject IServiceProvider Services
+@inject NavigationManager Nav
+
+@*
+    The dark app header of the gView web apps (same look as the gView.Server v9 admin sidebar):
+    brand (link to the start page), the current document, theme switch, user, login/logout.
+*@
+
+<header class="gv-appbar">
+    <a class="gv-brand" href="@Nav.BaseUri" title="gView GIS">
+        <MudIcon Icon="@Icon" Class="gv-brand-mark" />
+        <span class="gv-brand-name">gView@(String.IsNullOrEmpty(AppName) ? "" : " ")<b>@AppName</b></span>
+        <em>v@(SystemInfo.Version.Major)</em>
+    </a>
+
+    <div class="gv-appbar-center">
+        @ChildContent
+    </div>
+
+    <div class="gv-appbar-right">
+        @if (Theme is not null)
+        {
+            <button type="button" class="gv-appbar-btn" title="Color scheme: light / dark / system" @onclick="Theme.CycleModeAsync">
+                <MudIcon Icon="@ThemeIcon" Size="Size.Small" />
+                <span class="gv-appbar-btn-text">@Theme.Mode</span>
+            </button>
+        }
+
+        @if (_identity?.IsAuthenticated == true)
+        {
+            <span class="gv-appbar-user" title="@_identity.UserNameAndRole()">
+                <MudIcon Icon="@Icons.Material.Outlined.Person" Size="Size.Small" />
+                <span>@_identity.Username</span>
+            </span>
+        }
+
+        @if (_identity?.IsAuthenticated == true && _identity.CanLogout)
+        {
+            <a class="gv-appbar-btn" href="logout" title="Logout">
+                <MudIcon Icon="@Icons.Material.Outlined.Logout" Size="Size.Small" />
+            </a>
+        }
+        else if (ShowLogin && _identity is not null && _identity.IsAdministrator != true)
+        {
+            <a class="gv-appbar-btn" href="login" title="Login">
+                <MudIcon Icon="@Icons.Material.Outlined.Login" Size="Size.Small" />
+                <span class="gv-appbar-btn-text">Login</span>
+            </a>
+        }
+    </div>
+</header>
+
+@code {
+    [CascadingParameter] public GvThemeProvider? Theme { get; set; }
+
+    [Parameter] public string AppName { get; set; } = "";
+    [Parameter] public string Icon { get; set; } = Icons.Material.Outlined.Map;
+    [Parameter] public bool ShowLogin { get; set; } = false;
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private AppIdentity? _identity;
+
+    protected override void OnInitialized()
+    {
+        // not every host (e.g. the MAUI app) registers an identity provider
+        _identity = (Services.GetService(typeof(IAppIdentityProvider)) as IAppIdentityProvider)?.Identity;
+
+        if (Theme is not null)
+        {
+            Theme.Changed += OnThemeChanged;
+        }
+    }
+
+    private string ThemeIcon => Theme?.Mode switch
+    {
+        GvThemeMode.Light => Icons.Material.Outlined.LightMode,
+        GvThemeMode.Dark => Icons.Material.Outlined.DarkMode,
+        _ => Icons.Material.Outlined.Contrast
+    };
+
+    private void OnThemeChanged() => InvokeAsync(StateHasChanged);
+
+    public void Dispose()
+    {
+        if (Theme is not null)
+        {
+            Theme.Changed -= OnThemeChanged;
+        }
+    }
+}

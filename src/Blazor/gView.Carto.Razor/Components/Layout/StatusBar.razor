@@ -1,4 +1,4 @@
-@using System.Collections.Concurrent;
+﻿@using System.Collections.Concurrent;
 
 @inject CartoEventBusService EventBus
 @inject ICartoApplicationScopeService Scope
@@ -8,65 +8,35 @@
 @implements IDisposable
 @inherits BaseHandler
 
-<GvGrid ColumnCount="12" Spacing="0">
-    <GvGridItem Span="2"> 
-        @* Current Tool *@
-        <MudPaper Elevation="12" Style="@PaperStyle">
-            <MudText Typo="Typo.body2">
-                @(string.Empty)
-            </MudText>
-        </MudPaper>
-    </GvGridItem>
-    <GvGridItem Span="3">
-        @* Busy *@
-        <MudPaper Elevation="12" Style="@PaperStyle">
-            @if (_currentDrawPhases.Count > 0)
-            {
-                <MudProgressCircular Indeterminate="true" Size="MudBlazor.Size.Small" />
-                <div style="display:inline-block;vertical-align:top">
-                    @(string.Join(", ", _currentDrawPhases.Keys))
-                </div>  
-            }
-            
-        </MudPaper>
-    </GvGridItem>
-    <GvGridItem Span="4">
-        @* Current Layer *@
-        <MudPaper Elevation="12" Style="@PaperStyle">
-            <MudText Typo="Typo.body2">
-                @(string.IsNullOrEmpty(_currentRenderLayer) ? string.Empty : $"Rendering: {_currentRenderLayer}...")
-            </MudText>
-        </MudPaper>
-    </GvGridItem>
-    <GvGridItem Span="1">
-        @* X *@
-        <MudPaper Elevation="12" Style="@PaperClickableStyle" @onclick="OnCoordinateClick">
-            <MudText Typo="Typo.body2">
-                @(_cursorPoint is not null ? $"X: {_cursorPoint.X.ToString("0.00")}" : string.Empty)
-            </MudText>
-        </MudPaper>
-    </GvGridItem>
-    <GvGridItem Span="1">
-        @* Y *@
-        <MudPaper Elevation="12" Style="@PaperClickableStyle" @onclick="OnCoordinateClick">
-            <MudText Typo="Typo.body2">
-                @(_cursorPoint is not null ? $"Y: {_cursorPoint.Y.ToString("0.00")}" : string.Empty)
-            </MudText>
-        </MudPaper>
-    </GvGridItem>
-    <GvGridItem Span="1">
-        @* Scale *@
-        <MudPaper Elevation="12" Style="@PaperClickableStyle" @onclick="OnScaleClick">
-            <MudText Typo="Typo.body2">
-                @(_scaleDominator > 0 ? $"1:{_scaleDominator.ToString("n0")} ({_level})" : string.Empty)
-            </MudText>
-        </MudPaper>
-    </GvGridItem>
-</GvGrid>
+<div class="gv-statusbar">
+    @if (_currentDrawPhases.Count > 0)
+    {
+        <div class="gv-busy-bar"></div>
+    }
+
+    @* Busy *@
+    <span class="gv-status-item">
+        <span class="@($"gv-status-dot{(_currentDrawPhases.Count > 0 ? " busy" : "")}")"></span>
+        @(_currentDrawPhases.Count > 0 ? string.Join(", ", _currentDrawPhases.Keys) : "Ready")
+    </span>
+
+    @* Current Layer *@
+    <span class="gv-status-item grow">
+        @(string.IsNullOrEmpty(_currentRenderLayer) ? string.Empty : $"Rendering: {_currentRenderLayer}...")
+    </span>
+
+    @* X / Y *@
+    <span class="gv-status-item clickable" title="Coordinates" @onclick="OnCoordinateClick">
+        @(_cursorPoint is not null ? $"X: {_cursorPoint.X.ToString("0.00")}  Y: {_cursorPoint.Y.ToString("0.00")}" : "X / Y")
+    </span>
+
+    @* Scale *@
+    <span class="gv-status-item clickable" title="Set map scale" @onclick="OnScaleClick">
+        @(_scaleDominator > 0 ? $"1:{_scaleDominator.ToString("n0")} ({_level})" : "Scale")
+    </span>
+</div>
 
 @code {
-    private const string PaperStyle = "padding:4px;min-height:24px;white-space:nowrap;overflow:hidden;";
-    private const string PaperClickableStyle = $"{PaperStyle};cursor:pointer";
     private const string NumberFormatProjected = "0.00";
     private const string NumberFormatGeographic = "0.000000";
 

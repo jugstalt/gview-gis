@@ -6,11 +6,12 @@
 
 @if (Items != null)
 {
-    <MudBreadcrumbs Items="Items" MaxItems="8" Separator="">
+    <MudBreadcrumbs Items="Items" MaxItems="8" Separator="›" Class="explorer-breadcrumbs">
         <ItemTemplate>
             <MudChip T="string" 
                      Icon=@Icons.FromString((context as ExplorerObjectBreadcrumbItem)!.ExObject.Icon)
-                     Color="Color.Dark"
+                     Variant="Variant.Text"
+                     Color="Color.Default"
                      OnClick="()=>ChipClickAsync((context as ExplorerObjectBreadcrumbItem)!)">
                 @context.Text
             </MudChip>

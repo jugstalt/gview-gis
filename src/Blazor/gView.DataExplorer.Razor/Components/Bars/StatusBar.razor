@@ -1,19 +1,19 @@
-@inherits BaseHandler
+﻿@inherits BaseHandler
 @implements IDisposable
 @inject IconService Icons
 @inject ExplorerEventBusService EventBus
 
-<table style="width:100%">
-    <tr>
-        <td style="white-space:nowrap; text-align:right; vertical-align:top">
-            @if (_isBusy)
-            {
-                <div style="display:inline-block;vertical-align:top">@_busyMessage</div>
-                <MudProgressCircular Indeterminate="true" Size="MudBlazor.Size.Small" />
-            }
-        </td>
-    </tr>
-</table>
+<div class="gv-statusbar">
+    @if (_isBusy)
+    {
+        <div class="gv-busy-bar"></div>
+    }
+
+    <span class="gv-status-item grow">
+        <span class="@($"gv-status-dot{(_isBusy ? " busy" : "")}")"></span>
+        @(_isBusy ? _busyMessage : "Ready")
+    </span>
+</div>
 
 
 @code {

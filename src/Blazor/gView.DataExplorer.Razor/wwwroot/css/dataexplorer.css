@@ -1,101 +1,178 @@
-﻿.dataexplorer-main {
+﻿/*
+ * gView Explorer v9 ("Console" layout). Colours come from the tokens in _content/gView.Razor/gview-theme.css
+ * (--gv-*) and from the MudBlazor palette (GvTheme); dark mode via html[data-theme="dark"].
+ *   app header 40px (GvAppBar, outside .dataexplorer-main) | ribbon 86px | navigation bar 40px | tree + content | status bar 24px
+ */
+.dataexplorer-main {
     position: absolute;
     left: 0px;
-    top: 0px;
+    top: var(--gv-appbar-height, 40px);
     right: 0px;
     bottom: 0px;
-    background: #0094ff;
-
-    user-select:none;
+    background: var(--gv-bg);
+    color: var(--gv-text);
+    user-select: none;
 }
 
+/* ======================================================================== ribbon */
     .dataexplorer-main .toolbar {
         position: absolute;
         left: 0px;
         top: 0px;
         right: 0px;
-        height: 100px;
-        background: #ccc;
+        height: 86px;
+        padding: 4px 6px 0px 6px;
+        background: var(--gv-surface);
+        border-bottom: 1px solid var(--gv-border);
+        box-sizing: border-box;
     }
 
-        .dataexplorer-main .toolbar .explorer-tool-box {
-            height: 96px;
-            display: inline-block;
-            vertical-align: top;
-            margin:2px;
-            border-radius:4px;
+        .dataexplorer-main .toolbar .explorer-tool-boxes {
+            display: flex;
+            flex-wrap: nowrap;
+            align-items: stretch;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
         }
 
+        .dataexplorer-main .toolbar .explorer-tool-box {
+            flex: 0 0 auto;
+            display: flex;
+            height: 100%;
+            margin: 0px;
+            border-right: 1px solid var(--gv-border);
+        }
+
+            .dataexplorer-main .toolbar .explorer-tool-box.general {
+                margin-left: auto;
+                border-right: 0;
+                border-left: 1px solid var(--gv-border);
+            }
+
+            .dataexplorer-main .toolbar .explorer-tool-box.is-selected {
+                background: linear-gradient(var(--gv-accent-soft), transparent);
+                border-radius: 6px 6px 0px 0px;
+            }
+
+            .dataexplorer-main .toolbar .explorer-tool-box.is-context {
+                background: linear-gradient(var(--gv-warn-soft), transparent);
+                border-radius: 6px 6px 0px 0px;
+            }
+
+            /* a group: the tools on top, its label below */
+            .dataexplorer-main .toolbar .explorer-tool-box .explorer-tool-sub-box {
+                position: relative;
+                display: inline-flex;
+                align-items: flex-start;
+                gap: 2px;
+                height: 100%;
+                padding: 0px 6px 18px 6px;
+                box-sizing: border-box;
+            }
+
+                .dataexplorer-main .toolbar .explorer-tool-box .explorer-tool-sub-box > .title {
+                    position: absolute;
+                    bottom: 0px;
+                    left: 0px;
+                    right: 0px;
+                    height: 18px;
+                    line-height: 16px;
+                    padding: 0px 4px;
+                    text-align: center;
+                    color: var(--gv-muted);
+                    font-size: 11px;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+
+            .dataexplorer-main .toolbar .explorer-tool-box.is-selected .explorer-tool-sub-box > .title {
+                color: var(--gv-accent);
+                font-weight: 600;
+            }
+
+            .dataexplorer-main .toolbar .explorer-tool-box.is-context .explorer-tool-sub-box > .title {
+                color: var(--gv-warn);
+                font-weight: 600;
+            }
+
+            /* large tool: icon + up to two lines of text */
             .dataexplorer-main .toolbar .explorer-tool-box .explorer-tool {
-                height: 94px;
-                display: inline-block;
+                display: inline-flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 3px;
+                min-width: 56px;
+                max-width: 84px;
+                height: 60px;
+                padding: 6px 4px 0px 4px;
+                border: 1px solid transparent;
+                border-radius: 6px;
+                color: var(--gv-text);
+                font-size: 11px;
+                line-height: 1.15;
                 text-align: center;
-                padding: 8px;
-                margin: 0px 2px;
-                max-width: 120px;
-                vertical-align: top;
-                border:1px solid transparent;
                 cursor: pointer;
                 box-sizing: border-box;
-                border-radius:4px;
-                font-size: 0.9em;
             }
 
-        .dataexplorer-main .toolbar .explorer-tool:hover {
-            background-color: #0094ff46;
-            border: 1px solid #0094ff;
-            box-sizing:border-box;
-        }
+                .dataexplorer-main .toolbar .explorer-tool-box .explorer-tool > .title {
+                    display: -webkit-box;
+                    -webkit-line-clamp: 2;
+                    -webkit-box-orient: vertical;
+                    overflow: hidden;
+                    word-break: break-word;
+                }
 
-        .dataexplorer-main .toolbar .explorer-tool-box .explorer-tool-sub-box {
-            position:relative;
-            display:inline-block;
-            height:96px;
-            vertical-align:top;
-        }
-            .dataexplorer-main .toolbar .explorer-tool-box .explorer-tool-sub-box > .title {
-                position: absolute;
-                bottom: 0px;
-                left: 0px;
-                right: 0px;
-                height: 20px;
-                text-align: center;
-                color: #888;
-                font-size: 11px;
+            /* context tools: two stacked */
+            .dataexplorer-main .toolbar .explorer-tool-box .explorer-context-tool-chunk {
+                display: inline-flex;
+                flex-direction: column;
+                gap: 2px;
+            }
+
+            .dataexplorer-main .toolbar .explorer-tool-box .explorer-context-tool {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                height: 29px;
+                max-width: 180px;
+                padding: 0px 8px 0px 4px;
+                border: 1px solid transparent;
+                border-radius: 4px;
+                color: var(--gv-text);
+                font-size: 12px;
                 white-space: nowrap;
                 overflow: hidden;
-                text-overflow: ellipsis;
+                cursor: pointer;
+                box-sizing: border-box;
             }
 
-            .dataexplorer-main .toolbar .explorer-tool-box .explorer-tool-sub-box .explorer-tool {
-                height:74px;
-            }
-
-            .dataexplorer-main .toolbar .explorer-tool-box .explorer-tool-sub-box .explorer-context-tool {
-                height: 37px;
-                overflow: hidden;
-                padding: 4px 7px;
-            }
-
-                .dataexplorer-main .toolbar .explorer-tool-box .explorer-tool-sub-box .explorer-context-tool:hover {
-                    background-color: #0094ff46;
-                    border: 1px solid #0094ff;
-                    box-sizing: border-box;
+                .dataexplorer-main .toolbar .explorer-tool-box .explorer-context-tool .title {
+                    overflow: hidden;
+                    text-overflow: ellipsis;
                 }
 
-                .dataexplorer-main .toolbar .explorer-tool-box .explorer-tool-sub-box .explorer-context-tool .title {
-                    display: inline-block;
-                    vertical-align: top;
-                }
+        .dataexplorer-main .toolbar .explorer-tool:hover,
+        .dataexplorer-main .toolbar .explorer-context-tool:hover {
+            background-color: var(--gv-surface-2);
+        }
 
+/* ======================================================================== navigation bar */
     .dataexplorer-main .navigation-bar {
         position: absolute;
         left: 0px;
-        top: 102px;
+        top: 87px;
         right: 0px;
         height: 40px;
-        background: #0078d4;
-        padding: 0px;
+        display: flex;
+        align-items: center;
+        padding: 0px 8px;
+        background: var(--gv-surface);
+        border-bottom: 1px solid var(--gv-border);
+        box-sizing: border-box;
+        overflow: hidden;
     }
 
         .dataexplorer-main .navigation-bar .mud-breadcrumbs,
@@ -103,13 +180,32 @@
             padding: 0px;
         }
 
+        .dataexplorer-main .navigation-bar .mud-breadcrumbs {
+            flex-wrap: nowrap;
+            white-space: nowrap;
+        }
+
+            .dataexplorer-main .navigation-bar .mud-breadcrumbs .mud-breadcrumb-separator {
+                color: var(--gv-muted);
+                margin: 0px 2px;
+            }
+
+        .dataexplorer-main .navigation-bar .mud-chip {
+            margin: 0px;
+            border-radius: 6px;
+        }
+
+            .dataexplorer-main .navigation-bar .mud-chip:hover {
+                background: var(--gv-surface-2);
+            }
+
+/* ======================================================================== tree, content, status bar */
     .dataexplorer-main .tree {
         position: absolute;
         left: 0px;
-        top: 144px;
-        bottom: 27px;
+        top: 128px;
+        bottom: 24px;
         width: 300px;
-        /*background: #fff;*/
         overflow: auto;
     }
 
@@ -117,25 +213,26 @@
         position: absolute;
         left: 300px;
         width: 5px;
-        top: 124px;
-        bottom: 27px;
-        cursor: w-resize;
+        top: 128px;
+        bottom: 24px;
+        cursor: col-resize;
     }
 
     .dataexplorer-main .content {
         position: absolute;
         left: 305px;
-        top: 144px;
+        top: 128px;
         right: 0px;
-        bottom: 27px;
-        background: #efefef;
+        bottom: 24px;
         overflow: auto;
-        padding:0px;
+        padding: 0px;
     }
+
         .dataexplorer-main .content .mud-tabs {
             position: absolute;
             inset: 0px 0px 0px 0px;
         }
+
             .dataexplorer-main .content .mud-tabs .mud-tabs-panels {
                 position: absolute;
                 inset: 49px 0px 0px 0px;
@@ -151,11 +248,11 @@
                 }
 
                 .dataexplorer-main .content .mud-tabs .mud-tabs-panels .dataview-divider {
-                    text-align:right;
+                    text-align: right;
                 }
 
                     .dataexplorer-main .content .mud-tabs .mud-tabs-panels .dataview-divider .mud-icon-button {
-                        padding:1px;
+                        padding: 1px;
                     }
 
     .dataexplorer-main .status-bar {
@@ -163,87 +260,41 @@
         left: 0px;
         bottom: 0px;
         right: 0px;
-        height: 25px;
-        background: #aaa;
-        overflow: hidden;
+        height: 24px;
+        overflow: visible;
     }
-
-.table-column-icon {
-    width: 30px;
-}
-
-.treenode.selected > li > div:first-child {
-    background: var(--mud-palette-primary);
-    color: var(--mud-palette-primary-text);
-}
-
-.dataexplorer-main .context-selected {
-    background: #ffff00a9;
-}
-
-.dataexplorer-main .current-selected {
-    background: var(--mud-palette-primary);
-    color: var(--mud-palette-primary-text);
-}
 
 .dataexplorer-main .data .mud-table {
     position: absolute;
     inset: 0;
 }
 
-/**** Darkmode ****/
-.dataexplorer-main.dark .content{
-    background:#333;
+/* ======================================================================== selections */
+.table-column-icon {
+    width: 30px;
 }
+
+.treenode .mud-treeview-item-content {
+    border-left: 3px solid transparent;
+}
+
+.treenode.selected > li > div:first-child {
+    background: var(--gv-accent-soft);
+    color: var(--gv-accent);
+    border-left-color: var(--gv-accent);
+}
+
+.dataexplorer-main .context-selected {
+    background: var(--gv-warn-soft);
+}
+
+    .dataexplorer-main .mud-table-cell.context-selected:first-child {
+        box-shadow: inset 3px 0 var(--gv-warn);
+    }
 
 .explorer-dialog-item.selected {
-    background: var(--mud-palette-primary) !important;
-}
-
-.dataexplorer-main.dark .toolbar {
-    background: #333;
-}
-
-.dataexplorer-main.dark .navigation-bar {
-    background: #1e5684;
-}
-
-.dataexplorer-main.dark .context-selected {
-    background: #555500a9;
-}
-
-.dataexplorer-main.dark .status-bar {
-    background: #333;
-
-}
-
-.dataexplorer-main.dark .sketchpen-icon-basic-bg-light-24 {
-    background-image: url(../../../sketchpen/basic/content/img/sketchpen/bg-dark/24/1/sprite.png) !important;
-}
-
-.dataexplorer-main.dark .sketchpen-icon-webgis-bg-light-24 {
-    background-image: url(../../../sketchpen/webgis/content/img/sketchpen/bg-dark/24/1/sprite.png) !important;
-}
-
-
-@media (-webkit-min-device-pixel-ratio: 1.5), (min-resolution: 144dpi) {
-
-    .dataexplorer-main.dark .sketchpen-icon-basic-bg-light-24 {
-        background-image: url("../../../sketchpen/basic/content/img/sketchpen/bg-dark/24/1.5/sprite.png") !important;
-    }
-    .dataexplorer-main.dark .sketchpen-icon-webgis-bg-light-24 {
-        background-image: url("../../../sketchpen/webgis/content/img/sketchpen/bg-dark/24/1.5/sprite.png") !important;
-    }
-}
-
-@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
-
-    .dataexplorer-main.dark .sketchpen-icon-basic-bg-light-24 {
-        background-image: url("../../../sketchpen/basic/content/img/sketchpen/bg-dark/24/2/sprite.png") !important;
-    }
-    .dataexplorer-main.dark .sketchpen-icon-webgis-bg-light-24 {
-        background-image: url("../../../sketchpen/webgis/content/img/sketchpen/bg-dark/24/2/sprite.png") !important;
-    }
+    background: var(--gv-accent-soft) !important;
+    color: var(--gv-accent);
 }
 
 .gview-explorer-content-filter .mud-input {
@@ -278,7 +329,7 @@
 .mud-card-header {
     padding: 4px 16px;
     border-bottom: 1px solid var(--mud-palette-lines-default);
-    background-color: var(--mud-palette-primary-hover);
+    background-color: var(--mud-palette-background-gray);
 }
 
 .mud-card-content {

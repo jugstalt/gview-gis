@@ -6,7 +6,7 @@
 
 @if(SymbolProtoType is not null)
 {
-    <div style="max-height:600px;overflow:auto;background:#ccc">
+    <div class="carto-symbol-gallery">
         @foreach(var symbol in SymbolProtoType switch
                 {
                     IPointSymbol => SymbolGallery[typeof(IPointSymbol)].ToArray(),

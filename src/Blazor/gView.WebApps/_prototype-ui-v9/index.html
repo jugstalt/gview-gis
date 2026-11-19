@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<!--
+  PROTOTYPE — throwaway, not part of the build (untracked).
+  gView Carto / Explorer v9: three variants of the same screens, switchable via
+  ?variant=A|B|C and ?page=carto|explorer|home|login (&dialog=1 opens the Layer Settings dialog).
+  Open this file directly in a browser. Icons are the real sketchpen sprites from ../wwwroot/sketchpen.
+-->
+<html lang="de">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>gView v9 – Prototype</title>
+    <script>
+        (function () {
+            var t = 'system';
+            try { t = localStorage.getItem('gview-webapps-theme') || 'system'; } catch (e) { }
+            var dark = t === 'dark' || (t === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
+            document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+        })();
+    </script>
+    <link rel="stylesheet" href="../wwwroot/sketchpen/basic/content/css/sketchpen-basic-bg-light.css" />
+    <link rel="stylesheet" href="../wwwroot/sketchpen/webgis/content/css/sketchpen-webgis-bg-light.css" />
+    <link rel="stylesheet" href="proto.css" />
+</head>
+<body>
+    <div id="app"></div>
+    <script src="proto.js"></script>
+</body>
+</html>

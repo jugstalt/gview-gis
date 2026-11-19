@@ -1,0 +1,76 @@
+@using Microsoft.JSInterop
+@inject IJSRuntime JSRuntime
+
+@*
+    The theme of the gView web apps: GvTheme + light / dark / system (stored in localStorage).
+    Child components get this provider as a cascading value (e.g. GvAppBar for the switch).
+*@
+
+<MudThemeProvider @ref="_provider" Theme="GvTheme.Theme" IsDarkMode="_isDarkMode" />
+
+<CascadingValue Value="this" IsFixed="true">
+    @ChildContent
+</CascadingValue>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private MudThemeProvider _provider = null!;
+    private bool _isDarkMode;
+    private bool _systemIsDark;
+
+    public GvThemeMode Mode { get; private set; } = GvThemeMode.System;
+    public bool IsDarkMode => _isDarkMode;
+
+    public event Action? Changed;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        var stored = await JSRuntime.InvokeAsync<string?>("gview_base.getThemeMode");
+        Mode = stored switch
+        {
+            "light" => GvThemeMode.Light,
+            "dark" => GvThemeMode.Dark,
+            _ => GvThemeMode.System
+        };
+
+        _systemIsDark = await _provider.GetSystemDarkModeAsync();
+        await _provider.WatchSystemDarkModeAsync(OnSystemDarkModeChanged);
+
+        await ApplyAsync();
+    }
+
+    public async Task SetModeAsync(GvThemeMode mode)
+    {
+        Mode = mode;
+        await JSRuntime.InvokeVoidAsync("gview_base.setThemeMode", mode.ToString().ToLowerInvariant());
+        await ApplyAsync();
+    }
+
+    public Task CycleModeAsync() => SetModeAsync(Mode switch
+    {
+        GvThemeMode.System => GvThemeMode.Light,
+        GvThemeMode.Light => GvThemeMode.Dark,
+        _ => GvThemeMode.System
+    });
+
+    private Task OnSystemDarkModeChanged(bool isDark)
+    {
+        _systemIsDark = isDark;
+        return InvokeAsync(ApplyAsync);
+    }
+
+    private async Task ApplyAsync()
+    {
+        _isDarkMode = Mode == GvThemeMode.Dark || (Mode == GvThemeMode.System && _systemIsDark);
+        await JSRuntime.InvokeVoidAsync("gview_base.applyTheme", _isDarkMode);
+
+        StateHasChanged();
+        Changed?.Invoke();
+    }
+}

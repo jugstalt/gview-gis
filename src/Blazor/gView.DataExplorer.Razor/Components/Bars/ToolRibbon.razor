@@ -1,4 +1,4 @@
-@inherits BaseHandler
+﻿@inherits BaseHandler
 @implements IDisposable
 @inject PluginManagerService PluginManager
 @inject IconService Icons
@@ -7,105 +7,110 @@
  
 @if (exTools != null)
 {
-    <div class="explorer-tool-box">
-        
+    var selectedTools = exTools
+                            .Where(t => t.Target == ExplorerToolTarget.SelectedContextExplorerObjects)
+                            .Where(t => t.IsEnabled(AppScope))
+                            .OrderBy(t => t.SortOrder)
+                            .ToArray();
+    var creatables = currentExplorerObject is null
+                            ? Array.Empty<IExplorerObjectCreatable>()
+                            : creatableExplorerTools?.Where(e => e.CanCreate(currentExplorerObject)).ToArray() ?? Array.Empty<IExplorerObjectCreatable>();
 
-        @foreach (var exTool in exTools
-                                .Where(t=> t.Target == ExplorerToolTarget.General)
-                                .Where(t=> t.IsEnabled(AppScope))
-                                .OrderBy(t => t.SortOrder))
-        {
-            <div class="explorer-tool"
-                 alt="@exTool.ToolTip"
-                 @onclick="async () => await ToolClickAsync(exTool)">
-                <div class=@Icons.FromString(exTool.Icon) ></div>
-                <div class="title">@exTool.Name</div>
+    <div class="explorer-tool-boxes">
+        <div class="explorer-tool-box">
+            <div class="explorer-tool-sub-box">
+                @foreach (var exTool in exTools
+                                        .Where(t=> t.Target == ExplorerToolTarget.General)
+                                        .Where(t=> t.IsEnabled(AppScope))
+                                        .OrderBy(t => t.SortOrder))
+                {
+                    <div class="explorer-tool"
+                         title="@exTool.ToolTip"
+                         @onclick="async () => await ToolClickAsync(exTool)">
+                        <div class=@Icons.FromString(exTool.Icon) ></div>
+                        <div class="title">@exTool.Name</div>
+                    </div>
+                }
+                <div class="title">General</div>
             </div>
-        }
-        
-    </div>
+        </div>
 
-    <div class="explorer-tool-box current-selected">
-        @if(currentExplorerObject!=null)
+        @if (creatables.Length > 0)
         {
-            @if(creatableExplorerTools?.Where(e=>e.CanCreate(currentExplorerObject)).Any() == true)
-            {
+            <div class="explorer-tool-box current-selected is-selected">
                 <div class="explorer-tool-sub-box">
-                    @foreach (var creatable in creatableExplorerTools?.Where(e => e.CanCreate(currentExplorerObject))!)
+                    @foreach (var creatable in creatables)
                     {
                         <div class="explorer-tool"
-                             alt="Create new..."
+                             title="Create new..."
                              @onclick="async () => await CreateClickAsync(creatable)">
                             <div class=@Icons.FromString(creatable.Icon)></div>
                             <div class="title">@creatable.Type</div>
                         </div>
                     }
-                    <div class="title">Create new</div>
+                    <div class="title">Create new in @currentExplorerObject!.Name</div>
                 </div>
-            }
+            </div>
         }
-    </div>
 
-    <div class="explorer-tool-box context-selected">
-        @if (exTools.Where(t => t.Target == ExplorerToolTarget.SelectedContextExplorerObjects).Where(t => t.IsEnabled(AppScope)).Any())
+        @if (selectedTools.Length > 0 || contextExplorerObject is IExplorerObjectContextTools)
         {
+            <div class="explorer-tool-box context-selected is-context">
+                @if (selectedTools.Length > 0)
+                {
+                    <div class="explorer-tool-sub-box">
+                        @foreach (var exTool in selectedTools)
+                        {
+                            <div class="explorer-tool"
+                                title="@exTool.ToolTip"
+                                @onclick="async () => await ToolClickAsync(exTool)">
+                                <div class=@Icons.FromString(exTool.Icon)></div>
+                                <div class="title">@exTool.Name</div>
+                            </div>
+                        }
+                        <div class="title">Selected</div>
+                    </div>
+                }
+                @if (contextExplorerObject is IExplorerObjectContextTools)
+                {
+                    <div class="explorer-tool-sub-box">
+                        @foreach (var contextToolChunks in ((IExplorerObjectContextTools)contextExplorerObject).ContextTools
+                                                                .Where(t => t.IsEnabled(AppScope, contextExplorerObject))
+                                                                .Chunk(2))
+                        {
+                            <div class="explorer-context-tool-chunk">
+                            @foreach(var contextTool in contextToolChunks)
+                            {
+                                <div class="explorer-context-tool"
+                                     @onclick="async () => await ContextToolClickAsync(contextTool)">
+                                    <div class=@Icons.FromString(contextTool.Icon)></div>
+                                    <div class="title">@contextTool.Name</div>
+                                </div>
+                            }
+                            </div>
+                        }
+                        <div class="title">Context: @contextExplorerObject.Name</div>
+                    </div>
+                }
+            </div>
+        }
+
+        <div class="explorer-tool-box general">
             <div class="explorer-tool-sub-box">
                 @foreach (var exTool in exTools
-                                                 .Where(t => t.Target == ExplorerToolTarget.SelectedContextExplorerObjects)
-                                                 .Where(t => t.IsEnabled(AppScope))
-                                                 .OrderBy(t => t.SortOrder))
+                                   .Where(t => t.Target == ExplorerToolTarget.About)
+                                   .Where(t => t.IsEnabled(AppScope))
+                                   .OrderBy(t => t.SortOrder))
                 {
                     <div class="explorer-tool"
-                        alt="@exTool.ToolTip"
-                        @onclick="async () => await ToolClickAsync(exTool)">
+                         title="@exTool.ToolTip"
+                         @onclick="async () => await ToolClickAsync(exTool)">
                         <div class=@Icons.FromString(exTool.Icon)></div>
                         <div class="title">@exTool.Name</div>
                     </div>
                 }
-                <div class="title">Selected</div>
+                <div class="title">Help</div>
             </div>
-        }
-        @if (contextExplorerObject is IExplorerObjectContextTools)
-        {
-            <div class="explorer-tool-sub-box">
-                @foreach (var contextToolChunks in ((IExplorerObjectContextTools)contextExplorerObject).ContextTools
-                                                        .Where(t => t.IsEnabled(AppScope, contextExplorerObject))
-                                                        .Chunk(2))
-                {
-                    <div style="display:inline-block;vertical-align:top;">
-                    @foreach(var contextTool in contextToolChunks)
-                    {
-                        <div class="explorer-context-tool"
-                             @onclick="async () => await ContextToolClickAsync(contextTool)">
-                            <div class=@Icons.FromString(contextTool.Icon)></div>
-                            <div class="title">@contextTool.Name</div>
-                        </div>
-                    }
-                    </div>
-                }
-                <div class="title">Context: @contextExplorerObject.Name</div>
-            </div>
-        }
-    </div>
-
-    <div class="explorer-tool-box" style="float:right">
-
-        @foreach (var exTool in exTools
-                           .Where(t => t.Target == ExplorerToolTarget.About)
-                           .Where(t => t.IsEnabled(AppScope))
-                           .OrderBy(t => t.SortOrder))
-        {
-            <div class="explorer-tool"
-                 alt="@exTool.ToolTip"
-                 @onclick="async () => await ToolClickAsync(exTool)">
-                <div class=@Icons.FromString(exTool.Icon)></div>
-                <div class="title">@exTool.Name</div>
-            </div>
-        }
-
-        <div class="explorer-tool" @onclick="()=>DarkmodeClick()">
-            <div class=@Icons.FromString("basic:darkmode")></div>
-            <div class="title">Color Scheme</div>
         </div>
     </div>
 }
@@ -115,8 +120,6 @@
     private IExplorerObjectCreatable[]? creatableExplorerTools;
     private IExplorerObject? currentExplorerObject;
     private IExplorerObject? contextExplorerObject;
-
-    [Parameter] public EventCallback ToggleDarkmode { get; set; }
 
     protected override void OnInitialized() => base.Handle(() =>
     {
@@ -178,9 +181,6 @@
         }
     });
 
-
-    private Task DarkmodeClick() => ToggleDarkmode.InvokeAsync();
-    //private Task DarkmodeClick() => throw new Exception("Testing Errorboundary");
 
     public void Dispose()
     {

@@ -9,154 +9,90 @@
 @inject IAppIdentityProvider IdentityProvider
 @inject CustomTilesService CustomTiles
 
-<MudThemeProvider @bind-IsDarkMode="@_isDarkMode" Theme="_theme" />
+<GvThemeProvider>
 
-<div class="gview-splashscreen" style="opacity:.2">
-    <div></div>
-</div>
+<div class="gv-page">
+    <GvAppBar ShowLogin="true" />
 
-<div style="max-width:600px;margin:40px auto;text-align:center">
-    
-    <GvGrid ColumnCount="2">
-        <GvGridItem Span="2">
-            <div style="text-align:right">
-                @if(_identity?.IsAuthenticated == true && _identity.CanLogout)
+    <main class="gv-page-main">
+        <div class="gv-home-hero">
+            <h1>gView GIS</h1>
+            <p>
+                Version @SystemInfo.Version
+                @if (_identity?.IsAuthenticated == true ||
+                     _identity?.IsAdministrator == true ||
+                     _identity?.IsAuthorizedUser == true)
                 {
-                    <MudButton Variant="Variant.Filled"
-                               Color="Color.Secondary"
-                               OnClick="() => Nav.NavigateTo(LogoutUri, false)">
-                        Logout
-                    </MudButton>
-                } 
-                else if(_identity?.IsAdministrator != true) 
-                {
-                    <MudButton Variant="Variant.Filled"
-                               Color="Color.Primary"
-                               OnClick="() => Nav.NavigateTo(LoginUri, false)">
-                        Login
-                    </MudButton>
+                    <span> · @_identity.UserNameAndRole()</span>
                 }
-            </div>
-            <MudPaper Elevation="25" Style="padding:20px;position:relative">
-                <MudText Typo="Typo.h2">gView GIS</MudText>
-                <div>Version: @SystemInfo.Version</div>
-                @if(_identity?.IsAuthenticated == true ||
-                    _identity?.IsAdministrator == true ||
-                    _identity?.IsAuthorizedUser == true) 
-                {
-                    <div>User: @_identity.UserNameAndRole()</div>
-                }
-            </MudPaper>
-        </GvGridItem>
-        @if (_identity?.IsAuthorizedUser == true)
-        {
-            <GvGridItem>
-                <MudPaper @onclick="()=>NavigateTo(CartoUri)"
-                      Style="min-height:250px;cursor:pointer;padding:20px;position:relative"
-                      Elevation="25">
-                    <MudText Typo="Typo.h5">gView Carto</MudText>
+            </p>
+        </div>
 
-                    <MudText Typo="Typo.body1">
-                        Create maps, include geographic data sources, render with cartographics capabilites
-                    </MudText>
-
-                    <MudFab Color="Color.Primary" Style="position:absolute;right:20px;bottom:20px"
-                            StartIcon="@Icons.Material.Filled.OpenInNew"
-                            OnClick="()=>NavigateTo(CartoUri, true)" />
-                </MudPaper>
-            </GvGridItem>
-        }
-        @if (_identity?.IsAdministrator == true)
-        {
-            <GvGridItem>
-                <MudPaper @onclick="()=>NavigateTo(ExplorerUri)"
-                         style="min-height:250px;cursor:pointer;padding:20px;position:relative"
-                         Elevation="25">
-                    <MudText Typo="Typo.h5">gView Explorer</MudText>
-
-                    <MudText Typo="Typo.body1">
-                        Explore geographic data, copy data between datasets, run workloads to manage your data
-                    </MudText>
-
-                    <MudFab Color="Color.Primary" Style="position:absolute;right:20px;bottom:20px"
-                            StartIcon="@Icons.Material.Filled.OpenInNew"
-                            OnClick="()=>NavigateTo(ExplorerUri, true)" />
-                </MudPaper>
-            </GvGridItem>
-        
-            @foreach(var customTile in CustomTiles.Tiles)
+        <div class="gv-home-cards">
+            @if (_identity?.IsAuthorizedUser == true)
             {
-                <GvGridItem>
-                    <MudPaper @onclick="()=>NavigateTo(customTile.TargetUrl)"
-                              style="@("min-height:250px;cursor:pointer;padding:20px;position:relative;".AppendBackgroundColor(customTile.BackgroundColor).AppendColor(customTile.FontColor))"
-                              Elevation="25">
-                        <MudText Typo="Typo.h5">@customTile.Title</MudText>
-
-                        <MudText Typo="Typo.body1">
-                            @customTile.Description
-                        </MudText>
-
-                        <MudFab Color="Color.Primary" Style="position:absolute;right:20px;bottom:20px"
-                                StartIcon="@Icons.Material.Filled.OpenInNew"
-                                OnClick="()=>NavigateTo(customTile.TargetUrl, true)" />
-                    </MudPaper>
-                </GvGridItem>
+                <div class="gv-home-card" @onclick="() => NavigateTo(CartoUri)">
+                    <MudIcon Icon="@Icons.Material.Outlined.Map" Class="gv-home-card-icon" />
+                    <span class="gv-home-card-title">gView Carto</span>
+                    <span class="gv-home-card-text">Create maps, include geographic data sources, render with cartographics capabilites</span>
+                    <span class="gv-home-card-open" title="Open in a new tab" @onclick:stopPropagation="true">
+                        <MudIconButton Icon="@Icons.Material.Outlined.OpenInNew" Size="Size.Small" Color="Color.Inherit" OnClick="() => NavigateTo(CartoUri, true)" />
+                    </span>
+                </div>
             }
+            @if (_identity?.IsAdministrator == true)
+            {
+                <div class="gv-home-card" @onclick="() => NavigateTo(ExplorerUri)">
+                    <MudIcon Icon="@Icons.Material.Outlined.FolderOpen" Class="gv-home-card-icon" />
+                    <span class="gv-home-card-title">gView Explorer</span>
+                    <span class="gv-home-card-text">Explore geographic data, copy data between datasets, run workloads to manage your data</span>
+                    <span class="gv-home-card-open" title="Open in a new tab" @onclick:stopPropagation="true">
+                        <MudIconButton Icon="@Icons.Material.Outlined.OpenInNew" Size="Size.Small" Color="Color.Inherit" OnClick="() => NavigateTo(ExplorerUri, true)" />
+                    </span>
+                </div>
 
-            <GvGridItem>
-                <MudPaper style="min-height:250px;padding:20px;position:relative"
-                          Elevation="25">
-                    <MudText Typo="Typo.h5">Used Memory</MudText>
+                @foreach (var customTile in CustomTiles.Tiles)
+                {
+                    <div class="gv-home-card custom"
+                         style="@("".AppendBackgroundColor(customTile.BackgroundColor).AppendColor(customTile.FontColor))"
+                         @onclick="() => NavigateTo(customTile.TargetUrl)">
+                        <MudIcon Icon="@Icons.Material.Outlined.Apps" Class="gv-home-card-icon" />
+                        <span class="gv-home-card-title">@customTile.Title</span>
+                        <span class="gv-home-card-text">@customTile.Description</span>
+                        <span class="gv-home-card-open" title="Open in a new tab" @onclick:stopPropagation="true">
+                            <MudIconButton Icon="@Icons.Material.Outlined.OpenInNew" Size="Size.Small" Color="Color.Inherit" OnClick="() => NavigateTo(customTile.TargetUrl, true)" />
+                        </span>
+                    </div>
+                }
 
-                    <MudText Typo="Typo.body1">
-                         @((int)(GC.GetTotalMemory(false) / 1024.0 / 1024.0)) MB
-                    </MudText>
-
-                    <MudFab Color="Color.Primary" Style="position:absolute;right:20px;bottom:20px"
-                            StartIcon="@Icons.Material.Filled.Memory"
-                            OnClick="CollectMemory" />
-                </MudPaper>
-            </GvGridItem>
-        }
-    </GvGrid>
+                <div class="gv-home-card static">
+                    <MudIcon Icon="@Icons.Material.Outlined.Memory" Class="gv-home-card-icon" />
+                    <span class="gv-home-card-title">Used Memory</span>
+                    <span class="gv-home-card-text"><span class="gv-home-card-value">@((int)(GC.GetTotalMemory(false) / 1024.0 / 1024.0))</span> MB</span>
+                    <MudButton Variant="Variant.Outlined" Size="Size.Small" Class="gv-home-card-action"
+                               StartIcon="@Icons.Material.Outlined.CleaningServices"
+                               OnClick="CollectMemory">
+                        Collect
+                    </MudButton>
+                </div>
+            }
+        </div>
+    </main>
 </div>
+
+</GvThemeProvider>
 
 
 @code {
     private const string CartoUri = "carto";
     private const string ExplorerUri = "explorer";
-    private const string LoginUri = "login";
-    private const string LogoutUri = "logout";
 
-    private const string DarkModeStorageKey = "gview_darkmode";
-
-    private MudTheme _theme = new();
-    private bool _isDarkMode = true;
     private AppIdentity? _identity;
 
     async protected override Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
         _identity = IdentityProvider.Identity;
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            var stored = await JSRuntime.InvokeAsync<string?>("localStorage.getItem", DarkModeStorageKey);
-            if (stored is not null && bool.TryParse(stored, out var isDark))
-            {
-                _isDarkMode = isDark;
-                StateHasChanged();
-            }
-        }
-    }
-
-    private async Task ToggleDarkmode()
-    {
-        _isDarkMode = !_isDarkMode;
-        await JSRuntime.InvokeVoidAsync("localStorage.setItem", DarkModeStorageKey, _isDarkMode.ToString());
     }
 
     async private Task NavigateTo(string uri, bool newTab = false)

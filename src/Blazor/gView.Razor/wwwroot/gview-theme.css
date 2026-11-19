@@ -1,0 +1,385 @@
+/*
+ * gView web apps v9 — tokens and shared chrome (Carto, Explorer, Home, Login).
+ * Colours are the tokens of the gView.Server v9 admin UI. Dark mode: html[data-theme="dark"],
+ * set by GvThemeProvider (gview_base.applyTheme) and before the first paint by App.razor.
+ * MudBlazor itself is themed by GvTheme.cs (same colours); only a few MudBlazor parts are overridden here.
+ */
+
+/* ======================================================================== tokens */
+:root {
+    --gv-bg: #f5f6f8; --gv-surface: #ffffff; --gv-surface-2: #f0f2f5; --gv-border: #e2e5ea; --gv-text: #18202b; --gv-muted: #677284;
+    --gv-accent: #2563eb; --gv-accent-soft: #e7eefe; --gv-accent-hover: rgba(37,99,235,.08); --gv-accent-text: #ffffff;
+    --gv-danger: #d13b3b; --gv-danger-soft: #fdecec; --gv-warn: #b7791f; --gv-warn-soft: #fff5e0; --gv-success: #1f8a4c; --gv-success-soft: #e6f6ec;
+    --gv-side: #101722; --gv-side-2: #1a2331; --gv-side-text: #b8c2d1; --gv-side-active: #ffffff;
+    --gv-radius: 6px;
+    --gv-shadow: 0 1px 2px rgba(16,24,40,.06), 0 1px 3px rgba(16,24,40,.08);
+    --gv-float-shadow: 0 8px 24px rgba(16,24,40,.14), 0 2px 6px rgba(16,24,40,.08);
+    --gv-font: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+    --gv-appbar-height: 40px;
+    --gv-statusbar-height: 24px;
+    color-scheme: light;
+}
+
+[data-theme="dark"] {
+    --gv-bg: #0c1017; --gv-surface: #141a23; --gv-surface-2: #1a212c; --gv-border: #273041; --gv-text: #e4e9f0; --gv-muted: #8b97a8;
+    --gv-accent: #5b93ff; --gv-accent-soft: rgba(91,147,255,.14); --gv-accent-hover: rgba(91,147,255,.10); --gv-accent-text: #0c1017;
+    --gv-danger: #ff6b6b; --gv-danger-soft: rgba(255,107,107,.12); --gv-warn: #f0b542; --gv-warn-soft: rgba(240,181,66,.12); --gv-success: #4ccb7f; --gv-success-soft: rgba(76,203,127,.12);
+    --gv-side: #080b10; --gv-side-2: #121822; --gv-side-text: #9aa6b8;
+    --gv-shadow: none;
+    --gv-float-shadow: 0 8px 24px rgba(0,0,0,.5);
+    color-scheme: dark;
+}
+
+/* ======================================================================== base */
+html, body {
+    background: var(--gv-bg);
+    color: var(--gv-text);
+    font-family: var(--gv-font);
+}
+
+/* sketchpen sprites: dark backgrounds use the bg-dark sprites (same positions) */
+[data-theme="dark"] .sketchpen-icon-basic-bg-light-24 { background-image: url("../../sketchpen/basic/content/img/sketchpen/bg-dark/24/1/sprite.png") !important; }
+[data-theme="dark"] .sketchpen-icon-webgis-bg-light-24 { background-image: url("../../sketchpen/webgis/content/img/sketchpen/bg-dark/24/1/sprite.png") !important; }
+[data-theme="dark"] .sketchpen-icon-basic-bg-light-16 { background-image: url("../../sketchpen/basic/content/img/sketchpen/bg-dark/16/1/sprite.png") !important; }
+[data-theme="dark"] .sketchpen-icon-webgis-bg-light-16 { background-image: url("../../sketchpen/webgis/content/img/sketchpen/bg-dark/16/1/sprite.png") !important; }
+
+@media (-webkit-min-device-pixel-ratio: 1.5), (min-resolution: 144dpi) {
+    [data-theme="dark"] .sketchpen-icon-basic-bg-light-24 { background-image: url("../../sketchpen/basic/content/img/sketchpen/bg-dark/24/1.5/sprite.png") !important; }
+    [data-theme="dark"] .sketchpen-icon-webgis-bg-light-24 { background-image: url("../../sketchpen/webgis/content/img/sketchpen/bg-dark/24/1.5/sprite.png") !important; }
+    [data-theme="dark"] .sketchpen-icon-basic-bg-light-16 { background-image: url("../../sketchpen/basic/content/img/sketchpen/bg-dark/16/1.5/sprite.png") !important; }
+    [data-theme="dark"] .sketchpen-icon-webgis-bg-light-16 { background-image: url("../../sketchpen/webgis/content/img/sketchpen/bg-dark/16/1.5/sprite.png") !important; }
+}
+
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    [data-theme="dark"] .sketchpen-icon-basic-bg-light-24 { background-image: url("../../sketchpen/basic/content/img/sketchpen/bg-dark/24/2/sprite.png") !important; }
+    [data-theme="dark"] .sketchpen-icon-webgis-bg-light-24 { background-image: url("../../sketchpen/webgis/content/img/sketchpen/bg-dark/24/2/sprite.png") !important; }
+    [data-theme="dark"] .sketchpen-icon-basic-bg-light-16 { background-image: url("../../sketchpen/basic/content/img/sketchpen/bg-dark/16/2/sprite.png") !important; }
+    [data-theme="dark"] .sketchpen-icon-webgis-bg-light-16 { background-image: url("../../sketchpen/webgis/content/img/sketchpen/bg-dark/16/2/sprite.png") !important; }
+}
+
+/* ======================================================================== app header */
+.gv-appbar {
+    position: absolute;
+    left: 0; top: 0; right: 0;
+    height: var(--gv-appbar-height);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 8px 0 12px;
+    background: var(--gv-side);
+    color: var(--gv-side-text);
+    font-size: 13px;
+    z-index: 5;
+    user-select: none;
+}
+
+    .gv-appbar a { text-decoration: none; }
+
+.gv-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--gv-side-active) !important;
+    white-space: nowrap;
+}
+
+    .gv-brand .gv-brand-mark {
+        width: 24px; height: 24px;
+        padding: 3px;
+        border-radius: 6px;
+        background: var(--gv-accent);
+        color: #fff;
+        font-size: 18px;
+    }
+
+    .gv-brand .gv-brand-name { font-size: 14px; font-weight: 400; }
+    .gv-brand .gv-brand-name b { font-weight: 600; }
+    .gv-brand em { font-style: normal; font-size: 11px; color: var(--gv-side-text); opacity: .8; }
+
+.gv-appbar-center {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding-left: 12px;
+    border-left: 1px solid rgba(255,255,255,.12);
+    overflow: hidden;
+}
+
+    .gv-appbar-center .gv-doc { color: var(--gv-side-active); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .gv-appbar-center .gv-doc-sub { font-size: 12px; opacity: .7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.gv-appbar-right { display: flex; align-items: center; gap: 2px; flex: none; }
+
+.gv-appbar-btn, .gv-appbar-user {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 30px;
+    padding: 0 8px;
+    border: 0;
+    border-radius: 6px;
+    background: none;
+    color: var(--gv-side-text) !important;
+    font: inherit;
+    cursor: pointer;
+}
+
+    .gv-appbar-btn:hover { background: var(--gv-side-2); color: var(--gv-side-active) !important; }
+    .gv-appbar-user { cursor: default; }
+
+@media (max-width: 900px) {
+    .gv-appbar-btn-text, .gv-appbar-center .gv-doc-sub { display: none; }
+}
+
+/* ======================================================================== panes, splitters, status bar (Carto + Explorer) */
+.gv-pane {
+    background: var(--gv-surface);
+    color: var(--gv-text);
+}
+
+/* splitters keep their 5px grip (carto.js / dataexplorer.js), but only show a 1px line */
+.gv-splitter {
+    background: linear-gradient(var(--gv-border), var(--gv-border)) center / 1px 100% no-repeat;
+    z-index: 2;
+}
+
+    .gv-splitter.horizontal { background-size: 100% 1px; }
+    .gv-splitter:hover { background-color: var(--gv-accent-soft); background-image: linear-gradient(var(--gv-accent), var(--gv-accent)); }
+
+.gv-statusbar {
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: var(--gv-statusbar-height);
+    padding: 0 4px;
+    background: var(--gv-surface-2);
+    border-top: 1px solid var(--gv-border);
+    color: var(--gv-muted);
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+    .gv-statusbar .gv-status-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        height: 100%;
+        padding: 0 10px;
+        border-right: 1px solid var(--gv-border);
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+        .gv-statusbar .gv-status-item:last-child { border-right: 0; }
+        .gv-statusbar .gv-status-item.grow { flex: 1 1 auto; border-right: 0; }
+        .gv-statusbar .gv-status-item.clickable { cursor: pointer; }
+        .gv-statusbar .gv-status-item.clickable:hover { color: var(--gv-accent); background: var(--gv-accent-hover); }
+
+    .gv-statusbar .gv-status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--gv-success); flex: none; }
+    .gv-statusbar .gv-status-dot.busy { background: var(--gv-accent); animation: gv-pulse 1s ease-in-out infinite; }
+
+/* thin running bar on top of the status bar while busy */
+.gv-busy-bar {
+    position: absolute;
+    left: 0; right: 0; top: -1px;
+    height: 2px;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+    .gv-busy-bar::before {
+        content: "";
+        position: absolute;
+        top: 0; bottom: 0;
+        width: 30%;
+        background: var(--gv-accent);
+        animation: gv-busy 1.6s ease-in-out infinite;
+    }
+
+@keyframes gv-busy { 0% { left: -30%; } 100% { left: 100%; } }
+@keyframes gv-pulse { 50% { opacity: .35; } }
+
+/* ======================================================================== MudBlazor: targeted overrides */
+
+/* dialogs: separated header and footer */
+.mud-dialog {
+    border: 1px solid var(--mud-palette-lines-default);
+    box-shadow: 0 20px 50px rgba(0,0,0,.28) !important;
+    border-radius: 10px !important;
+}
+
+    .mud-dialog .mud-dialog-title {
+        padding: 12px 20px;
+        border-bottom: 1px solid var(--mud-palette-lines-default);
+    }
+
+        .mud-dialog .mud-dialog-title .mud-typography-h6 { font-size: 16px; font-weight: 600; }
+
+    .mud-dialog .mud-dialog-actions {
+        padding: 10px 16px;
+        gap: 4px;
+        border-top: 1px solid var(--mud-palette-lines-default);
+        background: var(--mud-palette-background-gray);
+    }
+
+/* tabs: flat with an underline */
+.mud-tabs .mud-tabs-tabbar {
+    background: var(--mud-palette-surface);
+    border-bottom: 1px solid var(--mud-palette-lines-default);
+}
+
+.mud-tabs .mud-tab { text-transform: none; font-weight: 500; }
+
+/* tables: compact header */
+.mud-table-head .mud-table-cell {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--mud-palette-text-secondary);
+}
+
+/* surfaces: no elevation shadows in dark mode */
+[data-theme="dark"] .mud-paper:not(.mud-popover):not(.mud-dialog) { box-shadow: none; }
+
+/* alerts a bit flatter */
+.mud-alert { border-radius: var(--gv-radius); }
+
+/* ======================================================================== start page, login, logout */
+.gv-page {
+    position: absolute;
+    inset: 0;
+    background: var(--gv-bg);
+    color: var(--gv-text);
+    overflow: auto;
+}
+
+.gv-page-main {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    top: var(--gv-appbar-height);
+    overflow: auto;
+    padding: 40px 24px;
+}
+
+.gv-home-hero, .gv-home-cards { max-width: 1000px; margin: 0 auto; }
+.gv-home-hero h1 { margin: 0 0 4px; font-size: 26px; font-weight: 600; }
+.gv-home-hero p { margin: 0 0 28px; color: var(--gv-muted); }
+
+.gv-home-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+}
+
+.gv-home-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-height: 168px;
+    padding: 20px;
+    background: var(--gv-surface);
+    color: var(--gv-text);
+    border: 1px solid var(--gv-border);
+    border-radius: 10px;
+    box-shadow: var(--gv-shadow);
+    cursor: pointer;
+    transition: border-color .15s, transform .15s;
+}
+
+    .gv-home-card:hover { border-color: var(--gv-accent); transform: translateY(-1px); }
+    .gv-home-card.static { cursor: default; }
+    .gv-home-card.static:hover { border-color: var(--gv-border); transform: none; }
+
+    .gv-home-card .gv-home-card-icon {
+        width: 40px; height: 40px;
+        padding: 9px;
+        margin-bottom: 6px;
+        border-radius: 8px;
+        background: var(--gv-accent-soft);
+        color: var(--gv-accent);
+    }
+
+    .gv-home-card .gv-home-card-title { font-size: 16px; font-weight: 600; }
+    .gv-home-card .gv-home-card-text { font-size: 13px; color: var(--gv-muted); }
+    .gv-home-card .gv-home-card-value { font-size: 24px; font-weight: 600; color: var(--gv-text); }
+
+    .gv-home-card .gv-home-card-open {
+        position: absolute;
+        right: 10px; top: 10px;
+        color: var(--gv-muted);
+    }
+
+        .gv-home-card .gv-home-card-open:hover { color: var(--gv-accent); }
+
+    .gv-home-card .gv-home-card-action { margin-top: auto; align-self: flex-start; }
+
+    /* custom tiles bring their own colours */
+    .gv-home-card.custom { border-color: transparent; }
+    .gv-home-card.custom .gv-home-card-text { color: inherit; opacity: .8; }
+    .gv-home-card.custom .gv-home-card-icon { background: rgba(255,255,255,.18); color: inherit; }
+    .gv-home-card.custom .gv-home-card-open { color: inherit; opacity: .8; }
+
+.gv-center-page {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 16px;
+    background: var(--gv-bg);
+    color: var(--gv-text);
+    overflow: auto;
+}
+
+.gv-center-card {
+    width: 380px;
+    max-width: 100%;
+    padding: 28px;
+    background: var(--gv-surface);
+    border: 1px solid var(--gv-border);
+    border-radius: 12px;
+    box-shadow: var(--gv-shadow);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+    .gv-center-card .gv-brand { color: var(--gv-text) !important; }
+    .gv-center-card .gv-brand em { color: var(--gv-muted); }
+    .gv-center-card h2 { margin: 6px 0 0; font-size: 20px; font-weight: 600; }
+    .gv-center-card p { margin: -8px 0 4px; color: var(--gv-muted); }
+
+/* plain form controls for the static pages (login, logout) */
+.gv-field { display: flex; flex-direction: column; gap: 4px; }
+.gv-field > span { font-size: 12px; font-weight: 500; color: var(--gv-muted); }
+.gv-field input {
+    height: 38px;
+    padding: 0 10px;
+    border: 1px solid var(--gv-border);
+    border-radius: var(--gv-radius);
+    background: var(--gv-surface);
+    color: var(--gv-text);
+    font: inherit;
+    font-size: 14px;
+    outline: 0;
+}
+    .gv-field input:focus { border-color: var(--gv-accent); box-shadow: 0 0 0 3px var(--gv-accent-soft); }
+
+.gv-button {
+    height: 38px;
+    padding: 0 16px;
+    border: 1px solid var(--gv-border);
+    border-radius: var(--gv-radius);
+    background: var(--gv-surface);
+    color: var(--gv-text);
+    font: inherit;
+    font-weight: 500;
+    cursor: pointer;
+}
+    .gv-button.primary { background: var(--gv-accent); border-color: var(--gv-accent); color: var(--gv-accent-text); }
+    .gv-button.primary:hover { filter: brightness(1.08); }
+
+.gv-alert { padding: 10px 12px; border-radius: var(--gv-radius); font-size: 13px; }
+    .gv-alert.error { background: var(--gv-danger-soft); color: var(--gv-danger); }

@@ -10,50 +10,45 @@
 @inject NavigationManager NavigationManager
 @inject IHttpContextAccessor HttpContextAccessor
 
-<MudThemeProvider @bind-IsDarkMode="@_isDarkMode" Theme="_theme" />
-
-<div style="max-width:600px;margin:40px auto;text-align:center">
-
-    <EditForm Model="@Model" 
+@* static SSR page: no interactive MudBlazor here, styled by gview-theme.css (light/dark by the script in App.razor) *@
+<div class="gv-center-page">
+    <EditForm Model="@Model"
               FormName="login-forms"
-              OnValidSubmit="Login">
-        <GvCard Title="gView Web Login">
-            <GvCardContent>
-                @if(!String.IsNullOrEmpty(_errorMessage))
-                {
-                    <MudAlert Severity="Severity.Error">@_errorMessage</MudAlert>
-                }
-            
-                @if (Model is not null)
-                {
-                    <MudTextField @bind-Value="Model.Username" ShrinkLabel
-                    Label="Username"
-                    Variant="Variant.Outlined"
-                    name = "Model.Username"
-                    Immediate="true" />
+              OnValidSubmit="Login"
+              class="gv-center-card">
 
-                    <MudTextField @bind-Value="Model.Password" ShrinkLabel
-                    Label="Password"
-                    Variant="Variant.Outlined"
-                    name="Model.Password"
-                    InputType="InputType.Password"/>
-                }
-            </GvCardContent>
-            <GvCardActions>
-                <MudButton ButtonType="ButtonType.Submit"
-                           Color="Color.Primary"
-                           Variant="Variant.Filled">
-                    Login
-                </MudButton>
-            </GvCardActions>
-        </GvCard>
+        <span class="gv-brand">
+            <MudIcon Icon="@Icons.Material.Outlined.Map" Class="gv-brand-mark" />
+            <span class="gv-brand-name">gView <b>Web</b></span>
+            <em>v@(gView.Framework.Common.SystemInfo.Version.Major)</em>
+        </span>
+
+        <h2>Login</h2>
+        <p>gView Carto &amp; Explorer</p>
+
+        @if (!String.IsNullOrEmpty(_errorMessage))
+        {
+            <div class="gv-alert error">@_errorMessage</div>
+        }
+
+        @if (Model is not null)
+        {
+            <label class="gv-field">
+                <span>Username</span>
+                <InputText @bind-Value="Model.Username" autocomplete="username" autofocus />
+            </label>
+
+            <label class="gv-field">
+                <span>Password</span>
+                <InputText @bind-Value="Model.Password" type="password" autocomplete="current-password" />
+            </label>
+        }
+
+        <button type="submit" class="gv-button primary">Login</button>
     </EditForm>
 </div>
 
 @code {
-    private MudTheme _theme = new();
-    private bool _isDarkMode = true;
-
     private HttpContext? HttpContext;
 
     [SupplyParameterFromForm]

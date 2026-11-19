@@ -8,26 +8,23 @@
 @inject NavigationManager Nav
 @inject IHttpContextAccessor HttpContextAccessor
 
-<MudThemeProvider @bind-IsDarkMode="@_isDarkMode" Theme="_theme" />
+<div class="gv-center-page">
+    <div class="gv-center-card">
+        <span class="gv-brand">
+            <MudIcon Icon="@Icons.Material.Outlined.Map" Class="gv-brand-mark" />
+            <span class="gv-brand-name">gView <b>Web</b></span>
+            <em>v@(gView.Framework.Common.SystemInfo.Version.Major)</em>
+        </span>
 
-<div style="max-width:600px;margin:40px auto;text-align:center">
-    <GvGrid ColumnCount="2">
-        <GvGridItem Span="2">
-            <MudText Typo="Typo.body1">
-                You are logged out!
-            </MudText>
-            <button class="mud-button-root mud-button mud-button-filled mud-button-filled-primary mud-button-filled-size-medium mud-ripple"
-                    onclick="document.location='@(Nav.BaseUri)'">
-                Ok
-            </button>
-        </GvGridItem>
-    </GvGrid>
+        <h2>You are logged out!</h2>
+
+        <button type="button" class="gv-button primary" onclick="document.location='@(Nav.BaseUri)'">
+            Ok
+        </button>
+    </div>
 </div>
 
 @code {
-    private MudTheme _theme = new();
-    private bool _isDarkMode = true;
-
     async protected override Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();

@@ -1,246 +1,351 @@
-﻿.carto-main {
+﻿/*
+ * gView Carto v9 ("Console" layout). Colours come from the tokens in _content/gView.Razor/gview-theme.css
+ * (--gv-*) and from the MudBlazor palette (GvTheme); dark mode via html[data-theme="dark"].
+ * The panes are absolutely positioned: carto.js (splitters, setDataFrameSize) uses the same numbers.
+ *   app header 40px (GvAppBar, outside .carto-main) | ribbon 86px | toc + content | data frame | status bar 24px
+ */
+.carto-main {
     position: absolute;
     left: 0px;
-    top: 0px;
+    top: var(--gv-appbar-height, 40px);
     right: 0px;
     bottom: 0px;
-    background: #e0e0e0;
+    background: var(--gv-bg);
+    color: var(--gv-text);
     user-select: none;
 }
 
+/* ======================================================================== ribbon */
     .carto-main .toolbar {
         position: absolute;
         left: 0px;
         top: 0px;
         right: 0px;
-        height: 100px;
-        background: #f0f0f0;
+        height: 86px;
+        padding: 4px 6px 0px 6px;
+        background: var(--gv-surface);
+        border-bottom: 1px solid var(--gv-border);
+        box-sizing: border-box;
     }
 
         /* one row; boxes collapse to a menu button when it gets too narrow (cartoInterops.ribbonObserve) */
         .carto-main .toolbar .carto-tool-boxes {
             display: flex;
             flex-wrap: nowrap;
-            align-items: flex-start;
+            align-items: stretch;
             width: 100%;
             height: 100%;
             overflow: hidden;
         }
 
-        .carto-main .toolbar .carto-tool-box.general {
-            margin-left: auto;
-        }
-
         .carto-main .toolbar .carto-tool-box {
             flex: 0 0 auto;
-            height: 94px;
-            display: inline-block;
-            vertical-align: top;
-            margin: 2px;
-            border-radius: 4px;
+            height: 100%;
+            margin: 0px;
+            border-right: 1px solid var(--gv-border);
         }
 
-            .carto-main .toolbar .carto-tool-box .carto-tool {
-                height: 94px;
-                display: inline-block;
-                text-align: center;
-                padding: 8px;
-                margin: 0px 2px;
-                max-width: 64px;
-                vertical-align: top;
-                border: 1px solid transparent;
-                cursor: pointer;
+            .carto-main .toolbar .carto-tool-box.general {
+                margin-left: auto;
+                border-right: 0;
+                border-left: 1px solid var(--gv-border);
+            }
+
+            /* a group: the tools on top, its label below */
+            .carto-main .toolbar .carto-tool-box .carto-tool-sub-box {
+                position: relative;
+                display: inline-flex;
+                align-items: flex-start;
+                gap: 2px;
+                height: 100%;
+                padding: 0px 6px 18px 6px;
                 box-sizing: border-box;
-                border-radius: 4px;
-                font-size: 0.7em;
-            }
-
-            .carto-main .toolbar .carto-tool-box .tool-small-chunk {
-                width: 78px;
-                height: 76px;
-                display: inline-block;
                 vertical-align: top;
             }
 
-                .carto-main .toolbar .carto-tool-box .tool-small-chunk .carto-tool.small,
-                .mud-popover.mud-popover-open .mud-list .carto-tool {
-                    height: 25px !important;
-                    display: inline-block;
-                    text-align: left;
-                    padding: 2px;
-                    margin: 1px 2px;
-                    max-width: 74px;
-                    /*vertical-align: top;*/
-                    border: 1px solid transparent;
-                    cursor: pointer;
-                    box-sizing: border-box;
-                    border-radius: 4px;
-                    font-size: 0.65em;
+                .carto-main .toolbar .carto-tool-box .carto-tool-sub-box > .title {
+                    position: absolute;
+                    bottom: 0px;
+                    left: 0px;
+                    right: 0px;
+                    height: 18px;
+                    line-height: 16px;
+                    padding: 0px 4px;
+                    text-align: center;
+                    color: var(--gv-muted);
+                    font-size: 11px;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
                 }
 
-            .carto-main .toolbar .carto-tool-box .carto-tool.small .title {
-                display: inline-block;
-                width: 48px;
-                overflow: hidden;
-                white-space: nowrap;
-                text-overflow: ellipsis;
+            /* the group of the selected TOC item */
+            .carto-main .toolbar .carto-tool-box.is-selected {
+                background: linear-gradient(var(--gv-accent-soft), transparent);
+                border-radius: 6px 6px 0px 0px;
             }
 
+                .carto-main .toolbar .carto-tool-box.is-selected .carto-tool-sub-box > .title {
+                    color: var(--gv-accent);
+                    font-weight: 600;
+                }
+
+            /* large tool: icon + up to two lines of text */
+            .carto-main .toolbar .carto-tool-box .carto-tool {
+                display: inline-flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 3px;
+                width: 64px;
+                height: 60px;
+                padding: 6px 2px 0px 2px;
+                border: 1px solid transparent;
+                border-radius: 6px;
+                color: var(--gv-text);
+                font-size: 11px;
+                line-height: 1.15;
+                text-align: center;
+                cursor: pointer;
+                box-sizing: border-box;
+                vertical-align: top;
+            }
+
+                .carto-main .toolbar .carto-tool-box .carto-tool > .title {
+                    display: -webkit-box;
+                    -webkit-line-clamp: 2;
+                    -webkit-box-orient: vertical;
+                    overflow: hidden;
+                    word-break: break-word;
+                }
+
+            /* small tools: three stacked */
+            .carto-main .toolbar .carto-tool-box .tool-small-chunk {
+                display: inline-flex;
+                flex-direction: column;
+                gap: 1px;
+                padding-top: 1px;
+                vertical-align: top;
+            }
+
+                .carto-main .toolbar .carto-tool-box .tool-small-chunk .carto-tool.small {
+                    flex-direction: row;
+                    gap: 6px;
+                    width: auto;
+                    max-width: 150px;
+                    height: 20px;
+                    padding: 0px 8px 0px 4px;
+                    border-radius: 4px;
+                    font-size: 12px;
+                    text-align: left;
+                    white-space: nowrap;
+                }
+
+                    .carto-main .toolbar .carto-tool-box .tool-small-chunk .carto-tool.small > .title {
+                        display: block;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                    }
+
         .carto-main .toolbar .carto-tool:hover {
-            background-color: #0094ff46;
-            border: 1px solid #0094ff;
-            box-sizing: border-box;
+            background-color: var(--gv-surface-2);
         }
 
         .carto-main .toolbar .carto-tool.disabled {
             cursor: unset;
-            opacity: .3;
+            opacity: .35;
         }
 
             .carto-main .toolbar .carto-tool.disabled:hover {
                 background-color: unset;
-                border: 1px solid transparent;
             }
 
-        .carto-main .toolbar .carto-tool-box .carto-tool-sub-box {
-            position: relative;
-            display: inline-block;
-            height: 94px;
-            vertical-align: top;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-            background: var(--mud-palette-primary-hover);
+        .carto-main .toolbar .carto-tool.selected {
+            background-color: var(--gv-accent-soft) !important;
+            border-color: var(--gv-accent) !important;
+            color: var(--gv-accent);
         }
 
-            .carto-main .toolbar .carto-tool-box .carto-tool-sub-box > .title {
+        /* the UI of the current interactive tool (Identify, Network, ...) */
+        .carto-main .toolbar .carto-tool-box .carto-tool-sub-box.current-tool {
+            min-width: 250px;
+            height: calc(100% - 4px);
+            margin: 0px 4px 0px 2px;
+            padding: 2px 30px 18px 6px;
+            border: 1px solid var(--gv-accent);
+            border-radius: 8px;
+            background: var(--gv-accent-hover);
+        }
+
+            .carto-main .toolbar .carto-tool-box .carto-tool-sub-box.current-tool > .title {
+                bottom: 1px;
+                color: var(--gv-accent);
+                font-weight: 600;
+            }
+
+            /* close button of the tool box */
+            .carto-main .toolbar .carto-tool-box .carto-tool-sub-box.current-tool > .current-tool-close {
                 position: absolute;
-                bottom: 0px;
-                left: 0px;
-                right: 0px;
-                height: 20px;
-                text-align: center;
-                color: #ccc;
-                font-size: 11px;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
+                top: 3px;
+                right: 3px;
+                width: 24px;
+                height: 24px;
+                display: grid;
+                place-items: center;
+                border-radius: 6px;
+                color: var(--gv-muted);
+                cursor: pointer;
             }
 
-            .carto-main .toolbar .carto-tool-box .carto-tool-sub-box .carto-tool {
-                height: 74px;
-            }
-
-            .carto-main .toolbar .carto-tool-box .carto-tool-sub-box .explorer-context-tool {
-                height: 37px;
-                overflow: hidden;
-                padding: 4px 7px;
-            }
-
-                .carto-main .toolbar .carto-tool-box .carto-tool-sub-box .explorer-context-tool:hover {
-                    background-color: #0094ff46;
-                    border: 1px solid #0094ff;
-                    box-sizing: border-box;
+                .carto-main .toolbar .carto-tool-box .carto-tool-sub-box.current-tool > .current-tool-close:hover {
+                    background: var(--gv-surface-2);
+                    color: var(--gv-text);
                 }
 
-                .carto-main .toolbar .carto-tool-box .carto-tool-sub-box .explorer-context-tool .title {
-                    display: inline-block;
-                    vertical-align: top;
-                }
-
-            .carto-main .toolbar .carto-tool-box .carto-tool-sub-box .info-box {
-                background-color: #ffa;
-                color: #333;
-                padding: 5px;
-                border: 1px solid #ee7;
-                border-radius: 4px;
-                display: inline-block;
-                height: 62px;
+            /* MudMenu activators and text buttons of the tool UIs look like ribbon tools */
+            .carto-main .toolbar .carto-tool-sub-box.current-tool .mud-menu > .mud-menu-activator > .mud-button-root,
+            .carto-main .toolbar .carto-tool-sub-box.current-tool .mud-menu > .mud-button-root,
+            .carto-main .toolbar .carto-tool-sub-box.current-tool > .mud-button-root {
+                height: 58px;
+                min-width: 0;
+                max-width: 170px;
+                padding: 0px 8px;
+                border: 1px solid transparent;
+                border-radius: 6px;
+                color: var(--gv-text);
+                font-size: 12px;
+                font-weight: 500;
+                line-height: 1.2;
                 white-space: normal;
-                font-size: .85em;
+                text-align: left;
             }
 
-            .carto-main .toolbar .carto-tool-box .carto-tool-sub-box.current-tool {
-                min-width: 250px;
-                border: 2px solid var(--mud-palette-primary) !important;
-                padding-right: 24px;
-            }
-
-                .carto-main .toolbar .carto-tool-box .carto-tool-sub-box.current-tool .carto-tool.selected {
-                    background-color: var(--mud-palette-primary-hover) !important;
-                    border: 1px solid var(--mud-palette-primary);
+                .carto-main .toolbar .carto-tool-sub-box.current-tool .mud-menu .mud-button-root:hover,
+                .carto-main .toolbar .carto-tool-sub-box.current-tool > .mud-button-root:hover {
+                    background: var(--gv-surface-2);
                 }
 
-                    .carto-main .toolbar .carto-tool-box .carto-tool-sub-box.current-tool .carto-tool.selected .title {
-                        color: var(--mud-palette-primary) !important;
-                    }
+                .carto-main .toolbar .carto-tool-sub-box.current-tool .mud-button-root .mud-button-icon-end {
+                    margin-left: 2px;
+                    color: var(--gv-muted);
+                }
 
+        /* hints of the tool UIs (e.g. Identify) */
+        .carto-main .toolbar .carto-tool-box .carto-tool-sub-box .info-box {
+            display: inline-block;
+            max-height: 52px;
+            padding: 3px 8px 3px 10px;
+            background-color: var(--gv-surface);
+            color: var(--gv-text);
+            border: 1px solid var(--gv-border);
+            border-left: 3px solid var(--gv-accent);
+            border-radius: 6px;
+            white-space: normal;
+            font-size: 12px;
+            line-height: 1.3;
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+
+            /* Identify wraps its hint in a padded div */
+            .carto-main .toolbar .carto-tool-sub-box.current-tool > div[style*="padding:5px"] {
+                padding: 2px 0px !important;
+            }
+
+/* tools inside a menu (collapsed ribbon boxes) */
+.mud-popover.mud-popover-open .mud-list .carto-tool {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+    .mud-popover.mud-popover-open .mud-list .carto-tool.disabled {
+        opacity: .35;
+        cursor: default;
+    }
+
+/* ======================================================================== toc */
     .carto-main .toc {
         position: absolute;
         left: 0px;
-        top: 102px;
-        bottom: 32px;
-        width: 325px;
-        /*background: #fff;*/
+        top: 87px;
+        bottom: 29px;
+        width: 300px;
         overflow: auto;
     }
 
         .carto-main .toc .grouplayer-text {
-            /*font-weight: bold;*/
-            font-style: italic;
-            color: var(--mud-palette-primary);
+            font-weight: 500;
+            color: var(--gv-accent);
+        }
+
+        .carto-main .toc .mud-treeview-item-content {
+            border-left: 3px solid transparent;
         }
 
         .carto-main .toc .toctreenode-selected > .mud-treeview-item-content,
         .carto-main .toc .toctreenode-selected > .mud-treeview-item-content .grouplayer-text {
-            background-color: var(--mud-palette-primary);
-            color: var(--mud-palette-primary-text);
+            background-color: var(--gv-accent-soft);
+            color: var(--gv-accent);
+        }
+
+        .carto-main .toc .toctreenode-selected > .mud-treeview-item-content {
+            border-left-color: var(--gv-accent);
         }
 
         .carto-main .toc .carto-initial-tool {
-            border: 1px solid var(--mud-palette-lines-default);
-            background-color: var(--mud-palette-primary-hover);
-            border-radius: 5px;
-            padding: 5px;
-            cursor: pointer;
-            margin: 16px 0px;
             position: relative;
+            margin: 10px 0px;
+            padding: 8px 10px;
+            border: 1px solid var(--gv-border);
+            border-radius: 8px;
+            background-color: var(--gv-surface-2);
+            cursor: pointer;
         }
+
+            .carto-main .toc .carto-initial-tool:hover {
+                border-color: var(--gv-accent);
+                background-color: var(--gv-accent-hover);
+            }
 
             .carto-main .toc .carto-initial-tool .icon {
                 display: inline-block;
                 vertical-align: bottom;
             }
+
             .carto-main .toc .carto-initial-tool .title {
                 display: inline-block;
+                padding-left: 4px;
             }
 
             .carto-main .toc .carto-initial-tool .sub-title {
                 display: inline-block;
                 padding-left: 24px;
-                opacity:.5;
+                color: var(--gv-muted);
+                font-size: 12px;
             }
 
         .carto-main .toc .legend table {
-            color: #555;
+            color: var(--gv-muted);
         }
 
+/* ======================================================================== content, data frame, status bar */
     .carto-main .toc-content-splitter {
         position: absolute;
-        left: 325px;
+        left: 300px;
         width: 5px;
-        top: 102px;
-        bottom: 27px;
-        cursor: w-resize;
+        top: 87px;
+        bottom: 29px;
+        cursor: col-resize;
     }
 
     .carto-main .content {
         position: absolute;
-        left: 330px;
-        top: 102px;
+        left: 305px;
+        top: 87px;
         right: 0px;
-        bottom: 32px;
-        background: #efefef;
+        bottom: 29px;
         overflow: auto;
         padding: 0px;
     }
@@ -264,56 +369,140 @@
         position: absolute;
         left: 0px;
         right: 0px;
-        bottom: 27px;
+        bottom: 24px;
         height: 5px;
-        cursor: n-resize;
+        cursor: row-resize;
     }
 
     .carto-main .data {
         position: absolute;
         left: 0px;
-        right:0px;
-        bottom: 27px;
-        height:0px;
-        overflow:hidden;
+        right: 0px;
+        bottom: 24px;
+        height: 0px;
+        overflow: hidden;
     }
+
         .carto-main .data .mud-table {
             position: absolute;
             inset: 0;
         }
+
+        /* DataFrame.razor: the table (body) and its actions */
+        .carto-main .data-frame {
+            position: absolute;
+            inset: 0px;
+        }
+
+            .carto-main .data-frame .data-frame-body {
+                position: absolute;
+                inset: 0px 36px 0px 0px;
+                overflow: hidden;
+            }
+
+            /* docked: close / undock in a slim column on the right */
+            .carto-main .data-frame .data-frame-actions {
+                position: absolute;
+                top: 0px;
+                right: 0px;
+                bottom: 0px;
+                width: 36px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 2px;
+                padding-top: 6px;
+                border-left: 1px solid var(--gv-border);
+                background: var(--gv-surface-2);
+            }
+
+            /* floating: a window over the page, moved by its title bar, resized by the corner */
+            .carto-main .data-frame.floating {
+                position: fixed;
+                inset: auto;
+                left: 340px;
+                top: 200px;
+                width: 900px;
+                height: 360px;
+                min-width: 420px;
+                min-height: 200px;
+                max-width: 100vw;
+                max-height: calc(100vh - 40px);
+                resize: both;
+                overflow: hidden;
+                z-index: 1100;
+                background: var(--gv-surface);
+                border: 1px solid var(--gv-border);
+                border-radius: 10px;
+                box-shadow: var(--gv-float-shadow);
+            }
+
+                .carto-main .data-frame.floating.closed {
+                    display: none;
+                }
+
+                .carto-main .data-frame.floating .data-frame-body {
+                    inset: 36px 0px 0px 0px;
+                }
+
+            .carto-main .data-frame .data-frame-titlebar {
+                position: absolute;
+                left: 0px;
+                top: 0px;
+                right: 0px;
+                height: 36px;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                padding: 0px 4px 0px 12px;
+                background: var(--gv-surface-2);
+                border-bottom: 1px solid var(--gv-border);
+                cursor: move;
+                user-select: none;
+            }
+
+                .carto-main .data-frame .data-frame-titlebar .data-frame-title {
+                    flex: 1;
+                    font-size: 13px;
+                    font-weight: 600;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+
+                .carto-main .data-frame .data-frame-titlebar .mud-icon-button {
+                    cursor: pointer;
+                }
+
     .carto-main .status-bar {
         position: absolute;
         left: 0px;
         bottom: 0px;
         right: 0px;
-        height: 25px;
-        background: #aaa;
-        overflow: hidden;
+        height: 24px;
+        overflow: visible;
     }
 
+/* ======================================================================== selections */
 .table-column-icon {
     width: 30px;
 }
 
 .tocnode.selected > li > div:first-child {
-    background: var(--mud-palette-primary);
-    color: var(--mud-palette-primary-text);
+    background: var(--gv-accent-soft);
+    color: var(--gv-accent);
 }
 
 .carto-main .context-selected {
-    background: #ffff00a9;
+    background: var(--gv-warn-soft);
 }
 
-.carto-main .current-selected {
-    background: var(--mud-palette-primary);
-    color: var(--mud-palette-primary-text);
-}
-
+/* ======================================================================== dialogs, controls */
 .carto-symbol-composer-button {
     cursor: pointer;
     width: 150px;
     height: 50px;
-    border: 1px solid #616161;
+    border: 1px solid var(--gv-border);
     border-radius: 6px;
     margin: 5px 0px;
 }
@@ -325,17 +514,34 @@
     background-position: center;
 }
 
+.carto-symbol-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 8px;
+    max-height: 600px;
+    overflow: auto;
+    padding: 8px;
+    background: var(--gv-surface-2);
+    border: 1px solid var(--gv-border);
+    border-radius: 8px;
+}
+
+/* the symbols are drawn for a (light) map, so the tiles stay light in dark mode, too */
 .carto-symbol-gallery-tile {
     cursor: pointer;
     position: relative;
-    display: inline-block;
-    width: 150px;
-    height: 140px;
+    height: 132px;
+    background-color: #f7f8fa;
     background-repeat: no-repeat;
     background-position: center;
+    border: 1px solid var(--gv-border);
+    border-radius: 8px;
+    transition: border-color .15s;
 }
+
     .carto-symbol-gallery-tile:hover {
-        background-color: var(--mud-palette-primary-hover);
+        border-color: var(--gv-accent);
+        box-shadow: inset 0 0 0 1px var(--gv-accent);
     }
 
 .carto-symbol-gallery-tile .carto-symbol-gallery-tile-append {
@@ -350,12 +556,13 @@
 }
 
 .gview-selected-item {
-    background-color: var(--mud-palette-primary) !important;
-    color: var(--mud-palette-primary-text) !important;
+    background-color: var(--gv-accent-soft) !important;
+    color: var(--gv-accent) !important;
+    box-shadow: inset 3px 0 var(--gv-accent);
 }
 
     .carto-symbol-composer-stack-item.selected {
-        background-color: var(--mud-palette-primary);
+        background-color: var(--gv-accent-soft);
     }
 
 /*** UI Image Resources ***/
@@ -389,30 +596,35 @@
     }
 
     .gview-ui-image.img-rotation-geographic {
-        width: 150px;
-        height: 130px;
+        width: 96px;
+        height: 84px;
         background-size: contain;
         background-image: url(../img/sketchpen-axis-geographic.png);
     }
 
     .gview-ui-image.img-rotation-arithmeticminus90 {
-        width: 150px;
-        height: 130px;
+        width: 96px;
+        height: 84px;
         background-size: contain;
         background-image: url(../img/sketchpen-axis-arithmetic-minus-90.png);
     }
 
     .gview-ui-image.img-rotation-geographicplus90 {
-        width: 150px;
-        height: 130px;
+        width: 96px;
+        height: 84px;
         background-size: contain;
         background-image: url(../img/sketchpen-axis-geographic-plus-90.png);
     }
     .gview-ui-image.img-rotation-arithmetic {
-        width: 150px;
-        height: 130px;
+        width: 96px;
+        height: 84px;
         background-size: contain;
         background-image: url(../img/sketchpen-axis-arithmetic.png);
+    }
+
+    /* the axis images are black lines */
+    [data-theme="dark"] .gview-ui-image[class*="img-rotation-"] {
+        filter: invert(1);
     }
 
     .gview-ui-image.img-compostion-over {
@@ -454,41 +666,24 @@
         background-image: url(../img/label_perpenticlar.png);
     }
 
-@media (-webkit-min-device-pixel-ratio: 1.5), (min-resolution: 144dpi) {
-
-    .carto-main.dark .sketchpen-icon-basic-bg-light-24 {
-        background-image: url("../../../sketchpen/basic/content/img/sketchpen/bg-dark/24/1.5/sprite.png") !important;
-    }
-
-    .carto-main.dark .sketchpen-icon-webgis-bg-light-24 {
-        background-image: url("../../../sketchpen/webgis/content/img/sketchpen/bg-dark/24/1.5/sprite.png") !important;
-    }
-}
-
-@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
-
-    .carto-main.dark .sketchpen-icon-basic-bg-light-24 {
-        background-image: url("../../../sketchpen/basic/content/img/sketchpen/bg-dark/24/2/sprite.png") !important;
-    }
-
-    .carto-main.dark .sketchpen-icon-webgis-bg-light-24 {
-        background-image: url("../../../sketchpen/webgis/content/img/sketchpen/bg-dark/24/2/sprite.png") !important;
-    }
-}
-
 .carto-tile {
     display:inline-block;
     position: relative;
     width:300px;
     height:130px;
-    border: 1px solid var(--mud-palette-lines-default);
-    background-color: var(--mud-palette-primary-hover);
-    border-radius: 5px;
+    border: 1px solid var(--gv-border);
+    background-color: var(--gv-surface-2);
+    border-radius: 8px;
     padding: 10px;
     margin: 4px 7px;
     cursor: pointer;
     overflow: hidden;
 }
+
+    .carto-tile:hover {
+        border-color: var(--gv-accent);
+        background-color: var(--gv-accent-hover);
+    }
 
     .carto-tile .icon {
         display: inline-block;
@@ -502,7 +697,7 @@
     .carto-tile .sub-title {
         display: inline-block;
         padding-left: 24px;
-        opacity: .5;
+        color: var(--gv-muted);
     }
 
 /* Icons */
@@ -534,18 +729,18 @@
 .mud-table-row.selected,
 .mud-table-row.selected:hover,
 .mud-table-row.selected .mud-table-cell {
-    background-color: var(--mud-palette-primary) !important;
-    color: var(--mud-palette-primary-text) !important;
+    background-color: var(--gv-accent-soft) !important;
+    color: var(--gv-text) !important;
 }
+
+    .mud-table-row.selected .mud-table-cell:first-child {
+        box-shadow: inset 3px 0 var(--gv-accent);
+    }
 
 .mud-table-row.highlighted,
 .mud-table-row.highlighted:hover,
 .mud-table-row.highlighted .mud-table-cell {
-    /*border-top: 2px solid #ffa;
-    border-bottom: 2px solid #ffa;
-    background-color: #ffa !important;
-    color: #333 !important;*/
-    color: #aa0 !important;
+    background-color: var(--gv-warn-soft) !important;
 }
 
 /* Checkbox in toc */
@@ -559,7 +754,7 @@
 .mud-card-header {
     padding: 4px 16px;
     border-bottom: 1px solid var(--mud-palette-lines-default);
-    background-color: var(--mud-palette-primary-hover);
+    background-color: var(--mud-palette-background-gray);
 }
 
 .mud-card-content {
@@ -587,75 +782,3 @@
 .match-geoservice-table .cell-different {
     background: #ff000070;
 }
-
-/**** Darkmode ****/
-.carto-main.dark {
-    background: #0094ff;
-}
-
-    .carto-main.dark .content {
-        background: #333;
-    }
-
-.explorer-dialog-item.selected {
-    background: var(--mud-palette-primary) !important;
-}
-
-.carto-main.dark .toolbar {
-    background: #333;
-}
-
-    .carto-main.dark .toolbar .carto-tool-box .carto-tool-sub-box {
-        border: 1px solid #555;
-    }
-
-.carto-main.dark .context-selected {
-    background: #555500a9;
-}
-
-.carto-main.dark .status-bar {
-    background: #333;
-}
-
-.carto-main.dark .sketchpen-icon-basic-bg-light-24 {
-    background-image: url(../../../sketchpen/basic/content/img/sketchpen/bg-dark/24/1/sprite.png) !important;
-}
-
-.carto-main.dark .sketchpen-icon-webgis-bg-light-24 {
-    background-image: url(../../../sketchpen/webgis/content/img/sketchpen/bg-dark/24/1/sprite.png) !important;
-}
-
-.carto-main.dark .toc .legend table {
-    color: #ccc;
-}
-
-
-
-
-/* more dense MudBlazor layout */
-/*
-.mud-input-control {
-    margin-top: 2px;
-    margin-bottom: 2px;
-}
-
-.mud-button {
-    min-height: 28px;
-    padding: 2px 8px;
-}
-
-.mud-table-cell {
-    padding: 4px 8px;
-}
-
-.mud-list-item {
-    padding-top: 2px;
-    padding-bottom: 2px;
-}
-
-.mud-expand-panel .mud-expand-panel-header  {
-    padding: 4px 0px;
-    min-height: unset;
-}
-
-*/

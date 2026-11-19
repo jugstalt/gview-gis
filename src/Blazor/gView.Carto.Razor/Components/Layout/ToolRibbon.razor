@@ -23,9 +23,9 @@
                 <div class="carto-tool-box" data-target="@toolTarget">
                     <div class="carto-tool-sub-box current-tool">
                         <DynamicComponent Type="AppScope.Tools.CurrentTool.UIComponent" />
-                        <div style="position:absolute;right:0px;top:0px;width:16px;height:17px;cursor:pointer"
+                        <div class="current-tool-close" title="Close the tool"
                              @onclick="() => AppScope.Tools.CurrentTool = null">
-                            ✕
+                            <MudIcon Icon="@MudBlazor.Icons.Material.Outlined.Close" Size="MudBlazor.Size.Small" />
                         </div>
                         <div class="title">@($"Tool: {AppScope.Tools.CurrentTool.ToolBoxTitle(AppScope)}")</div>
                     </div>
@@ -83,7 +83,7 @@
                                         .Select(t => t.ToArray())
                                         .ToArray();
 
-                <div class="@($"carto-tool-box{(toolTarget == CartoToolTarget.SelectedTocItem ? " current-selected" : "")}")" data-target="@toolTarget">
+                <div class="@($"carto-tool-box{(toolTarget == CartoToolTarget.SelectedTocItem ? " current-selected is-selected" : "")}")" data-target="@toolTarget">
                 <div class="carto-tool-sub-box">
                     @foreach (var tool in tools.Where(c => c.SortOrder <= 10).Take(MaxContainerIcons))
                     {
@@ -129,7 +129,7 @@
                         <div class="title">@(
                                        toolTarget switch
                                        {
-                                           CartoToolTarget.SelectedTocItem => $"Context: {_cartoAppService!.SelectedTocTreeNode!.Text}",
+                                           CartoToolTarget.SelectedTocItem => $"Layer: {_cartoAppService!.SelectedTocTreeNode!.Text}",
                                            _ => toolTarget.ToString()
                                        }
                                     )
@@ -141,6 +141,7 @@
                
 
         <div class="carto-tool-box general">
+            <div class="carto-tool-sub-box">
             @foreach (var cartoTool in _cartoButtons
                                                .Where(t => t.Target == CartoToolTarget.General)
                                                .Where(t => t.IsVisible(AppScope))
@@ -153,10 +154,7 @@
                     <div class="title">@cartoTool.Name</div>
                 </div>
             }
-
-            <div class="carto-tool" @onclick="() => DarkmodeClick()">
-                <div class=@Icons.FromString("basic:darkmode")></div>
-                <div class="title">Color Scheme</div>
+                <div class="title">Help</div>
             </div>
         </div>
 
@@ -196,8 +194,6 @@
         StateHasChanged();
     });
 
-    [Parameter] public EventCallback ToggleDarkmode { get; set; }
-
     protected override void OnInitialized() => base.Handle(() =>
     {
         _cartoButtons = PluginManager.GetPlugins<ICartoButton>(gView.Framework.Common.Plugins.Type.ICartoButton).ToArray();
@@ -228,9 +224,6 @@
 
         return cartoButton.OnClick(AppScope);
     });
-
-    private Task DarkmodeClick() => ToggleDarkmode.InvokeAsync();
-    //private Task DarkmodeClick() => throw new InvalidOperationException("Testing Errorboundary");
 
     private Task HandleSelectedTocTreeNodeChangedAsync(ITocTreeNode? selectedTreeNode)
         => base.InvokeAsync(() => StateHasChanged());

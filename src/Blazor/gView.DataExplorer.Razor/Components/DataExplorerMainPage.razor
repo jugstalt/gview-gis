@@ -1,56 +1,60 @@
-﻿@inject IJSRuntime JSRuntime
+﻿@implements IDisposable
 
-<div class="dataexplorer-main @(_isDarkMode ? "dark": "light")">
-    <MudThemeProvider @bind-IsDarkMode="@_isDarkMode" Theme="_theme" />
-    
-    <MudPaper Class="toolbar" Elevation="2">
-        <ToolRibbon ToggleDarkmode="ToggleDarkmode" />
-    </MudPaper>
+@inject ExplorerEventBusService EventBus
 
-    <MudPaper Class="navigation-bar" Elevation="2">
+<GvThemeProvider>
+
+<GvAppBar AppName="Explorer" Icon="@MudBlazor.Icons.Material.Outlined.FolderOpen">
+    <span class="gv-doc">@(_currentName)</span>
+</GvAppBar>
+
+<div class="dataexplorer-main">
+
+    <div class="toolbar">
+        <ToolRibbon />
+    </div>
+
+    <div class="navigation-bar">
         <NavBar />
-    </MudPaper>
+    </div>
 
-    <MudPaper Class="tree" Elevation="2">
+    <div class="tree gv-pane">
         <NavTree />
-    </MudPaper>
+    </div>
 
-    <div class="tree-content-splitter"></div>
+    <div class="tree-content-splitter gv-splitter"></div>
 
-    <MudPaper Class="content" Elevation="2">
+    <div class="content gv-pane">
         <ContentView />
-    </MudPaper>
+    </div>
 
-    <MudPaper Class="status-bar" Elevation="2">
+    <div class="status-bar">
         <StatusBar />
-    </MudPaper>
+    </div>
 
 </div>
+
+</GvThemeProvider>
 
 <script src="_content/gView.DataExplorer.Razor/js/dataexplorer.js"></script>
 
 @code{
-    private const string DarkModeStorageKey = "gview_darkmode";
+    private string _currentName = "";
 
-    private MudTheme _theme = new();
-    private bool _isDarkMode = true;
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override void OnInitialized()
     {
-        if (firstRender)
-        {
-            var stored = await JSRuntime.InvokeAsync<string?>("localStorage.getItem", DarkModeStorageKey);
-            if (stored is not null && bool.TryParse(stored, out var isDark))
-            {
-                _isDarkMode = isDark;
-                StateHasChanged();
-            }
-        }
+        EventBus.OnCurrentExplorerObjectChanged += OnCurrentExplorerObjectChanged;
     }
 
-    private async Task ToggleDarkmode()
+    private Task OnCurrentExplorerObjectChanged(IExplorerObject? exObject)
+        => InvokeAsync(() =>
+        {
+            _currentName = exObject?.Name ?? "";
+            StateHasChanged();
+        });
+
+    public void Dispose()
     {
-        _isDarkMode = !_isDarkMode;
-        await JSRuntime.InvokeVoidAsync("localStorage.setItem", DarkModeStorageKey, _isDarkMode.ToString());
+        EventBus.OnCurrentExplorerObjectChanged -= OnCurrentExplorerObjectChanged;
     }
 }

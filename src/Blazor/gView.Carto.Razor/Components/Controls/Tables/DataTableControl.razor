@@ -1,4 +1,4 @@
-@using gView.Framework.Core.Data.Cursors
+﻿@using gView.Framework.Core.Data.Cursors
 @using gView.Framework.Data.Filters
 @using System.Text
 
@@ -23,7 +23,7 @@
             <MudSelect T="ILayer"
                        Value="Layer"
                        Label="Layer"
-                       ValueChanged="(layer) => HandleRefreshDataTable(layer, null)">
+                       ValueChanged="SelectLayer">
                 @foreach (var dataTableLayer in AppScope.DataTableService.Layers)
                 {
                     <MudSelectItem Value="dataTableLayer">
@@ -48,15 +48,27 @@
         EventBus.OnRefreshDataTableAsync += HandleRefreshDataTable;
     });
 
+    // the layer given as parameter: a parent re-render (e.g. a click in the data frame) passes the same
+    // layer again, that must not reload the table (and reopen the data frame)
+    private ILayer? _parameterLayer;
+
     protected override Task OnParametersSetAsync() => HandleAsync(async () =>
     {
         await base.OnParametersSetAsync();
 
-        if (Layer is not null) 
+        if (Layer is not null && Layer != _parameterLayer)
         {
+            _parameterLayer = Layer;
             await HandleRefreshDataTable(Layer, null);
         }
     });
+
+    // another layer from the select: it becomes the current table of the data frame, too
+    private Task SelectLayer(ILayer layer)
+    {
+        AppScope.DataTableService.AddIfNotExists(layer, true);
+        return HandleRefreshDataTable(layer, null);
+    }
 
     private Task HandleRefreshDataTable(ILayer layer, ILayer? oldLayer) => HandleAsync(async () =>
     {
@@ -64,6 +76,7 @@
            || Layer == oldLayer
            || oldLayer == null)
         {
+            _parameterLayer = layer;
             Layer = null;
             await base.InvokeForceRenderComponent();
             Layer = layer;

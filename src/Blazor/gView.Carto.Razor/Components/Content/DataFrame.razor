@@ -1,19 +1,77 @@
-@inject CartoEventBusService EventBus
+﻿@inject CartoEventBusService EventBus
 @implements IDisposable
 
 @inject ICartoApplicationScopeService AppScope
+@inject CartoInteropService CartoInterop
+
+@*
+    The data frame: docked below the map (default) or floating over the page.
+    The table component stays mounted while switching, so the loaded rows are kept.
+*@
 
 @if (AppScope.DataTableService.CurrentLayer is not null)
 {
-    <DataTableControl Layer="@AppScope.DataTableService.CurrentLayer" />
+    <div class="@FrameClass" @ref="_frameRef">
+        @if (_floating)
+        {
+            <div class="data-frame-titlebar" @ref="_titlebarRef" title="Drag to move the window">
+                <MudIcon Icon="@MudBlazor.Icons.Material.Outlined.TableChart" Size="MudBlazor.Size.Small" />
+                <span class="data-frame-title">@AppScope.Document.LayerTocName(AppScope.DataTableService.CurrentLayer)</span>
+                <MudIconButton Icon="@MudBlazor.Icons.Material.Outlined.VerticalAlignBottom"
+                               Size="MudBlazor.Size.Small"
+                               title="Dock the table below the map"
+                               OnClick="DockAsync" />
+                <MudIconButton Icon="@MudBlazor.Icons.Material.Outlined.Close"
+                               Size="MudBlazor.Size.Small"
+                               title="Close the table (Data Table opens it again)"
+                               OnClick="Close" />
+            </div>
+        }
+
+        <div class="data-frame-body">
+            <DataTableControl Layer="@AppScope.DataTableService.CurrentLayer" />
+        </div>
+
+        @if (!_floating)
+        {
+            <div class="data-frame-actions">
+                <MudIconButton Icon="@MudBlazor.Icons.Material.Outlined.Close"
+                               Size="MudBlazor.Size.Small"
+                               title="Close the table (Data Table opens it again)"
+                               OnClick="Close" />
+                <MudIconButton Icon="@MudBlazor.Icons.Material.Outlined.OpenInNew"
+                               Size="MudBlazor.Size.Small"
+                               title="Undock: show the table in a floating window"
+                               OnClick="UndockAsync" />
+            </div>
+        }
+    </div>
 }
 
 @code {
+    private ElementReference _frameRef;
+    private ElementReference _titlebarRef;
+
+    private bool _floating;
+    private bool _closed;
+    private bool _wireDrag;
+
+    private string FrameClass => $"data-frame{(_floating ? " floating" : "")}{(_floating && _closed ? " closed" : "")}";
+
     protected override void OnInitialized()
     {
         base.OnInitialized();
 
         EventBus.OnShowDataTableAsync += HandleShowTable;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_wireDrag && _floating)
+        {
+            _wireDrag = false;
+            await CartoInterop.FloatDataFrame(_frameRef, _titlebarRef);
+        }
     }
 
     private Task HandleShowTable(ILayer? layer)
@@ -23,7 +81,47 @@
             AppScope.DataTableService.AddIfNotExists(layer, true);
         }
 
-        return InvokeAsync(() => StateHasChanged());
+        _closed = false;  // a floating window shows up again
+
+        return InvokeAsync(async () =>
+        {
+            StateHasChanged();
+
+            // the same layer again: the table is not reloaded (which would open the frame), so open it here
+            if (!_floating)
+            {
+                await CartoInterop.ShowDataFrame();
+            }
+        });
+    }
+
+    private async Task UndockAsync()
+    {
+        _floating = true;
+        _closed = false;
+        _wireDrag = true;
+
+        await CartoInterop.HideDataFrame();  // the docked area gives its space back to the map
+    }
+
+    private async Task DockAsync()
+    {
+        _floating = false;
+        _closed = false;
+
+        await CartoInterop.DockDataFrame(_frameRef);
+    }
+
+    private async Task Close()
+    {
+        if (_floating)
+        {
+            _closed = true;
+        }
+        else
+        {
+            await CartoInterop.HideDataFrame();
+        }
     }
 
     public void Dispose()

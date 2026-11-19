@@ -6,34 +6,43 @@
 @inject IconService IconService
 @inject PluginManagerService PluginManager
 @inject IJSRuntime JSRuntime
+@implements IDisposable
 
-<div class="carto-main @(_isDarkMode ? "dark": "light")" oncontextmenu="return false">
-    <MudThemeProvider @bind-IsDarkMode="@_isDarkMode" Theme="_theme" />
+<GvThemeProvider>
 
-    <MudPaper Class="toolbar" Elevation="2">
-        <ToolRibbon ToggleDarkmode="ToggleDarkmode" />
-    </MudPaper>
-    
-    
-    <MudPaper Class="toc" Elevation="2">
+<GvAppBar AppName="Carto" Icon="@MudBlazor.Icons.Material.Outlined.Map">
+    <span class="gv-doc">@(_mapName)</span>
+    @if (!String.IsNullOrEmpty(_documentPath))
+    {
+        <span class="gv-doc-sub" title="@_documentPath">@_documentPath</span>
+    }
+</GvAppBar>
+
+<div class="carto-main" oncontextmenu="return false">
+
+    <div class="toolbar">
+        <ToolRibbon />
+    </div>
+
+    <div class="toc gv-pane">
         <Toc />
-    </MudPaper>
+    </div>
 
-    <div class="toc-content-splitter"></div>
+    <div class="toc-content-splitter gv-splitter"></div>
 
-    <MudPaper Class="content" Elevation="2">
+    <div class="content gv-pane">
         <Content />
-    </MudPaper>
+    </div>
 
-    <div class="data-content-splitter"></div>
+    <div class="data-content-splitter gv-splitter horizontal"></div>
 
-    <MudPaper Class="data" Elevation="2">
+    <div class="data gv-pane">
         <DataFrame />
-    </MudPaper>
+    </div>
 
-    <MudPaper Class="status-bar" Elevation="2">
+    <div class="status-bar">
         <StatusBar />
-    </MudPaper>
+    </div>
 
     <MudMenu PositionAtCursor @ref="_contextMenu" Dense>
         @foreach (var menuItem in _contextMenuItems ?? [])
@@ -67,49 +76,21 @@
             }
         }
     </MudMenu>
-    
+
 </div>
+
+</GvThemeProvider>
 
 <script src="_content/gView.Carto.Razor/js/carto.js"></script>
 
 @code {
-    private MudTheme _theme = new()
-    {
-        // Typography = new Typography()
-        // {
-        //     Default = new DefaultTypography()
-        //     {
-        //         FontSize = "0.1rem"
-        //     }
-        // }
-    };
-    private const string DarkModeStorageKey = "gview_darkmode";
-
-    private bool _isDarkMode = true;
+    private string _mapName = "";
+    private string _documentPath = "";
 
     private ICartoButton[]? _cartoButtons;
 
     private MudMenu _contextMenu = null!;
     private List<ContextMenuItem>? _contextMenuItems = null;
-
-    private async Task ToggleDarkmode()
-    {
-        _isDarkMode = !_isDarkMode;
-        await JSRuntime.InvokeVoidAsync("localStorage.setItem", DarkModeStorageKey, _isDarkMode.ToString());
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            var stored = await JSRuntime.InvokeAsync<string?>("localStorage.getItem", DarkModeStorageKey);
-            if (stored is not null && bool.TryParse(stored, out var isDark))
-            {
-                _isDarkMode = isDark;
-                StateHasChanged();
-            }
-        }
-    }
 
     async protected override Task OnInitializedAsync()
     {
@@ -124,6 +105,35 @@
         _cartoButtons = PluginManager.GetPlugins<ICartoButton>(gView.Framework.Common.Plugins.Type.ICartoButton).ToArray();
 
         AppScope.EventBus.OnShowContextMenuAsync += ShowContextMenu;
+        AppScope.EventBus.OnCartoDocumentLoadedAsync += HandleCartoDocumentLoadedAsync;
+        AppScope.EventBus.OnMapSettingsChangedAsync += HandleMapSettingsChangedAsync;
+
+        SetDocumentTitle();
+    }
+
+    #region Document title (app header)
+
+    private void SetDocumentTitle()
+    {
+        var document = AppScope.Document;
+
+        _mapName = document?.Map?.Name ?? "";
+        _documentPath = document?.FilePath ?? "";
+    }
+
+    private Task HandleCartoDocumentLoadedAsync(ICartoDocument cartoDocument)
+        => InvokeAsync(() => { SetDocumentTitle(); StateHasChanged(); });
+
+    private Task HandleMapSettingsChangedAsync()
+        => InvokeAsync(() => { SetDocumentTitle(); StateHasChanged(); });
+
+    #endregion
+
+    public void Dispose()
+    {
+        AppScope.EventBus.OnShowContextMenuAsync -= ShowContextMenu;
+        AppScope.EventBus.OnCartoDocumentLoadedAsync -= HandleCartoDocumentLoadedAsync;
+        AppScope.EventBus.OnMapSettingsChangedAsync -= HandleMapSettingsChangedAsync;
     }
 
     #region Context Menu

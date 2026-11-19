@@ -21,6 +21,21 @@
     <link href="sketchpen/webgis/content/css/sketchpen-webgis-bg-dark.css" rel="stylesheet" />
     <link href="_content/gView.Razor.Leaflet/lib/leaflet/leaflet.min.css" rel="stylesheet" />
     <link href="_content/gView.Razor/gview-razor-base.css" rel="stylesheet" />
+    <link href="_content/gView.Razor/gview-theme.css" rel="stylesheet" />
+
+    <script>
+        // set the colour scheme before the first paint (GvThemeProvider takes over when interactive)
+        (function () {
+            var mode = 'system';
+            try {
+                mode = localStorage.getItem('gview-webapps-theme')
+                    || ({ 'true': 'dark', 'false': 'light' })[(localStorage.getItem('gview_darkmode') || '').toLowerCase()]
+                    || 'system';
+            } catch (e) { }
+            var dark = mode === 'dark' || (mode === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+        })();
+    </script>
 
     <HeadOutlet />
 </head>

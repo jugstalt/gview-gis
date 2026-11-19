@@ -35,7 +35,7 @@
         }
         else if (isDataResizing) {
             let container = document.querySelector('.carto-main');
-            let bottomHeight = (container.clientHeight - 30) - (e.clientY - container.offsetTop);
+            let bottomHeight = (container.clientHeight - 26 /* statusbar + half splitter */) - (e.clientY - container.offsetTop);
 
             window.cartoInterops.setDataFrameSize(bottomHeight);
         }
@@ -114,17 +114,67 @@ window.cartoInterops = {
         let container = document.querySelector('.carto-main');
 
         size = Math.max(size, 0);
-        size = Math.min(size, container.clientHeight - 10 - 25 /*statusbar*/ - 100 /*toolbar*/);
+        size = Math.min(size, container.clientHeight - 10 - 24 /*statusbar*/ - 87 /*toolbar*/);
 
         //console.logsizedataFrameSize', size);
 
-        document.querySelector('.toc').style.bottom = (32 + size) + 'px';
-        document.querySelector('.content').style.bottom = (32 + size) + 'px';
-        document.querySelector('.data-content-splitter').style.bottom = (27 + size) + 'px';
+        document.querySelector('.toc').style.bottom = (29 + size) + 'px';
+        document.querySelector('.toc-content-splitter').style.bottom = (29 + size) + 'px';
+        document.querySelector('.content').style.bottom = (29 + size) + 'px';
+        document.querySelector('.data-content-splitter').style.bottom = (24 + size) + 'px';
         document.querySelector('.data').style.height = size + 'px';
     },
-    showDataFrame: function (minSize) {
+    // floating data frame: initial size/position and dragging by its title bar (resizing is CSS: resize both)
+    floatDataFrame: function (frame, handle) {
+        if (!frame || !handle) return;
+
+        if (!frame.style.left) {
+            const width = Math.min(960, window.innerWidth - 380), height = Math.min(380, window.innerHeight - 220);
+            frame.style.left = Math.max(window.innerWidth - width - 24, 0) + 'px';
+            frame.style.top = Math.max(window.innerHeight - height - 48, 140) + 'px';
+            frame.style.width = width + 'px';
+            frame.style.height = height + 'px';
+        }
+
+        if (handle._gvDrag) return;
+        handle._gvDrag = true;
+
+        handle.addEventListener('mousedown', function (e) {
+            if (e.button !== 0 || e.target.closest('button')) return;
+            e.preventDefault();
+
+            const rect = frame.getBoundingClientRect(), dx = e.clientX - rect.left, dy = e.clientY - rect.top;
+            const move = function (ev) {
+                const x = Math.min(Math.max(ev.clientX - dx, 0), window.innerWidth - 120);
+                const y = Math.min(Math.max(ev.clientY - dy, 40), window.innerHeight - 40);
+                frame.style.left = x + 'px';
+                frame.style.top = y + 'px';
+            };
+            const up = function () {
+                window.removeEventListener('mousemove', move);
+                window.removeEventListener('mouseup', up);
+            };
+            window.addEventListener('mousemove', move);
+            window.addEventListener('mouseup', up);
+        });
+    },
+    dockDataFrame: function (frame, minSize) {
+        if (frame) {
+            ['left', 'top', 'width', 'height'].forEach(p => frame.style.removeProperty(p));
+        }
+        this.showDataFrame(minSize || 400, true);
+    },
+    hideDataFrame: function () {
+        this.setDataFrameSize(0);
+        this.refreshMapFrame();
+    },
+    showDataFrame: function (minSize, force) {
         minSize = minSize || 400;
+
+        // a floating data frame (DataFrame.razor) does not open the docked area
+        if (!force && document.querySelector('.carto-main .data-frame.floating')) {
+            return;
+        }
 
         var size = parseInt(document.querySelector('.data').style.height) || 0;
         //console.log(size, minSize);
