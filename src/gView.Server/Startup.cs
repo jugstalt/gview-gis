@@ -25,6 +25,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
+using System.Linq;
 
 namespace gView.Server;
 
@@ -170,6 +171,7 @@ public class Startup
     {
         var securityOptions = SecurityOptions.FromConfiguration(Configuration);
         services.AddSingleton(securityOptions);
+        services.AddAntiforgery(options => options.HeaderName = AntiforgeryForCookieAuthAttribute.HeaderName);
 
         services.AddAuth(Configuration);
 
@@ -322,15 +324,30 @@ public class Startup
             //app.ConfigureCustomExceptionMiddleware();
         }
 
+        var securityOptions = app.Services.GetRequiredService<SecurityOptions>();
+
         app.UseForwardedHeaders();
         app.UseMiddleware<HttpsSecurityMiddleware>();
         app.UseGViewServerBasePath();
         app.UseMiddleware<ArcMapPathDoubleSlashesMiddleware>();
 
-        app.UseCors(x => x
-            .AllowAnyOrigin()
-            .AllowAnyMethod()
-            .AllowAnyHeader());
+        app.UseMiddleware<SecurityHeadersMiddleware>();
+
+        // CORS for the services only, never for the admin and login pages
+        app.UseWhen(
+            context => !AdminPaths.IsAdminPath(context.Request.Path),
+            branch => branch.UseCors(policy =>
+            {
+                if (securityOptions.CorsAllowedOrigins is null)
+                {
+                    policy.AllowAnyOrigin();
+                }
+                else
+                {
+                    policy.WithOrigins(securityOptions.CorsAllowedOrigins.ToArray());
+                }
+                policy.AllowAnyMethod().AllowAnyHeader();
+            }));
 
         app.UseStaticFiles();
         //app.UseCookiePolicy();

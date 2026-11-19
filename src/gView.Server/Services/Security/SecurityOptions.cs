@@ -19,6 +19,9 @@ namespace gView.Server.Services.Security;
 ///   "known-networks": [ "10.0.0.0/8" ],
 ///   "manage": {
 ///     "allowed-networks": [ "10.1.5.0/24" ]   // "*" = everywhere
+///   },
+///   "cors": {
+///     "allowed-origins": [ "*" ]              // or [ "https://maps.example.com" ]
 ///   }
 /// }
 /// </code>
@@ -76,6 +79,12 @@ public class SecurityOptions
     public bool ManageAllowedNetworksConfigured { get; init; }
 
     /// <summary>
+    /// Origins allowed to call the services from a browser (CORS); null = any origin.
+    /// The admin and login pages never send CORS headers.
+    /// </summary>
+    public IReadOnlyList<string> CorsAllowedOrigins { get; init; }
+
+    /// <summary>
     /// The admin login is OIDC (Authentication:Type = oidc).
     /// </summary>
     public bool OidcAdminLogin { get; init; }
@@ -127,6 +136,7 @@ public class SecurityOptions
         }
 
         var manageNetworks = Strings(section, "manage:allowed-networks");
+        var corsOrigins = Strings(section, "cors:allowed-origins");
         bool manageEverywhere = manageNetworks.Any(n => n == "*");
 
         return new SecurityOptions()
@@ -141,6 +151,9 @@ public class SecurityOptions
             ManageAllowedNetworks = manageEverywhere
                 ? null
                 : (manageNetworks.Length > 0 ? manageNetworks : DefaultTrustedNetworks).Select(ParseNetwork).ToArray(),
+            CorsAllowedOrigins = corsOrigins.Length == 0 || corsOrigins.Contains("*")
+                ? null
+                : corsOrigins.Select(o => o.TrimEnd('/')).ToArray(),
             OidcAdminLogin = "oidc".Equals(configuration["Authentication:Type"]?.Trim(), StringComparison.OrdinalIgnoreCase)
         };
     }

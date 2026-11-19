@@ -27,6 +27,7 @@ using System.Xml;
 
 namespace gView.Server.Controllers;
 
+[AntiforgeryForCookieAuth]
 public class BrowseServicesController : BaseController
 {
     private readonly MapServiceManager _mapServerService;

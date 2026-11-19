@@ -136,3 +136,21 @@ window.gview.server = (function () {
         toggleDarkMode: toggleDarkMode
     };
 })();
+
+//
+//  Antiforgery: every state changing jQuery request to this server carries the
+//  token of the page (meta tag in _Layout or the form field), see AntiforgeryForCookieAuthAttribute
+//
+if (window.jQuery) {
+    jQuery.ajaxPrefilter(function (options, originalOptions, jqXHR) {
+        var type = (options.type || 'GET').toUpperCase();
+        if (type === 'GET' || type === 'HEAD' || options.crossDomain) {
+            return;
+        }
+        var token = jQuery('meta[name="request-verification-token"]').attr('content')
+            || jQuery("input[name='__RequestVerificationToken']").val();
+        if (token) {
+            jqXHR.setRequestHeader('RequestVerificationToken', token);
+        }
+    });
+}

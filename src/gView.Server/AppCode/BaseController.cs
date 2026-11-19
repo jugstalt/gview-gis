@@ -43,7 +43,8 @@ namespace gView.Server.AppCode
             {
                 Expires = null,
                 Secure = true,
-                HttpOnly = true
+                HttpOnly = true,
+                SameSite = SameSiteMode.Lax
             };
 
             this.Response.Cookies.Append(Globals.AuthCookieName, _encryptionCertificate.ToToken(authToken), cookieOptions);

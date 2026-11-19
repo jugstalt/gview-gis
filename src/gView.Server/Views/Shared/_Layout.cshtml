@@ -2,6 +2,7 @@
 @using gView.Framework.Common
 
 @inject gView.Server.Services.Hosting.UrlHelperService UrlHelperService
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
 @{
     var rootUrl = UrlHelperService.AppRootUrl(this.Context.Request);
     var title = ViewData["Title"] as string;
@@ -12,6 +13,10 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    @if (AdminPaths.IsAdminPath(this.Context.Request.Path))
+    {
+        <meta name="request-verification-token" content="@Antiforgery.GetAndStoreTokens(this.Context).RequestToken" />
+    }
     <title>@(String.IsNullOrEmpty(title) ? "gView Server" : $"{title} · gView Server")</title>
     <script>
         (function () {

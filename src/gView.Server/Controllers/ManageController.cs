@@ -30,6 +30,7 @@ using YamlDotNet.Serialization.NamingConventions;
 namespace gView.Server.Controllers;
 
 [AdminNetworkOnly]
+[AntiforgeryForCookieAuth]
 public class ManageController : BaseController
 {
     private readonly MapServiceManager _mapServiceMananger;
