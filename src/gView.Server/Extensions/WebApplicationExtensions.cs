@@ -27,7 +27,7 @@ static internal class WebApplicationExtensions
     /// </summary>
     public static WebApplication LogSecurityWarnings(this WebApplication app)
     {
-        var logger = app.Services.GetRequiredService<ILoggerFactory>().CreateLogger(AppCode.AdminNetworkOnlyAttribute.LoggerCategory);
+        var logger = app.Services.GetRequiredService<ILoggerFactory>().CreateLogger(SecurityLog.Category);
 
         foreach (var warning in app.Services.GetRequiredService<SecurityOptions>().ConfigurationWarnings())
         {

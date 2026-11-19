@@ -7,6 +7,7 @@ using gView.Server.Extensions;
 using gView.Server.Services.MapServer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -21,13 +22,15 @@ namespace gView.Server.Services.Security
         private readonly EncryptionCertificateService _encryptionCertService;
         private readonly LoginThrottleService _loginThrottle;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ILogger _securityLog;
 
         public LoginManager(
                     MapServiceManager mapServerService,
                     MapServiceAccessService mapServiceAccessService,
                     EncryptionCertificateService encryptionCertService,
                     LoginThrottleService loginThrottle,
-                    IHttpContextAccessor httpContextAccessor
+                    IHttpContextAccessor httpContextAccessor,
+                    ILoggerFactory loggerFactory
             )
         {
             _mapServerService = mapServerService;
@@ -35,6 +38,7 @@ namespace gView.Server.Services.Security
             _encryptionCertService = encryptionCertService;
             _loginThrottle = loginThrottle;
             _httpContextAccessor = httpContextAccessor;
+            _securityLog = loggerFactory.CreateLogger(SecurityLog.Category);
         }
 
         #region Manager Logins
@@ -227,6 +231,8 @@ namespace gView.Server.Services.Security
             }
 
             LoginStamp.Renew(LoginFolder(authToken.AuthType), authToken.Username);
+            _securityLog.LogWarning("All sessions and tokens of {username} ended (sign out everywhere) from {ip}",
+                authToken.Username, _httpContextAccessor?.HttpContext?.Connection?.RemoteIpAddress?.ToString());
         }
 
         private string LoginFolder(AuthToken.AuthTypes authType) => authType switch
@@ -309,6 +315,7 @@ namespace gView.Server.Services.Security
 
             if (_loginThrottle.IsBlocked(ip, username))
             {
+                _securityLog.LogWarning("Login refused for user {username} from {ip}: locked after too many failed logins", username, ip);
                 return null;
             }
 
@@ -316,6 +323,7 @@ namespace gView.Server.Services.Security
 
             if (authToken is null)
             {
+                _securityLog.LogWarning("Failed login for user {username} from {ip}", username, ip);
                 _loginThrottle.Failed(ip, username);
             }
             else

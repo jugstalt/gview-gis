@@ -38,16 +38,16 @@ public class AdminSetupService
     private const string SetupThrottleKey = "#setup";
 
     private readonly IConfiguration _configuration;
-    private readonly ILogger<AdminSetupService> _logger;
+    private readonly ILogger _logger;
     private readonly LoginThrottleService _loginThrottle;
     private readonly object _lock = new();
     private string _setupCode;
 
-    public AdminSetupService(IConfiguration configuration, LoginThrottleService loginThrottle, ILogger<AdminSetupService> logger)
+    public AdminSetupService(IConfiguration configuration, LoginThrottleService loginThrottle, ILoggerFactory loggerFactory)
     {
         _configuration = configuration;
         _loginThrottle = loginThrottle;
-        _logger = logger;
+        _logger = loggerFactory.CreateLogger(SecurityLog.Category);
     }
 
     /// <summary>

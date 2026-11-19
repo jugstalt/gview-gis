@@ -15,7 +15,7 @@ namespace gView.Server.AppCode;
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, Inherited = true)]
 public class AdminNetworkOnlyAttribute : Attribute, IResourceFilter
 {
-    public const string LoggerCategory = "gView.Server.Security";
+    public const string LoggerCategory = Services.Security.SecurityLog.Category;
 
     public void OnResourceExecuting(ResourceExecutingContext context)
     {

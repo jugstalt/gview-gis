@@ -21,20 +21,20 @@ public class LoginThrottleService
 
     private readonly ConcurrentDictionary<string, FailureCounter> _users = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, FailureCounter> _ips = new(StringComparer.OrdinalIgnoreCase);
-    private readonly ILogger<LoginThrottleService> _logger;
+    private readonly ILogger _logger;
 
-    public LoginThrottleService(IConfiguration configuration, ILogger<LoginThrottleService> logger)
+    public LoginThrottleService(IConfiguration configuration, ILoggerFactory loggerFactory)
         : this(
             Int(configuration, "security:login:max-failures", 10),
             Int(configuration, "security:login:max-failures-per-ip", 30),
             TimeSpan.FromMinutes(Int(configuration, "security:login:window-minutes", 5)),
             TimeSpan.FromMinutes(Int(configuration, "security:login:lockout-minutes", 15)),
-            logger)
+            loggerFactory?.CreateLogger(SecurityLog.Category))
     {
     }
 
     public LoginThrottleService(int maxFailures, int maxFailuresPerIp, TimeSpan window, TimeSpan lockout,
-                                ILogger<LoginThrottleService> logger = null)
+                                ILogger logger = null)
     {
         MaxFailures = maxFailures;
         MaxFailuresPerIp = maxFailuresPerIp;

@@ -20,7 +20,7 @@ public class AdminSetupServiceTests
         => new(
             new ConfigurationBuilder().AddInMemoryCollection(config ?? new()).Build(),
             new LoginThrottleService(3, 3, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(15)),
-            NullLogger<AdminSetupService>.Instance);
+            NullLoggerFactory.Instance);
 
     [Fact]
     public void Initialize_WithEnvironment_CreatesAdmin()

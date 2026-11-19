@@ -162,6 +162,62 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   are written next to it instead of into the working directory.
 - Network module: keeps its loaded config when the server calls `OnCreate` after `Load`.
 
+## Security
+
+gView Server hardening for internet-facing installations, see
+[Security gView.Server](https://docs.webgiscloud.com/gview/en/setup/security-server.html).
+**Breaking changes are marked (⚠).**
+
+- First admin: a first login no longer creates the admin (anyone could take over a fresh
+  installation). The admin comes from `GVIEW_ADMIN_USER`/`GVIEW_ADMIN_PASSWORD` or the login page
+  asks for a one-time setup code that the server writes to the log (`AdminSetupService`). ⚠ A fresh
+  installation needs one of the two.
+- Passwords: PBKDF2-SHA256 instead of a single SHA256 (`SecureCrypto.HashPassword`); old hashes
+  keep working and are replaced on the next successful login. Constant time comparisons.
+- Login lockout per user and per client ip for the manage login, token login, `generateToken`
+  and Basic auth (`LoginThrottleService`, `security:login`: 10 failures in 5 minutes lock for
+  15 minutes); also for wrong setup codes.
+- Unauthenticated side effects removed: `Manage/Collect` needs an admin, `Manage/Services` reloads
+  only after the auth check, the legacy `RemoveMap`/`GetMetadata`/`SetMetadata` urls use the
+  request credentials instead of always running anonymously. Usernames from requests can no
+  longer leave the login folder (`ToLoginFile`).
+- New `security` section in `mapserver.json` (`SecurityOptions`):
+  - Reverse proxies: `X-Forwarded-For`/`-Proto` only from `security:known-proxies`/`known-networks`
+    (default loopback and the private networks) via ASP.NET `ForwardedHeaders`; the own
+    `XForwardedMiddleware` is gone. ⚠ A proxy on a public address must be entered.
+  - HSTS for https requests and with `force-https` (also `security:force-https`), optional
+    `https-redirect`.
+  - Admin networks: `/manage`, publishing in `/browseservices` and the legacy publishing urls only
+    answer to `security:manage:allowed-networks` (default loopback and the private networks,
+    `"*"` = everywhere, with OIDC only if configured), others get a 404. Startup warning if the
+    admin networks are restricted but no proxies are configured. ⚠ Admin access from outside
+    needs an entry.
+  - CORS only for the services (`security:cors:allowed-origins`), never for admin and login pages.
+- Cookies and CSRF: auth cookie `SameSite=Lax`; state changing requests to Manage and BrowseServices
+  sent with cookies need an antiforgery token (sent by `site.js` for every jQuery request, Carto
+  publishing with an `Authorization` header is not affected).
+- Security headers: `nosniff` and `Referrer-Policy` everywhere, `X-Frame-Options: DENY` and a CSP
+  on the admin and login pages.
+- Sessions: every token from a login carries a security stamp (`LoginStamp`, hash of `<user>.lgn`
+  and `<user>.stamp`); a password change or **Sign out everywhere** (new, sidebar) ends all
+  sessions and tokens of the user. Admin sessions last 8 hours instead of 24
+  (`security:manage:session-hours`) and are renewed while active. ⚠ Tokens issued before this
+  version are invalid: users log in again, clients request a new token.
+- Url tokens: work again (`UrlTokenAuthenticationMiddleware` never set the user), are stored
+  hashed (`sha256$`, plain text tokens are hashed on first use), listed as `token-name~(hidden)`
+  and shown only once after create/recycle. A wrong url token is an *Invalid Token (498)*.
+- Logs: tokens, passwords, secrets, url tokens and `Authorization` values are masked in the gView
+  service logs (`MaskSecrets`); security events (failed/refused logins, lockouts, refused admin
+  requests, admin setup, sign out everywhere, configuration warnings) are logged with the
+  category `gView.Server.Security`.
+- Limits:
+  - WFS `GetFeature` returns at most the `MaxRecordCount` of the service, also without
+    `MAXFEATURES` ⚠; `Features2GML` wrote one feature more than the limit.
+  - Vector tile glyphs are cached per resolved installed font instead of per requested font
+    stack, so any number of font stacks cannot fill the disk.
+  - Request bodies up to 50 MB for Kestrel, IIS and forms (`security:max-request-body-mb`).
+  - Optional rate limit per client ip for the services (`security:rate-limit`, off by default).
+
 ## 9.26.4301
 
 ## Added
