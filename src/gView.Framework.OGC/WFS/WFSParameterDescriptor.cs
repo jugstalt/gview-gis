@@ -69,10 +69,42 @@ namespace gView.Framework.OGC.WFS
 
             if (Request["FILTER"] != null)
             {
-                XmlDocument doc = new XmlDocument();
-                doc.Load(Request["FILTER"]);
-                _filter = doc.SelectSingleNode("Filter");
+                _filter = ParseKvpFilter(Request["FILTER"]);
             }
+        }
+
+        /// <summary>
+        /// Parses the KVP FILTER parameter: the value is the filter XML itself (never loaded as
+        /// url or file path), without DTD processing and without resolving external resources.
+        /// Returns the &lt;Filter&gt; element (with or without the ogc namespace).
+        /// </summary>
+        static public XmlNode ParseKvpFilter(string filterXml)
+        {
+            var settings = new XmlReaderSettings()
+            {
+                DtdProcessing = DtdProcessing.Ignore,
+                XmlResolver = null
+            };
+
+            XmlDocument doc = new XmlDocument() { XmlResolver = null };
+            try
+            {
+                using (var reader = XmlReader.Create(new System.IO.StringReader(filterXml ?? String.Empty), settings))
+                {
+                    doc.Load(reader);
+                }
+            }
+            catch (XmlException)
+            {
+                throw new ArgumentException("Invalid FILTER parameter: an OGC Filter XML is expected");
+            }
+
+            if (doc.DocumentElement == null || doc.DocumentElement.LocalName != "Filter")
+            {
+                throw new ArgumentException("Invalid FILTER parameter: an OGC Filter XML is expected");
+            }
+
+            return doc.DocumentElement;
         }
 
         public bool ParseParameters(XmlDocument doc)

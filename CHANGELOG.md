@@ -224,6 +224,8 @@ gView Server hardening for internet-facing installations, see
   requests only accept fields of the table; WFS filter literals are escaped and parsed; request
   and layer filters are always combined as `(a) AND (b)`. ⚠ `layerDefs` and
   `definitionExpression` with other functions, subqueries or unknown fields are rejected.
+- WFS: the KVP `FILTER` parameter is parsed as filter XML instead of being loaded as url or file
+  path (also in 8.26.4001).
 
 ## 9.26.4301
 
@@ -427,6 +429,9 @@ gView Server hardening for internet-facing installations, see
   - GeoJsonService: string parameters of the attribute filter are quoted with doubled quotes.
   - Request filters and the service's layer filter are always combined as `(a) AND (b)`, so an
     `OR` in the request can no longer bypass the layer filter.
+- WFS: the KVP `FILTER` parameter was loaded with `XmlDocument.Load(string)`, i.e. as url or
+  file path (server side requests, local files). It is now parsed as filter XML without DTD
+  processing and external resources; `<Filter>` with and without the ogc namespace is accepted.
 - New test project `gView.Framework.OGC.Tests`.
 
 ## 8.26.3602
