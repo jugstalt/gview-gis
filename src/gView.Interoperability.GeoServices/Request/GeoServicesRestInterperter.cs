@@ -51,7 +51,7 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
     #region IServiceRequestInterpreter
 
     public string IdentityName => "geoservices";
-    public string IdentityLongName => "OGC/ESRI GeoServices (REST)";
+    public string IdentityLongName => "ESRI GeoServices (REST)";
 
     public int Priority => 100;
 
@@ -59,7 +59,9 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
         new InterpreterCapabilities(new InterpreterCapabilities.Capability[]
         {
             new InterpreterCapabilities.SimpleCapability("Catalog (REST)",InterpreterCapabilities.Method.Post,"{server}/geoservices/rest/services/{folder}","1.0"),
-            new InterpreterCapabilities.SimpleCapability("Service (REST)",InterpreterCapabilities.Method.Post,"{server}/geoservices/rest/services/{folder/service}/MapServer","1.0")
+            new InterpreterCapabilities.SimpleCapability("MapServer (REST)",InterpreterCapabilities.Method.Post,"{server}/geoservices/rest/services/{folder/service}/MapServer","1.0"),
+            new InterpreterCapabilities.SimpleCapability("FeatureServer (REST)",InterpreterCapabilities.Method.Post,"{server}/geoservices/rest/services/{folder/service}/FeatureServer","1.0"),
+            new InterpreterCapabilities.SimpleCapability("(gView) Network (REST)",InterpreterCapabilities.Method.Post,"{server}/geoservices/rest/services/{folder/service}/NetworkServer","1.0")
         });
 
     public void OnCreate(IMapServer mapServer)

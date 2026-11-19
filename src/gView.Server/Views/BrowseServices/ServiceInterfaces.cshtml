@@ -3,58 +3,88 @@
 @{
     ViewData["Title"] = "Interfaces";
     Layout = "~/Views/Shared/_Layout.cshtml";
+
+    bool IsAvailable(gView.Framework.Core.MapServer.InterpreterCapabilities.Capability cap)
+    {
+        // GeoServices (REST) resources only if the service offers them
+        foreach (var type in new[] { "MapServer", "FeatureServer", "NetworkServer" })
+        {
+            if (cap.RequestText != null && cap.RequestText.EndsWith("/" + type))
+            {
+                return Model.GeoServiceTypes.Contains(type);
+            }
+        }
+        return true;
+    }
+
+    var groups = Model.Interpreters
+        .Where(i => i.Capabilities != null)
+        .Select(i => new
+        {
+            Interpreter = i,
+            Capabilities = i.Capabilities.Capabilities.Where(IsAvailable).ToList()
+        })
+        .Where(g => g.Capabilities.Count > 0)
+        .ToList();
 }
 
 <div class="page-head">
     <h1>Interfaces <span class="path">@Model.MapService.Fullname</span></h1>
 </div>
 
-<div class="table-scroll">
-<table class="service-capabilities">
-    <tr>
-        <th>Name</th>
-        <th>Version</th>
-        <th>Method</th>
-        <th>Request</th>
-
-    </tr>
-    @foreach (var interpeter in Model.Interpreters)
+<div class="iface-groups" role="tablist">
+    @for (int i = 0; i < groups.Count; i++)
     {
-        if (interpeter.Capabilities == null)
-        {
-            continue;
-        }
-
-        <tr class="interpreter">
-            <td colspan="3" class="interpreter-name">
-                @(interpeter.IdentityLongName)
-            </td>
-            <td class="interpreter-name">
-                #@(interpeter.IdentityName.ToUpper())
-            </td>
-        </tr>
-
-
-        @foreach (var cap in interpeter.Capabilities.Capabilities)
-        {
-            <tr class="interpreter-capabilities">
-                <td class="cap-name">@cap.Name</td>
-                <td class="cap-version">@cap.Version</td>
-                <td class="cap-method">@cap.Method</td>
-                <td class="cap-request"><a href="@Model.ReplaceRequest(cap.RequestText)">@Model.ReplaceRequest(cap.RequestText)</a></td>
-            </tr>
-        }
-
+        var g = groups[i];
+        <button type="button" role="tab" class="iface-group@(i == 0 ? " active" : "")" data-group="@g.Interpreter.IdentityName">
+            @g.Interpreter.IdentityLongName
+            <span class="ogc-badge alt">@g.Capabilities.Count</span>
+        </button>
     }
-</table>
 </div>
+
+@for (int i = 0; i < groups.Count; i++)
+{
+    var g = groups[i];
+    <section class="iface-panel" data-group="@g.Interpreter.IdentityName" @(i == 0 ? "" : "hidden")>
+        @foreach (var cap in g.Capabilities)
+        {
+            var url = Model.ReplaceRequest(cap.RequestText);
+            <div class="iface-card">
+                <div class="iface-head">
+                    <span class="iface-name">@cap.Name</span>
+                    <span class="ogc-badge">@(cap.Method.ToString().ToUpper())</span>
+                    <span class="ogc-badge alt">v@(cap.Version)</span>
+                </div>
+                <div class="iface-url">
+                    <a href="@url" target="_blank" rel="noopener">@url</a>
+                    <button type="button" class="cap-copy" data-url="@url">Copy</button>
+                </div>
+            </div>
+        }
+    </section>
+}
 
 @section Scripts {
     <script type="text/javascript">
         (function () {
-            $('tr.interpreter-capabilities').click(function (e) {
-                e.stopPropagation();
-                $(this).find('a').first()[0].click();
+            function show(group) {
+                $('.iface-group').removeClass('active').filter('[data-group="' + group + '"]').addClass('active');
+                $('.iface-panel').prop('hidden', true).filter('[data-group="' + group + '"]').prop('hidden', false);
+                try { history.replaceState(null, '', '#' + group); } catch (e) { }
+            }
+            $('.iface-group').click(function () { show($(this).data('group')); });
+            var hash = (location.hash || '').substring(1);
+            if (hash && $('.iface-group[data-group="' + hash + '"]').length) { show(hash); }
+
+            $('.cap-copy').click(function () {
+                var btn = $(this), url = btn.data('url');
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(url).then(function () {
+                        btn.text('Copied');
+                        setTimeout(function () { btn.text('Copy'); }, 1200);
+                    });
+                }
             });
         })();
     </script>

@@ -16,6 +16,7 @@ using gView.Server.Services.Security;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -443,12 +444,32 @@ public class BrowseServicesController : BaseController
             catch { }
         }
 
+        var geoServiceTypes = new HashSet<string>();
+        var accessTypes = await mapService.GetAccessTypes(identity);
+        if (accessTypes.HasFlag(AccessTypes.Map))
+        {
+            geoServiceTypes.Add("MapServer");
+        }
+        if (accessTypes.HasFlag(AccessTypes.Edit))
+        {
+            geoServiceTypes.Add("FeatureServer");
+        }
+        if (accessTypes.HasFlag(AccessTypes.Network))
+        {
+            var network = HttpContext.RequestServices.GetService<gView.Server.Services.Network.NetworkServerService>();
+            if (gView.Server.Services.Network.NetworkServerService.IsBuilt(network?.NetworkDirectory(mapService)))
+            {
+                geoServiceTypes.Add("NetworkServer");
+            }
+        }
+
         return View(new BrowseServicesServiceModel()
         {
             Server = _urlHelperService.AppRootUrl(this.Request),
             OnlineResource = Request.Scheme + "://" + Request.Host + "/ogc?",
             MapService = _mapServerService.MapServices.Where(s => s.Name == id.ServiceName() && s.Folder == id.FolderName()).FirstOrDefault(),
-            Interpreters = interpreters
+            Interpreters = interpreters,
+            GeoServiceTypes = geoServiceTypes
         });
     });
 

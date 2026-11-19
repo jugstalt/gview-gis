@@ -10,5 +10,8 @@ namespace gView.Server.Models
         public string OnlineResource { get; set; }
         public IMapService MapService { get; set; }
         public IEnumerable<IServiceRequestInterpreter> Interpreters { get; set; }
+
+        /// <summary>Resource types (MapServer, FeatureServer, NetworkServer) the service offers for GeoServices (REST)</summary>
+        public ISet<string> GeoServiceTypes { get; set; } = new HashSet<string>();
     }
 }

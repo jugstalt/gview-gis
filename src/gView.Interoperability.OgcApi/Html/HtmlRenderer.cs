@@ -18,14 +18,15 @@ public static class HtmlRenderer
         var sb = new StringBuilder();
         AppendHeader(sb, serviceList.Title, null);
 
+        sb.Append($"<div class='ogc-toolbar'><input id='ogc-filter' type='search' placeholder='Filter services...' autocomplete='off' /><span class='ogc-count'>{serviceList.Services.Count()} services</span></div>");
         sb.Append("<table class='table'><tr><th>Service</th><th>Folder</th><th></th></tr>");
         foreach (var service in serviceList.Services)
         {
             var landingPage = service.Links.FirstOrDefault(l => l.Type == OgcApiMediaTypes.Html) ?? service.Links.FirstOrDefault();
-            sb.Append("<tr>");
+            sb.Append($"<tr data-filter='{E(($"{service.Name} {service.Folder}").ToLowerInvariant())}'>");
             sb.Append($"<td>{A(landingPage?.Href, service.Name)}</td>");
-            sb.Append($"<td>{E(service.Folder)}</td>");
-            sb.Append($"<td>{A(service.Links.FirstOrDefault(l => l.Type == OgcApiMediaTypes.Json)?.Href, "json")}</td>");
+            sb.Append($"<td>{(String.IsNullOrEmpty(service.Folder) ? "" : $"<span class='ogc-folder'>{E(service.Folder)}</span>")}</td>");
+            sb.Append($"<td class='ogc-right'>{Badge(service.Links.FirstOrDefault(l => l.Type == OgcApiMediaTypes.Json)?.Href, "json")}</td>");
             sb.Append("</tr>");
         }
         sb.Append("</table>");
@@ -48,12 +49,12 @@ public static class HtmlRenderer
         AppendBreadcrumb(sb, (serviceUrl, "Landing page"));
         AppendHeader(sb, "Conformance", null);
 
-        sb.Append("<ul>");
+        sb.Append("<div class='ogc-links'>");
         foreach (var conformsTo in conformance.ConformsTo)
         {
-            sb.Append($"<li>{A(conformsTo, conformsTo)}</li>");
+            sb.Append($"<a class='ogc-link' href='{E(conformsTo)}'><span class='t'>{E(conformsTo)}</span></a>");
         }
-        sb.Append("</ul>");
+        sb.Append("</div>");
 
         return sb.ToString();
     }
@@ -74,8 +75,8 @@ public static class HtmlRenderer
             sb.Append($"<td>{A(collectionUrl, collection.Id)}</td>");
             sb.Append($"<td>{E(collection.Title)}</td>");
             sb.Append($"<td>{E(collection.Description)}</td>");
-            sb.Append($"<td>{(itemsLink is null ? "" : A(itemsLink.Href, "items"))}</td>");
-            sb.Append($"<td>{A(collection.Links.FirstOrDefault(l => l.Rel == OgcApiRelations.Map)?.Href, "map")}</td>");
+            sb.Append($"<td>{(itemsLink is null ? "" : Badge(itemsLink.Href, "items"))}</td>");
+            sb.Append($"<td>{Badge(collection.Links.FirstOrDefault(l => l.Rel == OgcApiRelations.Map)?.Href, "map")}</td>");
             sb.Append("</tr>");
         }
         sb.Append("</table>");
@@ -90,7 +91,7 @@ public static class HtmlRenderer
         AppendBreadcrumb(sb, (serviceUrl, "Landing page"), ($"{serviceUrl}/collections?f=html", "Collections"));
         AppendHeader(sb, collection.Title ?? collection.Id, collection.Description);
 
-        sb.Append("<table class='table'>");
+        sb.Append("<table class='table kv'>");
         sb.Append($"<tr><td>Id</td><td>{E(collection.Id)}</td></tr>");
         sb.Append($"<tr><td>Item type</td><td>{E(collection.ItemType ?? "map only")}</td></tr>");
         if (collection.Extent?.Spatial?.BBox?.FirstOrDefault() is double[] bbox)
@@ -103,7 +104,7 @@ public static class HtmlRenderer
 
         if (collection.Links.FirstOrDefault(l => l.Rel == OgcApiRelations.Map) is Link mapLink)
         {
-            sb.Append($"<p><img src='{E(mapLink.Href)}&width=800' alt='map' style='max-width:100%;border:1px solid #888' /></p>");
+            sb.Append($"<p><img src='{E(mapLink.Href)}&width=800' alt='map' class='ogc-map' /></p>");
         }
 
         AppendLinks(sb, collection.Links);
@@ -147,14 +148,14 @@ public static class HtmlRenderer
             ($"{service.CollectionUrl(collectionId)}?f=html", items.Collection.Title));
         AppendHeader(sb, $"{items.Collection.Title}: Items", null);
 
-        sb.Append($"<p>{items.Page.Features.Count} features (offset {items.Query.Offset}), CRS: {E(items.Crs.Uri)}</p>");
+        sb.Append($"<p class='ogc-sub'><span class='ogc-badge'>{items.Page.Features.Count} features</span> <span class='ogc-badge'>offset {items.Query.Offset}</span> <span class='ogc-badge'>{E(items.Crs.Uri)}</span></p>");
 
         var propertyNames = items.Page.Features
             .SelectMany(f => f.Properties.Select(p => p.Key))
             .Distinct()
             .ToList();
 
-        sb.Append("<div style='overflow-x:auto'><table class='table'><tr><th>Id</th><th>Geometry</th>");
+        sb.Append("<div class='table-scroll'><table class='table'><tr><th>Id</th><th>Geometry</th>");
         foreach (var name in propertyNames)
         {
             sb.Append($"<th>{E(name)}</th>");
@@ -175,13 +176,13 @@ public static class HtmlRenderer
         }
         sb.Append("</table></div>");
 
-        sb.Append("<p>");
+        sb.Append("<p class='ogc-pager'>");
         foreach (var rel in new[] { OgcApiRelations.Prev, OgcApiRelations.Next })
         {
             var link = items.Links.FirstOrDefault(l => l.Rel == rel);
             if (link is not null)
             {
-                sb.Append($"{A(link.Href.Replace("f=json", "f=html"), rel == OgcApiRelations.Prev ? "&laquo; previous" : "next &raquo;", encodeText: false)}&nbsp;&nbsp;");
+                sb.Append($"<a class='btn' href='{E(link.Href.Replace("f=json", "f=html"))}'>{(rel == OgcApiRelations.Prev ? "&laquo; previous" : "next &raquo;")}</a>");
             }
         }
         sb.Append("</p>");
@@ -202,7 +203,7 @@ public static class HtmlRenderer
             ($"{service.ItemsUrl(collectionId)}?f=html", "Items"));
         AppendHeader(sb, $"{item.Collection.Title}: {Value(item.Feature.Id)}", null);
 
-        sb.Append("<table class='table'>");
+        sb.Append("<table class='table kv'>");
         sb.Append($"<tr><td>Id</td><td>{E(Value(item.Feature.Id))}</td></tr>");
         sb.Append($"<tr><td>Geometry</td><td>{E(GeometryTypeName(item.Feature.Geometry))}</td></tr>");
         foreach (var property in item.Feature.Properties)
@@ -225,7 +226,7 @@ public static class HtmlRenderer
         var sb = new StringBuilder();
         AppendBreadcrumb(sb, (serviceUrl, "Landing page"));
         sb.Append($"<link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/swagger-ui-dist@{swaggerUiVersion}/swagger-ui.css' />");
-        sb.Append("<div id='swagger-ui' style='background:#fff'></div>");
+        sb.Append("<div id='swagger-ui' class='ogc-swagger'></div>");
         sb.Append($"<script src='https://cdn.jsdelivr.net/npm/swagger-ui-dist@{swaggerUiVersion}/swagger-ui-bundle.js'></script>");
         sb.Append($"<script>window.addEventListener('load', function() {{ SwaggerUIBundle({{ url: '{JsString(apiJsonUrl)}', dom_id: '#swagger-ui' }}); }});</script>");
 
@@ -246,24 +247,27 @@ public static class HtmlRenderer
     private static void AppendBreadcrumb(StringBuilder sb, params (string url, string title)[] items)
     {
         sb.Append("<div class='ogcapi-breadcrumb'>");
-        sb.Append(String.Join(" / ", items.Select(i => A(i.url.Contains("f=html") ? i.url : $"{i.url}?f=html", i.title))));
+        sb.Append(String.Join("<span class='sep'>/</span>", items.Select(i => A(i.url.Contains("f=html") ? i.url : $"{i.url}?f=html", i.title))));
         sb.Append("</div>");
     }
 
     private static void AppendLinks(StringBuilder sb, IEnumerable<Link> links)
     {
-        sb.Append("<h3>Links</h3><ul>");
+        sb.Append("<h3>Links</h3><div class='ogc-links'>");
         foreach (var link in links)
         {
-            sb.Append($"<li>{A(link.Href, link.Title ?? link.Href)} <small>({E(link.Rel)}{(String.IsNullOrEmpty(link.Type) ? "" : $", {E(link.Type)}")})</small></li>");
+            sb.Append($"<a class='ogc-link' href='{E(link.Href)}'><span class='t'>{E(link.Title ?? link.Href)}</span><span class='ogc-badge'>{E(link.Rel)}</span>{(String.IsNullOrEmpty(link.Type) ? "" : $"<span class='ogc-badge alt'>{E(link.Type)}</span>")}</a>");
         }
-        sb.Append("</ul>");
+        sb.Append("</div>");
     }
 
     private static string A(string? href, string? text, bool encodeText = true)
         => String.IsNullOrEmpty(href)
             ? E(text)
             : $"<a href='{E(href)}'>{(encodeText ? E(text) : text)}</a>";
+
+    private static string Badge(string? href, string text)
+        => String.IsNullOrEmpty(href) ? "" : $"<a class='ogc-badge' href='{E(href)}'>{E(text)}</a>";
 
     private static string E(string? text) => WebUtility.HtmlEncode(text ?? "");
 
