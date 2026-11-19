@@ -163,37 +163,44 @@ public class WMSParameterDescriptor
             }
             else
             {
-                if (request["REQUEST"].ToUpper().IndexOf("MAP") != -1)
+                switch (request["REQUEST"].Trim().ToUpperInvariant())
                 {
-                    this.Request = WMSRequestType.GetMap;
+                    case "GETMAP":
+                    case "MAP":
+                        this.Request = WMSRequestType.GetMap;
+                        break;
+                    case "GETCAPABILITIES":
+                    case "CAPABILITIES":
+                        this.Request = WMSRequestType.GetCapabilities;
+                        break;
+                    case "GETFEATUREINFO":
+                    case "FEATUREINFO":
+                        this.Request = WMSRequestType.GetFeatureInfo;
+                        break;
+                    case "GETLEGENDGRAPHIC":
+                        this.Request = WMSRequestType.GetLegendGraphic;
+                        break;
+                    case "DESCRIPETILES":
+                        this.Request = WMSRequestType.DescriptTiles;
+                        break;
+                    case "GETTILE":
+                        this.Request = WMSRequestType.GetTile;
+                        break;
+                    case "GENERATETILES":
+                        this.Request = WMSRequestType.GenerateTiles;
+                        break;
+                    default:
+                        return WriteError($"REQUEST parameter is either missing, erroneous, or not supported. Supported values are: 'GetMap', 'GetCapabilities', 'GetFeatureInfo', 'GetLegendGraphic'.", "OperationNotSupported");
                 }
-                else if (request["REQUEST"].ToUpper().IndexOf("CAPABILITIES") != -1)
+
+                // SERVICE is optional here (lenient), but if given it must be WMS
+                if (request["SERVICE"] != null
+                    && !request["SERVICE"].Trim().Equals("WMS", StringComparison.OrdinalIgnoreCase)
+                    && this.Request != WMSRequestType.GetTile
+                    && this.Request != WMSRequestType.DescriptTiles
+                    && this.Request != WMSRequestType.GenerateTiles)
                 {
-                    this.Request = WMSRequestType.GetCapabilities;
-                }
-                else if (request["REQUEST"].ToUpper().IndexOf("FEATUREINFO") != -1)
-                {
-                    this.Request = WMSRequestType.GetFeatureInfo;
-                }
-                else if (request["REQUEST"].ToUpper().IndexOf("GETLEGENDGRAPHIC") != -1)
-                {
-                    this.Request = WMSRequestType.GetLegendGraphic;
-                }
-                else if (request["REQUEST"].ToUpper().IndexOf("DESCRIPETILES") != -1)
-                {
-                    this.Request = WMSRequestType.DescriptTiles;
-                }
-                else if (request["REQUEST"].ToUpper().IndexOf("GETTILE") != -1)
-                {
-                    this.Request = WMSRequestType.GetTile;
-                }
-                else if (request["REQUEST"].ToUpper().IndexOf("GENERATETILES") != -1)
-                {
-                    this.Request = WMSRequestType.GenerateTiles;
-                }
-                else
-                {
-                    return WriteError("REQUEST parameter is either missing, erroneous, or not supported. Supported values are: 'GetMap', 'map', 'GetCapabilities','capabilities'");
+                    return WriteError($"Invalid SERVICE parameter {request["SERVICE"]}: must be 'WMS'.", "InvalidParameterValue");
                 }
             }
 
@@ -457,7 +464,7 @@ public class WMSParameterDescriptor
                         {
                             if (styles[i] != null && styles[i] != String.Empty)
                             {
-                                return WriteError("The monoGIS does not support named styles!.", "StyleNotDefined");
+                                return WriteError("Named styles are not supported. Use an empty STYLES parameter.", "StyleNotDefined");
                             }
                         }
                     }
@@ -623,6 +630,8 @@ public class WMSParameterDescriptor
         return WriteError(msg, msg != null && msg.StartsWith("mandatory ") ? "MissingParameterValue" : null);
     }
 
+    private const int MaxImageDimension = 16384;
+
     private static int ParseInt(string value, string name)
     {
         if (!int.TryParse(value?.Trim(), System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var i))
@@ -635,9 +644,9 @@ public class WMSParameterDescriptor
     private static int ParsePositiveInt(string value, string name)
     {
         var i = ParseInt(value, name);
-        if (i <= 0)
+        if (i <= 0 || i > MaxImageDimension)
         {
-            throw new ArgumentException($"Invalid {name} parameter: must be greater than 0.");
+            throw new ArgumentException($"Invalid {name} parameter: must be between 1 and {MaxImageDimension}.");
         }
         return i;
     }
@@ -713,11 +722,12 @@ public class WMSParameterDescriptor
                     bm.MakeTransparent(this.BgColor);
                 }
 
-                var sz = canvas.MeasureText(msg, font);
-                var rect = new RectangleF(5f, 5f, sz.Width, sz.Height);
-
-                canvas.DrawText(msg, font, brush,
-                    new CanvasRectangleF(5f, 5f, sz.Width, sz.Height));
+                if (this.Exceptions != WMSExceptionType.se_blank)
+                {
+                    var sz = canvas.MeasureText(msg, font);
+                    canvas.DrawText(msg, font, brush,
+                        new CanvasRectangleF(5f, 5f, sz.Width, sz.Height));
+                }
 
                 var ms = new MemoryStream();
                 bm.Save(ms, SystemDrawingGetImageFormat());
