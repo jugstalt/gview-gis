@@ -12,6 +12,7 @@ using gView.Framework.Core.Symbology;
 using gView.Framework.Core.Common;
 using gView.Framework.Core.UI;
 using gView.Framework.Data;
+using gView.Framework.Data.Extensions;
 using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
 using gView.Framework.Symbology;
@@ -667,7 +668,7 @@ namespace gView.Interoperability.ArcXML
                         else if (!String.IsNullOrEmpty(fLayer.FilterQuery.WhereClause) &&
                                  !String.IsNullOrEmpty(orig.WhereClause))
                         {
-                            fLayer.FilterQuery.WhereClause += " AND " + orig.WhereClause;
+                            fLayer.FilterQuery.WhereClause = "(" + fLayer.FilterQuery.WhereClause + ") AND (" + orig.WhereClause + ")";
                         }
                         else if (String.IsNullOrEmpty(fLayer.FilterQuery.WhereClause) &&
                                !String.IsNullOrEmpty(orig.WhereClause))
@@ -720,6 +721,9 @@ namespace gView.Interoperability.ArcXML
                 }
             }
             ParseChildNodesForLabelRenderer(aClass, LayerID, fLayer, layerdef);
+
+            // renderers from the request: only fields of the feature class
+            fLayer.CheckRequestRendererFields(fLayer.FeatureClass);
         }
 
         private bool ParseChildNodesForLabelRenderer(ArcIMSClass aClass, string LayerID, IFeatureLayer fLayer, XmlNode layerdef)

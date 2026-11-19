@@ -736,7 +736,7 @@ namespace gView.Interoperability.OGC
                         }
 
                         IQueryFilter filter = Filter.FromWFS(fc, parameters.Filter, gmlVersion);
-                        Filter.AppendSortBy(filter, parameters.SortBy);
+                        Filter.AppendSortBy(fc, filter, parameters.SortBy);
 
                         if (filter == null)
                         {

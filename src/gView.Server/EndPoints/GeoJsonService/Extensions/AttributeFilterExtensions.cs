@@ -34,7 +34,7 @@ static public class AttributeFilterExtensions
                 double n => n.ToDoubleString(),
                 decimal n => n.ToDecimalString(),
 
-                _ => $"'{parameterValue}'"
+                _ => $"'{parameterValue?.ToString()?.Replace("'", "''")}'"  // SQL string literal: quotes doubled
             };
 
             whereClause = whereClause.Replace(parameterName, replaceText);

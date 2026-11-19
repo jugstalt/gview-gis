@@ -1,4 +1,5 @@
 ﻿using gView.Framework.Core.Data;
+using gView.Framework.Data.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,6 +15,11 @@ namespace gView.Interoperability.GeoServices.Extensions
                         .Select(f => f.Trim());
         }
 
+        /// <summary>
+        /// Checks the outFields of a request: only "*" and fields of the table are allowed
+        /// (field functions only if the table defines a field with exactly this name).
+        /// Returns the field names with the table's spelling.
+        /// </summary>
         static public IEnumerable<string> CheckAllowedFunctions(this IEnumerable<string> fieldNames, ITableClass tableClass, bool isFeatureServer)
         {
             if (isFeatureServer && fieldNames.Count() == 1 && fieldNames.First() == "*")
@@ -24,18 +30,7 @@ namespace gView.Interoperability.GeoServices.Extensions
                         .ToArray();
             }
 
-            foreach (var fieldName in fieldNames)
-            {
-                if (fieldName.IsFieldFunction())
-                {
-                    if (tableClass.Fields.FindField(fieldName) == null)
-                    {
-                        throw new Exception($"Forbidden field function detected: {fieldName}");
-                    }
-                }
-            }
-
-            return fieldNames;
+            return tableClass.ProjectRequestFieldNames(fieldNames);
         }
 
         static public bool IsFieldFunction(this string fieldName) => !String.IsNullOrEmpty(fieldName) && (fieldName.Contains("(") || fieldName.Contains(")") || fieldName.Contains(" ") || fieldName.Contains("."));
