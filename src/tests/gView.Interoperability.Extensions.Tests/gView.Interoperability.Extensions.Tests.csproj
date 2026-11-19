@@ -22,13 +22,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- coordinate transformations (SpatialReference.FromID) read the projections from proj.db -->
-    <Content Include="..\..\gView.Server\proj.db" Link="proj.db">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\..\gView.Interoperability.Extensions\gView.Interoperability.Extensions.csproj" />
     <ProjectReference Include="..\..\gView.DataSources.GeoPackage\gView.DataSources.GeoPackage.csproj" />
   </ItemGroup>

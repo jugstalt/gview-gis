@@ -10,7 +10,6 @@
   <ItemGroup>
     <None Remove="misc\tiling\import\basemap_at.xml" />
     <None Remove="misc\tiling\import\osm.xml" />
-    <None Remove="proj.db" />
   </ItemGroup>
 
   <ItemGroup>
@@ -23,9 +22,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="misc\tiling\import\osm.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="proj.db">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
