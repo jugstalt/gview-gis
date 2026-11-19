@@ -91,11 +91,15 @@ public static class GlyphPbfBuilder
 
     /// <summary>
     /// The first installed family of the stack, with the style words of the GL name ("Arial Bold Italic").
+    /// If no family of the stack is installed, the default font (Arial or the first installed font)
+    /// with the style of the first name. So only installed fonts are rendered, and
+    /// <see cref="CacheName"/> of the result is a small, fixed set (a cache key for any stack).
     /// </summary>
     public static (string Family, FontStyle Style) ResolveFont(string fontStack)
     {
-        var installed = new HashSet<string>(Current.Engine.GetInstalledFontNames(), StringComparer.OrdinalIgnoreCase);
-        (string, FontStyle)? first = null;
+        var installedNames = Current.Engine.GetInstalledFontNames()?.ToArray() ?? [];
+        var installed = new HashSet<string>(installedNames, StringComparer.OrdinalIgnoreCase);
+        FontStyle? firstStyle = null;
 
         foreach (var name in fontStack.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
         {
@@ -111,15 +115,27 @@ public static class GlyphPbfBuilder
             }
 
             string family = String.Join(' ', words);
-            first ??= (family, style);
+            firstStyle ??= style;
             if (installed.Contains(family))
             {
-                return (family, style);
+                return (installedNames.First(n => n.Equals(family, StringComparison.OrdinalIgnoreCase)), style);
             }
         }
 
-        return first ?? ("Arial", FontStyle.Regular);
+        string defaultFamily = installed.Contains("Arial")
+            ? "Arial"
+            : installedNames.FirstOrDefault() ?? "Arial";
+
+        return (defaultFamily, firstStyle ?? FontStyle.Regular);
     }
+
+    /// <summary>
+    /// A file/folder name for a resolved font ("Arial-Bold"): glyphs are cached per
+    /// resolved font, not per requested font stack, so any number of different stacks
+    /// cannot fill the disk.
+    /// </summary>
+    public static string CacheName(string family, FontStyle style)
+        => new string($"{family}-{style}".Select(c => char.IsLetterOrDigit(c) || c == '-' ? c : '_').ToArray());
 
     #region Rendering
 

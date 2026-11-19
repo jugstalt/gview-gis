@@ -76,8 +76,10 @@ public class VtcController : BaseController
                 return BadRequest("Invalid glyph range");
             }
 
-            // the font stack becomes a folder name: only safe characters
-            string folder = new string(fontstack.Select(c => char.IsLetterOrDigit(c) || c == ' ' || c == ',' || c == '-' ? c : '_').ToArray());
+            // cached per resolved (installed) font, not per requested stack: any number of
+            // different font stacks cannot fill the disk
+            var (family, style) = gView.Framework.Cartography.VectorTiles.GlyphPbfBuilder.ResolveFont(fontstack);
+            string folder = gView.Framework.Cartography.VectorTiles.GlyphPbfBuilder.CacheName(family, style);
             var fi = new System.IO.FileInfo(System.IO.Path.Combine(
                 _mapServiceMananger.Instance.TileCachePath, "_glyphs", folder, $"{start}-{start + 255}.pbf"));
 

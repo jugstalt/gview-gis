@@ -74,7 +74,7 @@ namespace gView.Framework.OGC.GML
             {
                 Feature2GML(feature, fc, fcID, sb, srsName, transformer, version);
                 count++;
-                if (maxFeatures > 0 && count > maxFeatures)
+                if (maxFeatures > 0 && count >= maxFeatures)
                 {
                     break;
                 }

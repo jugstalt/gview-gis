@@ -687,6 +687,13 @@ namespace gView.Interoperability.OGC
                     return "";
                 }
 
+                // MAXFEATURES never exceeds the MaxRecordCount of the service (no limit or a higher one: MaxRecordCount)
+                int maxRecordCount = map.MapServiceProperties?.MaxRecordCount ?? 0;
+                if (maxRecordCount > 0 && (parameters.MaxFeatures <= 0 || parameters.MaxFeatures > maxRecordCount))
+                {
+                    parameters.MaxFeatures = maxRecordCount;
+                }
+
                 string sOnlineResource = OnlineResource /*MapServerConnectors.OnlineResource(PlugInManager.PlugInID(this))*/ + "?SERVICE=WFS&amp;";
                 sOnlineResource = sOnlineResource.Replace("??", "?");
 

@@ -23,6 +23,11 @@ namespace gView.Server.Services.Security;
 ///   },
 ///   "cors": {
 ///     "allowed-origins": [ "*" ]              // or [ "https://maps.example.com" ]
+///   },
+///   "max-request-body-mb": 50,                // 0 = no limit
+///   "rate-limit": {
+///     "enabled": false,                       // usually done by the reverse proxy
+///     "requests-per-minute": 600              // per client ip, services only
 ///   }
 /// }
 /// </code>
@@ -91,6 +96,18 @@ public class SecurityOptions
     public IReadOnlyList<string> CorsAllowedOrigins { get; init; }
 
     /// <summary>
+    /// Maximum size of a request body in bytes (Kestrel, IIS, forms); null = no limit.
+    /// </summary>
+    public long? MaxRequestBodyBytes { get; init; } = 50L * 1024 * 1024;
+
+    /// <summary>
+    /// Rate limit for the services per client ip (admin pages are not limited).
+    /// </summary>
+    public bool RateLimitEnabled { get; init; }
+
+    public int RateLimitRequestsPerMinute { get; init; } = 600;
+
+    /// <summary>
     /// The admin login is OIDC (Authentication:Type = oidc).
     /// </summary>
     public bool OidcAdminLogin { get; init; }
@@ -157,6 +174,11 @@ public class SecurityOptions
             ManageAllowedNetworks = manageEverywhere
                 ? null
                 : (manageNetworks.Length > 0 ? manageNetworks : DefaultTrustedNetworks).Select(ParseNetwork).ToArray(),
+            MaxRequestBodyBytes = int.TryParse(section["max-request-body-mb"], out int bodyMb) && bodyMb >= 0
+                ? (bodyMb == 0 ? null : bodyMb * 1024L * 1024L)
+                : 50L * 1024 * 1024,
+            RateLimitEnabled = Bool(section["rate-limit:enabled"]) ?? false,
+            RateLimitRequestsPerMinute = int.TryParse(section["rate-limit:requests-per-minute"], out int perMinute) && perMinute > 0 ? perMinute : 600,
             ManageSessionHours = int.TryParse(section["manage:session-hours"], out int hours) && hours > 0 ? hours : 8,
             CorsAllowedOrigins = corsOrigins.Length == 0 || corsOrigins.Contains("*")
                 ? null

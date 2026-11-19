@@ -172,6 +172,7 @@ public class Startup
         var securityOptions = SecurityOptions.FromConfiguration(Configuration);
         services.AddSingleton(securityOptions);
         services.AddAntiforgery(options => options.HeaderName = AntiforgeryForCookieAuthAttribute.HeaderName);
+        services.AddSecurityLimits(securityOptions);
 
         services.AddAuth(Configuration);
 
@@ -332,6 +333,7 @@ public class Startup
         app.UseMiddleware<ArcMapPathDoubleSlashesMiddleware>();
 
         app.UseMiddleware<SecurityHeadersMiddleware>();
+        app.UseSecurityLimits(securityOptions);
 
         // CORS for the services only, never for the admin and login pages
         app.UseWhen(
