@@ -624,7 +624,7 @@ namespace gView.Interoperability.OGC
 
                     ISpatialReference sRef = SpatialReference.FromID("epsg:" + _parameters.SRS);
 
-                    if (_parameters.Version == "1.3.0" && sRef != null)
+                    if (_parameters.Version == "1.3.0" && !_parameters.IsCrs84 && sRef != null)
                     {
                         IPoint ll = _parameters.BBOX.LowerLeft;
                         IPoint ur = _parameters.BBOX.UpperRight;
@@ -769,7 +769,7 @@ namespace gView.Interoperability.OGC
                 ISpatialReference sRef = SpatialReference.FromID("epsg:" + parameters.SRS);
 
                 IPoint featureInfoPoint = new gView.Framework.Geometry.Point(parameters.FeatureInfoX, parameters.FeatureInfoY);
-                if (parameters.Version == "1.3.0" && sRef != null)
+                if (parameters.Version == "1.3.0" && !parameters.IsCrs84 && sRef != null)
                 {
                     IPoint ll = parameters.BBOX.LowerLeft;
                     IPoint ur = parameters.BBOX.UpperRight;

@@ -129,20 +129,25 @@ public class WMSParameterDescriptor
             //check for exception format
             if (request["EXCEPTIONS"] != null)
             {
-                if (request["EXCEPTIONS"] != "application/vnd.ogc.se_inimage" &&
-                    request["EXCEPTIONS"] != "application/vnd.ogc.se_blank" &&
-                    request["EXCEPTIONS"] != "application/vnd.ogc.se_xml")
+                // 1.1.1: application/vnd.ogc.se_*; 1.3.0: XML, INIMAGE, BLANK (accept both in any version)
+                var exceptionsValue = request["EXCEPTIONS"].Trim().ToLowerInvariant();
+                if (exceptionsValue != "application/vnd.ogc.se_inimage" &&
+                    exceptionsValue != "application/vnd.ogc.se_blank" &&
+                    exceptionsValue != "application/vnd.ogc.se_xml" &&
+                    exceptionsValue != "xml" && exceptionsValue != "inimage" && exceptionsValue != "blank")
                 {
-                    return WriteError($"Invalid exception format {request["EXCEPTIONS"]} must be 'application/vnd.ogc.se_inimage', 'application/vnd.ogc.se_blank' or 'application/vnd.ogc.se_xml'.");
+                    return WriteError($"Invalid exception format {request["EXCEPTIONS"]} must be 'application/vnd.ogc.se_inimage', 'application/vnd.ogc.se_blank' or 'application/vnd.ogc.se_xml' (WMS 1.3.0: 'INIMAGE', 'BLANK' or 'XML').");
                 }
                 else
                 {
-                    switch (request["EXCEPTIONS"])
+                    switch (exceptionsValue)
                     {
                         case "application/vnd.ogc.se_inimage":
+                        case "inimage":
                             this.Exceptions = WMSExceptionType.se_in_image;
                             break;
                         case "application/vnd.ogc.se_blank":
+                        case "blank":
                             this.Exceptions = WMSExceptionType.se_blank;
                             break;
                             /* SE_XML is already the default value
@@ -160,37 +165,44 @@ public class WMSParameterDescriptor
             }
             else
             {
-                if (request["REQUEST"].ToUpper().IndexOf("MAP") != -1)
+                switch (request["REQUEST"].Trim().ToUpperInvariant())
                 {
-                    this.Request = WMSRequestType.GetMap;
+                    case "GETMAP":
+                    case "MAP":
+                        this.Request = WMSRequestType.GetMap;
+                        break;
+                    case "GETCAPABILITIES":
+                    case "CAPABILITIES":
+                        this.Request = WMSRequestType.GetCapabilities;
+                        break;
+                    case "GETFEATUREINFO":
+                    case "FEATUREINFO":
+                        this.Request = WMSRequestType.GetFeatureInfo;
+                        break;
+                    case "GETLEGENDGRAPHIC":
+                        this.Request = WMSRequestType.GetLegendGraphic;
+                        break;
+                    case "DESCRIPETILES":
+                        this.Request = WMSRequestType.DescriptTiles;
+                        break;
+                    case "GETTILE":
+                        this.Request = WMSRequestType.GetTile;
+                        break;
+                    case "GENERATETILES":
+                        this.Request = WMSRequestType.GenerateTiles;
+                        break;
+                    default:
+                        return WriteError($"REQUEST parameter is either missing, erroneous, or not supported. Supported values are: 'GetMap', 'GetCapabilities', 'GetFeatureInfo', 'GetLegendGraphic'.", "OperationNotSupported");
                 }
-                else if (request["REQUEST"].ToUpper().IndexOf("CAPABILITIES") != -1)
+
+                // SERVICE is optional here (lenient), but if given it must be WMS
+                if (request["SERVICE"] != null
+                    && !request["SERVICE"].Trim().Equals("WMS", StringComparison.OrdinalIgnoreCase)
+                    && this.Request != WMSRequestType.GetTile
+                    && this.Request != WMSRequestType.DescriptTiles
+                    && this.Request != WMSRequestType.GenerateTiles)
                 {
-                    this.Request = WMSRequestType.GetCapabilities;
-                }
-                else if (request["REQUEST"].ToUpper().IndexOf("FEATUREINFO") != -1)
-                {
-                    this.Request = WMSRequestType.GetFeatureInfo;
-                }
-                else if (request["REQUEST"].ToUpper().IndexOf("GETLEGENDGRAPHIC") != -1)
-                {
-                    this.Request = WMSRequestType.GetLegendGraphic;
-                }
-                else if (request["REQUEST"].ToUpper().IndexOf("DESCRIPETILES") != -1)
-                {
-                    this.Request = WMSRequestType.DescriptTiles;
-                }
-                else if (request["REQUEST"].ToUpper().IndexOf("GETTILE") != -1)
-                {
-                    this.Request = WMSRequestType.GetTile;
-                }
-                else if (request["REQUEST"].ToUpper().IndexOf("GENERATETILES") != -1)
-                {
-                    this.Request = WMSRequestType.GenerateTiles;
-                }
-                else
-                {
-                    return WriteError("REQUEST parameter is either missing, erroneous, or not supported. Supported values are: 'GetMap', 'map', 'GetCapabilities','capabilities'");
+                    return WriteError($"Invalid SERVICE parameter {request["SERVICE"]}: must be 'WMS'.", "InvalidParameterValue");
                 }
             }
 
@@ -252,6 +264,12 @@ public class WMSParameterDescriptor
 
                         string[] srsid = request["SRS"].Split(':');
                         this.SRS = int.Parse(srsid[srsid.Length - 1]);
+                    }
+                    else if (request["CRS"] != null && request["CRS"].Trim().Equals("CRS:84", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // CRS:84 = WGS84 with fixed axis order lon/lat (x,y), independent of the WMS version
+                        this.SRS = 4326;
+                        this.IsCrs84 = true;
                     }
                     else if (request["CRS"] != null)
                     {
@@ -364,7 +382,7 @@ public class WMSParameterDescriptor
                     }
                     else
                     {
-                        this.Height = int.Parse(request["HEIGHT"]);
+                        this.Height = ParsePositiveInt(request["HEIGHT"], "HEIGHT");
                     }
 
                     if (request["WIDTH"] == null)
@@ -373,7 +391,7 @@ public class WMSParameterDescriptor
                     }
                     else
                     {
-                        this.Width = int.Parse(request["WIDTH"]);
+                        this.Width = ParsePositiveInt(request["WIDTH"], "WIDTH");
                     }
 
                     if (this.Width <= 0 || this.Height <= 0)
@@ -410,13 +428,18 @@ public class WMSParameterDescriptor
                         LayerTag = "QUERY_LAYERS";
                     }
 
-                    if (request[LayerTag] == null)
+                    var layersValue = request[LayerTag];
+                    if (layersValue == null && this.Request == WMSRequestType.GetFeatureInfo)
                     {
-                        return WriteError("mandatory LAYERS parameter is missing.");
+                        layersValue = request["QUERYLAYERS"]; // legacy, non standard spelling
+                    }
+                    if (layersValue == null)
+                    {
+                        return WriteError($"mandatory {LayerTag} parameter is missing.");
                     }
                     else
                     {
-                        String sLayers = request[LayerTag];
+                        String sLayers = layersValue;
                         if (LayerTag == "LAYERS")
                         {
                             this.Layers = sLayers.Split(",".ToCharArray());
@@ -434,11 +457,17 @@ public class WMSParameterDescriptor
                     {
                         try
                         {
-                            this.BgColor = ArgbColor.FromHexString(request["BGCOLOR"]);
+                            // WMS: BGCOLOR=0xRRGGBB (also tolerate '#RRGGBB' and plain 'RRGGBB')
+                            var bgColor = request["BGCOLOR"].Trim();
+                            if (bgColor.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
+                            {
+                                bgColor = bgColor.Substring(2);
+                            }
+                            this.BgColor = ArgbColor.FromHexString(bgColor);
                         }
                         catch (Exception)
                         {
-                            throw new Exception($"Invalid BGCOLOR {request["BGCOLOR"]}");
+                            throw new ArgumentException($"Invalid BGCOLOR {request["BGCOLOR"]}");
                         }
                     }
                     if (request["STYLES"] != null)
@@ -448,7 +477,7 @@ public class WMSParameterDescriptor
                         {
                             if (styles[i] != null && styles[i] != String.Empty)
                             {
-                                return WriteError("The monoGIS does not support named styles!.", "StyleNotDefined");
+                                return WriteError("Named styles are not supported. Use an empty STYLES parameter.", "StyleNotDefined");
                             }
                         }
                     }
@@ -460,6 +489,10 @@ public class WMSParameterDescriptor
                     {
                         if (request["SLD"] != null)
                         {
+                            if (!IsPublicHttpUrl(request["SLD"]))
+                            {
+                                return WriteError("SLD must be a public http(s) url.", "InvalidParameterValue");
+                            }
                             var awaiter = HttpService.CreateInstance().GetStringAsync(request["SLD"]).GetAwaiter();
                             _sldString = awaiter.GetResult();
 
@@ -478,48 +511,41 @@ public class WMSParameterDescriptor
             }
             if (this.Request == WMSRequestType.GetFeatureInfo)
             {
-                if (request["QUERYLAYERS"] == null)
+                if (this.QueryLayers == null)
                 {
-                    return WriteError("mandatory QUERYLAYERS parameter is missing.");
+                    return WriteError("mandatory QUERY_LAYERS parameter is missing.");
                 }
-                else
+                // WMS 1.3.0: I/J, WMS 1.1.1: X/Y (accept both)
+                var xValue = request["I"] ?? request["X"];
+                var yValue = request["J"] ?? request["Y"];
+                if (xValue == null)
                 {
-                    String sQueryLayers = request["QUERYLAYERS"];
-                    this.QueryLayers = sQueryLayers.Split(",".ToCharArray());
+                    return WriteError(this.Version == "1.3.0" ? "mandatory I parameter is missing." : "mandatory X parameter is missing.");
                 }
-                if (request["X"] == null)
+                this.FeatureInfoX = ParseInt(xValue, "X/I");
+                if (this.FeatureInfoX >= this.Width || this.FeatureInfoX < 0)
                 {
-                    return WriteError("mandatory X parameter is missing.");
+                    return WriteError("invalid X/I parameter, must be >= 0 and lower than WIDTH parameter.", "InvalidPoint");
                 }
-                else
+                if (yValue == null)
                 {
-                    this.FeatureInfoX = Convert.ToInt32(request["X"]);
-                    if (this.FeatureInfoX > this.Width || this.FeatureInfoX < 0)
-                    {
-                        return WriteError("invalid X parameter, must be greater than 0 and lower than Width parameter.");
-                    }
+                    return WriteError(this.Version == "1.3.0" ? "mandatory J parameter is missing." : "mandatory Y parameter is missing.");
                 }
-                if (request["Y"] == null)
+                this.FeatureInfoY = ParseInt(yValue, "Y/J");
+                if (this.FeatureInfoY >= this.Height || this.FeatureInfoY < 0)
                 {
-                    return WriteError("mandatory Y parameter is missing.");
+                    return WriteError("invalid Y/J parameter, must be >= 0 and lower than HEIGHT parameter.", "InvalidPoint");
                 }
-                else
+                var featureCount = request["FEATURE_COUNT"] ?? request["FEATURECOUNT"];
+                if (featureCount != null)
                 {
-                    this.FeatureInfoY = Convert.ToInt32(request["Y"]);
-                    if (this.FeatureInfoY > this.Height || this.FeatureInfoY < 0)
-                    {
-                        return WriteError("invalid Y parameter, must be greater than 0 and lower than HEIGHT parameter.");
-                    }
-                }
-                if (request["FEATURECOUNT"] != null)
-                {
-                    this.FeatureInfoMaxRows = Convert.ToInt32(request["FEATURECOUNT"]);
+                    this.FeatureInfoMaxRows = ParseInt(featureCount, "FEATURE_COUNT");
                     if (this.FeatureInfoMaxRows <= 0)
                     {
                         return WriteError("invalid FEATURECOUNT parameter, must be greater than 0.");
                     }
                 }
-                if (request["INFOFORMAT"] != null)
+                if (request["INFO_FORMAT"] == null && request["INFOFORMAT"] != null)
                 {
                     switch (request["INFOFORMAT"].ToLower())
                     {
@@ -572,6 +598,7 @@ public class WMSParameterDescriptor
                             break;
                         case "application/json":
                         case "application/geojeon":
+                        case "application/geo+json":
                             this.InfoFormat = WMSInfoFormat.geojson;
                             break;
                         default:
@@ -594,6 +621,10 @@ public class WMSParameterDescriptor
             }
 
             return (null, null);
+        }
+        catch (ArgumentException ex)
+        {
+            return WriteError(ex.Message, "InvalidParameterValue");
         }
         catch (Exception ex)
         {
@@ -659,7 +690,63 @@ public class WMSParameterDescriptor
     #region ErrorReport
     private (byte[] data, string contentType) WriteError(String msg)
     {
-        return WriteError(msg, null);
+        return WriteError(msg, msg != null && msg.StartsWith("mandatory ") ? "MissingParameterValue" : null);
+    }
+
+    private const int MaxImageDimension = 16384;
+
+    private static int ParseInt(string value, string name)
+    {
+        if (!int.TryParse(value?.Trim(), System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var i))
+        {
+            throw new ArgumentException($"Invalid {name} parameter: must be an integer.");
+        }
+        return i;
+    }
+
+    private static int ParsePositiveInt(string value, string name)
+    {
+        var i = ParseInt(value, name);
+        if (i <= 0 || i > MaxImageDimension)
+        {
+            throw new ArgumentException($"Invalid {name} parameter: must be between 1 and {MaxImageDimension}.");
+        }
+        return i;
+    }
+
+    // SLD urls are fetched server side: only public http(s) hosts (SSRF protection)
+    private static bool IsPublicHttpUrl(string url)
+    {
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) ||
+            (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
+        {
+            return false;
+        }
+        try
+        {
+            var addresses = System.Net.Dns.GetHostAddresses(uri.DnsSafeHost);
+            if (addresses.Length == 0) return false;
+            foreach (var a in addresses)
+            {
+                if (System.Net.IPAddress.IsLoopback(a)) return false;
+                if (a.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+                {
+                    var b = a.GetAddressBytes();
+                    if (b[0] == 10 || b[0] == 0 || b[0] >= 224 ||
+                        (b[0] == 172 && b[1] >= 16 && b[1] <= 31) ||
+                        (b[0] == 192 && b[1] == 168) ||
+                        (b[0] == 169 && b[1] == 254) ||
+                        (b[0] == 100 && b[1] >= 64 && b[1] <= 127)) return false;
+                }
+                else
+                {
+                    if (a.IsIPv6LinkLocal || a.IsIPv6SiteLocal || a.IsIPv6Multicast) return false;
+                    if ((a.GetAddressBytes()[0] & 0xFE) == 0xFC) return false; // fc00::/7
+                }
+            }
+            return true;
+        }
+        catch { return false; }
     }
 
     private (byte[] data, string contentType) WriteError(String msg, String code)
@@ -671,19 +758,13 @@ public class WMSParameterDescriptor
 
         if (this.Exceptions == WMSExceptionType.se_xml)
         {
-            string sMsg = @"<?xml version=""1.0"" encoding=""UTF-8"" standalone=""no"" ?>
-<!DOCTYPE ServiceExceptionReport SYSTEM
- ""http://www.digitalearth.gov/wmt/xml/exception_1_1_0.dtd"">
-<ServiceExceptionReport version=""1.1.0"">
-  <ServiceException>
-    message.
-  </ServiceException>     
-</ServiceExceptionReport>";
-            sMsg = sMsg.Replace("message.", msg);
-            if (code != null)
-            {
-                sMsg = sMsg.Replace("<ServiceException>", "<ServiceException code=\"" + code + "\">");
-            }
+            bool v13 = this.Version == "1.3.0";
+            string sMsg = v13
+                ? "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<ServiceExceptionReport version=\"1.3.0\" xmlns=\"http://www.opengis.net/ogc\">\n  <ServiceException{code}>{msg}</ServiceException>\n</ServiceExceptionReport>"
+                : "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\" ?>\n<!DOCTYPE ServiceExceptionReport SYSTEM \"http://schemas.opengis.net/wms/1.1.1/WMS_exception_1_1_1.dtd\">\n<ServiceExceptionReport version=\"1.1.1\">\n  <ServiceException{code}>{msg}</ServiceException>\n</ServiceExceptionReport>";
+            sMsg = sMsg
+                .Replace("{code}", code != null ? " code=\"" + System.Security.SecurityElement.Escape(code) + "\"" : "")
+                .Replace("{msg}", System.Security.SecurityElement.Escape(msg ?? ""));
 
             return (Encoding.UTF8.GetBytes(sMsg),
                 this.Version == "1.1.1" ? "application/vnd.ogc.se_xml" : "text/xml");
@@ -704,11 +785,12 @@ public class WMSParameterDescriptor
                     bm.MakeTransparent(this.BgColor);
                 }
 
-                var sz = canvas.MeasureText(msg, font);
-                var rect = new RectangleF(5f, 5f, sz.Width, sz.Height);
-
-                canvas.DrawText(msg, font, brush,
-                    new CanvasRectangleF(5f, 5f, sz.Width, sz.Height));
+                if (this.Exceptions != WMSExceptionType.se_blank)
+                {
+                    var sz = canvas.MeasureText(msg, font);
+                    canvas.DrawText(msg, font, brush,
+                        new CanvasRectangleF(5f, 5f, sz.Width, sz.Height));
+                }
 
                 var ms = new MemoryStream();
                 bm.Save(ms, SystemDrawingGetImageFormat());
@@ -844,6 +926,11 @@ public class WMSParameterDescriptor
         get { return _srs; }
         set { _srs = value; }
     }
+
+    /// <summary>
+    /// CRS:84 was requested: BBOX is always lon/lat (x,y), no WMS 1.3.0 axis swap
+    /// </summary>
+    public bool IsCrs84 { get; private set; }
 
     public int BBoxSRS
     {
