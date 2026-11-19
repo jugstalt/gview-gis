@@ -1,5 +1,6 @@
 #nullable enable
 
+using gView.Framework.Core.Extensions;
 using gView.Endpoints.Abstractions;
 using gView.Framework.Common;
 using gView.Framework.Core.Carto;
@@ -268,7 +269,11 @@ public class OgcApiBaseEndpoint : IApiEndpoint
 
         if (statusCode >= 500)
         {
-            logger.LogError(ex, "Handle OGC API Request: {message}", ex.Message);
+            // server errors (also OgcApiException 500 with database messages) are logged
+            // with an error id, the client gets the generic text with the id
+            string errorId = ExceptionExtensions.NewErrorId();
+            logger.LogError(ex, "Handle OGC API Request (error-id {errorId}): {message}", errorId, ex.Message);
+            message = ExceptionExtensions.InternalErrorMessage(errorId);
         }
         else
         {

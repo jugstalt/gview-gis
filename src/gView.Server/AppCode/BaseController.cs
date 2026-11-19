@@ -1,4 +1,7 @@
 ﻿using gView.Framework.Common;
+using gView.Framework.Core.Common;
+using gView.Framework.Core.Extensions;
+using gView.Framework.Core.MapServer;
 using gView.Server.Extensions;
 using gView.Server.Services.MapServer;
 using gView.Server.Services.Security;
@@ -42,6 +45,64 @@ namespace gView.Server.AppCode
 
         protected void RemoveAuthCookie()
             => AuthCookie.Remove(this.Response);
+
+        #endregion
+
+        #region Client Errors
+
+        private const string ErrorIdItemKey = "gview.error-id";
+
+        /// <summary>
+        /// Error id of this http request; links a generic error answer to the log entry.
+        /// </summary>
+        protected string RequestErrorId
+        {
+            get
+            {
+                if (HttpContext?.Items[ErrorIdItemKey] is string errorId)
+                {
+                    return errorId;
+                }
+
+                errorId = ExceptionExtensions.NewErrorId();
+                if (HttpContext != null)
+                {
+                    HttpContext.Items[ErrorIdItemKey] = errorId;
+                }
+                return errorId;
+            }
+        }
+
+        /// <summary>
+        /// The message for the client (MapServerException text or the generic text with the error id).
+        /// Other exceptions are written to the service error log with the error id.
+        /// </summary>
+        protected string ToClientMessage(Exception exception, ServiceRequest serviceRequest = null)
+        {
+            string errorId = serviceRequest?.ErrorId ?? RequestErrorId;
+
+            if (!exception.IsClientMessage)
+            {
+                try
+                {
+                    string mapName = serviceRequest is null
+                        ? String.Empty
+                        : String.IsNullOrEmpty(serviceRequest.Folder)
+                            ? serviceRequest.Service
+                            : $"{serviceRequest.Folder}/{serviceRequest.Service}";
+
+                    // fire and forget: the event logger never throws
+                    _ = _mapServerService.Instance?.LogAsync(
+                        mapName,
+                        $"{ControllerContext?.ActionDescriptor?.ControllerName}.{ControllerContext?.ActionDescriptor?.ActionName}",
+                        loggingMethod.error,
+                        exception.ToLogMessage(errorId));
+                }
+                catch { }
+            }
+
+            return exception.ToClientMessage(errorId);
+        }
 
         #endregion
 

@@ -242,6 +242,30 @@ gView Server hardening for internet-facing installations, see
 - Docker images (`gview-server-base`, `gview-server`, `gview-webapps`) run as the non-root user
   `app` (UID 1654); `/app/_config`, `/etc/gview` and `/etc/gview-repository` belong to this user. ⚠ Mounted volumes must
   be writable for UID 1654. The outdated .NET 6 `src/gView.Server/Dockerfile` was removed.
+- Error messages: the services no longer pass internals (exception texts with paths, connection
+  data, SQL, database messages, stack traces) to clients. `MapServerException` texts (written for
+  clients, incl. auth and SQL check errors) are still returned; every other error is answered with
+  `internal server error (id: xxxxxxxx)` and the full exception is logged with the same id
+  (`ExceptionExtensions`, `ServiceRequest.ErrorId`). ⚠ Clients that showed the error texts now
+  show the generic text.
+  - GeoServices: no stack trace for `NullReferenceException`, unknown errors are code 500 (was
+    999 "unknown error" or 400 without logging), `layerDefs` parser details are no longer
+    returned, FeatureServer `applyEdits`/`addFeatures`/... report database errors with the id
+    only, `generateToken` errors stay readable.
+  - Map images: render exceptions were drawn into the image with message and stack trace; the
+    server now draws the generic text and logs the exceptions (`ServiceMap`), Carto still shows
+    the details.
+  - ArcXML (`<ERROR>` with stack trace), WMS/WMTS/OGC controller, WMTS and tile service tiles
+    (error text in the tile), vector tiles, MapServer and VTC controllers, `MapServerInstance`,
+    token login page, OGC API (also `OgcApiException` 500 with database messages) and GeoJson
+    service (now with id and stack trace in the log).
+  - ArcXML and MapServer `<ERROR>` texts are XML escaped.
+- Build: new nuke target `Audit` (runs before `Compile`): all projects of server, webapps and
+  cmd (read from `project.assets.json`) are checked with
+  `dotnet list package --vulnerable --include-transitive`; vulnerable packages from
+  `--audit-fail-level` (default `high`) on fail the build, lower ones are warnings, native
+  packages (SkiaSharp, HarfBuzzSharp, SQL client SNI) are listed with their versions. Hotfix
+  despite a new advisory: `--skip Audit`.
 
 ## 9.26.4301
 

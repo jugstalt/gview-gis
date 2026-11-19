@@ -1,4 +1,5 @@
-﻿using gView.Framework.Core.Exceptions;
+﻿using gView.Framework.Core.Extensions;
+using gView.Framework.Core.Exceptions;
 using gView.GeoJsonService.DTOs;
 using gView.Server.Services.Security;
 using Microsoft.AspNetCore.Builder;
@@ -83,12 +84,13 @@ public class GetToken : BaseApiEndpoint
         }
         catch (Exception ex)
         {
-            logger.LogError("Handle Token Request {clientId}: {message}", clientId, ex.Message);
+            string errorId = ExceptionExtensions.NewErrorId();
+            logger.LogError(ex, "Handle Token Request {clientId} (error-id {errorId}): {message}", clientId, errorId, ex.Message);
 
             return new ErrorResponse()
             {
                 ErrorCode = 500,
-                ErrorMessage = "internal server error"
+                ErrorMessage = ExceptionExtensions.InternalErrorMessage(errorId)
             };
         }
     }

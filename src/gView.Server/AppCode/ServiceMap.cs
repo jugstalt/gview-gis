@@ -2,6 +2,7 @@
 using gView.Framework.Cartography.LayerRenderers;
 using gView.Framework.Core.Carto;
 using gView.Framework.Core.Data;
+using gView.Framework.Core.Extensions;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Core.IO;
 using gView.Framework.Core.MapServer;
@@ -718,6 +719,7 @@ namespace gView.Server.AppCode
                     }
                 }
 
+                await LogRequestExceptions();
                 base.AppendRequestExceptionsToImage();
 
                 if (_canvas != null)
@@ -804,6 +806,29 @@ namespace gView.Server.AppCode
         async public Task<bool> Render()
         {
             return await RefreshMap(DrawPhase.All, null);
+        }
+
+        /// <summary>
+        /// Render exceptions may contain connection strings, paths and SQL:
+        /// the full exceptions go to the service error log with the error id of the request,
+        /// the map image only shows the generic text with the id.
+        /// </summary>
+        override protected string RequestExceptionsImageText(IEnumerable<Exception> exceptions)
+            => ExceptionExtensions.InternalErrorMessage(ErrorId);
+
+        private string ErrorId => (_request ?? _requestContext?.ServiceRequest)?.ErrorId;
+
+        async private Task LogRequestExceptions()
+        {
+            if (!this.HasRequestExceptions || _mapServer == null)
+            {
+                return;
+            }
+
+            foreach (var ex in this.RequestExceptions)
+            {
+                await _mapServer.LogAsync(this.Name, "RenderMap", loggingMethod.error, ex.ToLogMessage(ErrorId));
+            }
         }
 
         public void SetRequestContext(IServiceRequestContext context)

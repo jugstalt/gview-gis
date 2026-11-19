@@ -109,7 +109,7 @@ namespace gView.Server.Controllers
                 }
                 else
                 {
-                    throw new Exception("Unknown format");
+                    throw new MapServerException("Unknown format");
                 }
             }
             catch (NotAuthorizedException)
@@ -120,7 +120,7 @@ namespace gView.Server.Controllers
             {
                 if ("xml".Equals(format, StringComparison.InvariantCultureIgnoreCase))
                 {
-                    return WriteError(ex.Message);
+                    return WriteError(ToClientMessage(ex));
                 }
             }
 
@@ -316,7 +316,7 @@ namespace gView.Server.Controllers
 
         private IActionResult WriteError(string message)
         {
-            return Result("<ERROR>" + message + "</ERROR>", "text/xml");
+            return Result("<ERROR>" + System.Security.SecurityElement.Escape(message) + "</ERROR>", "text/xml");
         }
 
         async private Task<string> GetBody()

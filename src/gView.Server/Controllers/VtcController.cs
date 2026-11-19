@@ -103,7 +103,7 @@ public class VtcController : BaseController
         }
         catch (Exception ex)
         {
-            return BadRequest(ex.Message);
+            return BadRequest(ToClientMessage(ex));
         }
     }
 
@@ -165,7 +165,7 @@ public class VtcController : BaseController
         }
         catch (Exception ex)
         {
-            return BadRequest(ex.Message);
+            return BadRequest(ToClientMessage(ex));
         }
     }
 }

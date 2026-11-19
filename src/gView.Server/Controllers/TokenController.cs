@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using gView.Framework.Core.Exceptions;
 using System;
 using System.Threading.Tasks;
 
@@ -58,7 +59,7 @@ public class TokenController : BaseController
 
             if (authToken == null)
             {
-                throw new Exception("Unknown user or password");
+                throw new MapServerException("Unknown user or password");
             }
 
             base.SetAuthCookie(authToken);
@@ -67,7 +68,7 @@ public class TokenController : BaseController
         }
         catch (Exception ex)
         {
-            model.ErrorMessage = ex.Message;
+            model.ErrorMessage = ToClientMessage(ex);
             return View(model);
         }
     }

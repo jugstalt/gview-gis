@@ -1,4 +1,5 @@
-﻿using gView.Framework.Cartography;
+﻿using gView.Framework.Core.Extensions;
+using gView.Framework.Cartography;
 using gView.Framework.Common;
 using gView.Framework.Common.Extensions;
 using gView.Framework.Core.Carto;
@@ -109,8 +110,9 @@ public class MapServerInstance : IMapServer
         }
         catch (Exception ex)
         {
-            await LogAsync(ToMapName(name, folder), "MapServer.Map", loggingMethod.error, ex.Message + "\n" + ex.StackTrace);
-            throw new MapServerException("unknown error");
+            string errorId = context?.ServiceRequest?.ErrorId ?? ExceptionExtensions.NewErrorId();
+            await LogAsync(ToMapName(name, folder), "MapServer.Map", loggingMethod.error, ex.ToLogMessage(errorId));
+            throw new MapServerException(ExceptionExtensions.InternalErrorMessage(errorId));
         }
     }
 
@@ -142,9 +144,10 @@ public class MapServerInstance : IMapServer
         }
         catch (Exception ex)
         {
-            await LogAsync(String.Empty, "MapServer.Map", loggingMethod.error, ex.Message + "\n" + ex.StackTrace);
+            string errorId = ExceptionExtensions.NewErrorId();
+            await LogAsync(String.Empty, "MapServer.Map", loggingMethod.error, ex.ToLogMessage(errorId));
             //return new List<IMapService>();
-            throw new MapServerException("unknown error");
+            throw new MapServerException(ExceptionExtensions.InternalErrorMessage(errorId));
         }
     }
 
@@ -184,8 +187,9 @@ public class MapServerInstance : IMapServer
         }
         catch (Exception ex)
         {
-            await LogAsync(ToMapName(context?.ServiceRequest?.Service, context?.ServiceRequest?.Folder), "MapServer.Map", loggingMethod.error, ex.Message + "\n" + ex.StackTrace);
-            throw new MapServerException("unknown error");
+            string errorId = context?.ServiceRequest?.ErrorId ?? ExceptionExtensions.NewErrorId();
+            await LogAsync(ToMapName(context?.ServiceRequest?.Service, context?.ServiceRequest?.Folder), "MapServer.Map", loggingMethod.error, ex.ToLogMessage(errorId));
+            throw new MapServerException(ExceptionExtensions.InternalErrorMessage(errorId));
         }
     }
 

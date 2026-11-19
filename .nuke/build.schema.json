@@ -24,6 +24,7 @@
     "ExecutableTarget": {
       "type": "string",
       "enum": [
+        "Audit",
         "CleanArtifacts",
         "Compile",
         "Deploy",
@@ -104,6 +105,10 @@
   "allOf": [
     {
       "properties": {
+        "AuditFailLevel": {
+          "type": "string",
+          "description": "Audit: vulnerable packages with this severity or higher fail the build - low, moderate, high (default), critical"
+        },
         "Configuration": {
           "type": "string",
           "description": "Configuration to build - Default is 'Release'"

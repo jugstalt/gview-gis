@@ -61,6 +61,16 @@ namespace gView.Framework.Core.MapServer
         public bool Succeeded = true;
         public string Method = "";
 
+        private string _errorId = null;
+        /// <summary>
+        /// Links a generic error answer to the log entry (see ExceptionExtensions)
+        /// </summary>
+        public string ErrorId
+        {
+            get => _errorId ??= gView.Framework.Core.Extensions.ExceptionExtensions.NewErrorId();
+            set => _errorId = value;
+        }
+
         public ServiceRequest(string service, string folder, string request)
         {
             Service = service;

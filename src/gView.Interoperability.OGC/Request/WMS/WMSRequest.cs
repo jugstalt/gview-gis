@@ -1050,33 +1050,27 @@ namespace gView.Interoperability.OGC
         //    return sb.ToString();
         //}
 
+        // errors are handled (logged, generic client text) by the caller
         private string TransformXML(string xml, string xslPath)
         {
-            try
-            {
-                XslCompiledTransform transformer = new XslCompiledTransform();
-                transformer.Load(xslPath);
+            XslCompiledTransform transformer = new XslCompiledTransform();
+            transformer.Load(xslPath);
 
-                StringReader xmlStream = new StringReader(xml);
-                XPathDocument xpathdoc = new XPathDocument(xmlStream);
+            StringReader xmlStream = new StringReader(xml);
+            XPathDocument xpathdoc = new XPathDocument(xmlStream);
 
-                MemoryStream ms = new MemoryStream();
-                XmlTextWriter xWriter = new XmlTextWriter(ms, System.Text.Encoding.UTF8);
-                transformer.Transform(xpathdoc, xWriter);
+            MemoryStream ms = new MemoryStream();
+            XmlTextWriter xWriter = new XmlTextWriter(ms, System.Text.Encoding.UTF8);
+            transformer.Transform(xpathdoc, xWriter);
 
-                ms.Position = 0;
-                StreamReader sr = new StreamReader(ms);
-                string ret = sr.ReadToEnd();
-                sr.Close();
-                ms.Close();
-                xWriter.Close();
+            ms.Position = 0;
+            StreamReader sr = new StreamReader(ms);
+            string ret = sr.ReadToEnd();
+            sr.Close();
+            ms.Close();
+            xWriter.Close();
 
-                return ret;
-            }
-            catch (Exception ex)
-            {
-                return ex.Message;
-            }
+            return ret;
         }
 
         private IEnvelope GetEPSG4326Envelope(IServiceMap map)
@@ -1268,7 +1262,10 @@ namespace gView.Interoperability.OGC
                     }
                     catch (Exception ex)
                     {
-                        output = "Exception: " + ex.Message;
+                        // xsl errors may contain paths: logged with an error id, generic text for the client
+                        string errorId = ExceptionExtensions.NewErrorId();
+                        _ = _mapServer.LogAsync(String.Empty, "WMS GetFeatureInfo (xsl)", loggingMethod.error, ex.ToLogMessage(errorId));
+                        output = "Exception: " + ex.ToClientMessage(errorId);
                     }
 
                     sb.Append(output);

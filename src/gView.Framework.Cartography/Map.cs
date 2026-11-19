@@ -1782,6 +1782,25 @@ namespace gView.Framework.Cartography
             }
         }
 
+        /// <summary>
+        /// The text drawn into the map image for render exceptions. Desktop/Carto shows the
+        /// messages and stack traces; the map server overrides this with a generic text.
+        /// </summary>
+        virtual protected string RequestExceptionsImageText(IEnumerable<Exception> exceptions)
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach (Exception ex in exceptions)
+            {
+                if (sb.Length > 0) sb.Append("\r\n");
+                sb.Append($"Exception: {ex.Message}");
+                if (!String.IsNullOrEmpty(ex.StackTrace))
+                {
+                    sb.Append($"\r\n{ex.StackTrace}");
+                }
+            }
+            return sb.ToString();
+        }
+
         public void AppendRequestExceptionsToImage()
         {
             if (_requestExceptions == null || Display.Canvas == null)
@@ -1791,16 +1810,7 @@ namespace gView.Framework.Cartography
 
             lock (exceptionLocker)
             {
-                StringBuilder sb = new StringBuilder();
-                foreach (Exception ex in _requestExceptions)
-                {
-                    if (sb.Length > 0) sb.Append("\r\n");
-                    sb.Append($"Exception: {ex.Message}");
-                    if (!String.IsNullOrEmpty(ex.StackTrace))
-                    {
-                        sb.Append($"\r\n{ex.StackTrace}");
-                    }
-                }
+                StringBuilder sb = new StringBuilder(RequestExceptionsImageText(_requestExceptions));
 
                 using (var font = GraphicsEngine.Current.Engine.CreateFont("Arial", 12))
                 using (var backgroundBrush = GraphicsEngine.Current.Engine.CreateSolidBrush(GraphicsEngine.ArgbColor.LightGray))

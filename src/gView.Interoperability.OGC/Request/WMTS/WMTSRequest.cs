@@ -1,4 +1,5 @@
-﻿using gView.Framework.Cartography;
+﻿using gView.Framework.Core.Extensions;
+using gView.Framework.Cartography;
 using gView.Framework.Core.Carto;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Core.MapServer;
@@ -394,6 +395,9 @@ namespace gView.Interoperability.OGC.Request.WMTS
             }
             catch (Exception ex)
             {
+                // no internals in the tile: generic text with the error id, details in the log
+                string errorText = await context.LogServiceException(ex, "WMTS");
+
                 using (var serviceMap = await context.CreateServiceMapInstance())
                 {
                     TileServiceMetadata metadata = serviceMap.MetadataProvider(_metaprovider) as TileServiceMetadata;
@@ -402,7 +406,7 @@ namespace gView.Interoperability.OGC.Request.WMTS
                     using (var font = Current.Engine.CreateFont("Arial", 9f))
                     using (var redBrush = Current.Engine.CreateSolidBrush(ArgbColor.Red))
                     {
-                        canvas.DrawText(ex.Message, font, redBrush, new CanvasRectangleF(0f, 0f, bitmap.Width, bitmap.Height));
+                        canvas.DrawText(errorText, font, redBrush, new CanvasRectangleF(0f, 0f, bitmap.Width, bitmap.Height));
                         canvas.Flush();
 
                         MemoryStream ms = new MemoryStream();

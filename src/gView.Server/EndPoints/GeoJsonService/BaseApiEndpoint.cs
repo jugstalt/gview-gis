@@ -1,5 +1,6 @@
 ﻿#nullable enable
 
+using gView.Framework.Core.Extensions;
 using gView.Endpoints.Abstractions;
 using gView.Framework.Common;
 using gView.Framework.Core.Exceptions;
@@ -141,13 +142,14 @@ public class BaseApiEndpoint : IApiEndpoint
         }
         catch (Exception ex)
         {
-            logger.LogError("Handle GeoJson Service Request: {message}", ex.Message);
+            string errorId = ExceptionExtensions.NewErrorId();
+            logger.LogError(ex, "Handle GeoJson Service Request (error-id {errorId}): {message}", errorId, ex.Message);
 
             statusCode = 500;
             result = new ErrorResponse()
             {
                 ErrorCode = statusCode.Value,
-                ErrorMessage = "internal server error"
+                ErrorMessage = ExceptionExtensions.InternalErrorMessage(errorId)
             };
         }
 
@@ -224,13 +226,14 @@ public class BaseApiEndpoint : IApiEndpoint
         }
         catch (Exception ex)
         {
-            logger.LogError("Handle GeoJson Service Request: {message}", ex.Message);
+            string errorId = ExceptionExtensions.NewErrorId();
+            logger.LogError(ex, "Handle GeoJson Service Request (error-id {errorId}): {message}", errorId, ex.Message);
 
             statusCode = 500;
             result = new ErrorResponse()
             {
                 ErrorCode = statusCode.Value,
-                ErrorMessage = "internal server error"
+                ErrorMessage = ExceptionExtensions.InternalErrorMessage(errorId)
             };
         }
 
@@ -270,13 +273,14 @@ public class BaseApiEndpoint : IApiEndpoint
         }
         catch (Exception ex)
         {
-            logger.LogError("Handle GeoJson Service Request: {message}", ex.Message);
+            string errorId = ExceptionExtensions.NewErrorId();
+            logger.LogError(ex, "Handle GeoJson Service Request (error-id {errorId}): {message}", errorId, ex.Message);
 
             statusCode = 500;
             result = new ErrorResponse()
             {
                 ErrorCode = statusCode.Value,
-                ErrorMessage = "internal server error"
+                ErrorMessage = ExceptionExtensions.InternalErrorMessage(errorId)
             };
         }
 

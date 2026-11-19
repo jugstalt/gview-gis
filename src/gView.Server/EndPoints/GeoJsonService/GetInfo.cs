@@ -1,4 +1,5 @@
-﻿using gView.GeoJsonService;
+﻿using gView.Framework.Core.Extensions;
+using gView.GeoJsonService;
 using gView.GeoJsonService.DTOs;
 using gView.Server.Services.MapServer;
 using Microsoft.AspNetCore.Http;
@@ -55,12 +56,13 @@ public class GetInfo : BaseApiEndpoint
             } 
             catch(Exception ex )
             {
-                logger.LogError("Handle Get Info {message}", ex.Message);
+                string errorId = ExceptionExtensions.NewErrorId();
+                logger.LogError(ex, "Handle Get Info (error-id {errorId}): {message}", errorId, ex.Message);
 
                 return Results.Json( new ErrorResponse()
                 {
                     ErrorCode = 500,
-                    ErrorMessage = "internal server error"
+                    ErrorMessage = ExceptionExtensions.InternalErrorMessage(errorId)
                 }, GeoJsonSerializer.JsonSerializerOptions, statusCode: 500);
             }
         };

@@ -1,5 +1,5 @@
 ﻿using gView.Framework.Common.Json;
-using gView.Framework.Core.Exceptions;
+using gView.Framework.Core.Extensions;
 using gView.Framework.Core.MapServer;
 using gView.Interoperability.GeoServices.Exceptions;
 using gView.Interoperability.GeoServices.Rest.DTOs;
@@ -15,46 +15,22 @@ static internal class ServiceRequestContextExtensions
     {
         async public Task HandleMapServerException(Exception exception)
         {
-            // ToDo: Log Exception
-
-            await context.MapServer.LogAsync(
-                context,
-                context.ServiceRequest.Method,
-                Framework.Core.Common.loggingMethod.error,
-                exception is NullReferenceException
-                            ? $"{exception.Message}\n{exception.StackTrace}"
-                            : exception.Message
-                );
+            var (code, message) = await context.ToGeoServicesError(exception);
 
             context.ServiceRequest.Succeeded = false;
             context.ServiceRequest.Response = new JsonErrorDTO()
             {
                 Error = new JsonErrorDTO.ErrorDef()
                 {
-                    Code = exception is GeoServicesException
-                        ? ((GeoServicesException)exception).ErrorCode
-                        : 400,
-                    Message = exception is MapServerException
-                        ? exception.Message
-                        : exception is NullReferenceException
-                            ? $"{exception.Message}\n{exception.StackTrace}"
-                            : "Bad Request"
+                    Code = code,
+                    Message = message
                 }
             };
         }
 
         async public Task HandleFeatureServerException(Exception exception)
         {
-            // ToDo: Log Exception
-
-            await context.MapServer.LogAsync(
-                context,
-                context.ServiceRequest.Method,
-                Framework.Core.Common.loggingMethod.error,
-                exception is NullReferenceException
-                            ? $"{exception.Message}\n{exception.StackTrace}"
-                            : exception.Message
-                );
+            var (code, message) = await context.ToGeoServicesError(exception);
 
             context.ServiceRequest.Succeeded = false;
             context.ServiceRequest.Response = JSerializer.Serialize(new JsonFeatureServerResponseDTO()
@@ -66,18 +42,32 @@ static internal class ServiceRequestContextExtensions
                         Success=false,
                         Error=new JsonFeatureServerResponseDTO.JsonError()
                         {
-                            Code = exception is GeoServicesException
-                                ? ((GeoServicesException)exception).ErrorCode
-                                : 400,
-                            Description = exception is MapServerException
-                                ? exception.Message
-                                : exception is NullReferenceException
-                                    ? $"{exception.Message}\n{exception.StackTrace}"
-                                    : "Bad Request"
+                            Code = code,
+                            Description = message
                         }
                     }
                 }
             });
+        }
+
+        /// <summary>
+        /// Error code and client message for an exception. GeoServicesException and
+        /// MapServerException texts are meant for clients (400 or their own code); every
+        /// other exception is logged with the error id and answered with 500 and a generic text.
+        /// </summary>
+        async public Task<(int code, string message)> ToGeoServicesError(Exception exception)
+        {
+            if (exception is GeoServicesException gse)
+            {
+                if (context.MapServer is not null)
+                {
+                    await context.MapServer.LogAsync(context, context.ServiceRequest.Method, Framework.Core.Common.loggingMethod.error, gse.Message);
+                }
+                return (gse.ErrorCode, gse.Message);
+            }
+
+            string message = await context.LogServiceException(exception, context.ServiceRequest.Method);
+            return (exception.IsClientMessage ? 400 : 500, message);
         }
     }
 }

@@ -14,7 +14,9 @@ using Serilog;
 
 // Deploy build for gView GIS
 //
-//   .\build.cmd                    => Test, Compile, CleanArtifacts, Zip, Docker
+//   .\build.cmd                    => Test, Audit, Compile, CleanArtifacts, Zip, Docker
+//   .\build.cmd Audit              => only check the NuGet packages for known vulnerabilities
+//   .\build.cmd --skip Audit       => hotfix despite a (new) vulnerability advisory
 //   .\build.cmd Zip                => only the ZIP files (no docker)
 //   .\build.cmd Deploy --skip Test
 //   .\build.cmd Zip --edition portable
@@ -44,6 +46,9 @@ class Build : NukeBuild
 
     [Parameter("Deploy root - Default is c:\\deploy\\gview-gis")]
     readonly AbsolutePath DeployRoot = (AbsolutePath)@"c:\deploy\gview-gis";
+
+    [Parameter("Audit: vulnerable packages with this severity or higher fail the build - low, moderate, high (default), critical")]
+    readonly string AuditFailLevel = "high";
 
     [Parameter("Docker exe file name")]
     readonly string DockerExe = "docker";
@@ -101,8 +106,102 @@ class Build : NukeBuild
             }
         });
 
+    // NuGet packages with known vulnerabilities (NuGet advisory database) in the server, webapps
+    // and cmd projects and all projects they reference. Fails from AuditFailLevel on, lower
+    // severities are warnings. Hotfix with a fresh advisory: --skip Audit
+    Target Audit => _ => _
+        .Before(Compile)
+        .Executes(() =>
+        {
+            Assert.True(PackageAudit.IsKnownSeverity(AuditFailLevel), $"Unknown audit fail level '{AuditFailLevel}'");
+
+            var apps = DeployApps.Append(Cmd).Select(app => RootDirectory / app.Project).ToArray();
+
+            foreach (var app in apps)
+            {
+                DotNetTasks.DotNetRestore(s => s
+                    .SetProjectFile(app)
+                    .SetProperty("SkiaVariant", "Skia3")
+                    .SetVerbosity(DotNetVerbosity.quiet));
+            }
+
+            var projects = apps
+                .SelectMany(app => PackageAudit.ProjectClosure(app))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(p => p, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+
+            // one solution file for one "dotnet list" call
+            var auditDirectory = ArtifactsDirectory / "audit";
+            auditDirectory.CreateDirectory();
+            var solution = auditDirectory / "audit.slnx";
+            solution.WriteAllText(
+                "<Solution>\n" +
+                String.Concat(projects.Select(p => $"  <Project Path=\"{Path.GetRelativePath(auditDirectory, p).Replace('\\', '/')}\" />\n")) +
+                "</Solution>\n");
+
+            Log.Information("Audit {Count} projects", projects.Length);
+
+            var vulnerabilities = PackageAudit.Vulnerabilities(DotNetList(solution, "--vulnerable"))
+                .OrderByDescending(v => PackageAudit.SeverityRank(v.Severity))
+                .ThenBy(v => v.Package)
+                .ToArray();
+
+            int failRank = PackageAudit.SeverityRank(AuditFailLevel);
+            foreach (var group in vulnerabilities.GroupBy(v => (v.Package, v.Version, v.Severity, v.AdvisoryUrl)))
+            {
+                var message = "{Severity} {Package} {Version}: {Url} ({Projects})";
+                var args = new object[]
+                {
+                    group.Key.Severity, group.Key.Package, group.Key.Version, group.Key.AdvisoryUrl,
+                    String.Join(", ", group.Select(v => v.Transitive ? $"{v.Project} (transitive)" : v.Project).Distinct())
+                };
+
+                if (PackageAudit.SeverityRank(group.Key.Severity) >= failRank)
+                {
+                    Log.Error(message, args);
+                }
+                else
+                {
+                    Log.Warning(message, args);
+                }
+            }
+
+            // native libraries: versions only, check them manually (eg. SkiaSharp/libSkiaSharp)
+            var nativePackages = apps
+                .SelectMany(app => PackageAudit.AllPackages(DotNetList(app, "")))
+                .Where(p => PackageAudit.IsNativePackage(p.Id))
+                .Select(p => (p.Id, p.Version))
+                .Distinct()
+                .OrderBy(p => p.Id);
+            foreach (var (id, version) in nativePackages)
+            {
+                Log.Information("Native package {Id} {Version}", id, version);
+            }
+
+            int failing = vulnerabilities.Count(v => PackageAudit.SeverityRank(v.Severity) >= failRank);
+            Assert.True(failing == 0,
+                $"{failing} vulnerable package reference(s) with severity {AuditFailLevel} or higher (update the packages or run with --skip Audit)");
+
+            if (vulnerabilities.Length == 0)
+            {
+                Log.Information("No vulnerable packages");
+            }
+        });
+
+    string DotNetList(AbsolutePath projectOrSolution, string arguments)
+    {
+        var process = ProcessTasks.StartProcess(DotNetTasks.DotNetPath,
+            $"list \"{projectOrSolution}\" package {arguments} --include-transitive --format json",
+            workingDirectory: RootDirectory,
+            logOutput: false);
+        process.AssertZeroExitCode();
+
+        return String.Join("\n", process.Output.Where(o => o.Type == OutputType.Std).Select(o => o.Text));
+    }
+
     Target Compile => _ => _
-        .DependsOn(Test)
+        .DependsOn(Test, Audit)
         .Executes(() =>
         {
             foreach (var platform in Platform)

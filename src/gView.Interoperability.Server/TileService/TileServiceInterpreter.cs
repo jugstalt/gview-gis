@@ -1,4 +1,5 @@
-﻿using gView.Framework.Cartography;
+﻿using gView.Framework.Core.Extensions;
+using gView.Framework.Cartography;
 using gView.Framework.Cartography.VectorTiles;
 using gView.Framework.Common;
 using gView.Framework.Core.Carto;
@@ -245,7 +246,7 @@ public class TileServiceInterpreter : IServiceRequestInterpreter
         {
             if (context != null && context.ServiceRequest != null)
             {
-                context.ServiceRequest.Response = "<Exception>" + ex.Message + "</Exception>";
+                context.ServiceRequest.Response = "<Exception>" + System.Security.SecurityElement.Escape(await context.LogServiceException(ex, "TileService")) + "</Exception>";
             }
         }
     }
@@ -717,13 +718,17 @@ public class TileServiceInterpreter : IServiceRequestInterpreter
         }
         catch (Exception ex)
         {
+            // no internals in the tile: generic text with the error id, details in the log
+            string errorText = ex.ToClientMessage(context.ServiceRequest.ErrorId);
+            _ = context.LogServiceException(ex, "TileService");
+
             TileServiceMetadata metadata = serviceMap.MetadataProvider(_metaprovider) as TileServiceMetadata;
             using (var bitmap = Current.Engine.CreateBitmap(metadata.TileWidth, metadata.TileHeight))
             using (var canvas = bitmap.CreateCanvas())
             using (var font = Current.Engine.CreateFont("Arial", 9f))
             using (var redBrush = Current.Engine.CreateSolidBrush(ArgbColor.Red))
             {
-                canvas.DrawText(ex.Message, font, redBrush, new CanvasRectangleF(0f, 0f, bitmap.Width, bitmap.Height));
+                canvas.DrawText(errorText, font, redBrush, new CanvasRectangleF(0f, 0f, bitmap.Width, bitmap.Height));
                 canvas.Flush();
 
                 MemoryStream ms = new MemoryStream();

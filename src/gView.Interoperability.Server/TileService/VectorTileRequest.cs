@@ -1,3 +1,4 @@
+using gView.Framework.Core.Extensions;
 using gView.Framework.Cartography.VectorTiles;
 using gView.Framework.Cartography.VectorTiles.Extensions;
 using gView.Framework.Common;
@@ -55,9 +56,10 @@ public class VectorTileRequest : IServiceRequestInterpreter
         {
             // the task queue swallows exceptions: report them as response (the controller answers 400 with it) and log them
             context.ServiceRequest.ResponseContentType = "text/plain";
-            context.ServiceRequest.Response = $"{ex.GetType().Name}: {ex.Message}";
+            string errorId = context.ServiceRequest.ErrorId;
+            context.ServiceRequest.Response = ex.ToClientMessage(errorId);
             await _mapServer.LogAsync(context, "VectorTiles", loggingMethod.error,
-                $"{context.ServiceRequest.Request}: {ex}");
+                $"{context.ServiceRequest.Request}: {ex.ToLogMessage(errorId)}");
         }
     }
 

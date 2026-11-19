@@ -8,6 +8,7 @@ using gView.Server.Extensions;
 using gView.Server.Services.MapServer;
 using gView.Server.Services.Security;
 using Microsoft.AspNetCore.Mvc;
+using gView.Framework.Core.Exceptions;
 using System;
 using System.IO;
 using System.Text;
@@ -59,7 +60,7 @@ namespace gView.Server.Controllers
                         interpreter = _mapServiceMananger.GetInterpreter(typeof(WMTSRequest));
                         break;
                     default:
-                        throw new Exception("Missing or unknow service: " + service);
+                        throw new MapServerException("Missing or unknow service: " + service);
                 }
 
                 #region Request
@@ -109,7 +110,7 @@ namespace gView.Server.Controllers
             catch (Exception ex)
             {
                 // ToDo: OgcXmlExcpetion
-                return Result(ex.Message, "text/plain");
+                return Result(ToClientMessage(ex), "text/plain");
             }
         }
 

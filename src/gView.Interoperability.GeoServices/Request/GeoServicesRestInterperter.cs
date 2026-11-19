@@ -8,6 +8,7 @@ using gView.Framework.Core.Data.Cursors;
 using gView.Framework.Core.Data.Filters;
 using gView.Framework.Core.Data.Statistics;
 using gView.Framework.Core.Exceptions;
+using gView.Framework.Core.Extensions;
 using gView.Framework.Core.FDB;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Core.MapServer;
@@ -273,7 +274,10 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
                                 {
                                     Code = 999,
                                     Message = "MapExport exeption occured",
-                                    Details = ((IMap)serviceMap).RequestExceptions.Select(ex => ex.Message)
+                                    // render exceptions are logged by the ServiceMap
+                                    Details = ((IMap)serviceMap).RequestExceptions
+                                        .Select(ex => ex.ToClientMessage(context.ServiceRequest.ErrorId))
+                                        .Distinct()
                                 } : null
                         };
                     }
@@ -371,9 +375,14 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
                     }
                 }
             }
-            catch (Exception ex)
+            catch (MapServerException mse)
             {
-                throw new MapServerException($"Can't parse layer definitions: {ex.Message}");
+                throw new MapServerException($"Can't parse layer definitions: {mse.Message}");
+            }
+            catch (Exception)
+            {
+                // parser internals are not passed to the client
+                throw new MapServerException("Can't parse layer definitions");
             }
 
             #endregion
@@ -1107,9 +1116,14 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
                             }
                         }
                     }
-                    catch (Exception ex)
+                    catch (MapServerException mse)
                     {
-                        throw new MapServerException($"Can't parse layer definitions: {ex.Message}");
+                        throw new MapServerException($"Can't parse layer definitions: {mse.Message}");
+                    }
+                    catch (Exception)
+                    {
+                        // parser internals are not passed to the client
+                        throw new MapServerException("Can't parse layer definitions");
                     }
 
                     #endregion
@@ -1537,6 +1551,7 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
                 var database = FeatureEditService.FindFeatureClass(serviceMap, editRequest.LayerId, _useTOC)?.Dataset?.Database as IFeatureUpdater;
 
                 var results = await ApplyEditsBatch(
+                    context,
                     serviceMap,
                     database,
                     new (int, JsonFeatureDTO[], JsonFeatureDTO[], IReadOnlyList<int>)[]
@@ -1562,6 +1577,7 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
     /// the whole batch back). Otherwise each layer falls back to the per-phase path.
     /// </summary>
     async private Task<List<(int layerId, JsonFeatureServerResponseDTO response)>> ApplyEditsBatch(
+        IServiceRequestContext context,
         IServiceMap serviceMap,
         IFeatureUpdater database,
         IReadOnlyList<(int layerId, JsonFeatureDTO[] adds, JsonFeatureDTO[] updates, IReadOnlyList<int> deletes)> layerEdits,
@@ -1580,7 +1596,7 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
             foreach (var le in layerEdits)
             {
                 results.Add((le.layerId, await ApplyEditsToLayer(
-                    serviceMap, le.layerId, le.adds, le.updates, le.deletes, rollbackOnFailure)));
+                    context, serviceMap, le.layerId, le.adds, le.updates, le.deletes, rollbackOnFailure)));
             }
 
             return results;
@@ -1591,12 +1607,12 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
             foreach (var le in layerEdits)
             {
                 results.Add((le.layerId, await ApplyEditsToLayer(
-                    serviceMap, le.layerId, le.adds, le.updates, le.deletes, rollbackOnFailure, session)));
+                    context, serviceMap, le.layerId, le.adds, le.updates, le.deletes, rollbackOnFailure, session)));
             }
 
             if (!await session.Commit())
             {
-                throw new MapServerException($"applyEdits failed: {session.LastErrorMessage}");
+                throw new MapServerException(await EditErrorForClient(context, "commit", session.LastErrorMessage));
             }
         }
 
@@ -1636,7 +1652,7 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
                     try
                     {
                         var groupResults = await ApplyEditsBatch(
-                            serviceMap, group.Key, layerEdits, editRequest.RollbackOnFailure);
+                            context, serviceMap, group.Key, layerEdits, editRequest.RollbackOnFailure);
 
                         foreach (var (layerId, layerResponse) in groupResults)
                         {
@@ -1651,12 +1667,14 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
                     }
                     catch (Exception ex) when (!editRequest.RollbackOnFailure)
                     {
+                        string message = await context.LogServiceException(ex, "applyEdits");
+
                         foreach (var le in group)
                         {
                             resultsById[le.Id] = new JsonFeatureServerApplyEditsServiceResultDTO()
                             {
                                 Id = le.Id,
-                                AddResults = new[] { ApplyEditsErrorResponse(ex.Message) }
+                                AddResults = new[] { ApplyEditsErrorResponse(message) }
                             };
                         }
                     }
@@ -1673,15 +1691,16 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
         }
         catch (Exception ex)
         {
-            await context.HandleFeatureServerException(ex);
+            var (code, message) = await context.ToGeoServicesError(ex);
 
             // service level applyEdits returns a top level error object on a full failure
+            context.ServiceRequest.Succeeded = false;
             context.ServiceRequest.Response = JSerializer.Serialize(new JsonErrorDTO()
             {
                 Error = new JsonErrorDTO.ErrorDef()
                 {
-                    Code = 500,
-                    Message = ex.Message
+                    Code = code,
+                    Message = message
                 }
             });
         }
@@ -1695,6 +1714,7 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
     /// separate database call and phases that already succeeded are kept.
     /// </summary>
     async private Task<JsonFeatureServerResponseDTO> ApplyEditsToLayer(
+        IServiceRequestContext context,
         IServiceMap serviceMap,
         int layerId,
         JsonFeatureDTO[] adds,
@@ -1733,13 +1753,14 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
 
             if (!await InsertFeatures(addFeatures))
             {
+                string error = await EditErrorForClient(context, "adds", LastError());
                 if (rollbackOnFailure)
                 {
-                    throw new MapServerException($"applyEdits (adds) failed: {LastError()}");
+                    throw new MapServerException(error);
                 }
 
                 response.AddResults = addFeatures
-                    .Select(_ => ApplyEditsErrorResponse(LastError()))
+                    .Select(_ => ApplyEditsErrorResponse(error))
                     .ToArray();
             }
             else
@@ -1766,13 +1787,14 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
 
             if (!await UpdateFeatures(updateFeatures))
             {
+                string error = await EditErrorForClient(context, "updates", LastError());
                 if (rollbackOnFailure)
                 {
-                    throw new MapServerException($"applyEdits (updates) failed: {LastError()}");
+                    throw new MapServerException(error);
                 }
 
                 response.UpdateResults = updateFeatures
-                    .Select(f => ApplyEditsErrorResponse(LastError(), f.OID))
+                    .Select(f => ApplyEditsErrorResponse(error, f.OID))
                     .ToArray();
             }
             else
@@ -1806,12 +1828,13 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
                 }
                 else
                 {
+                    string error = await EditErrorForClient(context, $"deletes, objectId={objectId}", LastError());
                     if (rollbackOnFailure)
                     {
-                        throw new MapServerException($"applyEdits (deletes) failed for objectId={objectId}: {LastError()}");
+                        throw new MapServerException(error);
                     }
 
-                    deleteResults.Add(ApplyEditsErrorResponse(LastError(), objectId));
+                    deleteResults.Add(ApplyEditsErrorResponse(error, objectId));
                 }
             }
 
@@ -1829,6 +1852,23 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
             Success = success,
             ObjectId = objectId > 0 ? objectId : (int?)null
         };
+
+    /// <summary>
+    /// Database error messages of edits may contain table, constraint and connection details:
+    /// logged with the error id, the client gets the generic text.
+    /// </summary>
+    async private static Task<string> EditErrorForClient(IServiceRequestContext context, string phase, string dbMessage)
+    {
+        string errorId = context.ServiceRequest.ErrorId;
+
+        if (context.MapServer is not null)
+        {
+            await context.MapServer.LogAsync(context, "applyEdits", loggingMethod.error,
+                $"error-id {errorId}: applyEdits ({phase}) failed: {dbMessage}");
+        }
+
+        return $"applyEdits ({phase}) failed: {ExceptionExtensions.InternalErrorMessage(errorId)}";
+    }
 
     private static JsonFeatureServerResponseDTO.JsonResponse ApplyEditsErrorResponse(string message, int? objectId = null)
         => new JsonFeatureServerResponseDTO.JsonResponse()

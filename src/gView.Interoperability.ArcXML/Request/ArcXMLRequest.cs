@@ -133,8 +133,7 @@ namespace gView.Interoperability.ArcXML
             }
             catch (Exception ex)
             {
-                await _mapServer.LogAsync(context, "Service:" + service, loggingMethod.error, ex.Message + "\r\n" + ex.StackTrace);
-                context.ServiceRequest.Response = CreateException(ex.Message + " " + ex.StackTrace);
+                context.ServiceRequest.Response = CreateException(await context.LogServiceException(ex, "Service:" + service));
                 return;
             }
             finally
@@ -732,8 +731,7 @@ namespace gView.Interoperability.ArcXML
             }
             catch (Exception ex)
             {
-                await _mapServer.LogAsync(context, "Service:" + serviceRequest.Service, loggingMethod.error, ex.Message + "\r\n" + ex.StackTrace);
-                serviceRequest.Response = CreateException(ex.Message);
+                serviceRequest.Response = CreateException(await context.LogServiceException(ex, "Service:" + serviceRequest.Service));
                 return;
             }
         }
@@ -942,8 +940,7 @@ namespace gView.Interoperability.ArcXML
             }
             catch (Exception ex)
             {
-                await _mapServer.LogAsync(context, "Service:" + serviceRequest.Service, loggingMethod.error, ex.Message + "\r\n" + ex.StackTrace);
-                serviceRequest.Response = CreateException(ex.Message);
+                serviceRequest.Response = CreateException(await context.LogServiceException(ex, "Service:" + serviceRequest.Service));
                 return;
             }
         }
@@ -1044,8 +1041,7 @@ namespace gView.Interoperability.ArcXML
             }
             catch (Exception ex)
             {
-                await _mapServer.LogAsync(context, "Service:" + serviceRequest.Service, loggingMethod.error, ex.Message + "\r\n" + ex.StackTrace);
-                serviceRequest.Response = CreateException(ex.Message);
+                serviceRequest.Response = CreateException(await context.LogServiceException(ex, "Service:" + serviceRequest.Service));
                 return;
             }
         }
@@ -1206,8 +1202,7 @@ namespace gView.Interoperability.ArcXML
             }
             catch (Exception ex)
             {
-                await _mapServer.LogAsync(context, "Service:" + serviceRequest.Service, loggingMethod.error, ex.Message + "\r\n" + ex.StackTrace);
-                serviceRequest.Response = CreateException(ex.Message);
+                serviceRequest.Response = CreateException(await context.LogServiceException(ex, "Service:" + serviceRequest.Service));
                 return (null, netFc, tracer);
             }
         }
@@ -1503,7 +1498,7 @@ namespace gView.Interoperability.ArcXML
         }
         private string CreateException(string msg)
         {
-            return "<ERROR>" + msg + "</ERROR>";
+            return "<ERROR>" + System.Security.SecurityElement.Escape(msg) + "</ERROR>";
         }
 
         private bool NodeAttributeBool(XmlNode node, string attr)

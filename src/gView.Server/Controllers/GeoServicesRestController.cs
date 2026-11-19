@@ -6,6 +6,7 @@ using gView.Framework.Core.Carto;
 using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Exceptions;
+using gView.Framework.Core.Extensions;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Core.MapServer;
 using Microsoft.Extensions.DependencyInjection;
@@ -622,7 +623,7 @@ public partial class GeoServicesRestController : BaseController
         catch (Exception ex)
         {
             // ToDo: OgcXmlExcpetion
-            return WmsResult(ex.Message, "text/plain");
+            return WmsResult(ToClientMessage(ex), "text/plain");
         }
     });
 
@@ -845,8 +846,8 @@ public partial class GeoServicesRestController : BaseController
                         Success=false,
                         Error=new JsonFeatureServerResponseDTO.JsonError()
                         {
-                            Code=999,
-                            Description=ex.Message
+                            Code=ex.IsClientMessage ? 999 : 500,
+                            Description=ToClientMessage(ex)
                         }
                     }
                 }
@@ -908,8 +909,8 @@ public partial class GeoServicesRestController : BaseController
                         Success=false,
                         Error=new JsonFeatureServerResponseDTO.JsonError()
                         {
-                            Code=999,
-                            Description=ex.Message
+                            Code=ex.IsClientMessage ? 999 : 500,
+                            Description=ToClientMessage(ex)
                         }
                     }
                 }
@@ -971,8 +972,8 @@ public partial class GeoServicesRestController : BaseController
                         Success=false,
                         Error=new JsonFeatureServerResponseDTO.JsonError()
                         {
-                            Code=999,
-                            Description=ex.Message
+                            Code=ex.IsClientMessage ? 999 : 500,
+                            Description=ToClientMessage(ex)
                         }
                     }
                 }
@@ -1032,8 +1033,8 @@ public partial class GeoServicesRestController : BaseController
                     Success=false,
                     Error=new JsonFeatureServerResponseDTO.JsonError()
                     {
-                        Code=999,
-                        Description=ex.Message
+                        Code=ex.IsClientMessage ? 999 : 500,
+                        Description=ToClientMessage(ex)
                     }
                 }
             };
@@ -1098,7 +1099,7 @@ public partial class GeoServicesRestController : BaseController
         {
             return Result(new JsonErrorDTO()
             {
-                Error = new JsonErrorDTO.ErrorDef() { Code = 999, Message = ex.Message }
+                Error = new JsonErrorDTO.ErrorDef() { Code = ex.IsClientMessage ? 999 : 500, Message = ToClientMessage(ex) }
             });
         });
     }
@@ -1142,18 +1143,18 @@ public partial class GeoServicesRestController : BaseController
             {
                 if (String.IsNullOrWhiteSpace(username))
                 {
-                    throw new Exception("username required");
+                    throw new MapServerException("username required");
                 }
 
                 if (String.IsNullOrWhiteSpace(password))
                 {
-                    throw new Exception("password required");
+                    throw new MapServerException("password required");
                 }
 
                 var authToken = _loginManagerService.GetAuthToken(username, password, expireMinutes: expiration);
                 if (authToken == null)
                 {
-                    throw new Exception("unknown username or password");
+                    throw new MapServerException("unknown username or password");
                 }
 
                 return Task.FromResult(Result(new JsonSecurityTokenDTO()
@@ -1164,14 +1165,14 @@ public partial class GeoServicesRestController : BaseController
             }
             else
             {
-                throw new Exception("unkown request: " + request);
+                throw new MapServerException("unkown request: " + request);
             }
         }
         catch (Exception ex)
         {
             return Task.FromResult(Result(new JsonErrorDTO()
             {
-                Error = new JsonErrorDTO.ErrorDef() { Code = 400, Message = ex.Message }
+                Error = new JsonErrorDTO.ErrorDef() { Code = ex.IsClientMessage ? 400 : 500, Message = ToClientMessage(ex) }
             }));
         }
     }
@@ -1798,13 +1799,13 @@ public partial class GeoServicesRestController : BaseController
                         Error = new JsonErrorDTO.ErrorDef() { Code = 999, Message = mse.Message }
                     });
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    // logged with the error id, the client gets the generic text
                     return Result(new JsonErrorDTO()
                     {
-                        Error = new JsonErrorDTO.ErrorDef() { Code = 999, Message = "unknown error" }
+                        Error = new JsonErrorDTO.ErrorDef() { Code = 500, Message = ToClientMessage(ex) }
                     });
-
                 }
             };
         }
