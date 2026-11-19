@@ -93,6 +93,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - GeoJsonService: string parameters of the attribute filter are quoted with doubled quotes.
   - Request filters and the service's layer filter are always combined as `(a) AND (b)`, so an
     `OR` in the request can no longer bypass the layer filter.
+- WFS: the KVP `FILTER` parameter was loaded with `XmlDocument.Load(string)`, i.e. as url or
+  file path (server side requests, local files). It is now parsed as filter XML without DTD
+  processing and external resources; `<Filter>` with and without the ogc namespace is accepted.
 - New test project `gView.Framework.OGC.Tests`.
 
 ## 8.26.3602
