@@ -1,3 +1,4 @@
+using gView.Framework.Core.Extensions;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Data;
@@ -42,7 +43,7 @@ namespace gView.Interoperability.OGC.Dataset.WFS
                 response = WMSDataset.RemoveDOCTYPE(response);
 
                 XmlDocument doc = new XmlDocument();
-                doc.LoadXml(response);
+                doc.LoadXmlSafe(response);
                 XmlNamespaceManager ns = new XmlNamespaceManager(doc.NameTable);
                 ns.AddNamespace("WFS", "http://www.opengis.net/wfs");
                 ns.AddNamespace("OGC", "http://www.opengis.net/ogc");

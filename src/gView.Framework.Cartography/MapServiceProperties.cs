@@ -21,6 +21,11 @@ namespace gView.Framework.Cartography
 
         public int MaxRecordCount { get; set; }
 
+        /// <summary>
+        /// Not persisted: set by the map server from mapserver-defaults:maxDpi
+        /// </summary>
+        public int MaxDpi { get; set; }
+
         public int MaxStatisticsRecordScan { get; set; }
 
         #region Capabilities
@@ -101,6 +106,7 @@ namespace gView.Framework.Cartography
                 MaxImageWidth = MaxImageWidth,
                 MaxImageHeight = MaxImageHeight,
                 MaxRecordCount = MaxRecordCount,
+                MaxDpi = MaxDpi,
                 MaxStatisticsRecordScan = MaxStatisticsRecordScan
             };
             clone.CopyCapabilitiesFrom(this);

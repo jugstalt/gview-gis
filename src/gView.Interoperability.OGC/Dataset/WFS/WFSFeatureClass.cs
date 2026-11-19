@@ -1,3 +1,5 @@
+using gView.Framework.Core.Xml;
+using gView.Framework.Core.Extensions;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Data.Cursors;
 using gView.Framework.Core.Data.Filters;
@@ -55,7 +57,7 @@ namespace gView.Interoperability.OGC.Dataset.WFS
                 response = WMSDataset.RemoveDOCTYPE(response);
 
                 XmlDocument schema = new XmlDocument();
-                schema.LoadXml(response);
+                schema.LoadXmlSafe(response);
                 XmlSchemaReader schemaReader = new XmlSchemaReader(schema);
                 fc._targetNamespace = schemaReader.TargetNamespaceURI;
                 if (fc._targetNamespace == String.Empty)
@@ -266,7 +268,7 @@ namespace gView.Interoperability.OGC.Dataset.WFS
             try
             {
                 StringReader stringReader = new StringReader(response);
-                XmlTextReader xmlReader = new XmlTextReader(stringReader);
+                XmlReader xmlReader = SafeXml.CreateReader(stringReader);
 
                 XmlDocument doc = new XmlDocument();
                 //doc.LoadXml(response);

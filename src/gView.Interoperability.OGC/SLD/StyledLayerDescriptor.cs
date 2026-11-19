@@ -1,3 +1,4 @@
+using gView.Framework.Core.Extensions;
 using gView.Framework.Cartography.Rendering;
 using gView.Framework.Core.Carto;
 using gView.Framework.Core.Data;
@@ -422,7 +423,7 @@ namespace gView.Interoperability.OGC.SLD
             try
             {
                 _doc = new XmlDocument();
-                _doc.LoadXml(sld);
+                _doc.LoadXmlSafe(sld);
 
                 foreach (XmlNode node in _doc.SelectNodes("StyledLayerDescriptor/NamedLayer"))
                 {

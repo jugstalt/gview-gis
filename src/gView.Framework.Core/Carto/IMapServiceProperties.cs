@@ -8,6 +8,8 @@ namespace gView.Framework.Core.Carto
         public int MaxImageWidth { get; }
         public int MaxImageHeight { get; }
         public int MaxRecordCount { get; }
+        /// <summary>Max. dpi of map requests (0 = default 600). Not stored with the map, set from mapserver-defaults:maxDpi.</summary>
+        public int MaxDpi { get; }
         /// <summary>Max. number of source records scanned for in-memory statistics queries (0 = default 1,000,000).</summary>
         public int MaxStatisticsRecordScan { get; }
 

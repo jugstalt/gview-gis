@@ -1,3 +1,4 @@
+using gView.Framework.Core.Extensions;
 using gView.Framework.Core.Carto;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Data.Cursors;
@@ -168,7 +169,7 @@ namespace gView.Interoperability.OGC.Dataset.WMS
             try
             {
                 XmlDocument doc = new XmlDocument();
-                doc.LoadXml(xml);
+                doc.LoadXmlSafe(xml);
                 XmlNamespaceManager ns = new XmlNamespaceManager(doc.NameTable);
                 IDictionary<string, string> dic = ns.GetNamespacesInScope(XmlNamespaceScope.All);
 
@@ -237,7 +238,7 @@ namespace gView.Interoperability.OGC.Dataset.WMS
             try
             {
                 XmlDocument doc = new XmlDocument();
-                doc.LoadXml(gml);
+                doc.LoadXmlSafe(gml);
                 if (doc.ChildNodes.Count == 0)
                 {
                     return null;

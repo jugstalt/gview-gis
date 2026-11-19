@@ -36,6 +36,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using static gView.Interoperability.GeoServices.Rest.DTOs.JsonServicesDTO;
+using gView.Interoperability.Extensions.Rendering;
 
 namespace gView.Server.Controllers;
 
@@ -242,8 +243,8 @@ public partial class GeoServicesRestController : BaseController
                         YMax = fullExtent != null ? fullExtent.MaxY : 0D,
                         SpatialReference = new JsonMapServiceDTO.SpatialReference(epsgCode)
                     },
-                    MaxImageWidth = map.MapServiceProperties.MaxImageWidth,
-                    MaxImageHeight = map.MapServiceProperties.MaxImageHeight,
+                    MaxImageWidth = ImageSizeLimits.EffectiveMaxImageSize(map.MapServiceProperties.MaxImageWidth),
+                    MaxImageHeight = ImageSizeLimits.EffectiveMaxImageSize(map.MapServiceProperties.MaxImageHeight),
                     MaxRecordCount = map.MapServiceProperties.MaxRecordCount,
                     SupportsDynamicLayers = map.MapServiceProperties.IsCapabilityEnabled(RestCapability.DynamicLayers, null, true)
                 });

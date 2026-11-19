@@ -9,6 +9,7 @@ using gView.Framework.Core.MapServer;
 using gView.Framework.Core.UI;
 using gView.Framework.Data.Metadata;
 using gView.Framework.IO;
+using gView.Interoperability.Extensions.Rendering;
 using gView.Server.AppCode;
 using gView.Server.AppCode.Extensions;
 using gView.Server.Services.Handlers;
@@ -244,6 +245,21 @@ public class MapServiceDeploymentManager
                 mapServiceProperties.MaxRecordCount
                 .OrTake(_mapServiceManager.Options.MapServerDefaults_MaxRecordCount)
                 .OrTake(1000);
+
+            mapServiceProperties.MaxDpi =
+                _mapServiceManager.Options.MapServerDefaults_MaxDpi
+                .OrTake(ImageSizeLimits.DefaultMaxDpi);
+
+            if (mapServiceProperties.MaxImageWidth > ImageSizeLimits.AbsoluteMaxImageSize
+                || mapServiceProperties.MaxImageHeight > ImageSizeLimits.AbsoluteMaxImageSize)
+            {
+                _logger.LogWarning("{map}: max image size {width}x{height} exceeds the hard limit of {limit} pixels, images are limited to {limit} pixels",
+                    map.Name,
+                    mapServiceProperties.MaxImageWidth,
+                    mapServiceProperties.MaxImageHeight,
+                    ImageSizeLimits.AbsoluteMaxImageSize,
+                    ImageSizeLimits.AbsoluteMaxImageSize);
+            }
         }
     }
 

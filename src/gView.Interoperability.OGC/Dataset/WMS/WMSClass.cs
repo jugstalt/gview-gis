@@ -1,3 +1,4 @@
+using gView.Framework.Core.Extensions;
 using gView.Framework.Core.Carto;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Geometry;
@@ -60,7 +61,7 @@ namespace gView.Interoperability.OGC.Dataset.WMS
                 _themes = new List<IWebServiceTheme>();
 
                 XmlDocument doc = new XmlDocument();
-                doc.LoadXml(CapabilitiesString);
+                doc.LoadXmlSafe(CapabilitiesString);
 
                 XmlNode CapabilitiesNode = doc.SelectSingleNode("WMT_MS_Capabilities/Capability");
                 _getCapabilities = new GetCapabilities(CapabilitiesNode.SelectSingleNode("Request/GetCapabilities"));

@@ -1,39 +1,31 @@
 ﻿using gView.Framework.Core.Carto;
-using System;
+using gView.Interoperability.Extensions.Rendering;
 
 namespace gView.Interoperability.Extensions;
 
 static public class ServiceMapExtensions
 {
+    /// <summary>
+    /// Fits Display.ImageWidth/ImageHeight/Dpi into the limits of the map service
+    /// (see <see cref="ImageSizeLimits.Fit"/>)
+    /// </summary>
+    /// <returns>true, if the image was scaled down</returns>
+    /// <exception cref="gView.Framework.Core.Exceptions.MapServerException">width or height are not positive</exception>
     static public bool ResizeImageSizeToMapServiceLimits(this IServiceMap map)
     {
-        if ((map.MapServiceProperties.MaxImageWidth == 0 && map.MapServiceProperties.MaxImageHeight == 0)
-            || map.Display.ImageWidth == 0 || map.Display.ImageHeight == 0)
-        {
-            return false;
-        }
+        var properties = map.MapServiceProperties;
 
-        bool resized = false;
-        float ratio = (float)map.Display.ImageWidth / (float)map.Display.ImageHeight;
+        var (width, height, dpi, resized) = ImageSizeLimits.Fit(
+            map.Display.ImageWidth,
+            map.Display.ImageHeight,
+            map.Display.Dpi,
+            properties?.MaxImageWidth ?? 0,
+            properties?.MaxImageHeight ?? 0,
+            properties?.MaxDpi ?? 0);
 
-        if (map.Display.ImageWidth > map.MapServiceProperties.MaxImageWidth)
-        {
-            float diffRatio = (float)map.Display.ImageWidth / (float)map.MapServiceProperties.MaxImageWidth;
-
-            map.Display.ImageWidth = map.MapServiceProperties.MaxImageWidth;
-            map.Display.ImageHeight = (int)((float)map.Display.ImageWidth / ratio);
-            map.Display.Dpi /= diffRatio;
-            resized = true;
-        }
-        if (map.Display.ImageHeight > map.MapServiceProperties.MaxImageHeight)
-        {
-            float diffRatio = (float)map.Display.ImageHeight / (float)map.MapServiceProperties.MaxImageHeight;
-
-            map.Display.ImageHeight = map.MapServiceProperties.MaxImageHeight;
-            map.Display.ImageWidth = (int)((float)map.Display.ImageHeight * ratio);
-            map.Display.Dpi /= diffRatio;
-            resized = true;
-        }
+        map.Display.ImageWidth = width;
+        map.Display.ImageHeight = height;
+        map.Display.Dpi = dpi;
 
         return resized;
     }

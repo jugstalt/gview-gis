@@ -1,3 +1,4 @@
+using gView.Framework.Core.Extensions;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.FDB;
 using gView.Framework.Core.Geometry;
@@ -236,7 +237,7 @@ namespace gView.Interoperability.ArcXML.Dataset
                 await ArcIMSClass.LogAsync(context, "GetServiceInfo Response", server, service, axl);
 
                 XmlDocument doc = new XmlDocument();
-                doc.LoadXml(axl);
+                doc.LoadXmlSafe(axl);
 
                 double dpi = 96.0;
                 XmlNode screen = doc.SelectSingleNode("//ENVIRONMENT/SCREEN");

@@ -1,3 +1,4 @@
+using gView.Framework.Core.Extensions;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Geometry;
 using System;
@@ -17,7 +18,7 @@ namespace gView.Framework.OGC.GML
             {
                 gml = gml.Replace("<gml:", "<").Replace("</gml:", "</");
                 XmlDocument doc = new XmlDocument();
-                doc.LoadXml(gml);
+                doc.LoadXmlSafe(gml);
 
                 XmlNode geomNode = doc.ChildNodes[0];
 

@@ -1,4 +1,5 @@
-﻿using gView.Framework.Core.Carto;
+﻿using gView.Framework.Core.Extensions;
+using gView.Framework.Core.Carto;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Data.Cursors;
 using gView.Framework.Core.Exceptions;
@@ -392,7 +393,8 @@ namespace gView.Interoperability.OGC
                         caps.Service.ContactInformation = new Framework.OGC.WMS.Version_1_3_0.ContactInformation();
                         caps.Service.Fees = "none";
                         caps.Service.AccessConstraints = "none";
-                        caps.Service.MaxHeight = caps.Service.MaxWidth = "8000";
+                        caps.Service.MaxWidth = ImageSizeLimits.EffectiveMaxImageSize(map.MapServiceProperties?.MaxImageWidth ?? 0).ToString();
+                        caps.Service.MaxHeight = ImageSizeLimits.EffectiveMaxImageSize(map.MapServiceProperties?.MaxImageHeight ?? 0).ToString();
 
                         #endregion
 
@@ -692,7 +694,7 @@ namespace gView.Interoperability.OGC
                     try
                     {
                         sld = new XmlDocument();
-                        sld.LoadXml(_parameters.SLD_BODY);
+                        sld.LoadXmlSafe(_parameters.SLD_BODY);
 
                         foreach (XmlNode namedLayer in sld.SelectNodes("StyledLayerDescriptor/NamedLayer"))
                         {

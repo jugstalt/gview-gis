@@ -1,4 +1,5 @@
-﻿using System;
+﻿using gView.Framework.Core.Extensions;
+using System;
 using System.Collections.Generic;
 using System.Xml;
 
@@ -14,7 +15,7 @@ namespace gView.Framework.OGC.WFS
             try
             {
                 _doc = new XmlDocument();
-                _doc.LoadXml(xml);
+                _doc.LoadXmlSafe(xml);
 
                 _ns = new XmlNamespaceManager(_doc.NameTable);
                 _ns.AddNamespace("xsd", "http://www.w3.org/2001/XMLSchema");
