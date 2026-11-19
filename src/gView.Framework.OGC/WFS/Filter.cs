@@ -9,6 +9,7 @@ using gView.Framework.OGC.GML;
 using gView.Framework.Common;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -886,6 +887,14 @@ namespace gView.Framework.OGC.WFS
             return newFilter;
         }
         static public void AppendSortBy(IQueryFilter filter, XmlNode SortBy)
+            => AppendSortBy(null, filter, SortBy);
+
+        /// <summary>
+        /// Sets the order by of the filter from a WFS SortBy node (public request): the property
+        /// must be a field of <paramref name="fc"/> (without a feature class a simple identifier),
+        /// the sort order ASC or DESC.
+        /// </summary>
+        static public void AppendSortBy(IFeatureClass fc, IQueryFilter filter, XmlNode SortBy)
         {
             if (filter == null || SortBy == null)
             {
@@ -928,11 +937,20 @@ namespace gView.Framework.OGC.WFS
                 }
             }
 
+            prop = prop?.Trim();
+            order = order?.Trim();
+
             if (!String.IsNullOrEmpty(prop))
             {
-                filter.OrderBy = prop;
+                filter.OrderBy = SqlFieldName(fc, prop, out _);
                 if (!String.IsNullOrEmpty(order))
                 {
+                    order = order.ToUpperInvariant() switch
+                    {
+                        "ASC" or "A" => "ASC",     // WFS 2.0 allows ASC/DESC, WFS 1.1 also A/D
+                        "DESC" or "D" => "DESC",
+                        _ => throw new Exception("Invalid SortOrder: " + order)
+                    };
                     filter.OrderBy += " " + order;
                 }
             }
@@ -1285,8 +1303,11 @@ namespace gView.Framework.OGC.WFS
                     case "ogc:Not":
                     case "Not":
                         StringBuilder sb3 = new StringBuilder();
-                        ParseWFSFilter(fc, child, "NOT", ns, sb3, ref newFilter, gmlVersion);
-                        AppendClause(LogicalOperator, "(" + sb3.ToString() + ")", sb);
+                        ParseWFSFilter(fc, child, "AND", ns, sb3, ref newFilter, gmlVersion);
+                        if (sb3.Length > 0)
+                        {
+                            AppendClause(LogicalOperator, "NOT (" + sb3.ToString() + ")", sb);
+                        }
                         //sb.Append("(" + sb3.ToString() + ")");
                         break;
                     case "ogc:BBOX":
@@ -1357,8 +1378,9 @@ namespace gView.Framework.OGC.WFS
 
         private static string ParseWFSFilterNode(IFeatureClass fc, XmlNode node, XmlNamespaceManager ns)
         {
-            //if(fc==null) 
-            //    throw new ArgumentException("ParseWFSFilterNode: FeatureClass is null...");
+            // The filter comes from a public request: field names are checked against the
+            // feature class (or must be simple identifiers without one) and literals are
+            // written as SQL literals (strings quoted with doubled quotes, numbers parsed).
             if (node == null)
             {
                 return String.Empty;
@@ -1395,54 +1417,176 @@ namespace gView.Framework.OGC.WFS
                 case "ogc:PropertyIsNotEqualTo":
                     op = "<>";
                     break;
+                case "PropertyIsNull":
+                case "ogc:PropertyIsNull":
+                    return SqlFieldName(fc, SinglePropertyName(node, ns), out _) + " IS NULL";
+                case "PropertyIsBetween":
+                case "ogc:PropertyIsBetween":
+                    {
+                        string betweenField = SqlFieldName(fc, SinglePropertyName(node, ns), out IField betweenFieldDef);
+                        XmlNode lower = (ns != null) ? node.SelectSingleNode("OGC:LowerBoundary/OGC:Literal", ns) : node.SelectSingleNode("LowerBoundary/Literal");
+                        XmlNode upper = (ns != null) ? node.SelectSingleNode("OGC:UpperBoundary/OGC:Literal", ns) : node.SelectSingleNode("UpperBoundary/Literal");
+                        if (lower == null || upper == null)
+                        {
+                            throw new Exception("PropertyIsBetween needs LowerBoundary and UpperBoundary literals");
+                        }
+                        return betweenField + " BETWEEN " + SqlLiteral(betweenFieldDef, lower.InnerText) + " AND " + SqlLiteral(betweenFieldDef, upper.InnerText);
+                    }
                 default:
                     throw new Exception("Unknown operation: " + node.Name + ". Xml is case sensitive.");
             }
 
-            XmlNodeList propertyName = (ns != null) ? node.SelectNodes("OGC:PropertyName", ns) : node.SelectNodes("PropertyName");
-            if (propertyName.Count > 1)
-            {
-                throw new Exception("More than one PropertyName in Property: " + node.OuterXml);
-            }
-            if (propertyName.Count == 0)
-            {
-                throw new Exception("No PropertyName in Property: " + node.OuterXml);
-            }
             XmlNodeList Literal = (ns != null) ? node.SelectNodes("OGC:Literal", ns) : node.SelectNodes("Literal");
             if (Literal.Count > 1)
             {
-                throw new Exception("More than one Literal in Property: " + node.OuterXml);
+                throw new Exception("More than one Literal in Property: " + node.Name);
             }
             if (Literal.Count == 0)
             {
-                throw new Exception("No Literal in Property: " + node.OuterXml);
+                throw new Exception("No Literal in Property: " + node.Name);
             }
 
-            string fieldname = propertyName[0].InnerText;
-            string fieldvalue = Literal[0].InnerText;
-
-            if (fc != null)
-            {
-                IField field = fc.FindField(fieldname);
-                if (field == null)
-                {
-                    throw new Exception("Type " + fc.Name + " do not has field " + fieldname);
-                }
-
-                switch (field.type)
-                {
-                    case FieldType.String:
-                    case FieldType.NString:
-                    case FieldType.Date:
-                    case FieldType.guid:
-                    case FieldType.character:
-                        fieldvalue = "'" + fieldvalue + "'";
-                        break;
-                }
-            }
+            string fieldname = SqlFieldName(fc, SinglePropertyName(node, ns), out IField field);
+            string fieldvalue = op == " like "
+                ? SqlStringLiteral(Literal[0].InnerText)   // like always compares text
+                : SqlLiteral(field, Literal[0].InnerText);
 
             return fieldname + op + fieldvalue;
         }
+
+        private static string SinglePropertyName(XmlNode node, XmlNamespaceManager ns)
+        {
+            XmlNodeList propertyName = (ns != null) ? node.SelectNodes("OGC:PropertyName", ns) : node.SelectNodes("PropertyName");
+            if (propertyName.Count > 1)
+            {
+                throw new Exception("More than one PropertyName in Property: " + node.Name);
+            }
+            if (propertyName.Count == 0)
+            {
+                throw new Exception("No PropertyName in Property: " + node.Name);
+            }
+            return propertyName[0].InnerText?.Trim() ?? String.Empty;
+        }
+
+        /// <summary>
+        /// The field name to use in SQL: with a feature class the name of an existing field,
+        /// without one only simple identifiers (letters, digits, underscore) are allowed.
+        /// </summary>
+        internal static string SqlFieldName(IFeatureClass fc, string propertyName, out IField field)
+        {
+            field = null;
+
+            if (fc != null)
+            {
+                field = fc.FindField(propertyName);
+                if (field == null && fc.Fields != null)
+                {
+                    foreach (var candidate in fc.Fields.ToEnumerable())
+                    {
+                        if (propertyName.Equals(candidate.name, StringComparison.OrdinalIgnoreCase))
+                        {
+                            field = candidate;
+                            break;
+                        }
+                    }
+                }
+                if (field == null)
+                {
+                    throw new Exception("Type " + fc.Name + " do not has field " + propertyName);
+                }
+                return field.name;
+            }
+
+            if (!IsSimpleIdentifier(propertyName))
+            {
+                throw new Exception("Invalid property name: " + propertyName);
+            }
+            return propertyName;
+        }
+
+        /// <summary>
+        /// The literal as SQL: numbers for numeric fields (parsed, invariant culture),
+        /// quoted strings with doubled quotes otherwise. Without a field definition
+        /// numeric values are written as numbers, everything else as string.
+        /// </summary>
+        internal static string SqlLiteral(IField field, string value)
+        {
+            value = value ?? String.Empty;
+
+            if (field == null)
+            {
+                return TryParseNumber(value, out string number)
+                    ? number
+                    : SqlStringLiteral(value);
+            }
+
+            switch (field.type)
+            {
+                case FieldType.ID:
+                case FieldType.integer:
+                case FieldType.smallinteger:
+                case FieldType.biginteger:
+                case FieldType.Float:
+                case FieldType.Double:
+                    if (!TryParseNumber(value, out string number))
+                    {
+                        throw new Exception("Invalid numeric literal for field " + field.name + ": " + value);
+                    }
+                    return number;
+                case FieldType.Date:
+                    if (!DateTime.TryParse(value.Trim(), System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out _))
+                    {
+                        throw new Exception("Invalid date literal for field " + field.name + ": " + value);
+                    }
+                    return SqlStringLiteral(value.Trim());
+                case FieldType.boolean:
+                    switch (value.Trim().ToLowerInvariant())
+                    {
+                        case "true":
+                        case "1":
+                            return "'true'";
+                        case "false":
+                        case "0":
+                            return "'false'";
+                        default:
+                            throw new Exception("Invalid boolean literal for field " + field.name + ": " + value);
+                    }
+                default:
+                    return SqlStringLiteral(value);
+            }
+        }
+
+        internal static string SqlStringLiteral(string value)
+            => "'" + (value ?? String.Empty).Replace("'", "''") + "'";
+
+        private static bool TryParseNumber(string value, out string number)
+        {
+            number = null;
+            value = value?.Trim() ?? String.Empty;
+
+            if (value.Length == 0 || value.Any(c => !(Char.IsDigit(c) || c == '.' || c == '-' || c == '+' || c == 'e' || c == 'E')))
+            {
+                return false;
+            }
+
+            if (long.TryParse(value, System.Globalization.NumberStyles.AllowLeadingSign, System.Globalization.CultureInfo.InvariantCulture, out long l))
+            {
+                number = l.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                return true;
+            }
+            if (double.TryParse(value, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out double d)
+                && !double.IsNaN(d) && !double.IsInfinity(d))
+            {
+                number = d.ToString("R", System.Globalization.CultureInfo.InvariantCulture);
+                return true;
+            }
+            return false;
+        }
+
+        private static bool IsSimpleIdentifier(string name)
+            => !String.IsNullOrEmpty(name)
+            && (Char.IsLetter(name[0]) || name[0] == '_')
+            && name.All(c => Char.IsLetterOrDigit(c) || c == '_');
 
         private static void AppendClause(string op, string clause, StringBuilder sb)
         {

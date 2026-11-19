@@ -217,6 +217,13 @@ gView Server hardening for internet-facing installations, see
     stack, so any number of font stacks cannot fill the disk.
   - Request bodies up to 50 MB for Kestrel, IIS and forms (`security:max-request-body-mb`).
   - Optional rate limit per client ip for the services (`security:rate-limit`, off by default).
+- SQL injection through public service parameters closed (also in 8.26.4001, details there):
+  where clauses from GeoServices (`where`, `layerDefs`, `definitionExpression`), ArcXML and the
+  GeoJsonService are checked against a SQL token allowlist (`SqlWhereClauseValidator`, more
+  functions via `security:sql:allowed-functions`); order by, field lists and renderer fields from
+  requests only accept fields of the table; WFS filter literals are escaped and parsed; request
+  and layer filters are always combined as `(a) AND (b)`. ⚠ `layerDefs` and
+  `definitionExpression` with other functions, subqueries or unknown fields are rejected.
 
 ## 9.26.4301
 
@@ -391,6 +398,36 @@ gView Server hardening for internet-facing installations, see
 
 - `gView.Cmd`: exits with `2` on exception and `1` when the command fails (was always `0`);
   exceptions are printed in red.
+
+## Security
+
+- gView.Server: SQL injection through public service parameters closed.
+  - Where clauses from requests (GeoServices `where`, `layerDefs` for export/identify,
+    `dynamicLayers[].definitionExpression`, ArcXML `where` of GET_FEATURES and GET_IMAGE layer
+    queries, GeoJsonService `where`) are checked against an allowlist of SQL tokens
+    (`SqlWhereClauseValidator`, replaces the blocklist in `CheckWhereClauseForSqlInjection`):
+    fields of the layer's table, string/number/date literals, `NULL`, `TRUE`/`FALSE`, comparison
+    operators, `AND OR NOT IN LIKE ESCAPE IS BETWEEN`, parentheses, `+ - * /` and the functions
+    `UPPER LOWER CHAR_LENGTH TRIM CAST EXTRACT CURRENT_DATE CURRENT_TIMESTAMP`. Subqueries,
+    `UNION`, `;`, comments, variables and other functions are rejected with status 400; the
+    message names the rejected token, not the SQL. `1=1` (Esri clients) stays allowed.
+  - Additional functions can be allowed in `mapserver.json`:
+    `"security": { "sql": { "allowed-functions": [ "ROUND" ] } }`.
+  - **Behavior change:** `layerDefs` and `definitionExpression` were not checked before.
+    Expressions with other functions, subqueries or unknown fields are now rejected.
+  - Order by (GeoServices `orderByFields`, WFS `SortBy`): only `field [ASC|DESC]` with fields of
+    the table.
+  - Field lists (GeoServices `outFields` and `returnDistinctValues`, ArcXML `subfields`, fields
+    used by renderers from GeoServices `dynamicLayers`, ArcXML GET_IMAGE and WMS `SLD_BODY`):
+    only fields of the table (field functions like `SHAPE.STArea()` only if the table defines
+    that field). The old check could be bypassed with tabs instead of spaces.
+  - WFS filter: string literals are quoted with doubled quotes, numbers are parsed, dates and
+    booleans validated, property names checked against the feature type. `PropertyIsBetween` and
+    `PropertyIsNull` are supported now, `Not` no longer loses the negation.
+  - GeoJsonService: string parameters of the attribute filter are quoted with doubled quotes.
+  - Request filters and the service's layer filter are always combined as `(a) AND (b)`, so an
+    `OR` in the request can no longer bypass the layer filter.
+- New test project `gView.Framework.OGC.Tests`.
 
 ## 8.26.3602
 

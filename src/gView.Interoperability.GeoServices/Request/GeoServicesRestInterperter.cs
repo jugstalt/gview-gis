@@ -363,11 +363,10 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
                 {
                     var lID = int.Parse(layerId);
                     var layer = layers.Where(l => l.ID == lID).FirstOrDefault();
-                    if (layer is IFeatureLayer)
+                    if (layer is IFeatureLayer featureLayer)
                     {
-                        ((IFeatureLayer)layer).FilterQuery = ((IFeatureLayer)layer).FilterQuery.AppendWhereClause(layerDefs[layerId]);
-
-                        //File.WriteAllText("c:\\temp\\filter.txt", ((IFeatureLayer)layer).FilterQuery.WhereClause);
+                        featureLayer.FilterQuery = featureLayer.FilterQuery.AppendWhereClause(
+                            layerDefs[layerId].CheckWhereClauseForSqlInjection(featureLayer.FeatureClass));
                     }
                 }
             }
@@ -431,8 +430,9 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
                             dynLayer.FilterQuery = new QueryFilter()
                             {
                                 SubFields = "*",
-                                WhereClause = jsonDynamicLayer.DefinitionExpression
+                                WhereClause = jsonDynamicLayer.DefinitionExpression.CheckWhereClauseForSqlInjection(fc)
                             };
+                            dynLayer.CheckRequestRendererFields(fc);
                             dynLayer.Visible = true;
                             layers.Add(dynLayer);
                         }
@@ -531,13 +531,10 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
                     throw new MapServerException("Statistics can't be used with aggregated feature classes");
                 }
 
-                if (!String.IsNullOrWhiteSpace(query.Where))
-                {
-                    query.Where.CheckWhereClauseForSqlInjection();
-                }
-
                 foreach (var tableClass in tableClasses)
                 {
+                    query.Where.CheckWhereClauseForSqlInjection(tableClass);
+
                     objectIdFieldName = tableClass.IDFieldName;
                     if (tableClass is IFeatureClass)
                     {
@@ -575,7 +572,7 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
                     }
                     else if (query.ReturnDistinctValues)
                     {
-                        filter = new DistinctFilter(query.OutFields);
+                        filter = new DistinctFilter(String.Join(",", tableClass.ProjectRequestFieldNames(query.OutFields.FieldsNames())));
                     }
                     else if (!String.IsNullOrWhiteSpace(query.ObjectIds))
                     {
@@ -701,7 +698,7 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
                             1 :
                             query.ResultOffset + 1;  // Start is 1 by IQueryFilter definition
 
-                        filter.OrderBy = query.OrderByFields;
+                        filter.OrderBy = tableClass.ProjectRequestOrderBy(query.OrderByFields);
                     }
 
                     #endregion
@@ -1101,9 +1098,10 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
                         {
                             var lID = int.Parse(layerId);
                             var layer = layers.Where(l => l.ID == lID).FirstOrDefault();
-                            if (layer is IFeatureLayer)
+                            if (layer is IFeatureLayer featureLayer)
                             {
-                                ((IFeatureLayer)layer).FilterQuery = ((IFeatureLayer)layer).FilterQuery.AppendWhereClause(layerDefs[layerId]);
+                                featureLayer.FilterQuery = featureLayer.FilterQuery.AppendWhereClause(
+                                    layerDefs[layerId].CheckWhereClauseForSqlInjection(featureLayer.FeatureClass));
                             }
                         }
                     }

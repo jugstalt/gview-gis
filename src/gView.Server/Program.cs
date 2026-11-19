@@ -66,6 +66,7 @@ app.LogStartupInformation(
         app.Services.GetRequiredService<ILogger<Startup>>()
    )
    .LogSecurityWarnings()
+   .InitializeSqlSecurity(app.Services.GetRequiredService<ILogger<Startup>>())
    .InitializeAdminSetup()
    .Run();
 

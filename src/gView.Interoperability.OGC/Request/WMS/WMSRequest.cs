@@ -17,6 +17,7 @@ using gView.Framework.Web.Extensions;
 using gView.GraphicsEngine;
 using gView.GraphicsEngine.Abstraction;
 using gView.Interoperability.OGC.Request.Extensions;
+using gView.Framework.Data.Extensions;
 using gView.Interoperability.OGC.SLD;
 using System;
 using System.Collections.Generic;
@@ -713,12 +714,27 @@ namespace gView.Interoperability.OGC
                             SLDRenderer renderer = new SLDRenderer(namedLayer.OuterXml);
                             foreach (ILayer layer in MapServerHelper.FindMapLayers(sender, _useTOC, layerId, layers))
                             {
-                                if (layer is IFeatureLayer)
+                                if (layer is IFeatureLayer featureLayer)
                                 {
-                                    ((IFeatureLayer)layer).FeatureRenderer = renderer;
+                                    var previousRenderer = featureLayer.FeatureRenderer;
+                                    featureLayer.FeatureRenderer = renderer;
+                                    try
+                                    {
+                                        // SLD_BODY is part of the request: only fields of the feature class
+                                        featureLayer.CheckRequestRendererFields(featureLayer.FeatureClass);
+                                    }
+                                    catch
+                                    {
+                                        featureLayer.FeatureRenderer = previousRenderer;
+                                        throw;
+                                    }
                                 }
                             }
                         }
+                    }
+                    catch (SqlDangerousStatementExceptions)
+                    {
+                        throw;
                     }
                     catch /*(Exception ex)*/
                     {

@@ -429,7 +429,10 @@ namespace gView.Interoperability.ArcXML
 
                         if (query.Attributes["where"] != null && !String.IsNullOrWhiteSpace(query.Attributes["where"].Value))
                         {
-                            query.Attributes["where"].Value.CheckWhereClauseForSqlInjection();
+                            foreach (ITableClass tClass in getFeatures.Classes)
+                            {
+                                query.Attributes["where"].Value.CheckWhereClauseForSqlInjection(tClass);
+                            }
 
                             filter.WhereClause = query.Attributes["where"].Value;
                         }
@@ -462,7 +465,18 @@ namespace gView.Interoperability.ArcXML
                                 }
                                 else
                                 {
-                                    filter.AddField(field);
+                                    string fieldName = null;
+                                    foreach (ITableClass tClass in getFeatures.Classes)
+                                    {
+                                        foreach (string checkedName in tClass.ProjectRequestFieldNames([field]))
+                                        {
+                                            fieldName ??= checkedName;
+                                        }
+                                    }
+                                    if (fieldName != null)
+                                    {
+                                        filter.AddField(fieldName);
+                                    }
                                 }
                             }
                         }
@@ -678,7 +692,7 @@ namespace gView.Interoperability.ArcXML
                         if (!String.IsNullOrWhiteSpace(filterQuery))
                         {
                             filter.WhereClause = (!String.IsNullOrWhiteSpace(filter.WhereClause)) ?
-                                "(" + filter.WhereClause + ") AND " + filterQuery :
+                                "(" + filter.WhereClause + ") AND (" + filterQuery + ")" :
                                 filterQuery;
                         }
 

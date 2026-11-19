@@ -16,17 +16,9 @@ namespace gView.Framework.Data.Extensions
                 return appendFilter;
             }
 
-            if (filter.ToLower().Contains(" or "))
-            {
-                filter = $"({filter})";
-            }
-
-            if (appendFilter.ToLower().Contains(" or "))
-            {
-                appendFilter = $"({appendFilter})";
-            }
-
-            return $"{filter} and {appendFilter}";
+            // always in parentheses: an OR in one part (e.g. "a=1\tOR b=2" or "(a=1)OR(b=2)")
+            // must not override the other part (e.g. the layer filter of the service)
+            return $"({filter}) and ({appendFilter})";
         }
 
         static public IQueryFilter AppendWhereClause(this IQueryFilter queryFilter, string appendFilter)

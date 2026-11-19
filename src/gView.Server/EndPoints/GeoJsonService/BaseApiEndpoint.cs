@@ -211,17 +211,6 @@ public class BaseApiEndpoint : IApiEndpoint
                 ErrorMessage = mse.Message
             };
         }
-        catch (SqlDangerousStatementExceptions dse)
-        {
-            logger.LogWarning("Handle GeoJson Service Request: {message}", dse.Message);
-
-            statusCode = 400;
-            result = new ErrorResponse()
-            {
-                ErrorCode = statusCode.Value,
-                ErrorMessage = dse.Message
-            };
-        }
         catch (FormatException fex)
         {
             logger.LogError("Handle GeoJson Service Request: {message}", fex.Message);
@@ -277,17 +266,6 @@ public class BaseApiEndpoint : IApiEndpoint
             {
                 ErrorCode = statusCode.Value,
                 ErrorMessage = mse.Message
-            };
-        }
-        catch (SqlDangerousStatementExceptions dse)
-        {
-            logger.LogWarning("Handle GeoJson Service Request: {message}", dse.Message);
-
-            statusCode = 400;
-            result = new ErrorResponse()
-            {
-                ErrorCode = statusCode.Value,
-                ErrorMessage = dse.Message
             };
         }
         catch (Exception ex)

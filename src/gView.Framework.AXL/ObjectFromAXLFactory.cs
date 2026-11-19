@@ -6,6 +6,7 @@ using gView.Framework.Core.Data.Filters;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Core.Symbology;
 using gView.Framework.Core.Xml;
+using gView.Framework.Data.Extensions;
 using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
 using gView.Framework.Symbology;
@@ -34,10 +35,11 @@ namespace gView.Framework.AXL
                 return null;
             }
 
+            // the AXL query comes from a public ArcXML request: where and subfields are checked
             IQueryFilter filter = (query.Name == "QUERY") ? new QueryFilter() : new SpatialFilter();
             if (query.Attributes["where"] != null)
             {
-                filter.WhereClause = query.Attributes["where"].Value;
+                filter.WhereClause = query.Attributes["where"].Value.CheckWhereClauseForSqlInjection(tc);
             }
 
             if (query.Attributes["subfields"] != null)
@@ -58,7 +60,10 @@ namespace gView.Framework.AXL
                     }
                     else
                     {
-                        filter.AddField(field);
+                        foreach (var fieldName in tc.ProjectRequestFieldNames([field]))
+                        {
+                            filter.AddField(fieldName);
+                        }
                     }
                 }
             }

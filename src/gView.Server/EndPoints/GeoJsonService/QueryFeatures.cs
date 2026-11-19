@@ -72,8 +72,7 @@ public class QueryFeatures : BaseApiEndpoint
                 }
 
                 string? requestWhereClause = queryRequest.Filter?
-                            .WhereClauseWithResolveParameters()
-                            .CheckWhereClauseForSqlInjection();
+                            .WhereClauseWithResolveParameters();
 
                 int featureCount = 0;
                 var geoJsonFeatures = new List<gView.GeoJsonService.DTOs.Feature>();
@@ -82,6 +81,8 @@ public class QueryFeatures : BaseApiEndpoint
 
                 foreach (var tableClass in tableClasses)
                 {
+                    requestWhereClause?.CheckWhereClauseForSqlInjection(tableClass);
+
                     objectIdFieldName = tableClass.IDFieldName;
 
                     #region Filter

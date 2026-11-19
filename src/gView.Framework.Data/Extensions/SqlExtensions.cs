@@ -1,8 +1,7 @@
-﻿using Microsoft.SqlServer.Management.SqlParser.Parser;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Exceptions;
+using gView.Framework.Data.Sql;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace gView.Framework.Data.Extensions
 {
@@ -10,117 +9,29 @@ namespace gView.Framework.Data.Extensions
     {
         #region Sql Injection
 
-        static public string CheckWhereClauseForSqlInjection(this string where)
+        /// <summary>
+        /// Checks a where clause from a public request against the SQL token allowlist
+        /// (<see cref="SqlWhereClauseValidator"/>). If <paramref name="tableClass"/> is set,
+        /// identifiers must be fields of the table. Returns the unchanged where clause.
+        /// </summary>
+        static public string CheckWhereClauseForSqlInjection(this string where, ITableClass tableClass = null)
         {
-            string originalWhere = where;
+            SqlWhereClauseValidator.Validate(where, tableClass);
 
-            if (!string.IsNullOrWhiteSpace(where))
-            {
-                if (WhereClauseWhiteList.Contains(where))
-                {
-                    return where;
-                }
-
-                where = where
-                    //.Replace(" in ", "=")
-                    .Replace("<>", "=")
-                    .Replace(">=", "=")
-                    .Replace("<=", "=")
-                    .Replace("<", "=")
-                    .Replace(">", "=");
-
-                string sql = "select * from tab where " + where;
-
-                var parseResult = Parser.Parse(sql);
-
-                if (parseResult.Errors != null && parseResult.Errors.Count() > 0)
-                {
-                    StringBuilder errors = new StringBuilder();
-
-                    foreach (var error in parseResult.Errors)
-                    {
-                        errors.Append(error.Message + Environment.NewLine);
-                    }
-
-                    throw new Exception($"SQL Parser Exception ({where}): {errors.ToString()}");
-                }
-
-                var tokens = parseResult.Script.Tokens
-                    .Where(t => t.Type.ToUpper() != "LEX_WHITE")
-                    .Where(t => !"()[]".Contains(t.Type))
-                    .ToArray();
-
-                if (tokens.Where(t => t.Type.ToUpper() == ";").Count() > 0)
-                {
-                    throw new SqlDangerousStatementExceptions("multiple statements detected");
-                }
-
-                if (tokens.Where(t => t.Type.ToUpper() == "LEX_END_OF_LINE_COMMENT").Count() > 0)
-                {
-                    throw new SqlDangerousStatementExceptions("End of line comment detected");
-                }
-
-                for (int i = 1, to = tokens.Length; i < to - 1; i++)
-                {
-                    if (tokens[i].Type == "=" || tokens[i].Type.Equals("TOKEN_IN", StringComparison.InvariantCultureIgnoreCase))
-                    {
-                        var tokenField = tokens[i - 1];
-                        var tokenValue = tokens[i + 1];
-
-                        if (tokenField.IsConstant() && tokenField.IsConstant())
-                        {
-                            throw new SqlDangerousStatementExceptions("Suspicious statement: " + tokenField.Text + tokens[i].Text + tokenValue.Text);
-                        }
-                        else if (tokenField.IsField() && tokenValue.IsField()/* && tokenField.Text.ToLower()==tokenValue.Text.ToLower()*/)
-                        {
-                            throw new SqlDangerousStatementExceptions("Suspicious statement: " + tokenField.Text + tokens[i].Text + tokenValue.Text);
-                        }
-                        else if (tokenField.Text.ToLower() == tokenValue.Text.ToLower())
-                        {
-                            throw new SqlDangerousStatementExceptions("Suspicious statement: " + tokenField.Text + tokens[i].Text + tokenValue.Text);
-                        }
-                    }
-                }
-            }
-
-            return originalWhere;
+            return where;
         }
-
-        static private bool IsConstant(this Token token)
-        {
-            switch (token.Type.ToUpper())
-            {
-                case "TOKEN_INTEGER":
-                case "TOKEN_STRING":
-                    return true;
-            }
-
-            return false;
-        }
-
-        static private bool IsField(this Token token)
-        {
-            switch (token.Type.ToUpper())
-            {
-                case "TOKEN_ID":
-                    return true;
-            }
-
-            return false;
-        }
-
-        static IEnumerable<string> WhereClauseWhiteList = new string[]
-        {
-            "1=1" // used by esri tools, e.g. esri-leaflet!!
-        };
 
         #endregion
     }
 
-    public class SqlDangerousStatementExceptions : Exception
+    /// <summary>
+    /// SQL from a public request was rejected. Derived from <see cref="MapServerException"/>
+    /// so the services return the message (not the SQL) to the client with status 400.
+    /// </summary>
+    public class SqlDangerousStatementExceptions : MapServerException
     {
         public SqlDangerousStatementExceptions(string message)
-            : base(message)
+            : base(message, 400)
         {
 
         }

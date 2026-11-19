@@ -1,8 +1,12 @@
-﻿using gView.Server.Services.MapServer;
+﻿using gView.Framework.Data.Sql;
+using gView.Server.Services.MapServer;
 using gView.Server.Services.Security;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Linq;
 
 namespace gView.Server.Extensions;
 
@@ -49,6 +53,28 @@ static internal class WebApplicationExtensions
 
             app.Services.GetRequiredService<AdminSetupService>()
                 .Initialize(scope.ServiceProvider.GetRequiredService<LoginManager>());
+        }
+
+        return app;
+    }
+
+    /// <summary>
+    /// Functions allowed in where clauses of public requests in addition to the defaults
+    /// (mapserver.json: security:sql:allowed-functions, array or comma separated list).
+    /// </summary>
+    public static WebApplication InitializeSqlSecurity(this WebApplication app, ILogger<Startup> logger)
+    {
+        var section = app.Configuration.GetSection("security:sql:allowed-functions");
+        var functions = (section.Value?.Split(',') ?? section.GetChildren().Select(c => c.Value))
+                            .Where(f => !String.IsNullOrWhiteSpace(f))
+                            .Select(f => f!.Trim())
+                            .ToArray();
+
+        SqlWhereClauseValidator.AdditionalAllowedFunctions = functions;
+
+        if (functions.Length > 0)
+        {
+            logger.LogInformation("Additional SQL functions allowed in request where clauses: {functions}", String.Join(", ", functions));
         }
 
         return app;
