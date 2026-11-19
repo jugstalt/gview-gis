@@ -374,6 +374,11 @@ public class WMSParameterDescriptor
                         this.Width = int.Parse(request["WIDTH"]);
                     }
 
+                    if (this.Width <= 0 || this.Height <= 0)
+                    {
+                        return WriteError("WIDTH and HEIGHT must be greater than 0.");
+                    }
+
                     if (request["BBOX"] == null)
                     {
                         return WriteError("mandatory BBOX parameter is missing.");

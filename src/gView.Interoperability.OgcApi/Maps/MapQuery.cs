@@ -1,4 +1,5 @@
 using gView.GraphicsEngine;
+using gView.Interoperability.Extensions.Rendering;
 using gView.Interoperability.OgcApi.Features;
 using System.Globalization;
 
@@ -12,7 +13,6 @@ public sealed class MapQuery
     public const int DefaultWidth = 1024;
     public const int DefaultHeight = 768;
     public const double DefaultMmPerPixel = 0.28;  // OGC standard rendering pixel size
-    private const int AbsoluteMaxImageSize = 8192;  // if the service has no limits
 
     private static readonly string[] IgnoredParameters = ["token", "f"];
 
@@ -158,8 +158,8 @@ public sealed class MapQuery
                 : (DefaultHeight * aspect, (double)DefaultHeight);
         }
 
-        maxWidth = maxWidth > 0 ? Math.Min(maxWidth, AbsoluteMaxImageSize) : AbsoluteMaxImageSize;
-        maxHeight = maxHeight > 0 ? Math.Min(maxHeight, AbsoluteMaxImageSize) : AbsoluteMaxImageSize;
+        maxWidth = ImageSizeLimits.EffectiveMaxImageSize(maxWidth);
+        maxHeight = ImageSizeLimits.EffectiveMaxImageSize(maxHeight);
 
         double factor = Math.Min(1.0, Math.Min(maxWidth / width, maxHeight / height));
 

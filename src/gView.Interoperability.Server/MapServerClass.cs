@@ -1,4 +1,5 @@
-﻿using gView.Framework.Common;
+﻿using gView.Framework.Core.Extensions;
+using gView.Framework.Common;
 using gView.Framework.Core.Carto;
 using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
@@ -167,7 +168,7 @@ public class MapServerClass : IWebServiceClass
 #endif
 
             XmlDocument doc = new XmlDocument();
-            doc.LoadXml(resp);
+            doc.LoadXmlSafe(resp);
 
             IBitmap bitmap = null;
             XmlNode output = doc.SelectSingleNode("//OUTPUT[@file]");

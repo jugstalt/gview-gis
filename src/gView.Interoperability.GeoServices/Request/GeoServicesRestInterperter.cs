@@ -21,6 +21,7 @@ using gView.Framework.Geometry;
 using gView.Framework.IO;
 using gView.Framework.OGC.GeoJson;
 using gView.Interoperability.Extensions;
+using gView.Interoperability.Extensions.Rendering;
 using gView.Interoperability.Extensions.Editing;
 using gView.Interoperability.GeoServices.Exceptions;
 using gView.Interoperability.GeoServices.Extensions;
@@ -1002,6 +1003,7 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
                 {
                     throw new MapServerException("Invalid identify image display. Use <width>, <height>, <dpi>");
                 }
+                ImageSizeLimits.ThrowIfInvalidImageSize((int)imageDisplay[0], (int)imageDisplay[1]);
 
                 ISpatialReference sRef = SpatialReference.FromID("epsg:" + identify.SRef);
 

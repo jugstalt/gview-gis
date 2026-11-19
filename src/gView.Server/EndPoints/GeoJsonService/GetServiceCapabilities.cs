@@ -16,6 +16,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using gView.Interoperability.Extensions.Rendering;
 
 namespace gView.Server.EndPoints.GeoJsonService;
 
@@ -170,8 +171,8 @@ public class GetServiceCapabilities : BaseApiEndpoint
             {
                 Url = $"{url}/map",
                 HttpMethods = ["GET", "POST"],
-                MaxImageHeight = map.MapServiceProperties.MaxImageWidth,
-                MaxImageWidth = map.MapServiceProperties.MaxImageHeight,
+                MaxImageWidth = ImageSizeLimits.EffectiveMaxImageSize(map.MapServiceProperties.MaxImageWidth),
+                MaxImageHeight = ImageSizeLimits.EffectiveMaxImageSize(map.MapServiceProperties.MaxImageHeight),
                 SupportedFormats = ["png", "jpg"]
             };
             yield return new GetLegendRequestProperties()

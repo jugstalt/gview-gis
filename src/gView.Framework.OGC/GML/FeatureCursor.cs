@@ -1,3 +1,4 @@
+using gView.Framework.Core.Extensions;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Data.Filters;
 using gView.Framework.Core.Geometry;
@@ -142,14 +143,14 @@ namespace gView.Framework.OGC.GML
 
     public class FeatureCursor2 : gView.Framework.Data.FeatureCursor
     {
-        private XmlTextReader _reader = null;
+        private XmlReader _reader = null;
         private XmlNamespaceManager _ns;
         private IQueryFilter _filter;
         private IFeatureClass _fc;
         private bool _checkGeometryRelation = true;
         private GmlVersion _gmlVersion;
 
-        public FeatureCursor2(IFeatureClass fc, XmlTextReader reader, XmlNamespaceManager ns, IQueryFilter filter, GmlVersion gmlVersion)
+        public FeatureCursor2(IFeatureClass fc, XmlReader reader, XmlNamespaceManager ns, IQueryFilter filter, GmlVersion gmlVersion)
             : base(fc, 
                    fc?.SpatialReference,
                    filter?.FeatureSpatialReference, 
@@ -174,7 +175,7 @@ namespace gView.Framework.OGC.GML
                 _reader = null;
             }
         }
-        public FeatureCursor2(IFeatureClass fc, XmlTextReader reader, XmlNamespaceManager ns, IQueryFilter filter, GmlVersion gmlVersion, Filter_Capabilities filterCapabilities)
+        public FeatureCursor2(IFeatureClass fc, XmlReader reader, XmlNamespaceManager ns, IQueryFilter filter, GmlVersion gmlVersion, Filter_Capabilities filterCapabilities)
             : this(fc, reader, ns, filter, gmlVersion)
         {
             //
@@ -208,7 +209,7 @@ namespace gView.Framework.OGC.GML
                 string featureString = _reader.ReadOuterXml();
 
                 XmlDocument doc = new XmlDocument();
-                doc.LoadXml(featureString);
+                doc.LoadXmlSafe(featureString);
                 XmlNode featureNode = doc.ChildNodes[0];
 
                 Feature feature = new Feature();

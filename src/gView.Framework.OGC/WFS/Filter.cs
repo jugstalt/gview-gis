@@ -1,3 +1,4 @@
+using gView.Framework.Core.Extensions;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Data.Filters;
 using gView.Framework.Core.Geometry;
@@ -65,7 +66,7 @@ namespace gView.Framework.OGC.WFS
             try
             {
                 XmlDocument doc = new XmlDocument();
-                doc.LoadXml(ogcFilter);
+                doc.LoadXmlSafe(ogcFilter);
 
                 XmlNode filterNode = doc.SelectSingleNode("Filter");
                 if (filterNode == null)

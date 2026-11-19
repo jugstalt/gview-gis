@@ -4,6 +4,7 @@ ARG BASE_IMAGE=gview-server-base:latest
 FROM ${BASE_IMAGE}
 
 # use your own _config/mapserver.json
+# (the base image runs as user "app", the config only has to be readable)
 # WORKDIR /app/_config
 # COPY /my-config .
 

@@ -1,4 +1,5 @@
-﻿using gView.Framework.Core.Carto;
+﻿using gView.Framework.Core.Extensions;
+using gView.Framework.Core.Carto;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Data.Cursors;
 using gView.Framework.Core.Data.Filters;
@@ -131,7 +132,7 @@ namespace gView.Framework.XML
             try
             {
                 XmlDocument doc = new XmlDocument();
-                doc.LoadXml(resp);
+                doc.LoadXmlSafe(resp);
 
                 return AXLFeatureClass.ConvertAXLNode2Feature(
                     doc.SelectSingleNode("//FEATURE"),
@@ -368,7 +369,7 @@ namespace gView.Framework.XML
             {
                 /*
                 XmlDocument doc=new XmlDocument();
-                doc.LoadXml(resp);
+                doc.LoadXmlSafe(resp);
 
                 QueryResult queryResult=
                     (m_result==null) ? new QueryResult() : (QueryResult)m_result;
@@ -1004,7 +1005,7 @@ namespace gView.Framework.XML
             try
             {
                 _doc = new XmlDocument();
-                _doc.LoadXml(CBF.CBF2AXL(await _fc.AXLSearch(_filter)));
+                _doc.LoadXmlSafe(CBF.CBF2AXL(await _fc.AXLSearch(_filter)));
 
                 XmlNode featureCount = _doc.SelectSingleNode("//FEATURECOUNT");
                 if (featureCount != null)
@@ -1222,7 +1223,7 @@ namespace gView.Framework.XML
 
                 string resp = await this.SendRequest(userdata, req);
                 XmlDocument doc = new XmlDocument();
-                doc.LoadXml(resp);
+                doc.LoadXmlSafe(resp);
 
                 XmlNode respNode = doc.SelectSingleNode("//RESPONSE");
                 if (respNode == null || respNode.ChildNodes.Count == 0)

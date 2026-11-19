@@ -1,3 +1,4 @@
+using gView.Framework.Core.Extensions;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.FDB;
 using gView.Framework.Core.Geometry;
@@ -126,7 +127,7 @@ namespace gView.Interoperability.Server
                     ConfigTextStream.ExtractValue(_connection, "pwd"));
 
                 XmlDocument doc = new XmlDocument();
-                doc.LoadXml(axl);
+                doc.LoadXmlSafe(axl);
 
                 if (_class == null)
                 {

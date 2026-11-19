@@ -217,6 +217,15 @@ gView Server hardening for internet-facing installations, see
     stack, so any number of font stacks cannot fill the disk.
   - Request bodies up to 50 MB for Kestrel, IIS and forms (`security:max-request-body-mb`).
   - Optional rate limit per client ip for the services (`security:rate-limit`, off by default).
+  - Map images (WMS, GeoServices export/legend, ArcXML, GeoJson service, OGC API Maps) are never
+    larger than 16384 pixels, even if the service or `mapserver-defaults:maxImageWidth/Height`
+    allow more (warning at service load); larger requests are scaled down as before
+    (`ImageSizeLimits`). Width/height ≤ 0 are a protocol error, also for WMS `GetFeatureInfo` and
+    GeoServices `identify`.
+  - Dpi of map requests limited by `mapserver-defaults:maxDpi` (default 600) ⚠, larger values are
+    clamped (the image size stays).
+  - Capabilities report the real image limits: WMS 1.3.0 `MaxWidth`/`MaxHeight` (was always
+    8000), GeoServices and GeoJson service (`maxImageWidth`/`maxImageHeight` were swapped).
 - SQL injection through public service parameters closed (also in 8.26.4001, details there):
   where clauses from GeoServices (`where`, `layerDefs`, `definitionExpression`), ArcXML and the
   GeoJsonService are checked against a SQL token allowlist (`SqlWhereClauseValidator`, more
@@ -226,6 +235,13 @@ gView Server hardening for internet-facing installations, see
   `definitionExpression` with other functions, subqueries or unknown fields are rejected.
 - WFS: the KVP `FILTER` parameter is parsed as filter XML instead of being loaded as url or file
   path (also in 8.26.4001).
+- XML input (ArcXML, WFS POST, `SLD_BODY`, SLD, OGC filter/GML) and responses of remote services
+  (WMS/WFS/ArcIMS/gView clients) are parsed without DTD processing and without resolving external
+  resources (`XmlDocumentExtensions.LoadXmlSafe`, `SafeXml`): no entity expansion
+  ("billion laughs"), no XXE.
+- Docker images (`gview-server-base`, `gview-server`, `gview-webapps`) run as the non-root user
+  `app` (UID 1654); `/app/_config`, `/etc/gview` and `/etc/gview-repository` belong to this user. ⚠ Mounted volumes must
+  be writable for UID 1654. The outdated .NET 6 `src/gView.Server/Dockerfile` was removed.
 
 ## 9.26.4301
 

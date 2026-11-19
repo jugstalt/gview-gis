@@ -1,3 +1,4 @@
+using gView.Framework.Core.Extensions;
 using gView.Framework.AXL;
 using gView.Framework.Core.Carto;
 using gView.Framework.Core.Data;
@@ -231,7 +232,7 @@ namespace gView.Interoperability.ArcXML.Dataset
 #endif
 
                 XmlDocument doc = new XmlDocument();
-                doc.LoadXml(resp);
+                doc.LoadXmlSafe(resp);
 
                 XmlNode outputNode = doc.SelectSingleNode("//IMAGE/OUTPUT");
                 XmlNode envelopeNode = doc.SelectSingleNode("//IMAGE/ENVELOPE");
@@ -435,7 +436,7 @@ namespace gView.Interoperability.ArcXML.Dataset
                 await ArcIMSClass.LogAsync(display as IServiceRequestContext, "GetLegend Response", server, service, resp);
 
                 XmlDocument doc = new XmlDocument();
-                doc.LoadXml(resp);
+                doc.LoadXmlSafe(resp);
 
                 XmlNode output = doc.SelectSingleNode("//LEGEND");
 

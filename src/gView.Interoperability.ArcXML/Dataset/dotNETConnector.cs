@@ -1,3 +1,4 @@
+using gView.Framework.Core.Extensions;
 using gView.Framework.Web;
 using System;
 using System.Collections.Generic;
@@ -46,7 +47,7 @@ namespace gView.Interoperability.ArcXML.Dataset
             try
             {
                 XmlDocument doc = new XmlDocument();
-                doc.LoadXml(resp);
+                doc.LoadXmlSafe(resp);
                 XmlNodeList services = doc.SelectNodes("//SERVICE");
 
                 foreach (XmlNode service in services)
@@ -155,7 +156,7 @@ namespace gView.Interoperability.ArcXML.Dataset
             XmlDocument doc = new XmlDocument();
             try
             {
-                doc.LoadXml(xml);
+                doc.LoadXmlSafe(xml);
             }
             catch
             {

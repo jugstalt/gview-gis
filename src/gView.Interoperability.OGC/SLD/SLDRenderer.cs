@@ -1,3 +1,4 @@
+using gView.Framework.Core.Extensions;
 using gView.Framework.AXL;
 using gView.Framework.Cartography.Rendering;
 using gView.Framework.Cartography.Rendering.UI;
@@ -42,7 +43,7 @@ namespace gView.Interoperability.OGC.SLD
             try
             {
                 XmlDocument doc = new XmlDocument();
-                doc.LoadXml(sldString);
+                doc.LoadXmlSafe(sldString);
 
                 XmlNamespaceManager ns = null;
                 if (doc.ChildNodes[0].NamespaceURI != String.Empty)

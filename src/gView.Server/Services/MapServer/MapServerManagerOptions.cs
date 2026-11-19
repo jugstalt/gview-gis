@@ -33,6 +33,7 @@ namespace gView.Server.Services.MapServer
         public int MapServerDefaults_MaxImageWidth { get; set; }
         public int MapServerDefaults_MaxImageHeight { get; set; }   
         public int MapServerDefaults_MaxRecordCount { get; set; }
+        public int MapServerDefaults_MaxDpi { get; set; }
 
         public int Port { get; set; }
 

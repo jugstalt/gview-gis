@@ -1,3 +1,4 @@
+using gView.Framework.Core.Extensions;
 using gView.Framework.Core.Carto;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Data.Cursors;
@@ -57,7 +58,7 @@ namespace gView.Interoperability.OGC
             if (requestString[0] == '<')
             {
                 XmlDocument doc = new XmlDocument();
-                doc.LoadXml(requestString);
+                doc.LoadXmlSafe(requestString);
 
                 if (!parameters.ParseParameters(doc))
                 {

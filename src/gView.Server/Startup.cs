@@ -207,6 +207,7 @@ public class Startup
                     config.MapServerDefaults_MaxImageWidth = Math.Max(0, int.Parse(Configuration.Value("mapserver-defaults:maxImageWidth") ?? "0"));
                     config.MapServerDefaults_MaxImageHeight = Math.Max(0, int.Parse(Configuration.Value("mapserver-defaults:maxImageHeight") ?? "0"));
                     config.MapServerDefaults_MaxRecordCount = Math.Max(0, int.Parse(Configuration.Value("mapserver-defaults:maxRecordCount") ?? "0"));
+                    config.MapServerDefaults_MaxDpi = Math.Max(0, int.Parse(Configuration.Value("mapserver-defaults:maxDpi") ?? "0"));
 
                     config.ServicesPath = $"{Configuration.Value("services-folder")}/services";
                     config.LoginManagerRootPath = $"{Configuration.Value("services-folder")}/_login";

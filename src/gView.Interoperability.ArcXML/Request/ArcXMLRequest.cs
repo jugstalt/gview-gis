@@ -1,3 +1,4 @@
+using gView.Framework.Core.Extensions;
 using gView.Framework.AXL;
 using gView.Framework.Cartography;
 using gView.Framework.Common;
@@ -68,7 +69,7 @@ namespace gView.Interoperability.ArcXML
                 await _mapServer.LogAsync(context, "Service:" + service, loggingMethod.request_detail, request);
 
                 XmlDocument doc = new XmlDocument();
-                doc.LoadXml(request);
+                doc.LoadXmlSafe(request);
 
                 if (service == "catalog" && doc.SelectSingleNode("//GETCLIENTSERVICES") != null)
                 {
@@ -149,7 +150,7 @@ namespace gView.Interoperability.ArcXML
             var accessTypes = AccessTypes.None;
 
             XmlDocument doc = new XmlDocument();
-            doc.LoadXml(context.ServiceRequest.Request);
+            doc.LoadXmlSafe(context.ServiceRequest.Request);
 
             if (context.ServiceRequest.Service == "catalog" && doc.SelectSingleNode("//GETCLIENTSERVICES") != null)
             {

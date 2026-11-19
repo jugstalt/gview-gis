@@ -1,3 +1,4 @@
+using gView.Framework.Core.Extensions;
 using gView.Framework.Core.Geometry;
 using System;
 using System.Collections;
@@ -135,7 +136,7 @@ namespace gView.Framework.XML
                 try
                 {
                     XmlDocument doc = new XmlDocument();
-                    doc.LoadXml(value);
+                    doc.LoadXmlSafe(value);
 
                     XmlNodeList node = doc.GetElementsByTagName("FEATURECOUNT");
                     if (node.Count > 0)
@@ -175,8 +176,8 @@ namespace gView.Framework.XML
             try
             {
                 XmlDocument oldxml = new XmlDocument(), newxml = new XmlDocument();
-                oldxml.LoadXml(queryResponseAXL);
-                newxml.LoadXml(newFeatures);
+                oldxml.LoadXmlSafe(queryResponseAXL);
+                newxml.LoadXmlSafe(newFeatures);
 
                 XmlNodeList newfeat = newxml.SelectNodes("//FEATURES");
                 XmlNodeList featList = oldxml.SelectNodes("//FEATURES");

@@ -1,4 +1,5 @@
-﻿using gView.Framework.Core.Carto;
+﻿using gView.Framework.Core.Xml;
+using gView.Framework.Core.Carto;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Data.Filters;
 using gView.Framework.Core.Geometry;
@@ -507,11 +508,11 @@ namespace gView.Framework.XML
             string resp=m_connector.SendRequest(axl,m_server,m_serviceName,"Query");
 
             // REQUEST auswerten
-            XmlTextReader xml=null;
+            XmlReader xml=null;
             XmlDocument xmldoc=null;
             XmlNodeList node=null;
 
-            xml=new XmlTextReader(resp,XmlNodeType.Element,null);
+            xml=SafeXml.CreateReader(resp,ConformanceLevel.Fragment);
             xmldoc=new XmlDocument();
             xmldoc.Load(xml);
             node=xmldoc.GetElementsByTagName("FEATURECOUNT");
