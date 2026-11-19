@@ -29,7 +29,7 @@
         <b>OGC API</b>
         <span>/ogcapi</span>
     </a>
-    @if (isManageUser || (Globals.AllowFormsLogin && (isManageUser == true || String.IsNullOrWhiteSpace(username))))
+    @if (this.Context.Request.IsFromAdminNetwork() && (isManageUser || (Globals.AllowFormsLogin && String.IsNullOrWhiteSpace(username))))
     {
         <a class="@(!hasManagerLogin ? "required" : "")" asp-area="" asp-controller="Manage" asp-action="Index">
             <div class="ql-icon"><span class="ico ico-shield"></span></div>

@@ -17,6 +17,7 @@ using gView.Server.Extensions.DependencyInjection;
 using gView.Server.Middleware;
 using gView.Server.Services.Handlers;
 using gView.Server.Services.Hosting;
+using gView.Server.Services.Security;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -167,6 +168,9 @@ public class Startup
 
     public void ConfigureServices(IServiceCollection services)
     {
+        var securityOptions = SecurityOptions.FromConfiguration(Configuration);
+        services.AddSingleton(securityOptions);
+
         services.AddAuth(Configuration);
 
         services.AddMvc(o =>
@@ -211,7 +215,7 @@ public class Startup
                     config.LogServiceRequestDetails = Configuration.Value("Logging:LogServerRequestDetails")?.ToLower() == "true";
 
                     Globals.AllowFormsLogin = config.AllowFormsLogin = Configuration.Value("allowFormsLogin")?.ToLower() != "false";
-                    config.ForceHttps = Configuration.Value("force-https")?.ToLower() == "true";
+                    config.ForceHttps = securityOptions.ForceHttps;
 
                     config.CriticalErrorLevel = Configuration.Value("CriticalErrorLevel:ErrorType")?.ToLower() switch
                     {
@@ -260,6 +264,20 @@ public class Startup
         {
             options.ForwardedHeaders =
                 ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+
+            // X-Forwarded-* only from trusted proxies (security:known-proxies/known-networks),
+            // through any number of them: processing stops at the first untrusted address
+            options.ForwardLimit = null;
+            options.KnownProxies.Clear();
+            options.KnownIPNetworks.Clear();
+            foreach (var proxy in securityOptions.KnownProxies)
+            {
+                options.KnownProxies.Add(proxy);
+            }
+            foreach (var network in securityOptions.KnownNetworks)
+            {
+                options.KnownIPNetworks.Add(network);
+            }
         });
 
         #region Background Task
@@ -297,19 +315,16 @@ public class Startup
         if (Environment.IsDevelopment())
         {
             app.UseDeveloperExceptionPage();
-            app.UseForwardedHeaders();
         }
         else
         {
             app.UseExceptionHandler("/Home/Error");
             //app.ConfigureCustomExceptionMiddleware();
-            app.UseForwardedHeaders();
-            //app.UseHsts();
         }
 
+        app.UseForwardedHeaders();
+        app.UseMiddleware<HttpsSecurityMiddleware>();
         app.UseGViewServerBasePath();
-        // Hack: app.UseForwardedHeaders() ... not working
-        app.UseMiddleware<XForwardedMiddleware>();
         app.UseMiddleware<ArcMapPathDoubleSlashesMiddleware>();
 
         app.UseCors(x => x
@@ -317,7 +332,6 @@ public class Startup
             .AllowAnyMethod()
             .AllowAnyHeader());
 
-        //app.UseHttpsRedirection();
         app.UseStaticFiles();
         //app.UseCookiePolicy();
 

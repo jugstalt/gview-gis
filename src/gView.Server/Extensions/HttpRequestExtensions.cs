@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using gView.Server.Services.Security;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.IO;
 using System.Threading.Tasks;
@@ -7,6 +9,13 @@ namespace gView.Server.Extensions;
 
 internal static class HttpRequestExtensions
 {
+    /// <summary>
+    /// Is the client allowed to use the admin pages (security:manage:allowed-networks)?
+    /// </summary>
+    static public bool IsFromAdminNetwork(this HttpRequest httpRequest)
+        => httpRequest.HttpContext.RequestServices?.GetService<SecurityOptions>()?
+               .IsManageAllowed(httpRequest.HttpContext.Connection.RemoteIpAddress) ?? false;
+
     async static public Task<string> GetBody(this HttpRequest httpRequest)
     {
         if (httpRequest.Body.CanRead)

@@ -452,6 +452,7 @@ public class BrowseServicesController : BaseController
     });
 
     [HttpPost]
+    [AdminNetworkOnly]
     async public Task<IActionResult> DeleteService(string folder, string service)
     {
         folder = folder ?? String.Empty;
@@ -482,6 +483,7 @@ public class BrowseServicesController : BaseController
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [AdminNetworkOnly]
     async public Task<IActionResult> AddService(string service, string folder)
     {
         folder = (folder ?? String.Empty).ToLower();
@@ -592,6 +594,7 @@ public class BrowseServicesController : BaseController
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [AdminNetworkOnly]
     async public Task<IActionResult> CreateFolder(string newFolder, string folder)
     {
         folder = folder ?? String.Empty;
@@ -630,6 +633,7 @@ public class BrowseServicesController : BaseController
     }
 
     [HttpPost] // use this without Antiforgery (used by carto webapp)
+    [AdminNetworkOnly]
     public Task<IActionResult> PublishService(string service, string folder)
         => AddService(service, folder);
 

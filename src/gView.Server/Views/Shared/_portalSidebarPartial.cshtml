@@ -32,7 +32,7 @@
         <a href="@rootUrl/ogcapi?f=html">
             <span class="ico ico-plug"></span><span>OGC API</span>
         </a>
-        @if (isManageUser || (Globals.AllowFormsLogin && (isManageUser == true || String.IsNullOrWhiteSpace(username))))
+        @if (this.Context.Request.IsFromAdminNetwork() && (isManageUser || (Globals.AllowFormsLogin && String.IsNullOrWhiteSpace(username))))
         {
             <a class="@Active(controller == "manage")" asp-area="" asp-controller="Manage" asp-action="Index">
                 <span class="ico ico-shield"></span><span>Manage</span>

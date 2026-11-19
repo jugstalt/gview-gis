@@ -23,6 +23,21 @@ static internal class WebApplicationExtensions
     }
 
     /// <summary>
+    /// Writes configuration warnings of the security section to the log.
+    /// </summary>
+    public static WebApplication LogSecurityWarnings(this WebApplication app)
+    {
+        var logger = app.Services.GetRequiredService<ILoggerFactory>().CreateLogger(AppCode.AdminNetworkOnlyAttribute.LoggerCategory);
+
+        foreach (var warning in app.Services.GetRequiredService<SecurityOptions>().ConfigurationWarnings())
+        {
+            logger.LogWarning("{warning}", warning);
+        }
+
+        return app;
+    }
+
+    /// <summary>
     /// Creates the first admin from the environment or prints the setup code
     /// (see <see cref="AdminSetupService"/>).
     /// </summary>

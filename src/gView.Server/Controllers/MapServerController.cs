@@ -207,6 +207,7 @@ namespace gView.Server.Controllers
         #region Manage
 
         [HttpPost]
+        [AdminNetworkOnly]
         async public Task<IActionResult> AddMap(string name, string folder)
         {
             try
@@ -232,6 +233,7 @@ namespace gView.Server.Controllers
         }
 
         [HttpPost]
+        [AdminNetworkOnly]
         async public Task<IActionResult> RemoveMap(string name, string folder)
         {
             try
@@ -254,6 +256,7 @@ namespace gView.Server.Controllers
             }
         }
 
+        [AdminNetworkOnly]
         async public Task<IActionResult> GetMetadata(string name, string folder)
         {
             try
@@ -277,6 +280,7 @@ namespace gView.Server.Controllers
         }
 
         [HttpPost]
+        [AdminNetworkOnly]
         async public Task<IActionResult> SetMetadata(string name, string folder)
         {
             try
