@@ -263,6 +263,12 @@ public class WMSParameterDescriptor
                         string[] srsid = request["SRS"].Split(':');
                         this.SRS = int.Parse(srsid[srsid.Length - 1]);
                     }
+                    else if (request["CRS"] != null && request["CRS"].Trim().Equals("CRS:84", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // CRS:84 = WGS84 with fixed axis order lon/lat (x,y), independent of the WMS version
+                        this.SRS = 4326;
+                        this.IsCrs84 = true;
+                    }
                     else if (request["CRS"] != null)
                     {
                         if (request["CRS"].IndexOf("EPSG:") == -1)
@@ -863,6 +869,11 @@ public class WMSParameterDescriptor
         get { return _srs; }
         set { _srs = value; }
     }
+
+    /// <summary>
+    /// CRS:84 was requested: BBOX is always lon/lat (x,y), no WMS 1.3.0 axis swap
+    /// </summary>
+    public bool IsCrs84 { get; private set; }
 
     public int BBoxSRS
     {
