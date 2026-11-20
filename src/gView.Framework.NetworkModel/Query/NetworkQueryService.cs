@@ -1,4 +1,5 @@
 using gView.Framework.NetworkModel.Config;
+using gView.Framework.NetworkModel.Extensions;
 using gView.Framework.NetworkModel.Graph;
 using gView.Framework.NetworkModel.Ids;
 using gView.Framework.NetworkModel.Store;
@@ -47,10 +48,24 @@ public sealed class NetworkQueryService
         var watch = new Watch(progress, cancellationToken);
         var result = NewResult("trace");
         var scope = Scope(request, result);
+        var tiers = SelectTiers(request, result);
         var sources = Nodes(Required(request.Start, "start"), "start", scope, result);
         result.Messages.Add($"Trace from {sources.Count} source(s)");
 
-        var options = Options(request, scope);
+        // with a tier the trace stops at the sources the tier itself names (blocked: settled, not expanded); the global supply
+        // sources are not a stop: with a tier without sources every transformer of the network would end the trace
+        var stops = new HashSet<long>();
+        if (tiers is not null && request.StopAtSources != false)
+        {
+            var pattern = Pick(request.Sources, tiers.Sources, null);
+            if (pattern is not null)
+            {
+                stops.UnionWith(Nodes(pattern, "source", scope, result).Except(sources));
+                result.Messages.Add($"  stops at {stops.Count} source(s) of the tier");
+            }
+        }
+
+        var options = Options(request, scope, tiers: tiers, extraBlocked: stops);
         var hits = watch.Count(_graph.Trace(sources, options, cancellationToken), "trace", "node(s) found").ToList();
         foreach (var group in hits.GroupBy(h => h.Kind).OrderBy(g => g.Key))
         {
@@ -60,7 +75,7 @@ public sealed class NetworkQueryService
 
         foreach (var hit in watch.Count(hits, "result", "node(s) labelled"))
         {
-            AddNode(result, hit.Node, hit.TypeId, hit.Cost, hit.Kind.ToString(), _graph.NodeLabel(hit.Source));
+            AddNode(result, hit.Node, hit.TypeId, hit.Cost, hit.Kind == TraceHitKind.Blocked && stops.Contains(hit.Node) ? "Source" : hit.Kind.ToString(), _graph.NodeLabel(hit.Source));
         }
         if (request.WithEdges)
         {
@@ -79,7 +94,7 @@ public sealed class NetworkQueryService
         var result = NewResult("reach");
         var scope = Scope(request, result);
         var starts = Nodes(Required(request.Start, "start"), "start", scope, result);
-        var options = Options(request, scope);
+        var options = Options(request, scope, tiers: SelectTiers(request, result));
         result.Messages.Add($"Reach from {starts.Count} start(s), max cost {options.MaxCost}, weight {options.Weight.Name}");
 
         var reached = watch.Count(_graph.Reach(starts, options, cancellationToken), "reach", "node(s) reached").ToList();
@@ -107,7 +122,7 @@ public sealed class NetworkQueryService
         var scope = Scope(request, result);
         var from = Inside(_graph.ResolveNode(Required(request.From, "from")), request.From!, "from", scope);
         var to = Inside(_graph.ResolveNode(Required(request.To, "to")), request.To!, "to", scope);
-        var options = Options(request, scope);
+        var options = Options(request, scope, tiers: SelectTiers(request, result));
 
         progress?.Report("path: searching...");
         var path = _graph.ShortestPath(from, to, options, cancellationToken);
@@ -136,11 +151,12 @@ public sealed class NetworkQueryService
     {
         var result = NewResult("supply");
         var scope = Scope(request, result);
-        var sources = Nodes(Required(request.Sources ?? _graph.Metadata.SupplySources, "sources"), "source", scope, result);
-        var sinks = Nodes(Required(request.Sinks ?? _graph.Metadata.Customers, "sinks"), "sink", scope, result);
+        var tiers = SelectTiers(request, result);
+        var sources = Nodes(Required(Pick(request.Sources, tiers?.Sources, _graph.Metadata.SupplySources), "sources"), "source", scope, result);
+        var sinks = Nodes(Required(Pick(request.Sinks, tiers?.Sinks, _graph.Metadata.Customers), "sinks"), "sink", scope, result);
         result.Messages.Add($"Supply: {sources.Count} source(s), {sinks.Count} sink(s), {sinks.Sum(s => _graph.AliasesOf(s).Count)} merged point(s) at the sinks");
 
-        var supply = _graph.Supply(sources, sinks, Options(request, scope), SupplyProgress(progress, "supply"), cancellationToken).ToList();
+        var supply = _graph.Supply(sources, sinks, Options(request, scope, tiers: tiers), SupplyProgress(progress, "supply"), cancellationToken).ToList();
 
         int unsupplied = supply.Count(s => s.Sources.Count == 0);
         int multiple = supply.Count(s => s.Sources.Count > 1);
@@ -172,11 +188,12 @@ public sealed class NetworkQueryService
         var result = NewResult("outage");
         var scope = Scope(request, result);
         var disabled = _graph.ResolveEdges(Required(request.Disable, "disable"));
-        var sourcesPattern = Required(request.Sources ?? _graph.Metadata.SupplySources, "sources");
-        var sinksPattern = Required(request.Sinks ?? _graph.Metadata.Customers, "sinks");
+        var tiers = SelectTiers(request, result);
+        var sourcesPattern = Required(Pick(request.Sources, tiers?.Sources, _graph.Metadata.SupplySources), "sources");
+        var sinksPattern = Required(Pick(request.Sinks, tiers?.Sinks, _graph.Metadata.Customers), "sinks");
 
-        var normal = Options(request, scope, withDisable: false);
-        var switchedOff = Options(request, scope);
+        var normal = Options(request, scope, withDisable: false, tiers: tiers);
+        var switchedOff = Options(request, scope, tiers: tiers);
 
         // the connected part around the switched off edges, as it is without switching them off
         var ends = new HashSet<long>();
@@ -334,8 +351,9 @@ public sealed class NetworkQueryService
         }
         result.Messages.Add($"Validate: {rules.Count} rule(s) from {(request.Rules is null ? "network.json" : "the request")}");
         var scope = Scope(request, result);
+        var tiers = SelectTiers(request, result);
 
-        var validator = new NetworkValidator(_graph, rules) { Area = scope?.Nodes };
+        var validator = new NetworkValidator(_graph, rules, tiers?.Union()) { Area = scope?.Nodes };
         var shardProgress = progress is null ? null : new SyncProgress<(int Done, int Total)>(p =>
         {
             if (p.Done % 500 == 0 || p.Done == p.Total)
@@ -384,6 +402,20 @@ public sealed class NetworkQueryService
     #region Helpers
 
     private NetworkQueryResult NewResult(string operation) => new() { Operation = operation, Srs = _graph.Metadata.Srs };
+
+    /// <summary>The tiers of the request (see <see cref="NetworkQueryRequest.Tier"/>); null without a tier.</summary>
+    private NetworkTiers? SelectTiers(NetworkQueryRequest request, NetworkQueryResult result)
+    {
+        var tiers = NetworkTiers.Select(_graph, request.Tier);
+        if (tiers is not null)
+        {
+            result.Messages.Add($"Tier: {tiers.Names}");
+        }
+        return tiers;
+    }
+
+    /// <summary>The first text that is not empty.</summary>
+    private static string? Pick(params string?[] texts) => texts.FirstOrDefault(t => !string.IsNullOrWhiteSpace(t));
 
     /// <summary>The area of the request resolved to its nodes; null without an area.</summary>
     private NetworkAreaScope? Scope(NetworkQueryRequest request, NetworkQueryResult result)
@@ -454,7 +486,8 @@ public sealed class NetworkQueryService
         }
     }
 
-    private TraversalOptions<long, long> Options(NetworkQueryRequest request, NetworkAreaScope? scope, bool withDisable = true)
+    private TraversalOptions<long, long> Options(NetworkQueryRequest request, NetworkAreaScope? scope, bool withDisable = true,
+        NetworkTiers? tiers = null, IReadOnlyCollection<long>? extraBlocked = null)
     {
         var options = new TraversalOptions<long, long>();
 
@@ -468,19 +501,35 @@ public sealed class NetworkQueryService
         {
             options = options with { MaxCost = maxCost };
         }
+        // the tiers' edge types, cut by the filter of the request
+        var edgeTypes = tiers?.EdgeTypes;
         if (!string.IsNullOrEmpty(request.Filter))
         {
-            options = options with { EdgeTypes = _graph.Types.Edges(request.Filter) };
+            var filter = _graph.Types.Edges(request.Filter);
+            edgeTypes = edgeTypes is null ? filter : edgeTypes.Intersect(filter);
         }
+        if (edgeTypes is not null)
+        {
+            if (edgeTypes.Count == 0)
+            {
+                throw new ArgumentException($"The tier ({tiers?.Names}) and the filter have no edge type in common.");
+            }
+            options = options with { EdgeTypes = edgeTypes };
+        }
+        var block = string.Join(",", new[] { request.Block, tiers?.Block }.Where(b => !string.IsNullOrWhiteSpace(b)));
         bool disable = withDisable && !string.IsNullOrEmpty(request.Disable);
-        if (!string.IsNullOrEmpty(request.Block) || !string.IsNullOrEmpty(request.Unblock) || disable)
+        if (block.Length > 0 || !string.IsNullOrEmpty(request.Unblock) || disable || extraBlocked is { Count: > 0 })
         {
             var state = new NetworkState<long, long>();
             foreach (var id in disable ? _graph.ResolveEdges(request.Disable!) : [])
             {
                 state.Disable(id);
             }
-            foreach (var id in string.IsNullOrEmpty(request.Block) ? [] : _graph.ResolveNodes(request.Block))
+            foreach (var id in block.Length == 0 ? [] : _graph.ResolveNodes(block))
+            {
+                state.Block(id);
+            }
+            foreach (var id in extraBlocked ?? [])
             {
                 state.Block(id);
             }

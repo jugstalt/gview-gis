@@ -4,6 +4,7 @@ using gView.Framework.Core.Geometry;
 using gView.Framework.Core.IO;
 using gView.Framework.NetworkModel.Build;
 using gView.Framework.NetworkModel.Config;
+using gView.Framework.NetworkModel.Extensions;
 using gView.Framework.NetworkModel.Graph;
 using gView.Framework.NetworkModel.Store;
 using System.Text.Json;
@@ -219,6 +220,52 @@ public class NetworkModule : IMapApplicationModule, IPersistable
             }
             return values.Distinct(StringComparer.OrdinalIgnoreCase).Order(StringComparer.OrdinalIgnoreCase).ToList();
         }).ToList();
+    }
+
+    /// <summary>
+    /// Writes supply sources, customers, rules and tiers into the built network (network.json) without building the shards.
+    /// Throws when the config or its tier patterns are invalid or the network is not built.
+    /// </summary>
+    public NetworkMetadata RefreshMetadata(string mapPath)
+        => NetworkMetadataRefresh.Refresh(Clone(Config), Config.ResolveDirectory(mapPath));
+
+    /// <summary>
+    /// Checks the tier patterns against the types of the built network; the problems, empty when all are fine.
+    /// Says so when there is no built network to check against.
+    /// </summary>
+    public List<string> CheckTiers(string? mapPath)
+    {
+        var problems = new List<string>();
+        try
+        {
+            Config.ValidateTiersAndRules();
+        }
+        catch (InvalidDataException ex)
+        {
+            problems.Add(ex.Message);
+        }
+        var directory = string.IsNullOrEmpty(mapPath) ? null : Config.ResolveDirectory(mapPath);
+        NetworkMetadata? metadata = directory is not null && File.Exists(Path.Combine(directory, FileNetworkStore.MetadataFile))
+            ? new FileNetworkStore(directory).ReadMetadata()
+            : null;
+        if (metadata is null)
+        {
+            problems.Add("The network is not built yet: the patterns can only be checked against its types.");
+            return problems;
+        }
+        var types = metadata.ToTypeRegistry();
+        foreach (var tier in Config.Tiers)
+        {
+            try
+            {
+                tier.Resolve(types);
+            }
+            catch (ArgumentException ex)
+            {
+                problems.Add(ex.Message);
+            }
+        }
+        return problems;
     }
 
     /// <summary>Builds the network of the map in the background; false when a build is already running.</summary>

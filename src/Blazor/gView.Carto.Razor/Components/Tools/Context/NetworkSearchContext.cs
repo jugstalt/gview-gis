@@ -69,6 +69,15 @@ public class NetworkSearchContext
     public string? Weight { get; set; }
     public string? MaxCost { get; set; }
     public string? Filter { get; set; }
+
+    /// <summary>The tier the search is restricted to; empty for all.</summary>
+    public string? Tier { get; set; }
+
+    /// <summary>trace with a tier: stop at the sources of the tier.</summary>
+    public bool StopAtSources { get; set; } = true;
+
+    /// <summary>The tier names of the built network, known once the network is open.</summary>
+    public IReadOnlyList<string> Tiers { get; set; } = [];
     public string? Block { get; set; }
     public string? RuleIds { get; set; }
 

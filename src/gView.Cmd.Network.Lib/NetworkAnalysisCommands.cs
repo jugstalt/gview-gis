@@ -33,6 +33,8 @@ internal static class NetworkAnalysisCommands
             Sinks = Optional(parameters, "sinks"),
             Node = Optional(parameters, "node"),
             Filter = Optional(parameters, "filter"),
+            Tier = Optional(parameters, "tier"),
+            StopAtSources = Optional(parameters, "stop-at-sources") is string stop ? !stop.Equals("false", StringComparison.OrdinalIgnoreCase) : null,
             Block = Optional(parameters, "block"),
             Unblock = Optional(parameters, "unblock"),
             Disable = Optional(parameters, "disable"),

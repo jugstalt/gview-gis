@@ -28,6 +28,9 @@ public class NetworkMetadata
     /// <summary>The validation rules of the config at build time; gView.Cmd -u validate checks them unless -rules is given.</summary>
     public List<NetworkRuleConfig> Rules { get; set; } = [];
 
+    /// <summary>The tiers (Ebenen) of the config at build time or the last refresh of the metadata.</summary>
+    public List<NetworkTierConfig> Tiers { get; set; } = [];
+
     /// <summary>The default sources of supply and outage (node pattern) of the config at build time.</summary>
     public string? SupplySources { get; set; }
 

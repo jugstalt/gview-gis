@@ -56,6 +56,9 @@ public class JsonNetworkServerDTO
     [JsonPropertyName("rules")]
     public RuleInfo[] Rules { get; set; } = [];
 
+    [JsonPropertyName("tiers")]
+    public TierInfo[] Tiers { get; set; } = [];
+
     public class TypeInfo
     {
         [JsonPropertyName("id")]
@@ -66,6 +69,18 @@ public class JsonNetworkServerDTO
 
         [JsonPropertyName("name")]
         public string? Name { get; set; }
+    }
+
+    public class TierInfo
+    {
+        [JsonPropertyName("name")]
+        public string Name { get; set; } = "";
+
+        [JsonPropertyName("order")]
+        public int Order { get; set; }
+
+        [JsonPropertyName("filter")]
+        public string Filter { get; set; } = "";
     }
 
     public class RuleInfo
@@ -87,6 +102,14 @@ public class JsonNetworkSearchOptionsDTO
 {
     [JsonPropertyName("filter")]
     public string Filter { get; set; } = "";
+
+    /// <summary>Only these tiers (Ebenen, comma separated names; see the tiers of the NetworkServer resource).</summary>
+    [JsonPropertyName("tier")]
+    public string Tier { get; set; } = "";
+
+    /// <summary>trace with a tier: stop at the sources of the tier (default true).</summary>
+    [JsonPropertyName("stopAtSources")]
+    public bool StopAtSources { get; set; } = true;
 
     [JsonPropertyName("block")]
     public string Block { get; set; } = "";

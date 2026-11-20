@@ -1,3 +1,4 @@
+using gView.Framework.NetworkModel.Extensions;
 using SpatialNET.Network;
 
 namespace gView.Framework.NetworkModel.Config;
@@ -31,6 +32,9 @@ public class NetworkRuleConfig
     /// <summary>The counted edge types as pattern text; several patterns separated by | (OR).</summary>
     public string CountTypes { get; set; } = "";
 
+    /// <summary>Optional name of a tier: the rule then only looks at the edges and nodes of that tier (subject, counted edges).</summary>
+    public string? Tier { get; set; }
+
     public int Min { get; set; }
 
     /// <summary>The largest allowed count; null for no upper limit.</summary>
@@ -44,6 +48,36 @@ public class NetworkRuleConfig
 
     /// <summary>Resolves the rule against the types of a network; throws an <see cref="ArgumentException"/> naming the rule.</summary>
     public NetworkRule Resolve(TypeRegistry types) => NetworkRule.FromDefinition(ToDefinition(), types);
+
+    /// <summary>
+    /// The rule restricted to a tier: the subject (edge rules) and the counted edges are cut to the edge types of the tier.
+    /// A node rule still has all nodes of its subject types; the nodes of the tier are chosen by the caller
+    /// (<see cref="Query.NetworkTiers.ContainsNode"/>). End types are node types and stay as they are.
+    /// </summary>
+    public NetworkRule Resolve(TypeRegistry types, ResolvedTier tier, NetworkRule? rule = null)
+    {
+        rule ??= Resolve(types);
+        var count = rule.CountTypes.Intersect(tier.EdgeTypes);
+        NetworkRule restricted;
+        if (rule.Subject == RuleSubject.Node)
+        {
+            restricted = NetworkRule.ForNodes(rule.Id, rule.SubjectTypes).CountEdges(count).Between(rule.Min, rule.Max);
+        }
+        else
+        {
+            var builder = NetworkRule.ForEdges(rule.Id, rule.SubjectTypes.Intersect(tier.EdgeTypes));
+            if (rule.EndFilter == RuleEndFilter.NodeIs)
+            {
+                builder = builder.AtEndsWhereNode(rule.EndTypes!);
+            }
+            else if (rule.EndFilter == RuleEndFilter.NodeIsNot)
+            {
+                builder = builder.AtEndsWhereNodeIsNot(rule.EndTypes!);
+            }
+            restricted = builder.CountOtherEdges(count).Between(rule.Min, rule.Max);
+        }
+        return rule.Severity == RuleSeverity.Warning ? restricted.AsWarning() : restricted;
+    }
 
     public override string ToString()
         => $"{Id}: {Subject} {SubjectTypes}{(EndFilter == RuleEndFilter.All ? "" : $" ends {EndFilter} {EndTypes}")} count {CountTypes} {Min}..{(Max?.ToString() ?? "*")}";

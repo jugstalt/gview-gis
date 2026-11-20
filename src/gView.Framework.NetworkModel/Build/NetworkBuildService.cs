@@ -79,6 +79,7 @@ public sealed class NetworkBuildService
             Weights = weights.Select(w => new NetworkWeightMetadata { Id = w.Id, Name = w.Name, Kind = w.Kind, Fallback = w.Fallback }).ToList(),
             ShardKeys = new(previous?.ShardKeys ?? [], StringComparer.OrdinalIgnoreCase),
             Rules = config.Rules,
+            Tiers = config.Tiers,
             SupplySources = config.SupplySources,
             Customers = config.Customers
         };
@@ -269,7 +270,8 @@ public sealed class NetworkBuildService
         // the type registry is complete only now; SpatialNET checks types against it when the network is used
         metadata.Facets = types.FacetMetadata().ToList();
         metadata.Types = types.TypeMetadata().ToList();
-        _ = types.ToRegistry(); // validates the facets and types
+        var registry = types.ToRegistry(); // validates the facets and types
+        config.ResolveTiers(registry); // and the tier patterns
 
         using var writer = store.CreateWriter();
         var progress = new Progress<BuildProgress>(p =>

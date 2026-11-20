@@ -1,5 +1,6 @@
 using gView.Framework.NetworkModel.Config;
 using gView.Framework.NetworkModel.Graph;
+using gView.Framework.NetworkModel.Query;
 using gView.Framework.NetworkModel.Store;
 using SpatialNET.Network;
 
@@ -19,10 +20,15 @@ public sealed class NetworkValidator
 {
     private readonly FileNetworkGraph _graph;
     private readonly List<(NetworkRuleConfig Config, NetworkRule Rule)> _rules;
+    // per rule id: the tiers whose nodes a node rule is checked on (a node must belong to every one of them)
+    private readonly Dictionary<string, List<ResolvedTier>> _nodeTiers = new(StringComparer.Ordinal);
     private readonly Dictionary<string, long> _checked = new(StringComparer.Ordinal);
     private readonly Dictionary<string, long> _violations = new(StringComparer.Ordinal);
 
-    public NetworkValidator(FileNetworkGraph graph, IEnumerable<NetworkRuleConfig> rules)
+    /// <param name="graph">The network.</param>
+    /// <param name="rules">The rules; a rule with a tier is restricted to it.</param>
+    /// <param name="restrict">A tier (or the union of tiers) every rule is restricted to, as asked for by the query; null for none.</param>
+    public NetworkValidator(FileNetworkGraph graph, IEnumerable<NetworkRuleConfig> rules, ResolvedTier? restrict = null)
     {
         _graph = graph;
         _rules = [];
@@ -31,7 +37,28 @@ public sealed class NetworkValidator
         {
             try
             {
-                _rules.Add((config, config.Resolve(graph.Types)));
+                var restrictions = new List<ResolvedTier>();
+                if (!string.IsNullOrWhiteSpace(config.Tier))
+                {
+                    var tier = graph.Metadata.Tiers.FirstOrDefault(t => t.Name.Equals(config.Tier.Trim(), StringComparison.OrdinalIgnoreCase))
+                        ?? throw new ArgumentException($"Rule '{config.Id}': unknown tier '{config.Tier}'. Tiers: {string.Join(", ", graph.Metadata.Tiers.Select(t => t.Name))}");
+                    restrictions.Add(tier.Resolve(graph.Types));
+                }
+                if (restrict is not null)
+                {
+                    restrictions.Add(restrict);
+                }
+
+                var rule = config.Resolve(graph.Types);
+                foreach (var restriction in restrictions)
+                {
+                    rule = config.Resolve(graph.Types, restriction, rule);
+                }
+                if (config.Subject == RuleSubject.Node && restrictions.Count > 0)
+                {
+                    _nodeTiers[config.Id] = restrictions;
+                }
+                _rules.Add((config, rule));
             }
             catch (ArgumentException ex)
             {
@@ -93,9 +120,15 @@ public sealed class NetworkValidator
             cancellationToken.ThrowIfCancellationRequested();
 
             var nodes = area is null ? shard.Nodes : shard.Nodes.Where(n => area(n.Node.Id)).ToList();
+            // nodes of a rule with tiers: those that edges of every tier touch (or the tier's node types)
+            var nodesOf = new Dictionary<string, List<ShardNode>>(StringComparer.Ordinal);
+            foreach (var rule in nodeRules.Where(r => _nodeTiers.ContainsKey(r.Id)))
+            {
+                nodesOf[rule.Id] = NodesInTiers(nodes, shard, _nodeTiers[rule.Id]);
+            }
             foreach (var rule in nodeRules)
             {
-                Add(_checked, rule.Id, nodes.Count(n => rule.SubjectTypes.Contains(n.Node.TypeId)));
+                Add(_checked, rule.Id, (nodesOf.TryGetValue(rule.Id, out var inTier) ? inTier : nodes).Count(n => rule.SubjectTypes.Contains(n.Node.TypeId)));
             }
             // an edge between two shards is stored in both, it is checked in the shard of its from node
             // (with an area: once, in the first shard read that holds it)
@@ -110,7 +143,15 @@ public sealed class NetworkValidator
             var violations = new List<RuleViolation<long, long>>();
             if (nodeRules.Count > 0)
             {
-                violations.AddRange(_graph.ValidateNodes(nodes.Select(n => n.Node.Id), nodeRules, cancellationToken));
+                var plain = nodeRules.Where(r => !nodesOf.ContainsKey(r.Id)).ToList();
+                if (plain.Count > 0)
+                {
+                    violations.AddRange(_graph.ValidateNodes(nodes.Select(n => n.Node.Id), plain, cancellationToken));
+                }
+                foreach (var rule in nodeRules.Where(r => nodesOf.ContainsKey(r.Id)))
+                {
+                    violations.AddRange(_graph.ValidateNodes(nodesOf[rule.Id].Select(n => n.Node.Id), [rule], cancellationToken));
+                }
             }
             if (edgeRules.Count > 0)
             {
@@ -124,6 +165,26 @@ public sealed class NetworkValidator
 
             progress?.Report((++done, total));
         }
+    }
+
+    private static List<ShardNode> NodesInTiers(List<ShardNode> nodes, ShardData shard, List<ResolvedTier> tiers)
+    {
+        // the edge types at each node of the shard (an edge between shards is stored in both)
+        var edgeTypesAt = new Dictionary<long, List<int>>();
+        foreach (var edge in shard.Edges)
+        {
+            foreach (var end in new[] { edge.Edge.From, edge.Edge.To })
+            {
+                if (!edgeTypesAt.TryGetValue(end, out var list))
+                {
+                    edgeTypesAt[end] = list = [];
+                }
+                list.Add(edge.Edge.TypeId);
+            }
+        }
+        return nodes
+            .Where(n => tiers.All(t => NetworkTiers.ContainsNode(t, n.Node.TypeId, edgeTypesAt.GetValueOrDefault(n.Node.Id) ?? [])))
+            .ToList();
     }
 
     /// <summary>One line per rule in the order of the rules.</summary>

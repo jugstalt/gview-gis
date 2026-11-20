@@ -5,6 +5,8 @@ namespace gView.Carto.Razor.Components.Tools.ToolEvents;
 public enum NetworkSearchAction
 {
     Run,
+    /// <summary>Reads weights and tiers of the built network again (it may have been built after the tool was opened).</summary>
+    Refresh,
     /// <summary>Cancels the run in progress.</summary>
     Cancel,
     Clear,

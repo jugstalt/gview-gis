@@ -18,6 +18,19 @@ public sealed record NetworkQueryRequest
     /// <summary>Only edges of these types (pattern).</summary>
     public string? Filter { get; init; }
 
+    /// <summary>
+    /// trace, reach, path, supply, outage, validate: only these tiers (Ebenen, names from network.json, comma separated).
+    /// The edge types searched are those of the tiers (together with <see cref="Filter"/>), the tiers' blocks are added to
+    /// <see cref="Block"/>, and supply/outage use the sources of the top and the sinks of the bottom tier instead of the
+    /// global ones. validate checks every rule on the tiers only.
+    /// </summary>
+    public string? Tier { get; init; }
+
+    /// <summary>
+    /// trace with a tier: stop at the sources of the tier (default true, like a subnetwork trace); false goes on through them.
+    /// </summary>
+    public bool? StopAtSources { get; init; }
+
     /// <summary>Nodes blocked for this search.</summary>
     public string? Block { get; init; }
 

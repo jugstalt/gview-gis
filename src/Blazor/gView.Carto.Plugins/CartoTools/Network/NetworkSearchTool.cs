@@ -82,6 +82,14 @@ internal class NetworkSearchTool : ICartoTool
         {
             var graph = Graph(scope);
             _context.Weights = new[] { "length" }.Concat(graph.Metadata.Weights.Select(w => w.Name)).ToList();
+            _context.Tiers = graph.Metadata.Tiers.OrderBy(t => t.Order).Select(t => t.Name).ToList();
+            if (!string.IsNullOrEmpty(_context.Tier))
+            {
+                // tiers that are gone after a refresh drop out of the selection
+                var kept = _context.Tier.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                    .Where(t => _context.Tiers.Contains(t, StringComparer.OrdinalIgnoreCase));
+                _context.Tier = string.Join(",", kept);
+            }
         }
         catch (Exception ex)
         {
@@ -117,6 +125,7 @@ internal class NetworkSearchTool : ICartoTool
             return eventArgs switch
             {
                 NetworkSearchEventArgs { Action: NetworkSearchAction.Run } => await Run(scope),
+                NetworkSearchEventArgs { Action: NetworkSearchAction.Refresh } => RefreshNetwork(scope),
                 NetworkSearchEventArgs { Action: NetworkSearchAction.Cancel } => CancelRun(),
                 NetworkSearchEventArgs { Action: NetworkSearchAction.Clear } => await Clear(scope),
                 NetworkSearchEventArgs { Action: NetworkSearchAction.ToSelection } => await ToSelection(scope),
@@ -147,6 +156,12 @@ internal class NetworkSearchTool : ICartoTool
     #endregion
 
     #region Actions
+
+    private bool RefreshNetwork(ICartoApplicationScopeService scope)
+    {
+        Refresh(scope);
+        return true;
+    }
 
     /// <summary>
     /// Snaps the click to the nearest node of the network (real nodes, edge ends, merged points) and sets it as start or
@@ -484,22 +499,26 @@ internal class NetworkSearchTool : ICartoTool
         var context = _context!;
         var graph = Graph(scope);
         var config = Module(scope).Config;
+        // with a tier its sources and sinks count, not the defaults of the module
+        var tier = context.Operation == "info" ? null : NullIfEmpty(context.Tier);
         var request = new NetworkQueryRequest
         {
+            Tier = tier,
+            StopAtSources = context.Operation == "trace" && tier is not null ? context.StopAtSources : null,
             Start = context.Operation is "trace" or "reach" ? context.Start : null,
             From = context.Operation == "path" ? context.Start : null,
             To = context.Operation == "path" ? context.Target : null,
             // supply and outage: the defaults of the map's network module (they may differ from the built network)
             Sources = context.Operation switch
             {
-                "supply" => NullIfEmpty(context.Start) ?? config.SupplySources,
-                "outage" => NullIfEmpty(context.Sources) ?? config.SupplySources,
+                "supply" => NullIfEmpty(context.Start) ?? (tier is null ? config.SupplySources : null),
+                "outage" => NullIfEmpty(context.Sources) ?? (tier is null ? config.SupplySources : null),
                 _ => null
             },
             Sinks = context.Operation switch
             {
-                "supply" => NullIfEmpty(context.Target) ?? config.Customers,
-                "outage" => NullIfEmpty(context.Customers) ?? config.Customers,
+                "supply" => NullIfEmpty(context.Target) ?? (tier is null ? config.Customers : null),
+                "outage" => NullIfEmpty(context.Customers) ?? (tier is null ? config.Customers : null),
                 _ => null
             },
             Disable = context.Operation == "outage" ? context.Start : NullIfEmpty(context.Disable),

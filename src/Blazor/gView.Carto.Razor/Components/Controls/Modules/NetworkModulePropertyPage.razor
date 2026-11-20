@@ -181,6 +181,12 @@
                                             <NetworkTypePatternEditor Label="Counted edge types (several patterns = or)"
                                                                       @bind-Value="current.CountTypes" FacetNames="_facetNames" Suggestions="_suggestions" />
                                         </div>
+                                        <MudSelect T="string" Label="Tier (empty = whole network)" Clearable="true" @bind-Value="current.Tier">
+                                            @foreach (var tier in config.Tiers)
+                                            {
+                                                <MudSelectItem Value="@tier.Name">@tier.Name</MudSelectItem>
+                                            }
+                                        </MudSelect>
                                         <MudTextField T="string" Label="Description" @bind-Value="current.Description" />
                                         <div style="display:flex;gap:8px;margin-top:4px">
                                             <MudButton Size="MudBlazor.Size.Small" OnClick="() => DuplicateRule(current)">Duplicate</MudButton>
@@ -198,6 +204,55 @@
                         {
                             <MudText Typo="Typo.body2" Style="font-family:monospace;margin-top:8px">@_rulesCommand</MudText>
                         }
+                    </GvCardContent>
+                </GvCard>
+            </MudTabPanel>
+
+            <MudTabPanel Text="@($"Tiers ({config.Tiers.Count})")">
+                <GvCard Title="Tiers">
+                    <GvCardContent>
+                        @GvUtilities.InfoText("A tier restricts searches to a part of the network, e.g. high, medium or low voltage (tier parameter / Tier in the Network Search tool). Edges belong by type pattern (| or, & and, ! not, e.g. Mittelspannung.* & !*.Freileitung); a node belongs to every tier whose edges touch it. Lower order = higher up. Sources, sinks and blocks are node references or patterns; a tier's sources and sinks replace the supply sources and customers (top tier: sources, bottom tier: sinks). Written into the network at build, or with Refresh metadata.")
+                        <div style="display:flex;gap:8px;margin-bottom:8px">
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AddTier">Add tier</MudButton>
+                            <MudButton Variant="Variant.Text" OnClick="CheckTiers">Check patterns</MudButton>
+                            <MudButton Variant="Variant.Text" OnClick="RefreshMetadata" Disabled="@string.IsNullOrEmpty(mapPath)">Refresh metadata</MudButton>
+                        </div>
+                        @if (_tierMessages.Count > 0)
+                        {
+                            <MudAlert Severity="_tierSeverity" Dense="true">
+                                @foreach (var message in _tierMessages)
+                                {
+                                    <div>@message</div>
+                                }
+                            </MudAlert>
+                        }
+                        <MudExpansionPanels MultiExpansion="true" Dense="true">
+                            @foreach (var tier in config.Tiers.OrderBy(t => t.Order))
+                            {
+                                var current = tier;
+                                <MudExpansionPanel>
+                                    <TitleContent>
+                                        <div style="display:flex;gap:8px;align-items:center;width:100%">
+                                            <MudChip T="string" Size="MudBlazor.Size.Small">@current.Order</MudChip>
+                                            <b>@(string.IsNullOrWhiteSpace(current.Name) ? "(no name)" : current.Name)</b>
+                                            <span style="opacity:.7;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">@current.Filter</span>
+                                        </div>
+                                    </TitleContent>
+                                    <ChildContent>
+                                        <div style="display:flex;gap:8px;align-items:flex-end">
+                                            <div style="flex:2"><MudTextField T="string" Label="Name" @bind-Value="current.Name" /></div>
+                                            <div style="flex:1"><MudNumericField T="int" Label="Order (lower = higher up)" @bind-Value="current.Order" /></div>
+                                        </div>
+                                        <MudTextField T="string" Label="Edge types (pattern, e.g. Mittelspannung.*)" @bind-Value="current.Filter" />
+                                        <MudTextField T="string" Label="Extra nodes (node pattern, optional)" @bind-Value="current.Nodes" />
+                                        <MudTextField T="string" Label="Sources (empty = supply sources)" @bind-Value="current.Sources" />
+                                        <MudTextField T="string" Label="Sinks (empty = customers)" @bind-Value="current.Sinks" />
+                                        <MudTextField T="string" Label="Blocked nodes" @bind-Value="current.Block" />
+                                        <MudButton Size="MudBlazor.Size.Small" Color="Color.Error" OnClick="() => config.Tiers.Remove(current)">Delete</MudButton>
+                                    </ChildContent>
+                                </MudExpansionPanel>
+                            }
+                        </MudExpansionPanels>
                     </GvCardContent>
                 </GvCard>
             </MudTabPanel>
@@ -397,6 +452,26 @@
 
     private void AddWeight() => Handle(() =>
         _module!.Config.Weights.Add(new WeightConfig { Name = Unique(_module.Config.Weights.Select(w => w.Name), "Weight") }));
+
+    private List<string> _tierMessages = [];
+    private Severity _tierSeverity = Severity.Info;
+
+    private void AddTier() => Handle(() =>
+        _module!.Config.Tiers.Add(new NetworkTierConfig { Name = Unique(_module.Config.Tiers.Select(t => t.Name), "tier"), Order = _module.Config.Tiers.Count == 0 ? 1 : _module.Config.Tiers.Max(t => t.Order) + 1 }));
+
+    private void CheckTiers() => Handle(() =>
+    {
+        var problems = _module!.CheckTiers(AppScope.Document?.FilePath);
+        _tierSeverity = problems.Count == 0 ? Severity.Success : Severity.Warning;
+        _tierMessages = problems.Count == 0 ? ["All tier patterns are valid."] : problems;
+    });
+
+    private void RefreshMetadata() => Handle(() =>
+    {
+        var metadata = _module!.RefreshMetadata(AppScope.Document?.FilePath ?? "");
+        _tierSeverity = Severity.Success;
+        _tierMessages = [$"Refreshed: {metadata.Tiers.Count} tier(s), {metadata.Rules.Count} rule(s), supply sources and customers written into the built network."];
+    });
 
     private void AddRule() => Handle(() =>
     {

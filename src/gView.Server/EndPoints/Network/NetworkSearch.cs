@@ -108,6 +108,8 @@ public static class NetworkSearch
             Sinks = Nodes("sinks"),
             Node = Nodes("node"),
             Filter = P("filter"),
+            Tier = P("tier"),
+            StopAtSources = P("stopAtSources") is string stop ? !stop.Equals("false", StringComparison.OrdinalIgnoreCase) : null,
             Block = Nodes("block"),
             Unblock = Nodes("unblock"),
             Disable = P("disable"),

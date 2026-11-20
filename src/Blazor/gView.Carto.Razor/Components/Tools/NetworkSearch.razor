@@ -108,6 +108,20 @@
                 <MudTextField T="string" Label="@($"{TargetLabel} (Layer#OID, id, type pattern or @x,y; empty = module default)")" Dense="true"
                               Value="_context.Target" ValueChanged="@((string v) => { _context.Target = v; _context.TargetLabel = null; Typed(_context.TargetItems, v); })" />
             }
+            @if (_context.Operation != "info")
+            {
+                <MudSelect T="string" Label="Tiers (empty = all)" Dense="true" Clearable="true" MultiSelection="true"
+                           SelectedValues="SelectedTiers" SelectedValuesChanged="SetSelectedTiers" OpenChanged="OnTierOpenChanged">
+                    @foreach (var tier in _context.Tiers)
+                    {
+                        <MudSelectItem Value="@tier">@tier</MudSelectItem>
+                    }
+                </MudSelect>
+                @if (_context.Operation == "trace" && !string.IsNullOrEmpty(_context.Tier))
+                {
+                    <MudCheckBox T="bool" Label="Stop at the sources of the tier" Dense="true" @bind-Value="_context.StopAtSources" />
+                }
+            }
             @if (_context.Operation == "outage")
             {
                 <MudTextField T="string" Label="@($"Sources (empty = {ModuleConfig?.SupplySources ?? "not set in the network module"})")" Dense="true" @bind-Value="_context.Sources" />
@@ -247,6 +261,22 @@
             _context.RuleIds = string.Join(",", ids ?? []);
         }
     }
+
+    private IReadOnlyCollection<string> SelectedTiers
+        => (_context?.Tier ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
+
+    private void SetSelectedTiers(IReadOnlyCollection<string>? names)
+    {
+        if (_context is not null)
+        {
+            _context.Tier = string.Join(",", names ?? []);
+        }
+    }
+
+    // the network may have been built after the tool was opened: read the tiers again when the list is opened
+    private Task OnTierOpenChanged(bool open) => open
+        ? HandleAsync(async () => await EventBus.FireToolEventAsync(new NetworkSearchEventArgs(NetworkSearchAction.Refresh)))
+        : Task.CompletedTask;
 
     protected override void OnInitialized()
     {

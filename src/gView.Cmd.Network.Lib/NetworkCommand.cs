@@ -26,7 +26,7 @@ public class NetworkCommand : ICommand
 {
     public string Name => "Network";
 
-    public string Description => "Build and search SpatialNET networks (-u build | config-from-mxl | trace | reach | path | supply | outage | info | nearest | validate)";
+    public string Description => "Build and search SpatialNET networks (-u build | refresh-metadata | config-from-mxl | trace | reach | path | supply | outage | info | nearest | validate)";
 
     public string ExecutableName => "";
 
@@ -50,6 +50,8 @@ public class NetworkCommand : ICommand
             new CommandParameter<string>("count") { Description = "nearest: number of nodes (default 1)" },
             new CommandParameter<string>("node") { Description = "info: the node" },
             new CommandParameter<string>("filter") { Description = "searches: only edges of these types (pattern)" },
+            new CommandParameter<string>("tier") { Description = "searches, validate: only these tiers (Ebenen, names from the config, comma separated)" },
+            new CommandParameter<string>("stop-at-sources") { Description = "trace with -tier: false goes on through the sources of the tier (default true)" },
             new CommandParameter<string>("block") { Description = "searches: nodes blocked for this search" },
             new CommandParameter<string>("unblock") { Description = "searches: nodes opened for this search" },
             new CommandParameter<string>("area") { Description = "searches, validate: only this area: xmin,ymin,xmax,ymax | GeoJSON/Esri JSON polygon | WKT POLYGON/MULTIPOLYGON | shard:key1,key2 (network srs)" },
@@ -70,6 +72,8 @@ public class NetworkCommand : ICommand
         {
             case "build":
                 return await Build(parameters, output, logger);
+            case "refresh-metadata":
+                return await RefreshMetadata(parameters, output, logger);
             case "config-from-mxl":
                 return await ConfigFromMxl(parameters.GetValue<string>("mxl"), output, logger);
             case "trace":
@@ -84,6 +88,7 @@ public class NetworkCommand : ICommand
             default:
                 logger?.LogLine("Usage:");
                 logger?.LogLine("  -u build (-config <net.json> [-mxl <map.mxl>] | -mxl <map.mxl with network from Carto>) [-output <directory>, default: directory of the config or <map>.network] [-json true]");
+                logger?.LogLine("  -u refresh-metadata (-config <net.json> [-mxl <map.mxl>] | -mxl <map.mxl>) [-output <network directory>]: rewrites supplySources, customers, rules and tiers in network.json without building");
                 logger?.LogLine("  -u config-from-mxl -mxl <map.mxl> -output <net.json>");
                 logger?.LogLine("  -u trace  -network <dir> -start <nodes> [-filter <pattern>] [-block <nodes>] [-unblock <nodes>] [-out x.csv|x.geojson]");
                 logger?.LogLine("  -u reach  -network <dir> -start <nodes> -max-cost <cost> [-weight <name>] [-out ...]");
@@ -153,6 +158,47 @@ public class NetworkCommand : ICommand
             map, config, output,
             "true".Equals(parameters.GetValue<string>("json"), StringComparison.OrdinalIgnoreCase),
             message => logger?.LogLine(message));
+    }
+
+    /// <summary>Takes supplySources, customers, rules and tiers from the config into the built network (no shards are built).</summary>
+    private static async Task<bool> RefreshMetadata(IDictionary<string, object> parameters, string output, ICommandLogger? logger)
+    {
+        var configPath = parameters.GetValue<string>("config");
+        var mxlPath = parameters.GetValue<string>("mxl");
+        NetworkConfig config;
+        if (string.IsNullOrEmpty(configPath))
+        {
+            if (string.IsNullOrEmpty(mxlPath))
+            {
+                throw new ArgumentException("Pass -config <net.json> or -mxl <map.mxl> with a network configured in Carto.");
+            }
+            var map = await LoadMap(mxlPath);
+            config = NetworkModuleReader.Read(map, reader =>
+            {
+                var stream = new XmlStream("");
+                stream.ReadStream(mxlPath);
+                stream.Load("MapDocument", null, reader);
+            })?.Config ?? throw new ArgumentException($"{mxlPath} has no network configured.");
+        }
+        else
+        {
+            config = NetworkConfig.Load(configPath);
+            if (string.IsNullOrEmpty(mxlPath) && !string.IsNullOrEmpty(config.Map))
+            {
+                mxlPath = Path.IsPathRooted(config.Map) ? config.Map : Path.GetFullPath(Path.Combine(Path.GetDirectoryName(Path.GetFullPath(configPath))!, config.Map));
+            }
+        }
+
+        if (string.IsNullOrEmpty(output))
+        {
+            output = string.IsNullOrEmpty(mxlPath)
+                ? throw new ArgumentException("Pass -output <network directory> (or -mxl / \"map\" in the config to find it).")
+                : config.ResolveDirectory(mxlPath);
+        }
+
+        var metadata = NetworkMetadataRefresh.Refresh(config, output);
+        logger?.LogLine($"Refreshed: {output} ({metadata.Tiers.Count} tiers, {metadata.Rules.Count} rules, sources {metadata.SupplySources ?? "-"}, customers {metadata.Customers ?? "-"})");
+        return true;
     }
 
     private static async Task<bool> ConfigFromMxl(string mxlPath, string output, ICommandLogger? logger)

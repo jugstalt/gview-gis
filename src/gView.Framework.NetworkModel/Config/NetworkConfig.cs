@@ -52,10 +52,51 @@ public class NetworkConfig
     public string? Customers { get; set; }
 
     /// <summary>
+    /// The tiers ("Ebenen", e.g. high, medium and low voltage) searches can be restricted to with the tier parameter;
+    /// written into network.json on build and by refresh metadata.
+    /// </summary>
+    public List<NetworkTierConfig> Tiers { get; set; } = [];
+
+    /// <summary>
     /// Where the built network is kept, relative to the map (mxl). Empty: {map name}.network next to the map.
     /// Build writes there by default, Carto and the server search there.
     /// </summary>
     public string? Directory { get; set; }
+
+    /// <summary>Checks what refresh metadata writes: unique rule ids and tier names, tiers of rules that exist.</summary>
+    public void ValidateTiersAndRules()
+    {
+        var duplicateTier = Tiers.GroupBy(t => t.Name, StringComparer.OrdinalIgnoreCase).FirstOrDefault(g => g.Count() > 1 || string.IsNullOrWhiteSpace(g.Key));
+        if (duplicateTier is not null)
+        {
+            throw new InvalidDataException(string.IsNullOrWhiteSpace(duplicateTier.Key) ? "Every tier needs a name." : $"The tier name '{duplicateTier.Key}' is used twice.");
+        }
+        foreach (var rule in Rules.Where(r => !string.IsNullOrWhiteSpace(r.Tier)))
+        {
+            if (!Tiers.Any(t => t.Name.Equals(rule.Tier!.Trim(), StringComparison.OrdinalIgnoreCase)))
+            {
+                throw new InvalidDataException($"Rule '{rule.Id}': unknown tier '{rule.Tier}'. Tiers: {string.Join(", ", Tiers.Select(t => t.Name))}");
+            }
+        }
+    }
+
+    /// <summary>Checks the tier patterns against the types of a network; throws an <see cref="InvalidDataException"/> naming the tier.</summary>
+    public List<ResolvedTier> ResolveTiers(SpatialNET.Network.TypeRegistry types)
+    {
+        var resolved = new List<ResolvedTier>();
+        foreach (var tier in Tiers)
+        {
+            try
+            {
+                resolved.Add(tier.Resolve(types));
+            }
+            catch (ArgumentException ex)
+            {
+                throw new InvalidDataException(ex.Message, ex);
+            }
+        }
+        return resolved;
+    }
 
     /// <summary>The network directory for a map document (see <see cref="Directory"/>).</summary>
     public string ResolveDirectory(string mapPath)
@@ -124,6 +165,7 @@ public class NetworkConfig
         {
             throw new InvalidDataException(string.IsNullOrWhiteSpace(duplicateRule.Key) ? "Every rule needs an id." : $"The rule id '{duplicateRule.Key}' is used twice.");
         }
+        ValidateTiersAndRules();
         if (Shards is not null && ((string.IsNullOrWhiteSpace(Shards.Layer) && Shards.LayerId is null) || string.IsNullOrWhiteSpace(Shards.Field)))
         {
             throw new InvalidDataException("The shards need a layer and a field.");
