@@ -15,6 +15,7 @@ using gView.Framework.Data;
 using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
 using gView.Framework.NetworkModel.Build;
+using gView.Framework.NetworkModel.Extensions;
 using gView.Framework.NetworkModel.Graph;
 using gView.Framework.NetworkModel.Ids;
 using gView.Framework.NetworkModel.Module;
@@ -500,7 +501,7 @@ internal class NetworkSearchTool : ICartoTool
         var graph = Graph(scope);
         var config = Module(scope).Config;
         // with a tier its sources and sinks count, not the defaults of the module
-        var tier = context.Operation == "info" ? null : NullIfEmpty(context.Tier);
+        var tier = context.Operation == "info" ? null : context.Tier.NullIfEmpty();
         var request = new NetworkQueryRequest
         {
             Tier = tier,
@@ -511,23 +512,23 @@ internal class NetworkSearchTool : ICartoTool
             // supply and outage: the defaults of the map's network module (they may differ from the built network)
             Sources = context.Operation switch
             {
-                "supply" => NullIfEmpty(context.Start) ?? (tier is null ? config.SupplySources : null),
-                "outage" => NullIfEmpty(context.Sources) ?? (tier is null ? config.SupplySources : null),
+                "supply" => context.Start.NullIfEmpty() ?? (tier is null ? config.SupplySources : null),
+                "outage" => context.Sources.NullIfEmpty() ?? (tier is null ? config.SupplySources : null),
                 _ => null
             },
             Sinks = context.Operation switch
             {
-                "supply" => NullIfEmpty(context.Target) ?? (tier is null ? config.Customers : null),
-                "outage" => NullIfEmpty(context.Customers) ?? (tier is null ? config.Customers : null),
+                "supply" => context.Target.NullIfEmpty() ?? (tier is null ? config.Customers : null),
+                "outage" => context.Customers.NullIfEmpty() ?? (tier is null ? config.Customers : null),
                 _ => null
             },
-            Disable = context.Operation == "outage" ? context.Start : NullIfEmpty(context.Disable),
+            Disable = context.Operation == "outage" ? context.Start : context.Disable.NullIfEmpty(),
             Node = context.Operation == "info" ? context.Start : null,
             Weight = context.Weight,
             MaxCost = string.IsNullOrWhiteSpace(context.MaxCost) ? null : double.Parse(context.MaxCost.Replace(',', '.'), CultureInfo.InvariantCulture),
-            Filter = NullIfEmpty(context.Filter),
-            Block = NullIfEmpty(context.Block),
-            RuleIds = NullIfEmpty(context.RuleIds),
+            Filter = context.Filter.NullIfEmpty(),
+            Block = context.Block.NullIfEmpty(),
+            RuleIds = context.RuleIds.NullIfEmpty(),
             // the rules of the map (module settings), so they can be tried without building again
             Rules = context.Operation == "validate" ? NetworkModule.Clone(Module(scope).Config.Rules) : null,
             Area = context.Operation is "info" ? null : context.Area,
@@ -878,7 +879,6 @@ internal class NetworkSearchTool : ICartoTool
         return NetworkGraphCache.Shared.Get(directory);
     }
 
-    private static string? NullIfEmpty(string? value) => string.IsNullOrWhiteSpace(value) ? null : value;
 
     private static void RemoveResultGraphics(ICartoApplicationScopeService scope)
     {

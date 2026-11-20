@@ -265,6 +265,14 @@ public class NetworkModule : IMapApplicationModule, IPersistable
                 problems.Add(ex.Message);
             }
         }
+        try
+        {
+            Config.ResolveRules(types);
+        }
+        catch (InvalidDataException ex)
+        {
+            problems.Add(ex.Message);
+        }
         return problems;
     }
 

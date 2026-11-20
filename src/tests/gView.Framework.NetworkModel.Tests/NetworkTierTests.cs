@@ -179,6 +179,62 @@ public class NetworkTierTests : IDisposable
     }
 
     [Fact]
+    public void Trace_ANodeThatIsBlockedAnyway_IsNotReportedAsSource()
+    {
+        Build([new NetworkTierConfig { Name = "MS", Order = 1, Filter = "MS.*", Sources = "[*,Quelle]" }]);
+        var stopped = Service().Run("trace", new NetworkQueryRequest { Start = "Knoten#3", Tier = "MS" });
+        Assert.Equal("Source", stopped.Nodes.Single(n => n.Label == "Knoten#1").Kind);
+
+        // the same node is also blocked by the request: it is a block first
+        var blocked = Service().Run("trace", new NetworkQueryRequest { Start = "Knoten#3", Tier = "MS", Block = "Knoten#1" });
+        Assert.Equal("Blocked", blocked.Nodes.Single(n => n.Label == "Knoten#1").Kind);
+    }
+
+    [Fact]
+    public void Validate_RuleTierAndQueryTierWithoutCommonEdges_SkipsTheRuleAndSaysSo()
+    {
+        var rule = new NetworkRuleConfig { Id = "R", Subject = RuleSubject.Node, SubjectTypes = "[*,Kasten]", CountTypes = "[*,Kabel]", Min = 3, Tier = "NS" };
+        Build(rules: [rule]);
+        var result = Service().Run("validate", new NetworkQueryRequest { Tier = "MS" });
+        Assert.Empty(result.Violations);
+        Assert.Empty(result.Rules);
+        Assert.Contains(result.Messages, m => m.Contains("Rule 'R' skipped"));
+    }
+
+    [Fact]
+    public void RestrictToTier_ReturnsNullWhenTheTierHasNoneOfTheCountedEdges()
+    {
+        Build();
+        var graph = new FileNetworkGraph(_directory);
+        var rule = new NetworkRuleConfig { Id = "R", Subject = RuleSubject.Edge, SubjectTypes = "NS.*", CountTypes = "MS.*", Max = 1 };
+        var resolved = rule.Resolve(graph.Types);
+        var ms = graph.Metadata.Tiers.Single(t => t.Name == "MS").Resolve(graph.Types);
+        var ns = graph.Metadata.Tiers.Single(t => t.Name == "NS").Resolve(graph.Types);
+        Assert.Null(rule.RestrictToTier(resolved, ms)); // subject NS.* has no MS edge
+        Assert.Null(rule.RestrictToTier(resolved, ns)); // counts MS.*: no NS edge
+    }
+
+    [Fact]
+    public void RefreshMetadata_RejectsRulesWithInvalidPatterns_AndLeavesTheFileAlone()
+    {
+        Build(tiers: []);
+        var path = Path.Combine(_directory, FileNetworkStore.MetadataFile);
+        var before = File.ReadAllText(path);
+        var config = new NetworkConfig
+        {
+            Tiers = Tiers(),
+            Rules = [new NetworkRuleConfig { Id = "Kaputt", Subject = RuleSubject.Node, SubjectTypes = "[*,Gibtsnicht]", CountTypes = "[*,Kabel]", Min = 1 }]
+        };
+        var ex = Assert.Throws<InvalidDataException>(() => NetworkMetadataRefresh.Refresh(config, _directory));
+        Assert.Contains("Kaputt", ex.Message);
+        Assert.Equal(before, File.ReadAllText(path));
+
+        config.Rules[0].SubjectTypes = "[*,Kasten]";
+        config.Rules[0].Tier = "Unbekannt";
+        Assert.Throws<InvalidDataException>(() => NetworkMetadataRefresh.Refresh(config, _directory));
+    }
+
+    [Fact]
     public void Validate_RuleTier_AndQueryTier_RestrictTheRule()
     {
         // every Kasten needs at least 3 edges: both Kasten fail on the whole network

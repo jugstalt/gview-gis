@@ -52,12 +52,17 @@ public class NetworkRuleConfig
     /// <summary>
     /// The rule restricted to a tier: the subject (edge rules) and the counted edges are cut to the edge types of the tier.
     /// A node rule still has all nodes of its subject types; the nodes of the tier are chosen by the caller
-    /// (<see cref="Query.NetworkTiers.ContainsNode"/>). End types are node types and stay as they are.
+    /// (<see cref="ResolvedTier.ContainsNode"/>). The end types of an edge rule need no cut: the ends are ends of edges of the
+    /// tier, so they belong to the tier whatever their type. Null when nothing is left to check: the tier has none of the
+    /// counted edge types (or, for an edge rule, none of the subject types).
     /// </summary>
-    public NetworkRule Resolve(TypeRegistry types, ResolvedTier tier, NetworkRule? rule = null)
+    public NetworkRule? RestrictToTier(NetworkRule rule, ResolvedTier tier)
     {
-        rule ??= Resolve(types);
         var count = rule.CountTypes.Intersect(tier.EdgeTypes);
+        if (count.Count == 0 || (rule.Subject == RuleSubject.Edge && rule.SubjectTypes.Intersect(tier.EdgeTypes).Count == 0))
+        {
+            return null;
+        }
         NetworkRule restricted;
         if (rule.Subject == RuleSubject.Node)
         {

@@ -1,3 +1,4 @@
+using gView.Framework.NetworkModel.Extensions;
 using gView.Framework.NetworkModel.Ids;
 using gView.Framework.NetworkModel.Store;
 using SpatialNET.Network;
@@ -44,9 +45,7 @@ public sealed class FileNetworkGraph : IGraph<long, long>
         _aliases = AliasIndex.Read(Path.Combine(directory, AliasIndex.FileName));
         _spatial = new Lazy<SpatialIndex>(() => SpatialIndex.Read(RequiredIndex(SpatialIndex.FileName)), LazyThreadSafetyMode.ExecutionAndPublication);
         _edgeIndex = new Lazy<EdgeIndex>(() => EdgeIndex.Read(RequiredIndex(EdgeIndex.FileName)), LazyThreadSafetyMode.ExecutionAndPublication);
-        Types = new TypeRegistry(
-            Metadata.Facets.Select(f => new Facet(f.Name, f.Values)).ToList(),
-            Metadata.Types.Select(t => new NetworkType(t.Id, t.Kind, t.Facets, t.Name)));
+        Types = Metadata.ToTypeRegistry();
     }
 
     public NetworkMetadata Metadata { get; }

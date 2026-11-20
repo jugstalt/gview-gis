@@ -1,3 +1,4 @@
+using gView.Framework.NetworkModel.Extensions;
 using gView.Framework.NetworkModel.Graph;
 using SpatialNET.Network;
 
@@ -94,6 +95,10 @@ public sealed record ResolvedTier(NetworkTierConfig Config, TypeSet EdgeTypes, T
 {
     public string Name => Config.Name;
 
+    /// <summary>Whether a node belongs to the tier: an edge of the tier touches it, or its type is one of the tier's node types.</summary>
+    public bool ContainsNode(int nodeTypeId, IEnumerable<int> edgeTypeIdsAtNode)
+        => (NodeTypes?.Contains(nodeTypeId) ?? false) || edgeTypeIdsAtNode.Any(EdgeTypes.Contains);
+
     /// <summary>The union of several tiers: all their edge types, and the node types of those that have any.</summary>
     public static ResolvedTier Union(IReadOnlyList<ResolvedTier> tiers)
     {
@@ -101,11 +106,11 @@ public sealed record ResolvedTier(NetworkTierConfig Config, TypeSet EdgeTypes, T
         {
             return tiers[0];
         }
-        var edges = tiers.Select(t => t.EdgeTypes).Aggregate((a, b) => a.Union(b));
+        var edges = tiers.Select(t => t.EdgeTypes).UnionAll();
         var nodeSets = tiers.Where(t => t.NodeTypes is not null).Select(t => t.NodeTypes!).ToList();
         return new ResolvedTier(
             new NetworkTierConfig { Name = string.Join(",", tiers.Select(t => t.Name)), Order = tiers.Min(t => t.Config.Order) },
             edges,
-            nodeSets.Count == 0 ? null : nodeSets.Aggregate((a, b) => a.Union(b)));
+            nodeSets.Count == 0 ? null : nodeSets.UnionAll());
     }
 }

@@ -1,3 +1,4 @@
+using gView.Framework.NetworkModel.Extensions;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -73,10 +74,31 @@ public class NetworkConfig
         }
         foreach (var rule in Rules.Where(r => !string.IsNullOrWhiteSpace(r.Tier)))
         {
-            if (!Tiers.Any(t => t.Name.Equals(rule.Tier!.Trim(), StringComparison.OrdinalIgnoreCase)))
+            if (Tiers.FindTier(rule.Tier) is null)
             {
                 throw new InvalidDataException($"Rule '{rule.Id}': unknown tier '{rule.Tier}'. Tiers: {string.Join(", ", Tiers.Select(t => t.Name))}");
             }
+        }
+    }
+
+    /// <summary>Checks the type patterns of the rules against the types of a network; throws an <see cref="InvalidDataException"/> naming every faulty rule.</summary>
+    public void ResolveRules(SpatialNET.Network.TypeRegistry types)
+    {
+        var problems = new List<string>();
+        foreach (var rule in Rules)
+        {
+            try
+            {
+                rule.Resolve(types);
+            }
+            catch (ArgumentException ex)
+            {
+                problems.Add(ex.Message);
+            }
+        }
+        if (problems.Count > 0)
+        {
+            throw new InvalidDataException("Invalid rules:" + Environment.NewLine + string.Join(Environment.NewLine, problems.Select(p => "  " + p)));
         }
     }
 

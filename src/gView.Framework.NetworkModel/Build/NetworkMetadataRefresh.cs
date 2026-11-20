@@ -12,7 +12,7 @@ namespace gView.Framework.NetworkModel.Build;
 /// </summary>
 public static class NetworkMetadataRefresh
 {
-    /// <summary>Refreshes network.json in the directory; returns the new metadata. Throws when the config or its tiers are invalid, or there is no network.</summary>
+    /// <summary>Refreshes network.json in the directory; returns the new metadata. Throws when the config, its tiers or its rules are invalid, or there is no network.</summary>
     public static NetworkMetadata Refresh(NetworkConfig config, string directory)
     {
         config.ValidateTiersAndRules();
@@ -21,7 +21,9 @@ public static class NetworkMetadataRefresh
         var metadata = new FileNetworkStore(directory).ReadMetadata()
             ?? throw new FileNotFoundException($"No built network in {directory} ({FileNetworkStore.MetadataFile} missing); build it first.");
 
-        config.ResolveTiers(metadata.ToTypeRegistry());
+        var types = metadata.ToTypeRegistry();
+        config.ResolveTiers(types);
+        config.ResolveRules(types);
 
         metadata.SupplySources = config.SupplySources;
         metadata.Customers = config.Customers;

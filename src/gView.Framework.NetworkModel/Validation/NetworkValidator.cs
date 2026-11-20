@@ -1,4 +1,5 @@
 using gView.Framework.NetworkModel.Config;
+using gView.Framework.NetworkModel.Extensions;
 using gView.Framework.NetworkModel.Graph;
 using gView.Framework.NetworkModel.Query;
 using gView.Framework.NetworkModel.Store;
@@ -24,6 +25,7 @@ public sealed class NetworkValidator
     private readonly Dictionary<string, List<ResolvedTier>> _nodeTiers = new(StringComparer.Ordinal);
     private readonly Dictionary<string, long> _checked = new(StringComparer.Ordinal);
     private readonly Dictionary<string, long> _violations = new(StringComparer.Ordinal);
+    private readonly List<string> _skipped = [];
 
     /// <param name="graph">The network.</param>
     /// <param name="rules">The rules; a rule with a tier is restricted to it.</param>
@@ -40,19 +42,33 @@ public sealed class NetworkValidator
                 var restrictions = new List<ResolvedTier>();
                 if (!string.IsNullOrWhiteSpace(config.Tier))
                 {
-                    var tier = graph.Metadata.Tiers.FirstOrDefault(t => t.Name.Equals(config.Tier.Trim(), StringComparison.OrdinalIgnoreCase))
-                        ?? throw new ArgumentException($"Rule '{config.Id}': unknown tier '{config.Tier}'. Tiers: {string.Join(", ", graph.Metadata.Tiers.Select(t => t.Name))}");
-                    restrictions.Add(tier.Resolve(graph.Types));
+                    try
+                    {
+                        restrictions.Add(graph.Metadata.Tiers.GetTier(config.Tier).Resolve(graph.Types));
+                    }
+                    catch (ArgumentException ex)
+                    {
+                        throw new ArgumentException($"Rule '{config.Id}': {ex.Message}", ex);
+                    }
                 }
                 if (restrict is not null)
                 {
                     restrictions.Add(restrict);
                 }
 
-                var rule = config.Resolve(graph.Types);
+                NetworkRule? rule = config.Resolve(graph.Types);
                 foreach (var restriction in restrictions)
                 {
-                    rule = config.Resolve(graph.Types, restriction, rule);
+                    rule = config.RestrictToTier(rule, restriction);
+                    if (rule is null)
+                    {
+                        break;
+                    }
+                }
+                if (rule is null)
+                {
+                    _skipped.Add($"Rule '{config.Id}' skipped: its tier and the tier of the search have no edge types of the rule in common.");
+                    continue;
                 }
                 if (config.Subject == RuleSubject.Node && restrictions.Count > 0)
                 {
@@ -75,6 +91,9 @@ public sealed class NetworkValidator
             throw new InvalidDataException("Invalid rules:" + Environment.NewLine + string.Join(Environment.NewLine, problems.Select(p => "  " + p)));
         }
     }
+
+    /// <summary>The rules that were left out because the tiers cut away everything they check, with the reason.</summary>
+    public IReadOnlyList<string> Skipped => _skipped;
 
     public IReadOnlyList<NetworkRule> Rules => _rules.Select(r => r.Rule).ToList();
 
@@ -183,7 +202,7 @@ public sealed class NetworkValidator
             }
         }
         return nodes
-            .Where(n => tiers.All(t => NetworkTiers.ContainsNode(t, n.Node.TypeId, edgeTypesAt.GetValueOrDefault(n.Node.Id) ?? [])))
+            .Where(n => tiers.All(t => t.ContainsNode(n.Node.TypeId, edgeTypesAt.GetValueOrDefault(n.Node.Id) ?? [])))
             .ToList();
     }
 
