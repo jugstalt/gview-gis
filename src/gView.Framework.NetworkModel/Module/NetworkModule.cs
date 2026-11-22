@@ -191,13 +191,23 @@ public class NetworkModule : IMapApplicationModule, IPersistable
             return NetworkStatus.NotBuilt(directory);
         }
 
+        // the build time is written in UTC: compare in UTC, show in local time
+        var created = AsUtc(metadata.Created);
         string? reason = null;
-        if (File.Exists(mapPath) && File.GetLastWriteTime(mapPath) > metadata.Created)
+        if (File.Exists(mapPath) && File.GetLastWriteTimeUtc(mapPath) > created)
         {
             reason = "The map was saved after the build.";
         }
-        return new(directory, true, metadata.Created, metadata.NodeCount, metadata.EdgeCount, metadata.Shards.Count, reason is not null, reason);
+        return new(directory, true, created.ToLocalTime(), metadata.NodeCount, metadata.EdgeCount, metadata.Shards.Count, reason is not null, reason);
     }
+
+    /// <summary>A time of network.json in UTC; one without a kind was written as UTC (DateTime.UtcNow).</summary>
+    internal static DateTime AsUtc(DateTime time) => time.Kind switch
+    {
+        DateTimeKind.Utc => time,
+        DateTimeKind.Local => time.ToUniversalTime(),
+        _ => DateTime.SpecifyKind(time, DateTimeKind.Utc),
+    };
 
     /// <summary>The known values of every facet (fixed values of the config, values of a built network) for pickers.</summary>
     public List<List<string>> FacetValueSuggestions(string? mapPath)
