@@ -4,38 +4,34 @@
 
 @if (_propertyPageDefinitions is not null)
 {
-    <ModalDialogFormBase T="ModuleSettingsModel"
+    <ModalDialogFormBase T="ModuleSettingsModel" ContentStyle="DialogContentStyle.Wide"
                          OnDialogClose="base.OnDialogClose"
                          Model="base.Model">
         <DialogBody>
-            <MudDrawerContainer Class="mud-height-full">
-                <MudDrawer Variant="@DrawerVariant.Mini" Anchor="Anchor.Left"
-                           Elevation="1" 
-                           @bind-Open="@_drawerIsOpen"  
-                           OpenMiniOnHover="true" 
-                           Fixed="false">
-                    <MudList T="IPropertyPageDefinition" 
+            @* the settings of the services a map gives (FeatureServer, NetworkServer); internally the map's modules *@
+            <div style="display:flex;gap:12px;height:72vh">
+                <div style="width:190px;flex:none;border-right:1px solid var(--mud-palette-lines-default)">
+                    <MudList T="IPropertyPageDefinition"
                              SelectionMode="SelectionMode.SingleSelection"
                              SelectedValue="_currentTab"
                              SelectedValueChanged="OnCurrentTabChanged">
-                    @foreach(var propertyPageDefintion in _propertyPageDefinitions)
-                    {
-                            <MudListItem Icon="@IconService.FromString("basic:settings")"
+                        @foreach (var propertyPageDefintion in _propertyPageDefinitions)
+                        {
+                            var description = propertyPageDefintion as IPropertyPageDescription;
+                            <MudListItem Icon="@IconService.FromString(description?.Icon ?? "basic:settings")"
                                          Style="white-space:nowrap"
                                          Value="propertyPageDefintion"
-                                         Text="@propertyPageDefintion.InstanceType.Name.SplitCamelCase()"
-                                         OnClick="() => _drawerIsOpen = false" />
-                    }
+                                         Text="@(description?.Title ?? propertyPageDefintion.InstanceType.Name.SplitCamelCase())" />
+                        }
                     </MudList>
-                </MudDrawer>
-            </MudDrawerContainer>
-
-            <MudContainer Style="padding-left:50px;padding-right:10px">
-                @if (_propertyPageRenderFragment is not null)
-                {
-                    @(_propertyPageRenderFragment)
-                }
-            </MudContainer>
+                </div>
+                <div style="flex:1;min-width:0;overflow:auto;padding-right:6px">
+                    @if (_propertyPageRenderFragment is not null)
+                    {
+                        @(_propertyPageRenderFragment)
+                    }
+                </div>
+            </div>
         </DialogBody>
         <DialogButtons>
             <MudButton Variant="Variant.Filled"
@@ -47,7 +43,6 @@
 }
 
 @code {
-    private bool _drawerIsOpen = false;
     private IPropertyPageDefinition[]? _propertyPageDefinitions;
     private IPropertyPageDefinition? _currentTab;
     private RenderFragment? _propertyPageRenderFragment;

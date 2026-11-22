@@ -13,7 +13,7 @@
     var config = _module.Config;
     var mapPath = AppScope.Document?.FilePath;
 
-    <GvScrollable>
+    <div>
         <MudTabs Elevation="0" Rounded="false" ApplyEffectsToContainer="true" PanelClass="pt-2" KeepPanelsAlive="true">
             <MudTabPanel Text="General">
                 <GvCard Title="Network">
@@ -127,15 +127,16 @@
                                 var current = rule;
                                 <MudExpansionPanel Expanded="_openRules.Contains(current)" ExpandedChanged="(bool open) => SetOpen(current, open)">
                                     <TitleContent>
-                                        <div style="display:flex;gap:8px;align-items:center;width:100%">
+                                        <div style="display:grid;grid-template-columns:auto auto minmax(0,1fr);gap:8px;align-items:center;width:100%;min-width:0">
                                             <MudChip T="string" Size="MudBlazor.Size.Small" Color="@SeverityColor(current.Severity)">@current.Severity</MudChip>
-                                            <b>@(string.IsNullOrWhiteSpace(current.Id) ? "(no id)" : current.Id)</b>
-                                            <span style="opacity:.7;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">@RuleSummary(current)</span>
+                                            <b style="white-space:nowrap">@(string.IsNullOrWhiteSpace(current.Id) ? "(no id)" : current.Id)</b>
+                                            <span style="opacity:.7;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0">@RuleSummary(current)</span>
                                         </div>
                                     </TitleContent>
                                     <ChildContent>
+                                        <MudTextField T="string" Label="Id" @bind-Value="current.Id" />
+                                        <MudTextField T="string" Label="Description" @bind-Value="current.Description" />
                                         <div style="display:flex;gap:8px;align-items:flex-end">
-                                            <div style="flex:2"><MudTextField T="string" Label="Id" @bind-Value="current.Id" /></div>
                                             <div style="flex:1">
                                                 <MudSelect T="RuleSeverity" Label="Severity" @bind-Value="current.Severity">
                                                     @foreach (var value in Enum.GetValues<RuleSeverity>())
@@ -152,11 +153,19 @@
                                                     }
                                                 </MudSelect>
                                             </div>
-                                            <div style="flex:1"><MudNumericField T="int" Label="Min" @bind-Value="current.Min" Min="0" /></div>
-                                            <div style="flex:1"><MudNumericField T="int?" Label="Max (empty = no limit)" @bind-Value="current.Max" Min="0" /></div>
+                                            <div style="flex:2">
+                                                <MudSelect T="string" Label="Tier (empty = whole network)" Clearable="true" @bind-Value="current.Tier">
+                                                    @foreach (var tier in TierNames())
+                                                    {
+                                                        <MudSelectItem Value="@tier">@tier</MudSelectItem>
+                                                    }
+                                                </MudSelect>
+                                            </div>
                                         </div>
-                                        <NetworkTypePatternEditor Label="@($"Checked {(current.Subject == RuleSubject.Edge ? "edges" : "nodes")} (subject types)")"
-                                                                  @bind-Value="current.SubjectTypes" FacetNames="_facetNames" Suggestions="_suggestions" Nodes="@(current.Subject != RuleSubject.Edge)" />
+                                        <div style="margin-top:8px">
+                                            <NetworkTypePatternEditor Label="@($"Checked {(current.Subject == RuleSubject.Edge ? "edges" : "nodes")} (subject types)")"
+                                                                      @bind-Value="current.SubjectTypes" FacetNames="_facetNames" Suggestions="_suggestions" Nodes="@(current.Subject != RuleSubject.Edge)" />
+                                        </div>
                                         @if (current.Subject == RuleSubject.Edge)
                                         {
                                             <div style="display:flex;gap:8px;margin-top:6px">
@@ -181,13 +190,11 @@
                                             <NetworkTypePatternEditor Label="Counted edge types (several patterns = or)"
                                                                       @bind-Value="current.CountTypes" FacetNames="_facetNames" Suggestions="_suggestions" />
                                         </div>
-                                        <MudSelect T="string" Label="Tier (empty = whole network)" Clearable="true" @bind-Value="current.Tier">
-                                            @foreach (var tier in TierNames())
-                                            {
-                                                <MudSelectItem Value="@tier">@tier</MudSelectItem>
-                                            }
-                                        </MudSelect>
-                                        <MudTextField T="string" Label="Description" @bind-Value="current.Description" />
+                                        <div class="mud-typography mud-typography-caption" style="opacity:.7;margin-top:8px">Result: allowed count of counted edges</div>
+                                        <div style="display:flex;gap:8px;align-items:flex-end">
+                                            <div style="flex:1"><MudNumericField T="int" Label="Min" @bind-Value="current.Min" Min="0" /></div>
+                                            <div style="flex:1"><MudNumericField T="int?" Label="Max (empty = no limit)" @bind-Value="current.Max" Min="0" /></div>
+                                        </div>
                                         <div style="display:flex;gap:8px;margin-top:4px">
                                             <MudButton Size="MudBlazor.Size.Small" OnClick="() => DuplicateRule(current)">Duplicate</MudButton>
                                             <MudButton Size="MudBlazor.Size.Small" Color="Color.Error" OnClick="() => RemoveRule(current)">Delete</MudButton>
@@ -359,7 +366,9 @@
                         </div>
                         @if (build is not null)
                         {
-                            <pre style="max-height:320px;overflow:auto;font-size:.75em;margin-top:8px">@string.Join(Environment.NewLine, build.Log)</pre>
+                            <div style="max-height:calc(72vh - 260px);min-height:160px;overflow:auto;display:flex;flex-direction:column-reverse;margin-top:8px">
+                                <pre style="font-size:.75em;margin:0">@string.Join(Environment.NewLine, build.Log)</pre>
+                            </div>
                         }
                     </GvCardContent>
                 </GvCard>
@@ -386,7 +395,7 @@
                 </GvCard>
             </MudTabPanel>
         </MudTabs>
-    </GvScrollable>
+    </div>
 }
 
 @code {

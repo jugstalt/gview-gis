@@ -10,7 +10,7 @@ namespace gView.Carto.Plugins.CartoTools;
 [RestorePointAction(RestoreAction.SetRestorePointOnClick)]
 internal class ModuleSettings: ICartoButton
 {
-    public string Name => "Module Settings (Editing...)";
+    public string Name => "Service Settings (FeatureServer, NetworkServer)";
 
     public string ToolTip => "";
 
@@ -32,7 +32,7 @@ internal class ModuleSettings: ICartoButton
     {
         var model = await scope.ShowModalDialog(
                 typeof(gView.Carto.Razor.Components.Dialogs.ModuleSettingsDialog),
-                "Module Settings",
+                "Service Settings",
                 new Razor.Components.Dialogs.Models.ModuleSettingsModel()
                 {
                     Modules = scope.Document.Modules
