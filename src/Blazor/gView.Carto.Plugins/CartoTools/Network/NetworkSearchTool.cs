@@ -83,7 +83,7 @@ internal class NetworkSearchTool : ICartoTool
         {
             var graph = Graph(scope);
             _context.Weights = new[] { "length" }.Concat(graph.Metadata.Weights.Select(w => w.Name)).ToList();
-            _context.Tiers = graph.Metadata.Tiers.OrderBy(t => t.Order).Select(t => t.Name).ToList();
+            _context.Tiers = graph.Tiers.Select(t => t.Name).ToList();
             if (!string.IsNullOrEmpty(_context.Tier))
             {
                 // tiers that are gone after a refresh drop out of the selection
@@ -209,16 +209,25 @@ internal class NetworkSearchTool : ICartoTool
         }
         else
         {
-            var hit = graph.Nearest(center.X, center.Y, radius).FirstOrDefault();
-            if (hit == default)
+            // several nodes may lie at one place (separate tiers): the selected tier narrows them, and clicking the same
+            // place again takes the next one
+            var tier = NetworkTiers.Select(graph, _context.Tier)?.Union();
+            var hits = graph.NodesAt(center.X, center.Y, radius, tier);
+            if (hits.Count == 0)
             {
-                _context.Info = "No network node at this location.";
+                _context.Info = tier is null ? "No network node at this location." : $"No network node of the tier {tier.Name} at this location.";
                 return false;
             }
-            var entry = hit.Entry;
+            var place = hits.Select(h => h.Entry.Node).ToList();
+            _placeIndex = place.SequenceEqual(_place) ? (_placeIndex + 1) % place.Count : 0;
+            _place = place;
+            var entry = hits[_placeIndex].Entry;
             bool helper = NetworkIds.IsHelper(entry.Node);
-            // edge ends have no feature: they are taken by their location; real nodes and merged points by Layer#OID
-            reference = helper ? NetworkLocations.Reference(entry.X, entry.Y) : graph.NodeLabel(entry.Id);
+            // edge ends have no feature: they are taken by their location (by id when other nodes share the place);
+            // real nodes and merged points by Layer#OID
+            reference = helper
+                ? (hits.Count > 1 ? entry.Node.ToString(System.Globalization.CultureInfo.InvariantCulture) : NetworkLocations.Reference(entry.X, entry.Y))
+                : graph.NodeLabel(entry.Id);
             label = entry.Id == entry.Node ? graph.NodeLabel(entry.Node) : $"{graph.NodeLabel(entry.Id)} (on {graph.NodeLabel(entry.Node)})";
             location = new Point(entry.X, entry.Y);
         }
@@ -231,11 +240,19 @@ internal class NetworkSearchTool : ICartoTool
         _pickPoints[reference] = displayPoint;
         _pickLocations[reference] = (location.X, location.Y);
         bool ctrl = eventArgs is MapClickEventArgs { CtrlKey: true };
+        // with several nodes at the place the next click there takes the next one instead of adding another pick
+        var placeInfo = _place.Count > 1 && !_context.PicksEdge
+            ? $"{_place.Count} nodes at this place: {string.Join(", ", _place.Select((n, i) => (i == _placeIndex ? "▶ " : "") + graph.Describe(n)))}. Click again to take the next one."
+            : null;
+        if (placeInfo is not null && _placeIndex > 0)
+        {
+            ReplaceLastPick(_context.Pick == NetworkSearchPick.Start ? _context.StartItems : _context.TargetItems);
+        }
         if (_context.Pick == NetworkSearchPick.Start)
         {
             Pick(_context.StartItems, _context.Start, reference, label, ctrl && _context.StartAllowsMany);
             (_context.Start, _context.StartLabel) = Summary(_context.StartItems);
-            _context.Info = null; // the picked items are listed in the report
+            _context.Info = placeInfo; // otherwise the picked items are listed in the report
             if (_context.Operation == "path")
             {
                 _context.Pick = NetworkSearchPick.Target;
@@ -245,12 +262,25 @@ internal class NetworkSearchTool : ICartoTool
         {
             Pick(_context.TargetItems, _context.Target, reference, label, ctrl && _context.TargetAllowsMany);
             (_context.Target, _context.TargetLabel) = Summary(_context.TargetItems);
-            _context.Info = null;
+            _context.Info = placeInfo;
         }
         DrawPicks(scope);
 
         await scope.EventBus.FireRefreshMapAsync(DrawPhase.Graphics);
         return true;
+    }
+
+    /// <summary>The nodes at the place of the last click (several with separate tiers), and which of them was taken.</summary>
+    private List<long> _place = [];
+    private int _placeIndex;
+
+    /// <summary>Drops the item picked last, before the next node of the same place replaces it.</summary>
+    private static void ReplaceLastPick<T>(List<T> items)
+    {
+        if (items.Count > 0)
+        {
+            items.RemoveAt(items.Count - 1);
+        }
     }
 
     /// <summary>The display locations of the picked references, for the markers.</summary>

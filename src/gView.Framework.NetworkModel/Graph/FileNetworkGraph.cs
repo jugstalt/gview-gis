@@ -1,3 +1,4 @@
+using gView.Framework.NetworkModel.Config;
 using gView.Framework.NetworkModel.Extensions;
 using gView.Framework.NetworkModel.Ids;
 using gView.Framework.NetworkModel.Store;
@@ -46,11 +47,20 @@ public sealed class FileNetworkGraph : IGraph<long, long>
         _spatial = new Lazy<SpatialIndex>(() => SpatialIndex.Read(RequiredIndex(SpatialIndex.FileName)), LazyThreadSafetyMode.ExecutionAndPublication);
         _edgeIndex = new Lazy<EdgeIndex>(() => EdgeIndex.Read(RequiredIndex(EdgeIndex.FileName)), LazyThreadSafetyMode.ExecutionAndPublication);
         Types = Metadata.ToTypeRegistry();
+        _tiers = new Lazy<IReadOnlyList<ResolvedTier>>(() => NetworkTierConfig.ResolveAll(Metadata.Tiers, Types), LazyThreadSafetyMode.ExecutionAndPublication);
     }
 
     public NetworkMetadata Metadata { get; }
 
     public TypeRegistry Types { get; }
+
+    private readonly Lazy<IReadOnlyList<ResolvedTier>> _tiers;
+
+    /// <summary>
+    /// Every tier of the network, by rank: one per value of the first facet that edge types use, with the settings of
+    /// the entries in network.json. Throws an <see cref="ArgumentException"/> when an entry does not fit the types.
+    /// </summary>
+    public IReadOnlyList<ResolvedTier> Tiers => _tiers.Value;
 
     /// <summary>The number of shards loaded so far.</summary>
     public int LoadedShardCount => _shards.Count;
@@ -120,6 +130,31 @@ public sealed class FileNetworkGraph : IGraph<long, long>
     /// </summary>
     public IReadOnlyList<SpatialHit> Nearest(double x, double y, double? radius = null, int count = 1)
         => _spatial.Value.Nearest(x, y, radius ?? DefaultSearchRadius, count);
+
+    /// <summary>
+    /// The nodes at the place nearest to x/y: the nearest node and every other node within the build tolerance of it
+    /// (nodes of separate tiers lie at one place), nearest first; with a tier only the nodes of the tier
+    /// (<see cref="ResolvedTier.ContainsNode"/>). Merged points stand for their node.
+    /// </summary>
+    public IReadOnlyList<SpatialHit> NodesAt(double x, double y, double? radius = null, ResolvedTier? tier = null)
+    {
+        var hits = Nearest(x, y, radius, 32);
+        if (hits.Count == 0)
+        {
+            return [];
+        }
+        var first = hits[0].Entry;
+        double tolerance2 = Metadata.Tolerance * Metadata.Tolerance;
+        return hits
+            .Where(h => (h.Entry.X - first.X) * (h.Entry.X - first.X) + (h.Entry.Y - first.Y) * (h.Entry.Y - first.Y) <= tolerance2)
+            .DistinctBy(h => h.Entry.Node)
+            .Where(h => tier is null || InTier(h.Entry.Node, tier))
+            .ToList();
+    }
+
+    /// <summary>Whether a node belongs to a tier: by its type, or an edge of the tier touches it.</summary>
+    public bool InTier(long nodeId, ResolvedTier tier)
+        => TryGetNode(nodeId, out var node) && tier.ContainsNode(node.Node.TypeId, EdgesOf(nodeId).Select(e => e.Edge.TypeId));
 
     /// <summary>The radius of @x,y and nearest without one: 10 x the build tolerance.</summary>
     public double DefaultSearchRadius => Metadata.Tolerance > 0 ? Metadata.Tolerance * 10 : 1;
@@ -249,33 +284,41 @@ public sealed class FileNetworkGraph : IGraph<long, long>
     /// a raw node id, a type pattern (e.g. [*,Trafo,*], Niederspannung.Kasten, ![*,Kunde,*]), which means every node of
     /// that type, or a location @x,y[~radius]: the nearest node, also a helper node at edge ends (in the spatial reference
     /// of the network, default radius <see cref="DefaultSearchRadius"/>). A merged point (alias) resolves to the node it
-    /// was merged into.
+    /// was merged into. Several nodes at the place of @x,y (separate tiers) are narrowed by the tier; when more than one
+    /// is left, the reference is an error that lists them.
     /// </summary>
-    public IReadOnlyList<long> ResolveNodes(string references)
+    public IReadOnlyList<long> ResolveNodes(string references, ResolvedTier? tier = null)
     {
         var result = new List<long>();
         foreach (var reference in SplitReferences(references))
         {
-            result.AddRange(ResolveNodeReference(reference));
+            result.AddRange(ResolveNodeReference(reference, tier));
         }
         return result.Distinct().ToList();
     }
 
-    public long ResolveNode(string reference)
+    public long ResolveNode(string reference, ResolvedTier? tier = null)
     {
-        var ids = ResolveNodes(reference);
+        var ids = ResolveNodes(reference, tier);
         return ids.Count == 1 ? ids[0] : throw new ArgumentException($"'{reference}' means {ids.Count} nodes, one is expected.");
     }
 
-    private IEnumerable<long> ResolveNodeReference(string reference)
+    private IEnumerable<long> ResolveNodeReference(string reference, ResolvedTier? tier)
     {
         if (reference.StartsWith('@'))
         {
             var (x, y, radius) = ParseLocation(reference);
-            var hits = Nearest(x, y, radius);
+            var hits = NodesAt(x, y, radius, tier);
             if (hits.Count == 0)
             {
-                throw new ArgumentException($"No network node within {(radius ?? DefaultSearchRadius).ToString("0.###", CultureInfo.InvariantCulture)} of {reference}.");
+                throw new ArgumentException(tier is not null && NodesAt(x, y, radius).Count > 0
+                    ? $"No node of the tier {tier.Name} at {reference}: {string.Join(", ", NodesAt(x, y, radius).Select(h => Describe(h.Entry.Node)))}."
+                    : $"No network node within {(radius ?? DefaultSearchRadius).ToString("0.###", CultureInfo.InvariantCulture)} of {reference}.");
+            }
+            if (hits.Count > 1)
+            {
+                throw new ArgumentException($"{reference} means {hits.Count} nodes at one place: {string.Join(", ", hits.Select(h => Describe(h.Entry.Node)))}. "
+                    + (tier is null ? "Choose a tier, or " : "") + "reference one of them by Layer#OID or id.");
             }
             return [hits[0].Entry.Node];
         }
@@ -458,6 +501,10 @@ public sealed class FileNetworkGraph : IGraph<long, long>
     }
 
     public string TypeName(int typeId) => typeId == 0 ? "untyped" : Types.Display(typeId);
+
+    /// <summary>A node for messages: its label and type, e.g. "Trafo#5929 (Mittelspannung.Trafo)".</summary>
+    public string Describe(long nodeId)
+        => $"{NodeLabel(nodeId)} ({(TryGetNode(nodeId, out var node) ? TypeName(node.Node.TypeId) : "?")})";
 
     #endregion
 

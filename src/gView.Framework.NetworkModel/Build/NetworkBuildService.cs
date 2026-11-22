@@ -120,6 +120,11 @@ public sealed class NetworkBuildService
         };
         _log($"Shard regions: {options.ShardRegions.Count}");
 
+        // the connection rules are resolved once all types are known; the builder asks them only while building
+        NetworkConnectRules? connectRules = null;
+        bool rulesNeeded = NetworkConnectRules.Needed(config);
+        options = NetworkConnectRules.Attach(options, config, () => connectRules);
+
         var ids = new NetworkIds(config.Tolerance);
         var builder = new NetworkBuilder<long, long, FeatureRef>(options, ids);
         var tocOrderOf = new Dictionary<int, int>();
@@ -267,11 +272,21 @@ public sealed class NetworkBuildService
             }
         }
 
-        // the type registry is complete only now; SpatialNET checks types against it when the network is used
+        // the type registry is complete only now (with the helper types of the tiers); SpatialNET checks types against it
+        // when the network is used
+        if (rulesNeeded)
+        {
+            connectRules = NetworkConnectRules.Create(config, types);
+        }
         metadata.Facets = types.FacetMetadata().ToList();
         metadata.Types = types.TypeMetadata().ToList();
         var registry = types.ToRegistry(); // validates the facets and types
-        config.ResolveTiers(registry); // and the tier patterns
+        var tiers = config.ResolveTiers(registry); // and the tiers
+        connectRules?.Resolve(config, registry);
+        if (tiers.Count > 0)
+        {
+            _log($"Tiers: {string.Join(", ", tiers.Select(t => t.Name))}{(config.SeparateTiers ? " (separate)" : "")}, connect rules: {config.ConnectRules.Count}");
+        }
 
         using var writer = store.CreateWriter();
         var progress = new Progress<BuildProgress>(p =>
@@ -286,6 +301,10 @@ public sealed class NetworkBuildService
         writer.Commit(metadata);
 
         _log($"Built: {result.NodeCount} nodes, {result.EdgeCount} edges, {metadata.Shards.Count} shards, {result.Diagnostics.Count} diagnostics");
+        foreach (var group in result.Diagnostics.GroupBy(d => d.Kind).OrderBy(g => g.Key))
+        {
+            _log($"  {group.Key}: {group.Count()}");
+        }
 
         return new NetworkBuildReport(metadata, result.Diagnostics, warnings, duplicates, Merged);
     }

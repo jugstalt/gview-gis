@@ -48,7 +48,7 @@ public partial class GeoServicesRestController
                 EdgeLayers = metadata.FeatureClasses.Where(f => f.Kind == SpatialNET.Network.ElementKind.Edge).Select(f => f.Layer).ToArray(),
                 Weights = new[] { "length" }.Concat(metadata.Weights.Select(w => w.Name)).ToArray(),
                 Types = metadata.Types.Where(t => t.Used).Select(t => new JsonNetworkServerDTO.TypeInfo { Id = t.Id, Kind = t.Kind.ToString(), Name = t.Name }).ToArray(),
-                Tiers = metadata.Tiers.OrderBy(t => t.Order).Select(t => new JsonNetworkServerDTO.TierInfo { Name = t.Name, Order = t.Order, Filter = t.Filter }).ToArray(),
+                Tiers = graph.Tiers.Select(t => new JsonNetworkServerDTO.TierInfo { Name = t.Name, Order = t.Rank, Filter = t.Pattern(graph.Types) }).ToArray(),
                 Rules = metadata.Rules.Select(r => new JsonNetworkServerDTO.RuleInfo { Id = r.Id, Severity = r.Severity.ToString(), Description = r.Description }).ToArray(),
             }, folder, id, "NetworkServer"));
         }));

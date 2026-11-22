@@ -156,7 +156,7 @@
                                             <div style="flex:1"><MudNumericField T="int?" Label="Max (empty = no limit)" @bind-Value="current.Max" Min="0" /></div>
                                         </div>
                                         <NetworkTypePatternEditor Label="@($"Checked {(current.Subject == RuleSubject.Edge ? "edges" : "nodes")} (subject types)")"
-                                                                  @bind-Value="current.SubjectTypes" FacetNames="_facetNames" Suggestions="_suggestions" />
+                                                                  @bind-Value="current.SubjectTypes" FacetNames="_facetNames" Suggestions="_suggestions" Nodes="@(current.Subject != RuleSubject.Edge)" />
                                         @if (current.Subject == RuleSubject.Edge)
                                         {
                                             <div style="display:flex;gap:8px;margin-top:6px">
@@ -172,7 +172,7 @@
                                                     @if (current.EndFilter != RuleEndFilter.All)
                                                     {
                                                         <NetworkTypePatternEditor Label="End node types (empty = line end without point)"
-                                                                                  @bind-Value="current.EndTypes" FacetNames="_facetNames" Suggestions="_suggestions" />
+                                                                                  @bind-Value="current.EndTypes" FacetNames="_facetNames" Suggestions="_suggestions" Nodes="true" />
                                                     }
                                                 </div>
                                             </div>
@@ -182,9 +182,9 @@
                                                                       @bind-Value="current.CountTypes" FacetNames="_facetNames" Suggestions="_suggestions" />
                                         </div>
                                         <MudSelect T="string" Label="Tier (empty = whole network)" Clearable="true" @bind-Value="current.Tier">
-                                            @foreach (var tier in config.Tiers)
+                                            @foreach (var tier in TierNames())
                                             {
-                                                <MudSelectItem Value="@tier.Name">@tier.Name</MudSelectItem>
+                                                <MudSelectItem Value="@tier">@tier</MudSelectItem>
                                             }
                                         </MudSelect>
                                         <MudTextField T="string" Label="Description" @bind-Value="current.Description" />
@@ -208,13 +208,71 @@
                 </GvCard>
             </MudTabPanel>
 
+            <MudTabPanel Text="@($"Connections ({config.ConnectRules.Count})")">
+                <GvCard Title="Connections (build)">
+                    <GvCardContent>
+                        @GvUtilities.InfoText("Which lines connect to which nodes when the network is built. Ends: a line end within the tolerance of a node connects to it. Inside: a node within the tolerance of the inside of a line splits it; the node is a real node, or the helper node (untyped) of line ends at a T junction, e.g. untyped & [Niederspannung,*,*]. The first rule that matches decides; without a match, separate tiers connect only within a tier (line ends also connect to the sources of their tier), then the defaults below decide for splits, otherwise everything connects. Ignore refuses silently, Report refuses and lists the place in the build log (probably a data error). Build again after a change.")
+                        <MudCheckBox T="bool" @bind-Value="config.SeparateTiers" Color="Color.Primary"
+                                     Label="Separate tiers: connect and split only within a tier (the first facet) unless a rule allows it" />
+                        <div style="display:flex;gap:8px;margin-bottom:8px">
+                            <div style="flex:1">
+                                <MudSelect T="ConnectAction" Label="Nodes on a line (used when no rule matches)" @bind-Value="config.NodesOnLine">
+                                    <MudSelectItem Value="ConnectAction.Connect">Split the line</MudSelectItem>
+                                    <MudSelectItem Value="ConnectAction.Ignore">Ignore</MudSelectItem>
+                                    <MudSelectItem Value="ConnectAction.Report">Report</MudSelectItem>
+                                </MudSelect>
+                            </div>
+                            <div style="flex:1">
+                                <MudSelect T="ConnectAction" Label="Line ends on a line, T junctions (used when no rule matches)" @bind-Value="config.LineEndsOnLine">
+                                    <MudSelectItem Value="ConnectAction.Connect">Split the line</MudSelectItem>
+                                    <MudSelectItem Value="ConnectAction.Ignore">Ignore (the line end stays unconnected)</MudSelectItem>
+                                    <MudSelectItem Value="ConnectAction.Report">Report</MudSelectItem>
+                                </MudSelect>
+                            </div>
+                        </div>
+                        <div style="display:flex;gap:8px;margin-bottom:8px">
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AddConnectRule">Add rule</MudButton>
+                        </div>
+                        @for (int i = 0; i < config.ConnectRules.Count; i++)
+                        {
+                            var index = i;
+                            var current = config.ConnectRules[i];
+                            <div style="border-bottom:1px solid var(--mud-palette-lines-default);padding:6px 0">
+                                <div style="display:flex;gap:8px;align-items:flex-end">
+                                    <MudChip T="string" Size="MudBlazor.Size.Small">@(index + 1)</MudChip>
+                                    <div style="flex:1">
+                                        <MudSelect T="ConnectAt" Label="Where" @bind-Value="current.At">
+                                            <MudSelectItem Value="ConnectAt.Any">Ends and inside</MudSelectItem>
+                                            <MudSelectItem Value="ConnectAt.End">Ends (connect)</MudSelectItem>
+                                            <MudSelectItem Value="ConnectAt.Inside">Inside (split)</MudSelectItem>
+                                        </MudSelect>
+                                    </div>
+                                    <div style="flex:1">
+                                        <MudSelect T="ConnectAction" Label="Action" @bind-Value="current.Action">
+                                            <MudSelectItem Value="ConnectAction.Connect">Connect / split</MudSelectItem>
+                                            <MudSelectItem Value="ConnectAction.Ignore">Ignore</MudSelectItem>
+                                            <MudSelectItem Value="ConnectAction.Report">Report</MudSelectItem>
+                                        </MudSelect>
+                                    </div>
+                                    <MudIconButton Icon="@Icons.Material.Filled.ArrowUpward" Disabled="@(index == 0)" OnClick="() => MoveConnectRule(index, -1)" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.ArrowDownward" Disabled="@(index == config.ConnectRules.Count - 1)" OnClick="() => MoveConnectRule(index, 1)" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="() => config.ConnectRules.Remove(current)" />
+                                </div>
+                                <NetworkTypePatternEditor Label="Node types (untyped = helper nodes, e.g. T junctions)" @bind-Value="current.Nodes" FacetNames="_facetNames" Suggestions="_suggestions" Nodes="true" />
+                                <NetworkTypePatternEditor Label="Edge types" @bind-Value="current.Edges" FacetNames="_facetNames" Suggestions="_suggestions" />
+                            </div>
+                        }
+                    </GvCardContent>
+                </GvCard>
+            </MudTabPanel>
+
             <MudTabPanel Text="@($"Tiers ({config.Tiers.Count})")">
                 <GvCard Title="Tiers">
                     <GvCardContent>
-                        @GvUtilities.InfoText("A tier restricts searches to a part of the network, e.g. high, medium or low voltage (tier parameter / Tier in the Network Search tool). Edges belong by type pattern (| or, & and, ! not, e.g. Mittelspannung.* & !*.Freileitung); a node belongs to every tier whose edges touch it. Lower order = higher up. Sources, sinks and blocks are node references or patterns; a tier's sources and sinks replace the supply sources and customers (top tier: sources, bottom tier: sinks). Written into the network at build, or with Refresh metadata.")
+                        @GvUtilities.InfoText("Every value of the first facet is a tier (e.g. high, medium or low voltage); searches can be restricted to tiers (tier parameter / Tier in the Network Search tool). Edges belong to the tier of their type; a node to the tier of its type and to every tier whose edges touch it. Add a tier here only for its settings: order (lower = higher up; empty = number of the facet value), sources, sinks and blocked nodes (node references or patterns). A tier's sources and sinks replace the supply sources and customers (top tier: sources, bottom tier: sinks); with separate tiers, line ends of the tier connect to its sources. Written into the network at build, or with Refresh metadata.")
                         <div style="display:flex;gap:8px;margin-bottom:8px">
-                            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AddTier">Add tier</MudButton>
-                            <MudButton Variant="Variant.Text" OnClick="CheckTiers">Check patterns</MudButton>
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AddTier">Add tier settings</MudButton>
+                            <MudButton Variant="Variant.Text" OnClick="CheckTiers">Check tiers</MudButton>
                             <MudButton Variant="Variant.Text" OnClick="RefreshMetadata" Disabled="@string.IsNullOrEmpty(mapPath)">Refresh metadata</MudButton>
                         </div>
                         @if (_tierMessages.Count > 0)
@@ -227,27 +285,31 @@
                             </MudAlert>
                         }
                         <MudExpansionPanels MultiExpansion="true" Dense="true">
-                            @foreach (var tier in config.Tiers.OrderBy(t => t.Order))
+                            @foreach (var tier in config.Tiers.OrderBy(t => t.Order ?? int.MaxValue))
                             {
                                 var current = tier;
                                 <MudExpansionPanel>
                                     <TitleContent>
                                         <div style="display:flex;gap:8px;align-items:center;width:100%">
-                                            <MudChip T="string" Size="MudBlazor.Size.Small">@current.Order</MudChip>
+                                            <MudChip T="string" Size="MudBlazor.Size.Small">@(current.Order?.ToString() ?? "-")</MudChip>
                                             <b>@(string.IsNullOrWhiteSpace(current.Name) ? "(no name)" : current.Name)</b>
-                                            <span style="opacity:.7;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">@current.Filter</span>
                                         </div>
                                     </TitleContent>
                                     <ChildContent>
                                         <div style="display:flex;gap:8px;align-items:flex-end">
-                                            <div style="flex:2"><MudTextField T="string" Label="Name" @bind-Value="current.Name" /></div>
-                                            <div style="flex:1"><MudNumericField T="int" Label="Order (lower = higher up)" @bind-Value="current.Order" /></div>
+                                            <div style="flex:2">
+                                                <MudSelect T="string" Label="@($"Tier (value of {(_facetNames.Count > 0 ? _facetNames[0] : "the first facet")})")" @bind-Value="current.Name">
+                                                    @foreach (var name in TierNames().Append(current.Name).Where(n => !string.IsNullOrWhiteSpace(n)).Distinct(StringComparer.OrdinalIgnoreCase))
+                                                    {
+                                                        <MudSelectItem Value="@name">@name</MudSelectItem>
+                                                    }
+                                                </MudSelect>
+                                            </div>
+                                            <div style="flex:1"><MudNumericField T="int?" Label="Order (lower = higher up)" @bind-Value="current.Order" /></div>
                                         </div>
-                                        <MudTextField T="string" Label="Edge types (pattern, e.g. Mittelspannung.*)" @bind-Value="current.Filter" />
-                                        <MudTextField T="string" Label="Extra nodes (node pattern, optional)" @bind-Value="current.Nodes" />
-                                        <MudTextField T="string" Label="Sources (empty = supply sources)" @bind-Value="current.Sources" />
-                                        <MudTextField T="string" Label="Sinks (empty = customers)" @bind-Value="current.Sinks" />
-                                        <MudTextField T="string" Label="Blocked nodes" @bind-Value="current.Block" />
+                                        <NetworkTypePatternEditor Nodes="true" Label="Sources (empty = supply sources)" @bind-Value="current.Sources" FacetNames="_facetNames" Suggestions="_suggestions" />
+                                        <NetworkTypePatternEditor Nodes="true" Label="Sinks (empty = customers)" @bind-Value="current.Sinks" FacetNames="_facetNames" Suggestions="_suggestions" />
+                                        <NetworkTypePatternEditor Nodes="true" Label="Blocked nodes" @bind-Value="current.Block" FacetNames="_facetNames" Suggestions="_suggestions" />
                                         <MudButton Size="MudBlazor.Size.Small" Color="Color.Error" OnClick="() => config.Tiers.Remove(current)">Delete</MudButton>
                                     </ChildContent>
                                 </MudExpansionPanel>
@@ -456,14 +518,34 @@
     private List<string> _tierMessages = [];
     private Severity _tierSeverity = Severity.Info;
 
+    /// <summary>The tiers: the values of the first facet (fixed, and from the built network).</summary>
+    private IEnumerable<string> TierNames() => _suggestions.Count > 0 ? _suggestions[0] : [];
+
     private void AddTier() => Handle(() =>
-        _module!.Config.Tiers.Add(new NetworkTierConfig { Name = Unique(_module.Config.Tiers.Select(t => t.Name), "tier"), Order = _module.Config.Tiers.Count == 0 ? 1 : _module.Config.Tiers.Max(t => t.Order) + 1 }));
+    {
+        var used = _module!.Config.Tiers.Select(t => t.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        _module.Config.Tiers.Add(new NetworkTierConfig { Name = TierNames().FirstOrDefault(n => !used.Contains(n)) ?? "" });
+    });
+
+    private void AddConnectRule() => Handle(() =>
+    {
+        var any = $"[{string.Join(",", Enumerable.Repeat("*", Math.Max(1, _facetNames.Count)))}]";
+        _module!.Config.ConnectRules.Add(new ConnectRuleConfig { At = ConnectAt.Inside, Nodes = any, Edges = any, Action = ConnectAction.Report });
+    });
+
+    private void MoveConnectRule(int index, int by) => Handle(() =>
+    {
+        var rules = _module!.Config.ConnectRules;
+        var rule = rules[index];
+        rules.RemoveAt(index);
+        rules.Insert(index + by, rule);
+    });
 
     private void CheckTiers() => Handle(() =>
     {
         var problems = _module!.CheckTiers(AppScope.Document?.FilePath);
         _tierSeverity = problems.Count == 0 ? Severity.Success : Severity.Warning;
-        _tierMessages = problems.Count == 0 ? ["All tier patterns are valid."] : problems;
+        _tierMessages = problems.Count == 0 ? ["All tiers, rules and connect rules are valid."] : problems;
     });
 
     private void RefreshMetadata() => Handle(() =>

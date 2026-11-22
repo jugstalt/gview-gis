@@ -40,8 +40,8 @@ public class NetworkIdsTests
     [Fact]
     public void NewHelperNode_SameLocationInNewBuild_GivesSameId()
     {
-        var first = new NetworkIds(0.01).NewHelperNode(new Coordinate(1000.001, 2000.004));
-        var second = new NetworkIds(0.01).NewHelperNode(new Coordinate(1000.002, 2000.001));
+        var first = new NetworkIds(0.01).NewHelperNode(new Coordinate(1000.001, 2000.004), 0);
+        var second = new NetworkIds(0.01).NewHelperNode(new Coordinate(1000.002, 2000.001), 0);
 
         Assert.Equal(first, second);
         Assert.True(NetworkIds.IsHelper(first));
@@ -52,8 +52,8 @@ public class NetworkIdsTests
     {
         var ids = new NetworkIds(0.01);
 
-        var a = ids.NewHelperNode(new Coordinate(5, 5));
-        var b = ids.NewHelperNode(new Coordinate(5, 5));
+        var a = ids.NewHelperNode(new Coordinate(5, 5), 0);
+        var b = ids.NewHelperNode(new Coordinate(5, 5), 0);
 
         Assert.NotEqual(a, b);
         Assert.True(NetworkIds.IsHelper(b));

@@ -44,7 +44,7 @@ public sealed class NetworkValidator
                 {
                     try
                     {
-                        restrictions.Add(graph.Metadata.Tiers.GetTier(config.Tier).Resolve(graph.Types));
+                        restrictions.Add(graph.Tiers.GetTier(config.Tier));
                     }
                     catch (ArgumentException ex)
                     {

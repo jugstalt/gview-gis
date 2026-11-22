@@ -73,7 +73,7 @@ public class NetworkAreaTests : IDisposable
 
         var ids = new NetworkIds(Tolerance);
         long trafo = Node(TrafoFc, 1), kasten = Node(KastenFc, 2), kunde3 = Node(KundeFc, 3), kunde4 = Node(KundeFc, 4);
-        long end1 = ids.NewHelperNode(new Coordinate(5, 0)), end2 = ids.NewHelperNode(new Coordinate(0, 5));
+        long end1 = ids.NewHelperNode(new Coordinate(5, 0), 0), end2 = ids.NewHelperNode(new Coordinate(0, 5), 0);
 
         using (var writer = new FileNetworkStore(_directory).CreateWriter())
         {

@@ -32,8 +32,8 @@ public class NetworkTierTests : IDisposable
 
     private static List<NetworkTierConfig> Tiers() =>
     [
-        new() { Name = "MS", Order = 1, Filter = "MS.*", Sources = "[*,Quelle]", Sinks = "[*,Trafo]" },
-        new() { Name = "NS", Order = 2, Filter = "NS.*", Sources = "[*,Trafo]", Sinks = "[*,Kunde]" },
+        new() { Name = "MS", Order = 1, Sources = "[*,Quelle]", Sinks = "[*,Trafo]" },
+        new() { Name = "NS", Order = 2, Sources = "[*,Trafo]", Sinks = "[*,Kunde]" },
     ];
 
     private void Build(List<NetworkTierConfig>? tiers = null, List<NetworkRuleConfig>? rules = null)
@@ -117,7 +117,7 @@ public class NetworkTierTests : IDisposable
     [Fact]
     public void Trace_WithATierWithoutSources_DoesNotStopAtTheGlobalSupplySources()
     {
-        Build([new NetworkTierConfig { Name = "MS", Order = 1, Filter = "MS.*" }]);
+        Build([new NetworkTierConfig { Name = "MS", Order = 1 }]);
         // the global supply source [*,Quelle] (Knoten#1) is no stop of a tier that names no sources
         var result = Service().Run("trace", new NetworkQueryRequest { Start = "Knoten#3", Tier = "MS" });
         Assert.Equal("Reached", result.Nodes.Single(n => n.Label == "Knoten#1").Kind);
@@ -148,7 +148,7 @@ public class NetworkTierTests : IDisposable
     [Fact]
     public void Supply_ExplicitSourcesWin_AndATierWithoutSourcesFallsBackToTheGlobalOnes()
     {
-        Build([new NetworkTierConfig { Name = "NS", Order = 2, Filter = "NS.*" }]);
+        Build([new NetworkTierConfig { Name = "NS", Order = 2 }]);
         // no sources/sinks in the tier: the global [*,Quelle] / [*,Kunde]; the Quelle is outside the tier's edges
         var global = Service().Run("supply", new NetworkQueryRequest { Tier = "NS" });
         Assert.Equal("NotSupplied", Assert.Single(global.Nodes).Kind);
@@ -160,12 +160,12 @@ public class NetworkTierTests : IDisposable
     [Fact]
     public void TierAndFilter_AreIntersected_AndTheBlockOfTheTierIsAdded()
     {
-        Build([new NetworkTierConfig { Name = "NS", Order = 2, Filter = "NS.*", Block = "Knoten#4" }]);
+        Build([new NetworkTierConfig { Name = "NS", Order = 2, Block = "Knoten#4" }]);
         var blocked = Service().Run("trace", new NetworkQueryRequest { Start = "Knoten#3", Tier = "NS", StopAtSources = false });
         Assert.Equal("Blocked", blocked.Nodes.Single(n => n.Label == "Knoten#4").Kind);
         Assert.DoesNotContain("Knoten#5", Labels(blocked));
 
-        Build([new NetworkTierConfig { Name = "NS", Order = 2, Filter = "NS.*" }]);
+        Build([new NetworkTierConfig { Name = "NS", Order = 2 }]);
         var noCommon = Assert.Throws<ArgumentException>(() => Service().Run("trace", new NetworkQueryRequest { Start = "Knoten#3", Tier = "NS", Filter = "MS.*" }));
         Assert.Contains("no edge type in common", noCommon.Message);
     }
@@ -179,9 +179,18 @@ public class NetworkTierTests : IDisposable
     }
 
     [Fact]
+    public void Trace_ListsNodesOfRareTypesWithLocation()
+    {
+        Build();
+        var result = Service().Run("trace", new NetworkQueryRequest { Start = "Knoten#3" });
+        // every type has one node here: each is listed with its label and where it lies
+        Assert.Contains(result.Messages, m => m.Contains("Knoten#4  at 30, 0"));
+    }
+
+    [Fact]
     public void Trace_ANodeThatIsBlockedAnyway_IsNotReportedAsSource()
     {
-        Build([new NetworkTierConfig { Name = "MS", Order = 1, Filter = "MS.*", Sources = "[*,Quelle]" }]);
+        Build([new NetworkTierConfig { Name = "MS", Order = 1, Sources = "[*,Quelle]" }]);
         var stopped = Service().Run("trace", new NetworkQueryRequest { Start = "Knoten#3", Tier = "MS" });
         Assert.Equal("Source", stopped.Nodes.Single(n => n.Label == "Knoten#1").Kind);
 
@@ -208,8 +217,8 @@ public class NetworkTierTests : IDisposable
         var graph = new FileNetworkGraph(_directory);
         var rule = new NetworkRuleConfig { Id = "R", Subject = RuleSubject.Edge, SubjectTypes = "NS.*", CountTypes = "MS.*", Max = 1 };
         var resolved = rule.Resolve(graph.Types);
-        var ms = graph.Metadata.Tiers.Single(t => t.Name == "MS").Resolve(graph.Types);
-        var ns = graph.Metadata.Tiers.Single(t => t.Name == "NS").Resolve(graph.Types);
+        var ms = graph.Tiers.Single(t => t.Name == "MS");
+        var ns = graph.Tiers.Single(t => t.Name == "NS");
         Assert.Null(rule.RestrictToTier(resolved, ms)); // subject NS.* has no MS edge
         Assert.Null(rule.RestrictToTier(resolved, ns)); // counts MS.*: no NS edge
     }
@@ -289,36 +298,28 @@ public class NetworkTierTests : IDisposable
         Assert.Equal(4, after.Metadata.EdgeCount);
         Assert.Equal(stamp, File.GetLastWriteTimeUtc(Path.Combine(_directory, "shards", "1.bin")));
 
-        var invalid = new NetworkConfig { Tiers = [new NetworkTierConfig { Name = "X", Filter = "Unbekannt.*" }] };
+        // a tier is a value of the first facet
+        var invalid = new NetworkConfig { Tiers = [new NetworkTierConfig { Name = "X" }] };
         var ex = Assert.Throws<InvalidDataException>(() => NetworkMetadataRefresh.Refresh(invalid, _directory));
         Assert.Contains("Tier 'X'", ex.Message);
     }
 
     [Fact]
-    public void Filter_CanCombineTermsWithAnd_AndNegateSingleTerms()
+    public void Tiers_AreTheValuesOfTheFirstFacet_EntriesOnlyAddSettings()
     {
-        // [*,Kabel] is every edge type, "& !NS.*" cuts the NS edges again: what is left is the MS cable
-        Build([
-            new NetworkTierConfig { Name = "MS-AND", Order = 1, Filter = "[*,Kabel] & !NS.*" },
-            new NetworkTierConfig { Name = "MIXED", Order = 2, Filter = "NS.* | [*,Kabel] & !NS.*" },
-        ]);
+        // no entries: MS and NS come from the facet, ranked by their number
+        Build(tiers: []);
+        var graph = new FileNetworkGraph(_directory);
+        Assert.Equal(["MS", "NS"], graph.Tiers.Select(t => t.Name));
+        Assert.Equal([1, 2], graph.Tiers.Select(t => t.Rank));
+        var ns = Service().Run("trace", new NetworkQueryRequest { Start = "Knoten#3", Tier = "NS" });
+        Assert.Equal(["Knoten#3", "Knoten#4", "Knoten#5"], Labels(ns).Order());
 
-        var ms = Service().Run("trace", new NetworkQueryRequest { Start = "Knoten#3", Tier = "MS-AND", StopAtSources = false });
-        Assert.Equal(["Knoten#1", "Knoten#2", "Knoten#3"], Labels(ms).Order());
-        Assert.Equal(2, ms.Edges.Count);
-
-        // & binds tighter than |: NS or (every cable without NS) = the whole network
-        var mixed = Service().Run("trace", new NetworkQueryRequest { Start = "Knoten#3", Tier = "MIXED", StopAtSources = false });
-        Assert.Equal(5, Labels(mixed).Count);
-    }
-
-    [Fact]
-    public void Filter_WithAnd_ThatMatchesNoType_IsRejected()
-    {
-        Build();
-        var invalid = new NetworkConfig { Tiers = [new NetworkTierConfig { Name = "X", Filter = "MS.* & NS.*" }] };
-        var ex = Assert.Throws<InvalidDataException>(() => NetworkMetadataRefresh.Refresh(invalid, _directory));
-        Assert.Contains("Tier 'X'", ex.Message);
+        // an entry gives NS the order 0: it comes first
+        Build([new NetworkTierConfig { Name = "ns", Order = 0, Sinks = "[*,Kunde]" }]);
+        graph = new FileNetworkGraph(_directory);
+        Assert.Equal(["ns", "MS"], graph.Tiers.Select(t => t.Name));
+        Assert.Equal([13, 14], graph.Tiers[0].NodeTypes.TypeIds);
     }
 
     [Fact]
@@ -331,10 +332,14 @@ public class NetworkTierTests : IDisposable
         Assert.Equal("MS", back.Rules[0].Tier);
         back.ValidateTiersAndRules();
 
+        // unknown tiers of rules need the types of a network
+        Build();
+        var types = new FileNetworkGraph(_directory).Types;
+        Assert.Equal(["MS", "NS"], back.ResolveTiers(types).Select(t => t.Name));
         back.Rules[0].Tier = "HS";
-        Assert.Throws<InvalidDataException>(() => back.ValidateTiersAndRules());
+        Assert.Throws<InvalidDataException>(() => back.ResolveTiers(types));
         back.Rules[0].Tier = null;
-        back.Tiers.Add(new NetworkTierConfig { Name = "ms", Filter = "MS.*" });
+        back.Tiers.Add(new NetworkTierConfig { Name = "ms" });
         Assert.Throws<InvalidDataException>(() => back.ValidateTiersAndRules());
     }
 }

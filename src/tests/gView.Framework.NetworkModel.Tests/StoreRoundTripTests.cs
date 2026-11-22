@@ -19,7 +19,7 @@ public class StoreRoundTripTests : IDisposable
         var shard = new ShardData(42);
         var box = new FeatureRef(1, 23660);
         shard.Nodes.Add(new ShardNode(new GraphNode<long>(NetworkIds.NodeId(box), 7, new Coordinate(1.5, -2.25), Blocked: true), false, box));
-        var helper = new NetworkIds(0.01).NewHelperNode(new Coordinate(3, 4));
+        var helper = new NetworkIds(0.01).NewHelperNode(new Coordinate(3, 4), 0);
         shard.Nodes.Add(new ShardNode(new GraphNode<long>(helper, 0, new Coordinate(3, 4)), true, null));
         var cable = new FeatureRef(2, 99);
         shard.Edges.Add(new ShardEdge(

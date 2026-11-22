@@ -25,23 +25,22 @@ public sealed record NetworkTiers(IReadOnlyList<ResolvedTier> Tiers, TypeSet Edg
         {
             return null;
         }
-        var available = graph.Metadata.Tiers;
-        var selected = new List<NetworkTierConfig>();
+        var available = graph.Tiers;
+        var resolved = new List<ResolvedTier>();
         foreach (var name in names.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
         {
             var tier = available.GetTier(name);
-            if (!selected.Contains(tier))
+            if (!resolved.Contains(tier))
             {
-                selected.Add(tier);
+                resolved.Add(tier);
             }
         }
-        if (selected.Count == 0)
+        if (resolved.Count == 0)
         {
             return null;
         }
-        var resolved = selected.Select(t => t.Resolve(graph.Types)).ToList();
-        var top = resolved.MinBy(t => t.Config.Order)!;
-        var bottom = resolved.MaxBy(t => t.Config.Order)!;
+        var top = resolved.MinBy(t => t.Rank)!;
+        var bottom = resolved.MaxBy(t => t.Rank)!;
         return new NetworkTiers(
             resolved,
             resolved.Select(t => t.EdgeTypes).UnionAll(),

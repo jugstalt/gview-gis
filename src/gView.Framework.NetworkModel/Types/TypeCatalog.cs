@@ -75,8 +75,8 @@ public sealed class TypeCatalog
         {
             foreach (var type in previous.Types.Where(t => t.Id != 0))
             {
-                var networkType = new NetworkType(type.Id, type.Kind, type.Facets, type.Name);
-                _typesByKey[Key(type.Kind, type.Facets)] = networkType;
+                var networkType = new NetworkType(type.Id, type.Kind, type.Facets, type.Name) { Helper = type.Helper };
+                _typesByKey[Key(type.Kind, type.Facets, type.Helper)] = networkType;
                 _typesById[type.Id] = networkType;
             }
         }
@@ -103,17 +103,48 @@ public sealed class TypeCatalog
             }
         }
 
-        var key = Key(kind, numbers);
+        var key = Key(kind, numbers, false);
         if (!_typesByKey.TryGetValue(key, out var type))
         {
-            int id = _typesById.Count == 0 ? 1 : _typesById.Keys.Max() + 1;
             var name = string.Join('.', numbers.Select((n, i) => n == 0 ? null : _facets[i].ByNumber[n]).Where(t => t is not null));
-            type = new NetworkType(id, kind, numbers, name);
-            _typesByKey[key] = type;
-            _typesById[id] = type;
+            type = Add(new NetworkType(NextId(), kind, numbers, name), key);
         }
         _used.Add(type.Id);
         return type.Id;
+    }
+
+    /// <summary>The value of the first facet of a type (its tier), 0 for none or an unknown type.</summary>
+    public int TierOf(int typeId)
+        => _typesById.TryGetValue(typeId, out var type) && type.Facets.Count > 0 ? type.Facets[0] : 0;
+
+    /// <summary>Whether a node type is one of helper nodes: 0, or a helper type of a tier.</summary>
+    public bool IsHelper(int typeId) => typeId == 0 || (_typesById.TryGetValue(typeId, out var type) && type.Helper);
+
+    /// <summary>The values of the first facet that edge types of this build use.</summary>
+    public IEnumerable<int> UsedEdgeTiers()
+        => _typesById.Values.Where(t => t.Kind == ElementKind.Edge && _used.Contains(t.Id)).Select(t => t.Facets[0]).Where(v => v != 0).Distinct().Order();
+
+    /// <summary>The type of the helper nodes of a tier (a value of the first facet), e.g. "Niederspannung (untyped)".</summary>
+    public int ResolveHelper(int tier)
+    {
+        var numbers = new int[_facets.Count];
+        numbers[0] = tier;
+        var key = Key(ElementKind.Node, numbers, true);
+        if (!_typesByKey.TryGetValue(key, out var type))
+        {
+            type = Add(new NetworkType(NextId(), ElementKind.Node, numbers, $"{_facets[0].ByNumber[tier]} (untyped)") { Helper = true }, key);
+        }
+        _used.Add(type.Id);
+        return type.Id;
+    }
+
+    private int NextId() => _typesById.Count == 0 ? 1 : _typesById.Keys.Max() + 1;
+
+    private NetworkType Add(NetworkType type, string key)
+    {
+        _typesByKey[key] = type;
+        _typesById[type.Id] = type;
+        return type;
     }
 
     /// <summary>The registry for SpatialNET: every facet value and every type known so far.</summary>
@@ -136,8 +167,9 @@ public sealed class TypeCatalog
             Kind = t.Kind,
             Facets = t.Facets.ToArray(),
             Name = t.Name,
+            Helper = t.Helper,
             Used = _used.Contains(t.Id)
         });
 
-    private static string Key(ElementKind kind, IReadOnlyList<int> facets) => $"{(int)kind}:{string.Join(',', facets)}";
+    private static string Key(ElementKind kind, IReadOnlyList<int> facets, bool helper) => $"{(int)kind}:{(helper ? "h:" : "")}{string.Join(',', facets)}";
 }

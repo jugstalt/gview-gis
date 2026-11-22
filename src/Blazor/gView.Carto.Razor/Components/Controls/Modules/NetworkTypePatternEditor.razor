@@ -1,14 +1,26 @@
-@* Edits type patterns like [*,Kasten,*] | [*,Mast,*] as one row per pattern with one field per facet (suggestions from the facet values). *@
+@* Edits type patterns like [*,Kasten,*] | [*,Mast,*] as one row per pattern with one field per facet (suggestions from the facet values).
+   Node patterns (Nodes) have a switch per row for the helper nodes: untyped & [Niederspannung,*,*], or untyped alone.
+   Text shows the whole pattern as text, for & ! and the short form; rows again only when the text fits them. *@
 
 <div class="network-pattern-editor">
-    @if (!string.IsNullOrEmpty(Label))
-    {
-        <div class="mud-typography mud-typography-caption" style="opacity:.7">@Label</div>
-    }
+    <div style="display:flex;align-items:center;gap:6px">
+        @if (!string.IsNullOrEmpty(Label))
+        {
+            <div class="mud-typography mud-typography-caption" style="opacity:.7;flex:1">@Label</div>
+        }
+        else
+        {
+            <div style="flex:1"></div>
+        }
+        <MudButton Size="MudBlazor.Size.Small" Variant="Variant.Text" Style="min-width:0;padding:0 6px;font-size:.75em"
+                   Disabled="@(_rows is null && Parse(Value ?? "") is null)"
+                   title="@(_rows is null ? "Edit as rows (only when the text has the form [..] | untyped & [..])" : "Edit as text (& and, ! not, short form Mittelspannung.*)")"
+                   OnClick="ToggleText">@(_rows is null ? "Rows" : "Text")</MudButton>
+    </div>
 
     @if (_rows is null)
     {
-        @* not in the simple form [a,b,c] | [..]: plain text *@
+        @* text: every pattern, also the ones rows cannot show *@
         <MudTextField T="string" Margin="Margin.Dense" Value="Value" ValueChanged="TextChanged" />
     }
     else
@@ -17,13 +29,19 @@
         {
             var row = _rows[r];
             <div style="display:flex;gap:6px;align-items:center">
+                @if (Nodes)
+                {
+                    <MudChip T="string" Size="MudBlazor.Size.Small" Variant="@(row.Untyped ? Variant.Filled : Variant.Outlined)"
+                             Color="@(row.Untyped ? Color.Primary : Color.Default)" OnClick="() => ToggleUntyped(row)"
+                             title="Helper nodes (line ends without a point) of these types: untyped & [...]">untyped</MudChip>
+                }
                 @for (int f = 0; f < FacetNames.Count; f++)
                 {
                     int index = f;
                     var listId = $"{_id}-{f}";
                     <div style="flex:1">
                         <MudTextField T="string" Margin="Margin.Dense" Label="@FacetNames[f]" Placeholder="*"
-                                      Value="row[index]" ValueChanged="(string v) => CellChanged(row, index, v)"
+                                      Value="row.Cells[index]" ValueChanged="(string v) => CellChanged(row, index, v)"
                                       UserAttributes="@(new Dictionary<string, object> { ["list"] = listId })" />
                         <datalist id="@listId">
                             <option value="*"></option>
@@ -48,8 +66,19 @@
     [Parameter] public IReadOnlyList<string> FacetNames { get; set; } = [];
     [Parameter] public IReadOnlyList<IReadOnlyList<string>> Suggestions { get; set; } = [];
 
+    /// <summary>A node pattern: rows can mean the helper nodes (untyped).</summary>
+    [Parameter] public bool Nodes { get; set; }
+
+    private sealed class Row(string[] cells, bool untyped)
+    {
+        public string[] Cells { get; } = cells;
+        public bool Untyped { get; set; } = untyped;
+    }
+
+    private const string Untyped = "untyped";
+
     private readonly string _id = "tp" + Guid.NewGuid().ToString("N")[..8];
-    private List<string[]>? _rows;
+    private List<Row>? _rows;
     private string? _lastValue;
 
     protected override void OnParametersSet()
@@ -65,57 +94,95 @@
     private IEnumerable<string> Values(int facet)
         => facet < Suggestions.Count ? Suggestions[facet] : [];
 
-    private List<string[]>? Parse(string text)
+    /// <summary>The rows of a pattern; null when it does not have the form [..] | untyped & [..] | untyped.</summary>
+    private List<Row>? Parse(string text)
     {
-        var rows = new List<string[]>();
+        var rows = new List<Row>();
         if (string.IsNullOrWhiteSpace(text))
         {
             return rows;
         }
         foreach (var part in text.Split('|', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
         {
-            if (!part.StartsWith('[') || !part.EndsWith(']'))
+            var terms = part.Split('&', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            bool untyped = terms.Any(t => t.Equals(Untyped, StringComparison.OrdinalIgnoreCase));
+            var brackets = terms.Where(t => !t.Equals(Untyped, StringComparison.OrdinalIgnoreCase)).ToArray();
+            if ((untyped && !Nodes) || brackets.Length > 1 || terms.Length - brackets.Length > 1)
             {
                 return null;
             }
-            var cells = part[1..^1].Split(',', StringSplitOptions.TrimEntries);
-            if (cells.Length != FacetNames.Count || cells.Any(c => c.Contains('[') || c.Contains(']')))
+            if (brackets.Length == 0)
+            {
+                rows.Add(new Row(Enumerable.Repeat("*", FacetNames.Count).ToArray(), true));
+                continue;
+            }
+            var bracket = brackets[0];
+            if (!bracket.StartsWith('[') || !bracket.EndsWith(']'))
             {
                 return null;
             }
-            rows.Add(cells);
+            var cells = bracket[1..^1].Split(',', StringSplitOptions.TrimEntries);
+            if (cells.Length != FacetNames.Count || cells.Any(c => c.Contains('[') || c.Contains(']') || c.StartsWith('!')))
+            {
+                return null;
+            }
+            rows.Add(new Row(cells, untyped));
         }
         return rows;
     }
 
+    private static string Format(Row row)
+    {
+        var cells = row.Cells.Select(c => string.IsNullOrWhiteSpace(c) ? "*" : c.Trim()).ToArray();
+        var bracket = "[" + string.Join(",", cells) + "]";
+        if (!row.Untyped)
+        {
+            return bracket;
+        }
+        return cells.All(c => c == "*") ? Untyped : $"{Untyped} & {bracket}";
+    }
+
     private Task Publish()
     {
-        var text = string.Join(" | ", _rows!.Select(r => "[" + string.Join(",", r.Select(c => string.IsNullOrWhiteSpace(c) ? "*" : c.Trim())) + "]"));
+        var text = string.Join(" | ", _rows!.Select(Format));
         _lastValue = text;
         return ValueChanged.InvokeAsync(text);
     }
 
-    private Task CellChanged(string[] row, int index, string value)
+    private Task CellChanged(Row row, int index, string value)
     {
-        row[index] = value ?? "";
+        row.Cells[index] = value ?? "";
+        return Publish();
+    }
+
+    private Task ToggleUntyped(Row row)
+    {
+        row.Untyped = !row.Untyped;
         return Publish();
     }
 
     private Task AddRow()
     {
-        _rows!.Add(Enumerable.Repeat("*", FacetNames.Count).ToArray());
+        _rows!.Add(new Row(Enumerable.Repeat("*", FacetNames.Count).ToArray(), false));
         return Publish();
     }
 
-    private Task RemoveRow(string[] row)
+    private Task RemoveRow(Row row)
     {
         _rows!.Remove(row);
         return Publish();
     }
 
+    private void ToggleText()
+    {
+        _rows = _rows is null ? Parse(Value ?? "") : null;
+        _lastValue = Value ?? "";
+    }
+
     private Task TextChanged(string text)
     {
-        _lastValue = null;
+        // stay in text mode while typing; Rows switches back
+        _lastValue = text ?? "";
         return ValueChanged.InvokeAsync(text);
     }
 }

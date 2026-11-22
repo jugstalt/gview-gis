@@ -9,5 +9,5 @@ internal static class NetworkMetadataExtensions
     public static TypeRegistry ToTypeRegistry(this NetworkMetadata metadata)
         => new(
             metadata.Facets.Select(f => new Facet(f.Name, f.Values)).ToList(),
-            metadata.Types.Select(t => new NetworkType(t.Id, t.Kind, t.Facets, t.Name)));
+            metadata.Types.Select(t => new NetworkType(t.Id, t.Kind, t.Facets, t.Name) { Helper = t.Helper }));
 }

@@ -105,7 +105,10 @@ public class NetworkModule : IMapApplicationModule, IPersistable
         }
     }
 
-    /// <summary>A type template for every facet: {group-name}, {layer-name}, then empty.</summary>
+    /// <summary>
+    /// A type template for every facet: {group-name} (the group of the layer: one group per tier, the first facet is the
+    /// tier), {layer-name}, then empty.
+    /// </summary>
     public List<string> DefaultTypeTemplates()
         => Config.Facets.Select((_, i) => i switch { 0 => "{group-name}", 1 => "{layer-name}", _ => "" }).ToList();
 
@@ -254,16 +257,13 @@ public class NetworkModule : IMapApplicationModule, IPersistable
             return problems;
         }
         var types = metadata.ToTypeRegistry();
-        foreach (var tier in Config.Tiers)
+        try
         {
-            try
-            {
-                tier.Resolve(types);
-            }
-            catch (ArgumentException ex)
-            {
-                problems.Add(ex.Message);
-            }
+            Config.ResolveTiers(types);
+        }
+        catch (InvalidDataException ex)
+        {
+            problems.Add(ex.Message);
         }
         try
         {
@@ -272,6 +272,18 @@ public class NetworkModule : IMapApplicationModule, IPersistable
         catch (InvalidDataException ex)
         {
             problems.Add(ex.Message);
+        }
+        foreach (var (rule, index) in Config.ConnectRules.Select((r, i) => (r, i + 1)))
+        {
+            try
+            {
+                types.Nodes(rule.Nodes);
+                types.Edges(rule.Edges);
+            }
+            catch (ArgumentException ex)
+            {
+                problems.Add($"Connect rule {index} ({rule}): {ex.Message}");
+            }
         }
         return problems;
     }

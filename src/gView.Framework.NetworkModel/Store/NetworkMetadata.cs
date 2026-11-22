@@ -51,6 +51,9 @@ public class NetworkTypeMetadata
     public int[] Facets { get; set; } = [];
     public string? Name { get; set; }
 
+    /// <summary>A type of helper nodes (one per tier with separate tiers); matched by the pattern untyped.</summary>
+    public bool Helper { get; set; }
+
     /// <summary>Whether elements of the type exist in this build (unused types stay to keep ids stable).</summary>
     public bool Used { get; set; }
 }

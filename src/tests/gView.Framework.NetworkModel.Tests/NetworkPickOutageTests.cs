@@ -70,8 +70,8 @@ public class NetworkPickOutageTests : IDisposable
 
         var ids = new NetworkIds(Tolerance);
         long trafo = Node(TrafoFc, 1), kasten = Node(KastenFc, 2), kunde3 = Node(KundeFc, 3), kunde4 = Node(KundeFc, 4);
-        _end1 = ids.NewHelperNode(new Coordinate(5, 0));
-        _end2 = ids.NewHelperNode(new Coordinate(0, 5));
+        _end1 = ids.NewHelperNode(new Coordinate(5, 0), 0);
+        _end2 = ids.NewHelperNode(new Coordinate(0, 5), 0);
 
         using var writer = new FileNetworkStore(_directory).CreateWriter();
         writer.WriteNode(Real(trafo, TrafoType, 0, 0, TrafoFc, 1));
@@ -214,8 +214,8 @@ public class NetworkPickOutageTests : IDisposable
         var ids = new NetworkIds(Tolerance);
         long trafo = NetworkIds.NodeId(new FeatureRef(TrafoFc, 1)), kasten = NetworkIds.NodeId(new FeatureRef(KastenFc, 2));
         long kunde3 = NetworkIds.NodeId(new FeatureRef(KundeFc, 3)), kunde6 = NetworkIds.NodeId(new FeatureRef(KundeFc, 6));
-        long e1 = ids.NewHelperNode(new Coordinate(5, 0)), e2 = ids.NewHelperNode(new Coordinate(15, -1));
-        long e3 = ids.NewHelperNode(new Coordinate(15, 1)), e4 = ids.NewHelperNode(new Coordinate(16, 0));
+        long e1 = ids.NewHelperNode(new Coordinate(5, 0), 0), e2 = ids.NewHelperNode(new Coordinate(15, -1), 0);
+        long e3 = ids.NewHelperNode(new Coordinate(15, 1), 0), e4 = ids.NewHelperNode(new Coordinate(16, 0), 0);
         var metadata = new NetworkMetadata
         {
             Name = "box",

@@ -49,7 +49,7 @@ public sealed class NetworkQueryService
         var result = NewResult("trace");
         var scope = Scope(request, result);
         var tiers = SelectTiers(request, result);
-        var sources = Nodes(Required(request.Start, "start"), "start", scope, result);
+        var sources = Nodes(Required(request.Start, "start"), "start", scope, result, tiers);
         result.Messages.Add($"Trace from {sources.Count} source(s)");
 
         // with a tier the trace stops at the sources the tier itself names (blocked: settled, not expanded); the global supply
@@ -72,7 +72,7 @@ public sealed class NetworkQueryService
         {
             result.Messages.Add($"  {group.Key,-12} {group.Count()}");
         }
-        AddTypes(result, hits.Where(h => h.Kind == TraceHitKind.Reached).Select(h => h.TypeId));
+        AddTypes(result, hits.Where(h => h.Kind == TraceHitKind.Reached).Select(h => (h.Node, h.TypeId)));
 
         foreach (var hit in watch.Count(hits, "result", "node(s) labelled"))
         {
@@ -94,13 +94,14 @@ public sealed class NetworkQueryService
         var watch = new Watch(progress, cancellationToken);
         var result = NewResult("reach");
         var scope = Scope(request, result);
-        var starts = Nodes(Required(request.Start, "start"), "start", scope, result);
-        var options = Options(request, new(scope, SelectTiers(request, result)));
+        var tiers = SelectTiers(request, result);
+        var starts = Nodes(Required(request.Start, "start"), "start", scope, result, tiers);
+        var options = Options(request, new(scope, tiers));
         result.Messages.Add($"Reach from {starts.Count} start(s), max cost {options.MaxCost}, weight {options.Weight.Name}");
 
         var reached = watch.Count(_graph.Reach(starts, options, cancellationToken), "reach", "node(s) reached").ToList();
         result.Messages.Add($"  reached {reached.Count} node(s), max cost {(reached.Count > 0 ? reached.Max(r => r.Cost) : 0):0.###}");
-        AddTypes(result, reached.Select(r => r.TypeId));
+        AddTypes(result, reached.Select(r => (r.Node, r.TypeId)));
 
         foreach (var r in watch.Count(reached, "result", "node(s) labelled"))
         {
@@ -121,9 +122,10 @@ public sealed class NetworkQueryService
     {
         var result = NewResult("path");
         var scope = Scope(request, result);
-        var from = Inside(_graph.ResolveNode(Required(request.From, "from")), request.From!, "from", scope);
-        var to = Inside(_graph.ResolveNode(Required(request.To, "to")), request.To!, "to", scope);
-        var options = Options(request, new(scope, SelectTiers(request, result)));
+        var tiers = SelectTiers(request, result);
+        var from = Inside(_graph.ResolveNode(Required(request.From, "from"), tiers?.Union()), request.From!, "from", scope);
+        var to = Inside(_graph.ResolveNode(Required(request.To, "to"), tiers?.Union()), request.To!, "to", scope);
+        var options = Options(request, new(scope, tiers));
 
         progress?.Report("path: searching...");
         var path = _graph.ShortestPath(from, to, options, cancellationToken);
@@ -153,8 +155,8 @@ public sealed class NetworkQueryService
         var result = NewResult("supply");
         var scope = Scope(request, result);
         var tiers = SelectTiers(request, result);
-        var sources = Nodes(Required(Pick(request.Sources, tiers?.Sources, _graph.Metadata.SupplySources), "sources"), "source", scope, result);
-        var sinks = Nodes(Required(Pick(request.Sinks, tiers?.Sinks, _graph.Metadata.Customers), "sinks"), "sink", scope, result);
+        var sources = Nodes(Required(Pick(request.Sources, tiers?.Sources, _graph.Metadata.SupplySources), "sources"), "source", scope, result, tiers);
+        var sinks = Nodes(Required(Pick(request.Sinks, tiers?.Sinks, _graph.Metadata.Customers), "sinks"), "sink", scope, result, tiers);
         result.Messages.Add($"Supply: {sources.Count} source(s), {sinks.Count} sink(s), {sinks.Sum(s => _graph.AliasesOf(s).Count)} merged point(s) at the sinks");
 
         var supply = _graph.Supply(sources, sinks, Options(request, new(scope, tiers)), SupplyProgress(progress, "supply"), cancellationToken).ToList();
@@ -213,8 +215,8 @@ public sealed class NetworkQueryService
         // without the directions of the edges: from a box the way back to the station runs against them
         var component = watch.Count(new UndirectedGraph(_graph).Reach(ends.ToList(), normal with { MaxCost = double.PositiveInfinity }, cancellationToken), "connected part", "node(s) found")
             .Select(r => r.Node).ToHashSet();
-        var sources = Nodes(sourcesPattern, "source", scope, result).Where(component.Contains).ToList();
-        var sinks = Nodes(sinksPattern, "sink", scope, result).Where(component.Contains).ToList();
+        var sources = Nodes(sourcesPattern, "source", scope, result, tiers).Where(component.Contains).ToList();
+        var sinks = Nodes(sinksPattern, "sink", scope, result, tiers).Where(component.Contains).ToList();
         result.Messages.Add($"Outage: {disabled.Count} edge(s) switched off, {component.Count} node(s) connected, {sources.Count} source(s), {sinks.Count} customer(s) there");
 
         var before = _graph.Supply(sources, sinks, normal, SupplyProgress(progress, "supply before"), cancellationToken).ToDictionary(s => s.Sink, s => s.Sources);
@@ -226,7 +228,7 @@ public sealed class NetworkQueryService
         result.Messages.Add($"  affected:              {affected.Count} ({affected.Sum(s => 1 + _graph.AliasesOf(s).Count)} point(s) with the merged ones)");
         result.Messages.Add($"  still supplied:        {stillSupplied}");
         result.Messages.Add($"  not supplied before:   {unsuppliedBefore}");
-        AddTypes(result, affected.Select(NodeType));
+        AddTypes(result, affected.Select(n => (n, NodeType(n))));
 
         foreach (var sink in affected)
         {
@@ -289,7 +291,7 @@ public sealed class NetworkQueryService
     public NetworkQueryResult Info(NetworkQueryRequest request)
     {
         var result = NewResult("info");
-        var id = _graph.ResolveNode(Required(request.Node, "node"));
+        var id = _graph.ResolveNode(Required(request.Node, "node"), NetworkTiers.Select(_graph, request.Tier)?.Union());
         if (!_graph.TryGetNode(id, out var node))
         {
             result.Messages.Add("Node not found.");
@@ -438,17 +440,18 @@ public sealed class NetworkQueryService
     /// Resolves node references; with an area, nodes of a type pattern outside are left out (with a message) and an
     /// explicit node (Layer#OID, id, @x,y) outside is an error.
     /// </summary>
-    private IReadOnlyList<long> Nodes(string references, string what, NetworkAreaScope? scope, NetworkQueryResult result)
+    private IReadOnlyList<long> Nodes(string references, string what, NetworkAreaScope? scope, NetworkQueryResult result, NetworkTiers? tiers = null)
     {
+        var tier = tiers?.Union();
         if (scope is null)
         {
-            return _graph.ResolveNodes(references);
+            return _graph.ResolveNodes(references, tier);
         }
         var ids = new List<long>();
         int left = 0;
         foreach (var reference in FileNetworkGraph.SplitReferences(references))
         {
-            var resolved = _graph.ResolveNodes(reference);
+            var resolved = _graph.ResolveNodes(reference, tier);
             if (FileNetworkGraph.IsTypePattern(reference))
             {
                 ids.AddRange(resolved.Where(scope.Contains));
@@ -579,11 +582,26 @@ public sealed class NetworkQueryService
         return (_graph.Metadata.FeatureClasses.FirstOrDefault(f => f.Index == fc)?.Layer, oid);
     }
 
-    private void AddTypes(NetworkQueryResult result, IEnumerable<int> typeIds)
+    /// <summary>Largest number of nodes of one type that are listed one by one in the messages.</summary>
+    private const int ListedNodesPerType = 5;
+
+    /// <summary>
+    /// The nodes per type, most frequent first. Rare types (a few nodes among thousands) are listed with label and location,
+    /// so a surprise such as a low voltage joint in a medium voltage trace can be found on the map.
+    /// </summary>
+    private void AddTypes(NetworkQueryResult result, IEnumerable<(long Node, int TypeId)> nodes)
     {
-        foreach (var group in typeIds.GroupBy(t => t).OrderByDescending(g => g.Count()))
+        foreach (var group in nodes.GroupBy(n => n.TypeId).OrderByDescending(g => g.Count()))
         {
             result.Messages.Add($"    {group.Count(),8}  {_graph.TypeName(group.Key)}");
+            if (group.Key != 0 && !(_graph.Types.TryGetType(group.Key, out var type) && type.Helper) && group.Count() <= ListedNodesPerType)
+            {
+                foreach (var (node, _) in group)
+                {
+                    var (x, y) = Location(node);
+                    result.Messages.Add(string.Create(CultureInfo.InvariantCulture, $"              {_graph.NodeLabel(node)}  at {x:0.###}, {y:0.###}"));
+                }
+            }
         }
     }
 

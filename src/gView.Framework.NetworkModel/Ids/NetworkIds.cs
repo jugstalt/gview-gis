@@ -13,8 +13,8 @@ public readonly record struct FeatureRef(int FeatureClass, long Oid)
 
 /// <summary>
 /// The ids of nodes and edges as one long: | 12 bits feature class | 40 bits object id | 11 bits part |.
-/// Helper nodes use the feature class 4095 and a hash of their location rounded to the tolerance, so all ids
-/// follow from the data and stay the same between builds.
+/// Helper nodes use the feature class 4095 and a hash of their location rounded to the tolerance and of their type
+/// (helper nodes of two tiers may share a location), so all ids follow from the data and stay the same between builds.
 /// </summary>
 public sealed class NetworkIds : INetworkIdFactory<long, long, FeatureRef>
 {
@@ -56,15 +56,15 @@ public sealed class NetworkIds : INetworkIdFactory<long, long, FeatureRef>
 
     private readonly HashSet<long> _helperIds = [];
 
-    public long NewHelperNode(Coordinate location)
+    public long NewHelperNode(Coordinate location, int typeId)
     {
-        // the location rounded to the tolerance grid, hashed into the 51 free bits; two helper nodes may round to the
-        // same cell (a chain of ends wider than the tolerance), then the next salt is taken
+        // the location rounded to the tolerance grid and the type, hashed into the 51 free bits; two helper nodes may round
+        // to the same cell (a chain of ends wider than the tolerance), then the next salt is taken
         long ix = (long)Math.Round(location.X / _tolerance);
         long iy = (long)Math.Round(location.Y / _tolerance);
         for (long salt = 0; ; salt++)
         {
-            long id = HelperId(ix, iy, salt);
+            long id = HelperId(ix, iy, typeId, salt);
             if (_helperIds.Add(id))
             {
                 return id;
@@ -72,11 +72,11 @@ public sealed class NetworkIds : INetworkIdFactory<long, long, FeatureRef>
         }
     }
 
-    private static long HelperId(long ix, long iy, long salt)
+    private static long HelperId(long ix, long iy, int typeId, long salt)
     {
-        // FNV-1a over both cell indices and the salt
+        // FNV-1a over both cell indices, the type (only when set, so untyped helper nodes keep their ids) and the salt
         ulong hash = 14695981039346656037UL;
-        foreach (var value in new[] { ix, iy, salt })
+        foreach (var value in typeId == 0 ? new[] { ix, iy, salt } : new[] { ix, iy, typeId, salt })
         {
             ulong v = (ulong)value;
             for (int i = 0; i < 8; i++)
