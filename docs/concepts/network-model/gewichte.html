@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Gewichte · SpatialNET Netzwerkmodell</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="side">
+    <a class="brand" href="index.html"><small>SpatialNET</small><span>Netzwerkmodell</span></a>
+    <nav aria-label="Blätter">
+      <ol class="toc">
+        <li><a href="index.html"><small>Blatt 1</small>Übersicht</a></li>
+        <li><a href="bilden.html"><small>Blatt 2</small>Netz bilden</a></li>
+        <li><a href="typen.html"><small>Blatt 3</small>Typen</a></li>
+        <li><a href="gewichte.html" aria-current="page"><small>Blatt 4</small>Gewichte</a></li>
+        <li><a href="berechnungen.html"><small>Blatt 5</small>Berechnungen</a></li>
+        <li><a href="validierung.html"><small>Blatt 6</small>Validierung</a></li>
+        <li><a href="ebenen.html"><small>Blatt 7</small>Ebenen und Verbinden</a></li>
+        <li><a href="gview.html"><small>Blatt 8</small>Umsetzung in gView</a></li>
+      </ol>
+    </nav>
+    <dl class="titleblock">
+      <dt>Projekt</dt><dd>SpatialNET</dd>
+      <dt>Inhalt</dt><dd>Netzwerk-Konzept</dd>
+      <dt>Stand</dt><dd>22.11.2026</dd>
+      <dt>Status</dt><dd>umgesetzt</dd>
+      <dt>Bezug</dt><dd>ADR 0049</dd>
+    </dl>
+  </aside>
+
+  <main class="sheet">
+    <p class="eyebrow">Blatt 4 · Gewichte</p>
+    <h1>Was eine Kante kostet</h1>
+    <p class="lede">Jede Kante hat eine Länge und beliebig viele benannte Gewichte. Eine Berechnung wählt ein Gewicht aus, und daraus ergeben sich die Kosten jeder Kante. Der kürzeste Weg nach Länge ist darum nicht unbedingt der schnellste.</p>
+
+    <figure class="fig">
+      <div class="canvas"><img src="img/routen.png" alt="Zwei Wege von Start A nach Ziel B. Route 1 durch den Ortskern: 0,8 km und 1,2 km bei 30 km/h. Route 2 über die Umfahrung: 1,0 km bei 50, 1,6 km bei 80 und 0,6 km bei 50 km/h. Nach Länge gewinnt Route 1 mit 2,0 km, nach Fahrzeit Route 2 mit 3,1 Minuten."></div>
+      <figcaption><b>Abb. 4.1</b>Dasselbe Netz, zwei Gewichte, zwei Antworten. Mit dem Gewicht Länge ist der Ortskern kürzer, mit dem Gewicht Fahrzeit ist die Umfahrung schneller.</figcaption>
+    </figure>
+
+    <h2>Wie Gewichte gespeichert werden</h2>
+    <p>Zwei Tabellen beim Host. Die erste beschreibt die Gewichte, die zweite ordnet Werte den Kanten zu.</p>
+    <div class="pair">
+      <div>
+        <h3>Gewichtsdefinition</h3>
+        <div class="tbl">
+          <table>
+            <thead><tr><th>ID</th><th>Name</th><th>Art</th><th>Ersatzwert</th></tr></thead>
+            <tbody>
+              <tr><td class="mono">1</td><td>Länge</td><td>Länge</td><td>–</td></tr>
+              <tr><td class="mono">2</td><td>Fahrzeit</td><td>Länge / Wert</td><td class="mono">30 km/h</td></tr>
+              <tr><td class="mono">3</td><td>Widerstand</td><td>Wert × Länge</td><td class="mono">0.32 Ω/km</td></tr>
+              <tr><td class="mono">4</td><td>Fähre</td><td>Absolut</td><td class="mono">0</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div>
+        <h3>Gewichtszuordnung</h3>
+        <div class="tbl">
+          <table>
+            <thead><tr><th>Kante</th><th>Gewicht</th><th>Wert</th></tr></thead>
+            <tbody>
+              <tr><td class="mono">L-210#1</td><td class="mono">3</td><td class="mono num">0.21</td></tr>
+              <tr><td class="mono">L-210#2</td><td class="mono">3</td><td class="mono num">0.21</td></tr>
+              <tr><td class="mono">STR-5</td><td class="mono">2</td><td class="mono num">80</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <p>Die Werte stehen beim Laden direkt in der Kante, sie kommen also mit dem Shard und brauchen keine eigene Abfrage pro Kante.</p>
+
+    <h2>Die vier Gewichtsarten</h2>
+    <p>Die Art legt fest, wie aus Wert und Länge die Kosten einer Kante werden. Die Kosten eines Weges sind immer die Summe seiner Kanten.</p>
+    <div class="kinds">
+      <div>
+        <h3>Länge</h3><span class="id">Length · Standard</span>
+        <div class="f">Kosten = Länge</div>
+        <p>350 m Kabel kosten 350. Gibt es immer, auch ohne Gewichtstabelle.</p>
+      </div>
+      <div>
+        <h3>Wert × Länge</h3><span class="id">PerLength</span>
+        <div class="f">Kosten = Wert × Länge</div>
+        <p>Widerstand: 0,21 Ω/km × 0,35 km = 0,0735 Ω.</p>
+      </div>
+      <div>
+        <h3>Länge / Wert</h3><span class="id">LengthOverValue</span>
+        <div class="f">Kosten = Länge / Wert</div>
+        <p>Fahrzeit: 1,2 km / 50 km/h = 1,44 min. Einheiten rechnet der Host passend um.</p>
+      </div>
+      <div>
+        <h3>Absolut</h3><span class="id">Absolute</span>
+        <div class="f">Kosten = Wert</div>
+        <p>Fester Betrag pro Kante, unabhängig von der Länge, z. B. 15 min für eine Fähre.</p>
+      </div>
+    </div>
+    <div class="note">
+      <span class="lbl">Fehlender Wert</span>
+      <p>Hat eine Kante für das gewählte Gewicht keinen Wert, gilt der Ersatzwert aus der Definition. Gibt es keinen, bricht die Berechnung gleich am Anfang mit einem Fehler ab, statt still mit 0 zu rechnen.</p>
+    </div>
+
+    <h2>Länge</h2>
+    <ul>
+      <li>Standard ist die Länge der Geometrie in Einheiten des Koordinatensystems. Das Netz muss deshalb in einem projizierten System gebaut werden (Meter), nicht in Grad.</li>
+      <li>Hat das GIS eine Aufmaßlänge (z. B. „Kabel laut Aufmaß 120 m“, gezeichnet nur 100 m), nimmt der Builder diese.</li>
+      <li>Wird eine solche Linie geteilt, wird die Aufmaßlänge anteilig verteilt: bei 40 m und 60 m Geometrie werden es 48 m und 72 m.</li>
+    </ul>
+
+    <h2>Richtung</h2>
+    <p>Jede Kante hat eine Richtung, bezogen auf die Digitalisierrichtung (von Von nach Nach). Standard ist „beide“.</p>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>Richtung</th><th>bedeutet</th><th>Beispiel</th></tr></thead>
+        <tbody>
+          <tr><td>beide</td><td>in beide Richtungen passierbar</td><td>normale Leitung, Straße</td></tr>
+          <tr><td>vorwärts</td><td>nur von Von nach Nach</td><td>Einbahnstraße in Digitalisierrichtung</td></tr>
+          <tr><td>rückwärts</td><td>nur von Nach nach Von</td><td>Einbahnstraße gegen die Digitalisierrichtung</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Die gespeicherte Richtung lässt sich für eine einzelne Berechnung überschreiben, z. B. für eine Baustelle. Mehr dazu auf <a href="berechnungen.html">Blatt 5</a>.</p>
+
+    <h2>Was nicht vorgesehen ist</h2>
+    <ul>
+      <li>Kombinationen mehrerer Gewichte in einer Formel</li>
+      <li>Engpass-Rechnung (Maximum statt Summe)</li>
+      <li>Zeitabhängige Gewichte und Abbiegeverbote</li>
+    </ul>
+
+    <nav class="pager" aria-label="Blätter">
+      <a href="typen.html"><small>← Blatt 3</small><span>Typen</span></a>
+      <a class="next" href="berechnungen.html"><small>Blatt 5 →</small><span>Berechnungen</span></a>
+    </nav>
+  </main>
+</div>
+</body>
+</html>

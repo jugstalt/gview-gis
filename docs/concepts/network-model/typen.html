@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Typen · SpatialNET Netzwerkmodell</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="side">
+    <a class="brand" href="index.html"><small>SpatialNET</small><span>Netzwerkmodell</span></a>
+    <nav aria-label="Blätter">
+      <ol class="toc">
+        <li><a href="index.html"><small>Blatt 1</small>Übersicht</a></li>
+        <li><a href="bilden.html"><small>Blatt 2</small>Netz bilden</a></li>
+        <li><a href="typen.html" aria-current="page"><small>Blatt 3</small>Typen</a></li>
+        <li><a href="gewichte.html"><small>Blatt 4</small>Gewichte</a></li>
+        <li><a href="berechnungen.html"><small>Blatt 5</small>Berechnungen</a></li>
+        <li><a href="validierung.html"><small>Blatt 6</small>Validierung</a></li>
+        <li><a href="ebenen.html"><small>Blatt 7</small>Ebenen und Verbinden</a></li>
+        <li><a href="gview.html"><small>Blatt 8</small>Umsetzung in gView</a></li>
+      </ol>
+    </nav>
+    <dl class="titleblock">
+      <dt>Projekt</dt><dd>SpatialNET</dd>
+      <dt>Inhalt</dt><dd>Netzwerk-Konzept</dd>
+      <dt>Stand</dt><dd>22.11.2026</dd>
+      <dt>Status</dt><dd>umgesetzt</dd>
+      <dt>Bezug</dt><dd>ADR 0049, 0055</dd>
+    </dl>
+  </aside>
+
+  <main class="sheet">
+    <p class="eyebrow">Blatt 3 · Typen</p>
+    <h1>Typen als Facetten</h1>
+    <p class="lede">Jeder Knoten und jede Kante hat genau einen Typ, gespeichert als eine Zahl. Was die Zahl bedeutet, steht in einer kleinen Typentabelle: ein Array aus Facetten wie Ebene, Objektart und Bauart. Regeln und Berechnungen sprechen Typen über Muster mit Platzhaltern an.</p>
+
+    <figure class="fig">
+      <div class="canvas"><img src="img/facetten.png" alt="Drei Spalten: Facette 1 Ebene mit Niederspannung und Mittelspannung, Facette 2 Objektart mit Leitung, Kastenverbinder, Anlagenverbinder, Kasten, Trafo, Kunde, Schalter, Facette 3 Bauart mit nicht belegt, Kabel, Freileitung. Markiert ist der Weg Niederspannung, Leitung, Kabel. Darunter Beispiele für Typ 11 und zwei Muster."></div>
+      <figcaption><b>Abb. 3.1</b>Typ 11 ist die Kombination [1, 1, 1]. Weil jede Spalte ihren eigenen Wertevorrat hat, bedeutet eine 2 in Spalte 2 immer Kastenverbinder, egal auf welcher Spannungsebene.</figcaption>
+    </figure>
+
+    <h2>Facetten, kein Baum</h2>
+    <p>Die Schreibweise <code>Niederspannung.Leitung.Kabel</code> sieht wie ein Baum aus, gemeint ist aber ein Vektor aus unabhängigen Facetten. Das ist wichtig für die Regeln: Nur so kann eine Regel „für jeden Kastenverbinder, egal welche Spannungsebene“ gelten. In einem Baum hätte der Kastenverbinder unter Niederspannung eine andere Nummer als unter Mittelspannung.</p>
+    <ul>
+      <li>Welche Facetten es gibt und wie viele, legt der Host fest. Die Tiefe hängt nur an der Typentabelle; Knoten und Kanten speichern immer nur eine Zahl.</li>
+      <li><code>0</code> heißt „nicht belegt“: Ein Kasten hat keine Bauart.</li>
+      <li>Typ <code>0</code> insgesamt ist reserviert für Hilfsknoten (untypisiert). Mit getrennten Ebenen gibt es zusätzlich einen <strong>Hilfstyp</strong> pro Ebene, z. B. „Niederspannung (untyped)“.</li>
+      <li>Die <strong>erste Facette ist die Ebene</strong> (Tier): Jeder ihrer Werte ist eine Ebene, auf die sich Suchen beschränken lassen (<a href="ebenen.html">Blatt 7</a>).</li>
+      <li>Jeder Typ ist entweder ein Knoten- oder ein Kantentyp.</li>
+    </ul>
+
+    <h2>Muster ausprobieren</h2>
+    <p>Wähle pro Facette einen Wert oder <code>*</code>. Die passenden Typen werden markiert. Das ist genau die Menge, auf die eine Regel oder ein Filter wirkt.</p>
+    <div class="tester" id="tester">
+      <div class="controls">
+        <label for="f1">Ebene<select id="f1"></select></label>
+        <label for="f2">Objektart<select id="f2"></select></label>
+        <label for="f3">Bauart<select id="f3"></select></label>
+      </div>
+      <div class="presets" aria-label="Beispiele">
+        <button type="button" data-p="1,*,*">Niederspannung.*</button>
+        <button type="button" data-p="*,2,*">[*, Kastenverbinder, *]</button>
+        <button type="button" data-p="*,1,1">[*, Leitung, Kabel]</button>
+        <button type="button" data-p="*,4,*">[*, Kasten, *]</button>
+        <button type="button" data-p="*,*,*">*</button>
+        <button type="button" data-p="untyped">untypisiert</button>
+      </div>
+      <p class="result" id="result" aria-live="polite"></p>
+      <div class="tbl">
+        <table>
+          <thead><tr><th>Typ</th><th>Array</th><th>Anzeige</th><th>Element</th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <h2>Regeln für Muster</h2>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>Muster</th><th>trifft</th></tr></thead>
+        <tbody>
+          <tr><td><code>[1, 1, 1]</code></td><td>genau Typ 11</td></tr>
+          <tr><td><code>[Niederspannung, *, *]</code> oder <code>[1, *, *]</code></td><td>Niederspannung selbst und alles darunter. <code>*</code> trifft auch „nicht belegt“. Die Kurzform <code>Niederspannung.*</code> geht auch; gezeigt wird die Klammerform.</td></tr>
+          <tr><td><code>[*, 2, *]</code></td><td>jeden Kastenverbinder auf jeder Ebene</td></tr>
+          <tr><td><code>[*, 1, 1]</code></td><td>jedes Kabel, Nieder- wie Mittelspannung</td></tr>
+          <tr><td><code>*</code></td><td>alle typisierten Elemente, aber keine Hilfsknoten</td></tr>
+          <tr><td><code>untyped</code></td><td>nur Hilfsknoten (Typ 0 und die Hilfstypen der Ebenen)</td></tr>
+          <tr><td><code>untyped &amp; [Niederspannung, *, *]</code></td><td>die Hilfsknoten der Niederspannung, z. B. für Regeln zu T-Stößen</td></tr>
+          <tr><td>mehrere Muster, <code>|</code></td><td>bedeuten ODER, z. B. <code>[*, Kasten, *] | [*, Trafo, *]</code></td></tr>
+          <tr><td><code>&amp;</code>, <code>!</code></td><td>UND und NICHT, z. B. <code>[Mittelspannung, *, *] &amp; ![*, *, Freileitung]</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Warum nur eine Zahl im Datensatz</h2>
+    <ol class="steps">
+      <li><strong>Muster</strong>Eine Regel nennt <code>[*, Kastenverbinder, *]</code>.</li>
+      <li><strong>Einmal auflösen</strong>Vor der Prüfung wird das Muster über die Typentabelle aufgelöst.</li>
+      <li><strong>Menge</strong>Ergebnis ist eine Menge von Typnummern, hier <code>{13, 23}</code>.</li>
+      <li><strong>Vergleich</strong>Für jede Kante wird nur geprüft, ob ihre Typnummer in der Menge ist. Das ist schnell und braucht keine Spalten pro Facette.</li>
+    </ol>
+    <p>Die Typentabelle hat Dutzende Zeilen und liegt immer im Speicher. Knoten und Kanten gibt es millionenfach. Deshalb steht das Array nur in der Typentabelle und nicht in jedem Datensatz.</p>
+
+    <nav class="pager" aria-label="Blätter">
+      <a href="bilden.html"><small>← Blatt 2</small><span>Netz bilden</span></a>
+      <a class="next" href="gewichte.html"><small>Blatt 4 →</small><span>Gewichte</span></a>
+    </nav>
+  </main>
+</div>
+
+<script>
+(function () {
+  var F = [
+    { 1: "Niederspannung", 2: "Mittelspannung" },
+    { 1: "Leitung", 2: "Kastenverbinder", 3: "Anlagenverbinder", 4: "Kasten", 5: "Trafo", 6: "Kunde", 7: "Schalter" },
+    { 0: "nicht belegt", 1: "Kabel", 2: "Freileitung" }
+  ];
+  var TYPES = [
+    [0, null, "untypisiert (Hilfsknoten)", "Knoten"],
+    [11, [1, 1, 1], "Niederspannung.Leitung.Kabel", "Kante"],
+    [12, [1, 1, 2], "Niederspannung.Leitung.Freileitung", "Kante"],
+    [13, [1, 2, 0], "Niederspannung.Kastenverbinder", "Kante"],
+    [14, [1, 3, 0], "Niederspannung.Anlagenverbinder", "Kante"],
+    [15, [1, 4, 0], "Niederspannung.Kasten", "Knoten"],
+    [16, [1, 6, 0], "Niederspannung.Kunde", "Knoten"],
+    [17, [1, 7, 0], "Niederspannung.Schalter", "Knoten"],
+    [21, [2, 1, 1], "Mittelspannung.Leitung.Kabel", "Kante"],
+    [22, [2, 1, 2], "Mittelspannung.Leitung.Freileitung", "Kante"],
+    [23, [2, 2, 0], "Mittelspannung.Kastenverbinder", "Kante"],
+    [24, [2, 3, 0], "Mittelspannung.Anlagenverbinder", "Kante"],
+    [25, [2, 5, 0], "Mittelspannung.Trafo", "Knoten"],
+    [26, [2, 7, 0], "Mittelspannung.Schalter", "Knoten"]
+  ];
+  var sel = [document.getElementById("f1"), document.getElementById("f2"), document.getElementById("f3")];
+  var rows = document.getElementById("rows");
+  var result = document.getElementById("result");
+  var untyped = false;
+
+  sel.forEach(function (s, i) {
+    var o = document.createElement("option"); o.value = "*"; o.textContent = "* (beliebig)"; s.appendChild(o);
+    Object.keys(F[i]).forEach(function (k) {
+      var op = document.createElement("option"); op.value = k; op.textContent = k + " · " + F[i][k]; s.appendChild(op);
+    });
+    s.addEventListener("change", function () { untyped = false; render(); });
+  });
+
+  TYPES.forEach(function (t) {
+    var tr = document.createElement("tr");
+    tr.innerHTML = "<td class='mono'>" + t[0] + "</td><td class='mono'>" + (t[1] ? "[" + t[1].join(", ") + "]" : "–") +
+      "</td><td>" + t[2] + "</td><td>" + t[3] + "</td>";
+    rows.appendChild(tr);
+  });
+
+  function render() {
+    var pat = sel.map(function (s) { return s.value; });
+    var hits = [];
+    TYPES.forEach(function (t, i) {
+      var ok;
+      if (untyped) ok = t[1] === null;
+      else ok = t[1] !== null && pat.every(function (p, j) { return p === "*" || Number(p) === t[1][j]; });
+      rows.children[i].className = ok ? "hit" : "miss";
+      if (ok) hits.push(t[0]);
+    });
+    var label = untyped ? "untypisiert" : "[" + pat.join(", ") + "]";
+    result.innerHTML = "Muster <code>" + label + "</code> trifft " + hits.length + (hits.length === 1 ? " Typ" : " Typen") +
+      (hits.length ? ": <code>{" + hits.join(", ") + "}</code>" : "");
+  }
+
+  document.querySelectorAll(".presets button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var p = b.getAttribute("data-p");
+      if (p === "untyped") { untyped = true; sel.forEach(function (s) { s.value = "*"; }); }
+      else { untyped = false; p.split(",").forEach(function (v, i) { sel[i].value = v; }); }
+      render();
+    });
+  });
+
+  sel[1].value = "2";
+  render();
+})();
+</script>
+</body>
+</html>

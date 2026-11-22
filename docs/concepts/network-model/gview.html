@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Umsetzung in gView · SpatialNET Netzwerkmodell</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="side">
+    <a class="brand" href="index.html"><small>SpatialNET</small><span>Netzwerkmodell</span></a>
+    <nav aria-label="Blätter">
+      <ol class="toc">
+        <li><a href="index.html"><small>Blatt 1</small>Übersicht</a></li>
+        <li><a href="bilden.html"><small>Blatt 2</small>Netz bilden</a></li>
+        <li><a href="typen.html"><small>Blatt 3</small>Typen</a></li>
+        <li><a href="gewichte.html"><small>Blatt 4</small>Gewichte</a></li>
+        <li><a href="berechnungen.html"><small>Blatt 5</small>Berechnungen</a></li>
+        <li><a href="validierung.html"><small>Blatt 6</small>Validierung</a></li>
+        <li><a href="ebenen.html"><small>Blatt 7</small>Ebenen und Verbinden</a></li>
+        <li><a href="gview.html" aria-current="page"><small>Blatt 8</small>Umsetzung in gView</a></li>
+      </ol>
+    </nav>
+    <dl class="titleblock">
+      <dt>Projekt</dt><dd>gView</dd>
+      <dt>Inhalt</dt><dd>Netzwerk-Konzept</dd>
+      <dt>Stand</dt><dd>22.11.2026</dd>
+      <dt>Status</dt><dd>umgesetzt</dd>
+      <dt>Bezug</dt><dd>gView 9, SpatialNET 0.10</dd>
+    </dl>
+  </aside>
+
+  <main class="sheet">
+    <p class="eyebrow">Blatt 8 · Umsetzung in gView</p>
+    <h1>Der Host ist gView</h1>
+    <p class="lede">gView ist der Host aus <a href="index.html">Blatt 1</a>: Carto stellt das Netz ein und baut es, der Server sucht darauf. Die Einstellungen stehen in einer Netzwerk-Konfiguration, die mit der Karte gespeichert wird und sich als JSON austauschen lässt. Die Schritt-für-Schritt-Anleitung steht in der gView-Dokumentation unter <em>Carto, Netzwerke erstellen</em>.</p>
+
+    <h2>Der Weg vom GIS zum Dienst</h2>
+    <ol class="steps">
+      <li><strong>Layer</strong>Punkt- und Linien-Layer der Karte nehmen am Netz teil. Je Layer eine Typ-Vorlage pro Facette, z. B. die Gruppe als Ebene und der Layername als Objektart.</li>
+      <li><strong>Einstellen</strong>In Carto unter <em>Service Settings, NetworkServer</em>: Toleranz, Facetten, Ebenen, Verbindungen, Prüfregeln.</li>
+      <li><strong>Bauen</strong>In Carto, in der Server-Verwaltung oder nachts mit <code>gView.Cmd</code>. Das Netz liegt als Verzeichnis neben der Karte bzw. beim Dienst: Shards, Indizes und <code>network.json</code>.</li>
+      <li><strong>Suchen</strong>Mit dem Werkzeug <em>Network Search</em> in Carto oder über die REST-Schnittstelle des <em>NetworkServer</em>.</li>
+    </ol>
+
+    <h2>Wo was eingestellt wird</h2>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>Thema</th><th>Carto</th><th>network.json</th><th>Blatt</th></tr></thead>
+        <tbody>
+          <tr><td>Teilnahme, Typ, Where, Länge, Richtung, Schaltzustand</td><td>Layer Settings, Seite Network</td><td><code>nodes</code>, <code>edges</code></td><td><a href="bilden.html">2</a>, <a href="typen.html">3</a></td></tr>
+          <tr><td>Toleranz, Koordinatensystem, zusammenfallende Punkte</td><td>Tab General</td><td><code>tolerance</code>, <code>srs</code>, <code>nodeConflicts</code></td><td><a href="bilden.html">2</a></td></tr>
+          <tr><td>Facetten, Gewichte</td><td>Tab General</td><td><code>facets</code>, <code>weights</code></td><td><a href="typen.html">3</a>, <a href="gewichte.html">4</a></td></tr>
+          <tr><td>Shards</td><td>Layer Settings des Polygon-Layers</td><td><code>shards</code></td><td><a href="bilden.html">2</a></td></tr>
+          <tr><td>Versorgungsquellen, Kunden</td><td>Tab General, Supply</td><td><code>supplySources</code>, <code>customers</code></td><td><a href="berechnungen.html">5</a></td></tr>
+          <tr><td>Ebenen</td><td>Tab Tiers</td><td><code>tiers</code></td><td><a href="ebenen.html">7</a></td></tr>
+          <tr><td>Verbinden und Teilen</td><td>Tab Connections</td><td><code>separateTiers</code>, <code>nodesOnLine</code>, <code>lineEndsOnLine</code>, <code>connectRules</code></td><td><a href="ebenen.html">7</a></td></tr>
+          <tr><td>Prüfregeln</td><td>Tab Rules</td><td><code>rules</code></td><td><a href="validierung.html">6</a></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Quellen, Kunden, Regeln und Ebenen hängen nicht von den Daten ab. Sie lassen sich ohne Neubau in ein gebautes Netz schreiben (<em>Refresh metadata</em>). Alles, was das Bauen betrifft, braucht einen Neubau.</p>
+
+    <figure class="fig">
+      <div class="canvas"><img src="img/gview-connections.png" alt="Carto, Service Settings, NetworkServer, Tab Connections: Schalter Separate tiers, die Standards für Knoten und Linienenden auf einer Linie und eine Regel, nach der Trenner der Niederspannung Niederspannungsleitungen teilen."></div>
+      <figcaption><b>Abb. 8.1</b>Verbinden und Teilen in Carto: getrennte Ebenen, die Standards und eine Regel für die Trenner (Beispielnetz).</figcaption>
+    </figure>
+
+    <h2>Suchen</h2>
+    <p>Carto und der Server verwenden denselben Suchdienst. Operationen: <em>trace</em>, <em>reach</em>, <em>path</em>, <em>supply</em>, <em>outage</em>, <em>info</em>, <em>nearest</em> und <em>validate</em>. Jede nimmt eine oder mehrere Ebenen, ein Gebiet, gesperrte Knoten und abgeschaltete Kanten als Abweichung.</p>
+    <figure class="fig">
+      <div class="canvas"><img src="img/gview-trace.png" alt="Carto mit dem Werkzeug Network Search: ein Trace vom Umspannwerk auf der Ebene Mittelspannung erreicht zwei Trafos; rechts das Ergebnis mit Quelle, erreichten Knoten und Bau-Log."></div>
+      <figcaption><b>Abb. 8.2</b>Trace vom Umspannwerk auf der Ebene Mittelspannung im Beispielnetz. Er erreicht beide Trafos; die Niederspannungsmuffe auf der Mittelspannungsleitung bleibt außen vor.</figcaption>
+    </figure>
+
+    <h2>IDs und Bezug zum GIS</h2>
+    <ul>
+      <li>Ein echter Knoten oder eine Kante wird über ihr Objekt angesprochen: <code>Layer#OID</code>, z. B. <code>Kasten#17</code>. Eine geteilte Linie ergibt Teile <code>Leitung#4576/0</code>, <code>/1</code>, …</li>
+      <li>Hilfsknoten haben eine ID aus Ort und Typ und werden über ihren Ort angesprochen (<code>@x,y</code>).</li>
+      <li>Zusammengeführte Punkte (Aliase) finden ihren Knoten weiter über ihr eigenes Objekt.</li>
+    </ul>
+
+    <nav class="pager" aria-label="Blätter">
+      <a href="ebenen.html"><small>← Blatt 7</small><span>Ebenen und Verbinden</span></a>
+      <a class="next" href="index.html"><small>zurück zu Blatt 1</small><span>Übersicht</span></a>
+    </nav>
+  </main>
+</div>
+</body>
+</html>

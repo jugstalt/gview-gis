@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Berechnungen · SpatialNET Netzwerkmodell</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="side">
+    <a class="brand" href="index.html"><small>SpatialNET</small><span>Netzwerkmodell</span></a>
+    <nav aria-label="Blätter">
+      <ol class="toc">
+        <li><a href="index.html"><small>Blatt 1</small>Übersicht</a></li>
+        <li><a href="bilden.html"><small>Blatt 2</small>Netz bilden</a></li>
+        <li><a href="typen.html"><small>Blatt 3</small>Typen</a></li>
+        <li><a href="gewichte.html"><small>Blatt 4</small>Gewichte</a></li>
+        <li><a href="berechnungen.html" aria-current="page"><small>Blatt 5</small>Berechnungen</a></li>
+        <li><a href="validierung.html"><small>Blatt 6</small>Validierung</a></li>
+        <li><a href="ebenen.html"><small>Blatt 7</small>Ebenen und Verbinden</a></li>
+        <li><a href="gview.html"><small>Blatt 8</small>Umsetzung in gView</a></li>
+      </ol>
+    </nav>
+    <dl class="titleblock">
+      <dt>Projekt</dt><dd>SpatialNET</dd>
+      <dt>Inhalt</dt><dd>Netzwerk-Konzept</dd>
+      <dt>Stand</dt><dd>22.11.2026</dd>
+      <dt>Status</dt><dd>umgesetzt</dd>
+      <dt>Bezug</dt><dd>ADR 0049, 0051</dd>
+    </dl>
+  </aside>
+
+  <main class="sheet">
+    <p class="eyebrow">Blatt 5 · Berechnungen</p>
+    <h1>Was das Netz beantworten kann</h1>
+    <p class="lede">Welche Kunden hängen an welcher Station? Ist jeder Kunde versorgt? Was ist von hier aus in 300 m erreichbar? Wie lautet der kürzeste Weg? Alle Berechnungen laufen nach demselben Muster und holen sich nur den Teil des Netzes, den sie besuchen.</p>
+
+    <h2>Was jede Berechnung bekommt</h2>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>Eingabe</th><th>Beispiel</th><th>Pflicht</th></tr></thead>
+        <tbody>
+          <tr><td>Startmenge</td><td>alle Trafos im Ortsnetz Nord, vom Host per Abfrage geholt</td><td>ja</td></tr>
+          <tr><td>Gewicht</td><td>Länge, Fahrzeit, Widerstand</td><td>nein, Standard ist Länge</td></tr>
+          <tr><td>Abweichungen vom Schaltzustand</td><td>Schalter 4711 heute gesperrt</td><td>nein</td></tr>
+          <tr><td>Ebene</td><td>nur die Niederspannung; ihre Quellen, Senken und Sperren gelten dann</td><td>nein</td></tr>
+          <tr><td>Filter</td><td>nur Kanten vom Typ <code>[Niederspannung, *, *]</code></td><td>nein</td></tr>
+          <tr><td>Gebiet</td><td>nur innerhalb eines Ortsnetzes oder Rechtecks</td><td>nein</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Das Ergebnis kommt als Liste von IDs, Stück für Stück. Der Host kann sie direkt in eine Tabelle schreiben oder nach den ersten Treffern abbrechen. Lange Läufe lassen sich jederzeit abbrechen.</p>
+
+    <h2>Schaltzustand</h2>
+    <div class="pair">
+      <div>
+        <h3>Normalschaltzustand</h3>
+        <p>Was im GIS erfasst ist, steht im Netz: gesperrte Knoten und deaktivierte Kanten. Er kommt mit dem Shard und kostet keine eigene Abfrage. Standard ist „alles offen“.</p>
+      </div>
+      <div>
+        <h3>Abweichung</h3>
+        <p>Für eine einzelne Berechnung lassen sich Knoten sperren oder freigeben, Kanten deaktivieren und Richtungen überschreiben. Das Netz selbst ändert sich dabei nicht.</p>
+      </div>
+    </div>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>Zustand</th><th>Wirkung in der Berechnung</th></tr></thead>
+        <tbody>
+          <tr><td>Knoten gesperrt</td><td>wird <strong>erreicht</strong>, aber <strong>nicht durchlaufen</strong>. Er erscheint im Ergebnis, alles dahinter nicht.</td></tr>
+          <tr><td>Kante deaktiviert</td><td>existiert für diese Berechnung nicht</td></tr>
+          <tr><td>Richtung überschrieben</td><td>gilt statt der gespeicherten Richtung</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note warn">
+      <span class="lbl">Begriffe</span>
+      <p>Im Code heißt es neutral <code>Blocked</code> (Knoten) und <code>Disabled</code> (Kante). Elektrisch bedeutet ein „geschlossener“ Schalter, dass Strom fließt. Die neutralen Namen vermeiden diese Verwechslung.</p>
+    </div>
+
+    <h2>Trace: Wer wird von wem versorgt?</h2>
+    <p>Der Trace läuft von jeder Quelle (z. B. jedem Trafo) für sich und meldet jeden erreichten Knoten mit dieser Quelle. Er stoppt an gesperrten Knoten und an anderen Quellen. Ein Knoten, den zwei Quellen erreichen, erscheint deshalb bei beiden.</p>
+    <figure class="fig">
+      <div class="canvas"><img src="img/trace.png" alt="Zwei Stationen. Station 1 versorgt drei Kunden über blaue Kanten, Station 2 versorgt einen Kunden über grüne Kanten. Eine gesperrte Trennstelle in der Mitte wird von beiden Seiten erreicht, aber nicht durchlaufen. Hinter einem heute gesperrten Schalter liegen zwei nicht versorgte Kunden."></div>
+      <figcaption><b>Abb. 5.1</b>Ein Trace über zwei Stationen. Die Trennstelle ist im Normalschaltzustand gesperrt, der Schalter unten ist es nur heute (Abweichung). Die zwei Kunden dahinter sind nicht versorgt.</figcaption>
+    </figure>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>Frage</th><th>So wird sie gestellt</th></tr></thead>
+        <tbody>
+          <tr><td>Welche Kunden hängen an Station 1?</td><td>Trace ab Station 1, Ergebnis nach Typ <code>[*, Kunde, *]</code> filtern</td></tr>
+          <tr><td>Ist jeder Kunde versorgt?</td><td>Trace ab allen Stationen; jeder Kunde, der nicht im Ergebnis ist, ist nicht versorgt</td></tr>
+          <tr><td>Was passiert, wenn Schalter 4711 öffnet?</td><td>Derselbe Trace mit der Abweichung „4711 gesperrt“, Ergebnisse vergleichen. In gView macht das die Operation <em>outage</em> in einem Schritt: welche Kunden vorher versorgt waren und es danach nicht mehr sind.</td></tr>
+          <tr><td>Wird ein Kunde von zwei Stationen erreicht?</td><td>Er erscheint im Trace bei beiden Stationen. Die Versorgungsabfrage liefert pro Kunde die Liste seiner Stationen: leer heißt nicht versorgt, mehr als eine heißt mehrfach versorgt.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Spannungsebenen trennen</h3>
+    <p>Ein Trafo hängt an beiden Ebenen. Ein Trace in der Niederspannung, der beim Trafo startet, würde sonst auch in die Mittelspannung laufen. Die <strong>Ebene</strong> der Suche hält ihn in seiner Ebene: Sie wählt die Kantentypen der Ebene (wie ein Filter <code>[Niederspannung, *, *]</code>) und dazu deren Quellen, Senken und Sperren. Ein Trace mit Ebene hält an den Quellen dieser Ebene an. Dass eine zufällig aufliegende Muffe die Ebenen gar nicht erst verbindet, regelt das Bauen (<a href="ebenen.html">Blatt 7</a>).</p>
+    <figure class="fig narrow">
+      <div class="canvas"><img src="img/trafo-filter.png" alt="Ein Trafo in der Mitte. Links gestrichelte Mittelspannungskanten, vom Filter ausgeschlossen. Rechts Niederspannungskanten zu zwei Kunden, in die der Trace läuft."></div>
+      <figcaption><b>Abb. 5.2</b>Trace ab dem Trafo auf der Ebene Niederspannung (wirkt wie der Filter <code>[1, *, *]</code>). Die Mittelspannung wird nicht betreten und auch nicht geladen.</figcaption>
+    </figure>
+
+    <h2>Erreichbarkeit</h2>
+    <p>Alle Knoten innerhalb bestimmter Kosten, sortiert nach Kosten, mit der Kante, über die jeder erreicht wurde. Beispiele: alle Kunden innerhalb von 300 m Kabellänge ab einem Kasten, oder alle Straßen, die in 5 Minuten erreichbar sind.</p>
+
+    <h2>Kürzester Weg</h2>
+    <p>Von einem Knoten zu einem anderen, mit dem gewählten Gewicht. Das Ergebnis ist eine Folge von Kanten mit Durchlaufrichtung und Gesamtkosten. Zum Zeichnen schlägt der Host für jede Kante das Originalobjekt und den Bereich nach:</p>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>Schritt</th><th>Kante</th><th>Richtung</th><th>Original und Bereich</th><th>Kosten</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">1</td><td class="mono">L-210#1</td><td>vorwärts</td><td class="mono">Leitung.210 · 0–48 m</td><td class="num">48.0</td></tr>
+          <tr><td class="mono">2</td><td class="mono">L-210#2</td><td>vorwärts</td><td class="mono">Leitung.210 · 48–112 m</td><td class="num">64.0</td></tr>
+          <tr><td class="mono">3</td><td class="mono">KV-88</td><td>vorwärts</td><td class="mono">Kastenverbinder.88 · ganz</td><td class="num">4.2</td></tr>
+          <tr><td></td><td></td><td></td><td><strong>Summe</strong></td><td class="num"><strong>116.2</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>SpatialNET hat einen Helfer, der aus der Originalgeometrie und dem Bereich das Teilstück ausschneidet. Die Geometrie liefert der Host.</p>
+
+    <h2>Start am Ort</h2>
+    <p>Startpunkte lassen sich über ihr Objekt (<code>Kasten#17</code>), ihre ID, ein Typmuster oder einen Ort angeben (<code>@x,y</code>, der nächste Knoten, auch ein Hilfsknoten). Liegen an einem Ort mehrere Knoten, weil die Ebenen getrennt sind, wählt die Ebene der Suche den richtigen; sonst meldet die Suche die Kandidaten. In Carto nimmt ein weiterer Klick auf dieselbe Stelle den nächsten Knoten.</p>
+
+    <h2>Wie viel geladen wird</h2>
+    <ul>
+      <li>Eine Berechnung lädt nur die Shards, in die sie tatsächlich kommt. Ein Trace in einem Ortsnetz lädt in der Regel genau einen Shard.</li>
+      <li>Im Speicher bleibt nur, was die Berechnung sich merken muss: beim Trace die Knoten des gerade verfolgten Versorgungsgebiets, bei der Versorgungsabfrage dazu ein kleiner Eintrag pro Kunde. Auch die Versorgung des ganzen Netzes passt so in den Speicher, am besten mit den Trafos nach Shard sortiert.</li>
+      <li>Fehler beim Host (z. B. Datenbank nicht erreichbar) brechen die Berechnung ab und werden unverändert weitergegeben. Eine Kante, die auf einen unbekannten Knoten zeigt, ist ein Fehler im Netz und wird gemeldet, nicht übersprungen.</li>
+    </ul>
+
+    <nav class="pager" aria-label="Blätter">
+      <a href="gewichte.html"><small>← Blatt 4</small><span>Gewichte</span></a>
+      <a class="next" href="validierung.html"><small>Blatt 6 →</small><span>Validierung</span></a>
+    </nav>
+  </main>
+</div>
+</body>
+</html>

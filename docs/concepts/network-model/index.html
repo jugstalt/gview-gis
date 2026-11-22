@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SpatialNET Netzwerkmodell</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="side">
+    <a class="brand" href="index.html"><small>SpatialNET</small><span>Netzwerkmodell</span></a>
+    <nav aria-label="Blätter">
+      <ol class="toc">
+        <li><a href="index.html" aria-current="page"><small>Blatt 1</small>Übersicht</a></li>
+        <li><a href="bilden.html"><small>Blatt 2</small>Netz bilden</a></li>
+        <li><a href="typen.html"><small>Blatt 3</small>Typen</a></li>
+        <li><a href="gewichte.html"><small>Blatt 4</small>Gewichte</a></li>
+        <li><a href="berechnungen.html"><small>Blatt 5</small>Berechnungen</a></li>
+        <li><a href="validierung.html"><small>Blatt 6</small>Validierung</a></li>
+        <li><a href="ebenen.html"><small>Blatt 7</small>Ebenen und Verbinden</a></li>
+        <li><a href="gview.html"><small>Blatt 8</small>Umsetzung in gView</a></li>
+      </ol>
+    </nav>
+    <dl class="titleblock">
+      <dt>Projekt</dt><dd>SpatialNET</dd>
+      <dt>Inhalt</dt><dd>Netzwerk-Konzept</dd>
+      <dt>Stand</dt><dd>22.11.2026</dd>
+      <dt>Status</dt><dd>umgesetzt</dd>
+      <dt>Bezug</dt><dd>ADR 0049 bis 0055</dd>
+    </dl>
+  </aside>
+
+  <main class="sheet">
+    <p class="eyebrow">Blatt 1 · Übersicht</p>
+    <h1>Leitungsnetze als Graph</h1>
+    <p class="lede">SpatialNET soll aus Leitungen und Punkten im GIS ein Netzwerk bilden, es prüfen und darauf rechnen. Diese Blätter erklären das Konzept für das GIS-Team. Es ist umgesetzt: in SpatialNET (Builder, Suchen, Regeln) und in gView (Carto baut das Netz, der Server sucht darauf), siehe <a href="gview.html">Blatt 8</a>.</p>
+
+    <figure class="fig">
+      <div class="canvas"><img src="img/overview.png" alt="Links der Host mit GIS-Daten, Netzwerk-Datenbank und Ergebnissen, rechts SpatialNET mit Builder und Berechnung. Die Pfeile laufen von den GIS-Daten zum Builder, von dort als Datensätze in die Datenbank, über IGraph zur Berechnung und als IDs zurück zum Host."></div>
+      <figcaption><b>Abb. 1.1</b>Arbeitsteilung. Der Host (z. B. gView) hält die Daten, SpatialNET liefert den Builder und die Algorithmen. Dazwischen liegt <code>IGraph</code>: ein Interface, über das der Host Knoten und Kanten nach ID herausgibt.</figcaption>
+    </figure>
+
+    <h2>Die Idee in fünf Sätzen</h2>
+    <ul>
+      <li>Ein Netzwerk besteht aus <strong>Knoten</strong> (Punkte) und <strong>Kanten</strong> (Verbindungen zwischen genau zwei Knoten).</li>
+      <li>Der <strong>Builder</strong> erzeugt es aus GIS-Objekten: Leitungen, Verbinder, Kästen, Trafos, Kunden.</li>
+      <li>Gespeichert wird es beim Host, zum Beispiel in einer Datenbank, aufgeteilt in <strong>Shards</strong>, meist ein Shard pro Ortsnetz.</li>
+      <li>Berechnungen und Prüfungen holen Knoten und Kanten nach ID, und zwar nur die, die sie wirklich besuchen.</li>
+      <li>Das Fachwissen steckt in <strong>Typen</strong>, <strong>Gewichten</strong> und <strong>Regeln</strong>, die der Host festlegt. SpatialNET kennt keine Spannungsebenen, nur Zahlen und Muster.</li>
+      <li>Die <strong>Ebenen</strong> (Mittel-, Niederspannung) kommen aus der ersten Facette des Typs. Der Host kann sie beim Bauen getrennt halten; ein Trafo verbindet sie.</li>
+    </ul>
+
+    <h2>Die Blätter</h2>
+    <ul class="sheets">
+      <li><a href="bilden.html"><small>Blatt 2</small><strong>Netz bilden</strong><span>Wie aus Linien und Punkten Knoten und Kanten werden, wie gefangen und geteilt wird und wie Shards entstehen.</span></a></li>
+      <li><a href="typen.html"><small>Blatt 3</small><strong>Typen</strong><span>Typen als Facetten-Array, Muster mit Platzhaltern, mit einem Tester zum Ausprobieren.</span></a></li>
+      <li><a href="gewichte.html"><small>Blatt 4</small><strong>Gewichte</strong><span>Länge, Gewichtsarten, Fahrtrichtung und warum der kürzeste nicht der schnellste Weg ist.</span></a></li>
+      <li><a href="berechnungen.html"><small>Blatt 5</small><strong>Berechnungen</strong><span>Trace, Erreichbarkeit, kürzester Weg. Schaltzustand und Filter.</span></a></li>
+      <li><a href="validierung.html"><small>Blatt 6</small><strong>Validierung</strong><span>Wie Regeln aussehen, was sie finden und wie ein Gebiet geprüft wird.</span></a></li>
+      <li><a href="ebenen.html"><small>Blatt 7</small><strong>Ebenen und Verbinden</strong><span>Ebenen aus der ersten Facette, getrennte Ebenen beim Bauen, Regeln fürs Verbinden und Teilen.</span></a></li>
+      <li><a href="gview.html"><small>Blatt 8</small><strong>Umsetzung in gView</strong><span>Carto, network.json, NetworkServer und gView.Cmd: wo was eingestellt wird.</span></a></li>
+    </ul>
+
+    <h2>Wer macht was</h2>
+    <div class="pair">
+      <div>
+        <h3><span class="tag host">Host</span> z. B. gView</h3>
+        <ul>
+          <li>liefert GIS-Objekte und Ortsnetzpolygone</li>
+          <li>legt Typen, Gewichte, Ebenen und Regeln fest</li>
+          <li>entscheidet über Verbinden und Teilen und über zusammenfallende Punkte</li>
+          <li>speichert Knoten und Kanten, nach Shards</li>
+          <li>implementiert <code>IGraph</code>: Knoten und Kanten nach ID liefern</li>
+          <li>zeigt Ergebnisse an und speichert sie</li>
+        </ul>
+      </div>
+      <div>
+        <h3><span class="tag lib">SpatialNET</span> Bibliothek</h3>
+        <ul>
+          <li>bildet das Netz: fangen, teilen, Shards zuordnen, und fragt den Host, wo es nicht eindeutig ist</li>
+          <li>löst Typmuster auf</li>
+          <li>rechnet Trace, Erreichbarkeit und kürzesten Weg</li>
+          <li>prüft Regeln</li>
+          <li>hält keine Daten und kennt keine Fachbegriffe</li>
+        </ul>
+      </div>
+    </div>
+
+    <h2>Im Betrieb</h2>
+    <ol class="steps three">
+      <li><strong>Nachts</strong>Der Builder baut das ganze Netz neu. Der Host speichert Knoten und Kanten.</li>
+      <li><strong>Tagsüber</strong>Berechnungen und Prüfungen laufen auf dem gespeicherten Netz. Änderungen im GIS sind erst am nächsten Tag drin.</li>
+      <li><strong>Für ein Gebiet</strong>Suchen und Prüfregeln lassen sich auf ein Gebiet beschränken, z. B. ein Ortsnetz oder einen Ausschnitt.</li>
+    </ol>
+
+    <h2>Begriffe</h2>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>Begriff</th><th>Bedeutung</th></tr></thead>
+        <tbody>
+          <tr><td>Echter Knoten</td><td>Ein GIS-Punkt: Kasten, Trafo, Schalter, Kunde. Hat eine ID und einen Typ vom Host.</td></tr>
+          <tr><td>Hilfsknoten</td><td>Entsteht, wo Linienenden aufeinandertreffen, ohne dass dort ein Punkt liegt. Untypisiert, mit getrennten Ebenen ein Hilfstyp pro Ebene.</td></tr>
+          <tr><td>Alias</td><td>Ein Punkt, der mit einem anderen an derselben Stelle zu einem Knoten zusammengeführt wurde (z. B. ein Kunde auf seinem Kasten). Findet weiter seinen Knoten.</td></tr>
+          <tr><td>Ebene (Tier)</td><td>Ein Wert der ersten Facette, z. B. Mittelspannung. Suchen lassen sich auf Ebenen beschränken.</td></tr>
+          <tr><td>Verbindungsregel</td><td>Legt beim Bauen fest, welche Knoten welche Linien teilen oder an ihren Enden anschließen dürfen.</td></tr>
+          <tr><td>Kante</td><td>Verbindung zwischen zwei Knoten. Ein Teil einer GIS-Linie oder die ganze Linie.</td></tr>
+          <tr><td>Teilkante</td><td>Stück einer Linie, die der Builder an einem Punkt oder T-Anschluss geteilt hat.</td></tr>
+          <tr><td>Facette</td><td>Eine Position im Typ-Array, z. B. Ebene, Objektart, Bauart.</td></tr>
+          <tr><td>Muster</td><td>Typbeschreibung mit Platzhaltern, z. B. <code>[*, Kastenverbinder, *]</code>.</td></tr>
+          <tr><td>Shard</td><td>Paket von Knoten und Kanten, das der Host am Stück lädt. Meist ein Ortsnetz.</td></tr>
+          <tr><td>Normalschaltzustand</td><td>Gesperrte Knoten und deaktivierte Kanten, wie im GIS erfasst. Im Netz gespeichert.</td></tr>
+          <tr><td>Abweichung</td><td>Ein Schaltzustand, der nur für eine Berechnung gilt, z. B. „Schalter 4711 heute offen“.</td></tr>
+          <tr><td>Startmenge</td><td>Die Knoten, bei denen eine Berechnung oder Prüfung beginnt. Liefert immer der Host.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Was bewusst nicht dazugehört</h2>
+    <ul>
+      <li>Abbiegeverbote und zeitabhängige Gewichte (Routing im Straßenverkehr)</li>
+      <li>Lastfluss und andere elektrische oder hydraulische Simulation</li>
+      <li>Fachattribute wie Querschnitt oder Sicherungsgröße; die bleiben im GIS</li>
+      <li>Datenhaltung; SpatialNET speichert nichts</li>
+    </ul>
+
+    <h2>Was umgesetzt ist</h2>
+    <p>Jede Stufe hat eine eigene Architekturentscheidung (ADR) in SpatialNET.</p>
+    <ol>
+      <li><strong>ADR 0049, Modell:</strong> <code>IGraph</code>, Typen und Muster, Gewichte, Schaltzustand, ein Netz im Speicher für Tests, Erreichbarkeit und kürzester Weg.</li>
+      <li><strong>ADR 0050, Builder:</strong> fangen, teilen, IDs, Shard-Polygone.</li>
+      <li><strong>ADR 0051, Tracing:</strong> Quellen, Senken, Versorgung, Mehrfachversorgung.</li>
+      <li><strong>ADR 0052, Regeln:</strong> Regelschreibweise und Validierung.</li>
+      <li><strong>ADR 0054, zusammenfallende Knoten:</strong> der Host wählt einen Gewinner, die anderen Punkte werden Aliase.</li>
+      <li><strong>ADR 0055, Verbinden und Teilen:</strong> Hilfstypen, getrennte Ebenen, Regeln des Hosts.</li>
+    </ol>
+
+    <nav class="pager" aria-label="Blätter">
+      <a class="next" href="bilden.html"><small>Blatt 2 →</small><span>Netz bilden</span></a>
+    </nav>
+  </main>
+</div>
+</body>
+</html>

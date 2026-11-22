@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Netz bilden · SpatialNET Netzwerkmodell</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="side">
+    <a class="brand" href="index.html"><small>SpatialNET</small><span>Netzwerkmodell</span></a>
+    <nav aria-label="Blätter">
+      <ol class="toc">
+        <li><a href="index.html"><small>Blatt 1</small>Übersicht</a></li>
+        <li><a href="bilden.html" aria-current="page"><small>Blatt 2</small>Netz bilden</a></li>
+        <li><a href="typen.html"><small>Blatt 3</small>Typen</a></li>
+        <li><a href="gewichte.html"><small>Blatt 4</small>Gewichte</a></li>
+        <li><a href="berechnungen.html"><small>Blatt 5</small>Berechnungen</a></li>
+        <li><a href="validierung.html"><small>Blatt 6</small>Validierung</a></li>
+        <li><a href="ebenen.html"><small>Blatt 7</small>Ebenen und Verbinden</a></li>
+        <li><a href="gview.html"><small>Blatt 8</small>Umsetzung in gView</a></li>
+      </ol>
+    </nav>
+    <dl class="titleblock">
+      <dt>Projekt</dt><dd>SpatialNET</dd>
+      <dt>Inhalt</dt><dd>Netzwerk-Konzept</dd>
+      <dt>Stand</dt><dd>22.11.2026</dd>
+      <dt>Status</dt><dd>umgesetzt</dd>
+      <dt>Bezug</dt><dd>ADR 0050, 0054, 0055</dd>
+    </dl>
+  </aside>
+
+  <main class="sheet">
+    <p class="eyebrow">Blatt 2 · Netz bilden</p>
+    <h1>Vom GIS-Plan zum Netzwerk</h1>
+    <p class="lede">Der Builder bekommt Punkte und Linien mit ihren IDs und liefert Knoten und Kanten zurück. Der Host speichert sie. Dabei passieren drei Dinge: Enden werden gefangen, Linien werden geteilt, und jeder Knoten bekommt einen Shard.</p>
+
+    <figure class="fig">
+      <div class="canvas"><img src="img/gis-graph.png" alt="Links ein GIS-Ausschnitt mit Trafo, Schalter, Kasten, zwei Kunden, einer Niederspannungsleitung, Kastenverbindern, Anlagenverbinder und einem Kabel. Rechts dasselbe als Netzwerk mit acht Kanten e1 bis e8, echten Knoten als Quadrate und Hilfsknoten als Kreise."></div>
+      <figcaption><b>Abb. 2.1</b>Derselbe Ausschnitt im GIS und im Netzwerk. Die NS-Leitung 210 ist im GIS ein Objekt. Im Netzwerk wird sie am Schalter und am T-Anschluss des Kastenverbinders geteilt und ergibt drei Kanten.</figcaption>
+    </figure>
+
+    <h2>Reihenfolge beim Bauen</h2>
+    <ol class="steps">
+      <li><strong>Echte Knoten</strong>Der Host übergibt zuerst alle Punkte: Kästen, Trafos, Schalter, Kunden. Jeder wird ein Knoten mit seiner ID.</li>
+      <li><strong>Linien</strong>Dann alle Linien aus allen Feature-Klassen: Leitungen, Kastenverbinder, Anlagenverbinder.</li>
+      <li><strong>Fangen und teilen</strong>Linienenden schließen an Punkte an oder werden Hilfsknoten. Linien werden an Punkten und T-Anschlüssen geteilt; wo genau, kann der Host steuern (<a href="ebenen.html">Blatt 7</a>).</li>
+      <li><strong>Ausgabe</strong>Knoten- und Kanten-Datensätze mit Shard. Der Host schreibt sie in seine Datenbank.</li>
+    </ol>
+
+    <h2>Knoten</h2>
+    <div class="pair">
+      <div>
+        <h3>Echte Knoten</h3>
+        <p>Jeder GIS-Punkt wird ein Knoten mit der ID und dem Typ des Hosts. Ein Linienende, das auf einem echten Knoten landet, wird kein eigener Knoten, sondern schließt an diesen an.</p>
+        <p>Zwei echte Knoten an derselben Stelle sind zunächst ein Datenfehler: Der Builder bricht ab und meldet alle Stellen auf einmal. Oft ist es aber gewollt, etwa ein Kunde, der auf seinem Kasten gezeichnet ist. Dann wählt der Host einen Gewinner (in gView: der Layer weiter oben im Inhaltsverzeichnis), die anderen Punkte werden <strong>Aliase</strong> dieses Knotens und finden ihn weiter (ADR 0054). Punkte verschiedener Ebenen können mit getrennten Ebenen ohne Konflikt nebeneinanderliegen.</p>
+      </div>
+      <div>
+        <h3>Hilfsknoten</h3>
+        <p>Wo Linienenden zusammentreffen, aber kein Punkt liegt, entsteht ein Hilfsknoten. Er ist untypisiert (Typ 0) und bekommt eine Koordinate. Mit getrennten Ebenen hat jede Ebene einen eigenen Hilfstyp, und Enden verschiedener Ebenen ergeben zwei Hilfsknoten am selben Ort.</p>
+        <p>Seine ID vergibt der Host, abgeleitet aus Koordinate und Typ. So bleibt sie von Nacht zu Nacht gleich, und quittierte Fehler gehen nicht verloren.</p>
+      </div>
+    </div>
+
+    <h2>Fangen mit Toleranz</h2>
+    <p>Linienenden, die näher als die Toleranz beieinanderliegen, werden ein Knoten. Das passiert reihenfolgeunabhängig: egal in welcher Reihenfolge die Daten kommen, das Ergebnis ist gleich.</p>
+    <figure class="fig">
+      <div class="canvas"><img src="img/toleranz.png" alt="Drei Fälle. Erstens zwei Linienenden innerhalb der Toleranz werden ein Hilfsknoten. Zweitens ein Linienende nahe einem Kasten schließt an den Kasten an. Drittens zwei echte Knoten innerhalb der Toleranz sind ein Fehler und der Bau bricht ab."></div>
+      <figcaption><b>Abb. 2.2</b>Die drei Fälle beim Fangen. Im dritten Fall kann der Host die Punkte auch zusammenführen (Aliase). Ketten von Enden, die zusammen breiter als die Toleranz werden, meldet der Builder als Hinweis.</figcaption>
+    </figure>
+
+    <h2>Kanten</h2>
+    <ul>
+      <li><strong>Teilung:</strong> Liegt ein Punkt oder das Ende einer anderen Linie mitten auf einer Linie, wird sie dort geteilt, wenn der Host nichts anderes festlegt (<a href="ebenen.html">Blatt 7</a>). Kreuzungen ohne gemeinsamen Punkt werden nicht verbunden; eine Freileitung über einem Kabel bleibt getrennt.</li>
+      <li><strong>Bezug zum GIS:</strong> Jede Kante kennt ihr Originalobjekt und den Bereich darauf, z. B. Leitung 210 von 48 m bis 112 m. So lässt sich ein Ergebnis auf der Karte nachzeichnen.</li>
+      <li><strong>Länge:</strong> Standard ist die Länge der Geometrie. Hat das GIS eine Aufmaßlänge, nimmt der Builder diese und teilt sie bei geteilten Linien anteilig auf.</li>
+      <li><strong>Mehrteilige Linien</strong> ergeben je Teil eigene Kanten mit demselben Originalobjekt.</li>
+    </ul>
+
+    <h2>Was der Builder liefert</h2>
+    <p>Zwei Arten von Datensätzen, passend für Tabellen in einer Datenbank. Die Werte sind ein Beispiel zum Ausschnitt in Abb. 2.1.</p>
+    <h3>Knoten</h3>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>ID</th><th>Typ</th><th>Koordinate</th><th>Shard</th><th>Original</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">T-12</td><td>25 · MS.Trafo</td><td class="mono">-12 480.20 / 5 342 871.05</td><td class="mono">101</td><td class="mono">Trafo.12</td></tr>
+          <tr><td class="mono">S-4711</td><td>17 · NS.Schalter</td><td class="mono">-12 455.80 / 5 342 871.05</td><td class="mono">101</td><td class="mono">Schalter.4711</td></tr>
+          <tr><td class="mono">N-9f3a</td><td>0 · untypisiert (oder der Hilfstyp der Ebene)</td><td class="mono">-12 420.10 / 5 342 871.05</td><td class="mono">101</td><td>keins (Hilfsknoten)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h3>Kanten</h3>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>ID</th><th>Von</th><th>Nach</th><th>Typ</th><th>Länge</th><th>Richtung</th><th>Original und Bereich</th><th>Shards</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">L-210#1</td><td class="mono">A-77</td><td class="mono">S-4711</td><td>11 · NS.Leitung.Kabel</td><td class="num">48.0 m</td><td>beide</td><td class="mono">Leitung.210 · 0–48 m</td><td class="mono">101 / 101</td></tr>
+          <tr><td class="mono">L-210#2</td><td class="mono">S-4711</td><td class="mono">N-9f3a</td><td>11 · NS.Leitung.Kabel</td><td class="num">64.0 m</td><td>beide</td><td class="mono">Leitung.210 · 48–112 m</td><td class="mono">101 / 101</td></tr>
+          <tr><td class="mono">KV-88</td><td class="mono">N-9f3a</td><td class="mono">K-17</td><td>13 · NS.Kastenverbinder</td><td class="num">4.2 m</td><td>beide</td><td class="mono">Kastenverbinder.88 · ganz</td><td class="mono">101 / 101</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Dazu kommen die Gewichte als eigene Zuordnung (Kante, Gewicht, Wert), siehe <a href="gewichte.html">Blatt 4</a>. Hinweise wie „Knoten außerhalb aller Ortsnetze“, „zusammengeführt“ oder „Teilung abgelehnt“ liefert der Builder als Liste, ohne abzubrechen.</p>
+
+    <h2>Sharding: Ortsnetze als Pakete</h2>
+    <p>Ein großes Netz soll nie ganz in den Speicher. Darum speichert der Host jeden Knoten mit einer Shard-ID und lädt bei Bedarf einen ganzen Shard auf einmal. Die Shards kommen aus Polygonen, die der Host beim Bauen mitgibt, typischerweise die Ortsnetze. Meistens wird ohnehin innerhalb eines Ortsnetzes gerechnet.</p>
+    <figure class="fig">
+      <div class="canvas"><img src="img/sharding.png" alt="Zwei Ortsnetzpolygone West (Shard 101) und Ost (Shard 102) mit je einem Trafo und Kunden. Eine Kante verläuft über die Grenze zur Trennstelle und steht in beiden Shards. Darunter eine Zeitleiste in vier Schritten: Knoten anfragen, Shard nachschlagen, Shard laden, Nachbarn aus dem Speicher."></div>
+      <figcaption><b>Abb. 2.3</b>Jeder Knoten bekommt den Shard des Polygons, in dem er liegt. Eine Kante über die Grenze steht in beiden Shards, damit jeder Knoten alle seine Kanten findet.</figcaption>
+    </figure>
+    <ul>
+      <li><strong>Zuordnung:</strong> Punkt-in-Polygon für jeden Knoten. Linien werden an Polygongrenzen nicht geschnitten.</li>
+      <li><strong>Überlappung:</strong> Das erste passende Polygon gewinnt. Der Builder meldet Überlappungen als Hinweis.</li>
+      <li><strong>Nach Typ:</strong> Ein Polygon kann auf ein Typmuster beschränkt sein. So gelten Ortsnetze für die Niederspannung, und die Mittelspannung bekommt gröbere Polygone. Sonst würde ein Mittelspannungs-Trace jedes Ortsnetz komplett mitladen.</li>
+      <li><strong>Kein Treffer:</strong> Ein Standard-Shard des Hosts, sonst eine Rasterzelle. Beides kommt als Hinweis, weil es meist auf eine Lücke in den Polygonen deutet.</li>
+      <li><strong>Laden:</strong> Wie und wo der Host die Shards ablegt und zwischenspeichert, entscheidet er selbst. SpatialNET fragt nur nach IDs.</li>
+    </ul>
+
+    <nav class="pager" aria-label="Blätter">
+      <a href="index.html"><small>← Blatt 1</small><span>Übersicht</span></a>
+      <a class="next" href="typen.html"><small>Blatt 3 →</small><span>Typen</span></a>
+    </nav>
+  </main>
+</div>
+</body>
+</html>

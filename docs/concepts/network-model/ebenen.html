@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ebenen und Verbinden · SpatialNET Netzwerkmodell</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="side">
+    <a class="brand" href="index.html"><small>SpatialNET</small><span>Netzwerkmodell</span></a>
+    <nav aria-label="Blätter">
+      <ol class="toc">
+        <li><a href="index.html"><small>Blatt 1</small>Übersicht</a></li>
+        <li><a href="bilden.html"><small>Blatt 2</small>Netz bilden</a></li>
+        <li><a href="typen.html"><small>Blatt 3</small>Typen</a></li>
+        <li><a href="gewichte.html"><small>Blatt 4</small>Gewichte</a></li>
+        <li><a href="berechnungen.html"><small>Blatt 5</small>Berechnungen</a></li>
+        <li><a href="validierung.html"><small>Blatt 6</small>Validierung</a></li>
+        <li><a href="ebenen.html" aria-current="page"><small>Blatt 7</small>Ebenen und Verbinden</a></li>
+        <li><a href="gview.html"><small>Blatt 8</small>Umsetzung in gView</a></li>
+      </ol>
+    </nav>
+    <dl class="titleblock">
+      <dt>Projekt</dt><dd>SpatialNET</dd>
+      <dt>Inhalt</dt><dd>Netzwerk-Konzept</dd>
+      <dt>Stand</dt><dd>22.11.2026</dd>
+      <dt>Status</dt><dd>umgesetzt</dd>
+      <dt>Bezug</dt><dd>ADR 0054, 0055</dd>
+    </dl>
+  </aside>
+
+  <main class="sheet">
+    <p class="eyebrow">Blatt 7 · Ebenen und Verbinden</p>
+    <h1>Ebenen getrennt halten</h1>
+    <p class="lede">Mittel- und Niederspannung werden oft von verschiedenen Abteilungen gepflegt. Ihre Elemente liegen dann zufällig aufeinander: eine Niederspannungsmuffe auf einem Stützpunkt einer Mittelspannungsleitung. Ohne weitere Angaben würde der Builder die Leitung dort teilen und die Ebenen verbinden. Ein Trace auf der Mittelspannung liefe dann in die Niederspannung.</p>
+
+    <figure class="fig">
+      <div class="canvas"><img src="img/ebenen.png" alt="Links ohne getrennte Ebenen: eine Niederspannungsmuffe auf einem Stützpunkt teilt die Mittelspannungsleitung, ein Trace auf der Mittelspannung läuft zum Niederspannungskasten. Rechts mit getrennten Ebenen: die Mittelspannungsleitung bleibt eine Kante, die Muffe ist ein eigener Knoten, die Niederspannung schließt am Trafo an. Unten: Linienenden zweier Ebenen an einer Stelle ergeben ohne Trennung einen, mit Trennung zwei Hilfsknoten."></div>
+      <figcaption><b>Abb. 7.1</b>Ohne und mit getrennten Ebenen. Der Graph braucht keine Geometrie: Zwei Knoten am selben Ort sind einfach zwei Knoten, die nicht verbunden sind.</figcaption>
+    </figure>
+
+    <h2>Die Ebene ist die erste Facette</h2>
+    <ul>
+      <li>Jeder Wert der ersten Facette des Typs ist eine <strong>Ebene</strong> (Tier), z. B. Mittelspannung und Niederspannung. In gView ergibt meist eine Gruppe im Inhaltsverzeichnis die Ebene.</li>
+      <li>Kanten gehören zur Ebene ihres Typs. Ein Knoten gehört zur Ebene seines Typs und zu jeder Ebene, deren Kanten ihn berühren: Ein Trafo liegt in beiden.</li>
+      <li>Eine Ebene kann Einstellungen haben: Rang (oben vor unten), Quellen, Senken und gesperrte Knoten. Suchen auf einer Ebene verwenden diese (<a href="berechnungen.html">Blatt 5</a>).</li>
+    </ul>
+
+    <h2>Wer entscheidet</h2>
+    <p>Was verbunden wird, ist Fachwissen. Deshalb entscheidet der Host, und zwar nach Typen: Der Builder fragt für jedes Paar aus Knotentyp und Kantentyp einmal nach und merkt sich die Antwort.</p>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>Frage des Builders</th><th>Gefragt mit</th><th>Antwort</th></tr></thead>
+        <tbody>
+          <tr><td>Schließt dieses Linienende an diesen Knoten an?</td><td>Knotentyp, Kantentyp</td><td>verbinden · ignorieren · melden</td></tr>
+          <tr><td>Teilt dieser Knoten das Innere dieser Linie?</td><td>Knotentyp (oder Hilfstyp eines T-Stoßes), Kantentyp</td><td>teilen · ignorieren · melden</td></tr>
+          <tr><td>Welchen Typ hat der Hilfsknoten am Ende dieser Linie?</td><td>Kantentyp</td><td>der Hilfstyp der Ebene</td></tr>
+          <tr><td>Dürfen diese Punkte nebeneinanderliegen?</td><td>Knotentyp</td><td>die Partition: die Ebene</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p><strong>Melden</strong> heißt: nicht verbinden, aber im Bau-Log mit Ort und beiden Objekten ausgeben. Das ist für Stellen, die wahrscheinlich ein Datenfehler sind. <strong>Ignorieren</strong> ist für Stellen, die erwartet sind, z. B. die Muffe einer anderen Ebene.</p>
+
+    <h2>So fällt die Entscheidung in gView</h2>
+    <ol class="steps">
+      <li><strong>Regeln</strong>Die erste passende Verbindungsregel gewinnt, z. B. „Trenner der Niederspannung teilen Niederspannungsleitungen“.</li>
+      <li><strong>Quellen</strong>Linienenden einer Ebene schließen an die Quellen ihrer Ebene an: die Niederspannung an den Trafo.</li>
+      <li><strong>Ebenen</strong>Mit getrennten Ebenen wird zwischen verschiedenen Ebenen nicht verbunden und nicht geteilt.</li>
+      <li><strong>Standard</strong>Sonst gilt für das Teilen: „Knoten auf einer Linie“ und „Linienenden auf einer Linie (T-Stöße)“, je verbinden, ignorieren oder melden. Ohne Einstellung wird alles verbunden, wie bisher.</li>
+    </ol>
+    <div class="note warn">
+      <span class="lbl">Ein ideales Netz</span>
+      <p>Sind die Linien im GIS schon an den echten Knoten aufgetrennt, kann man sagen: Kein Knoten teilt eine Linie, nur die Trenner der Niederspannung, die irgendwo auf eine Leitung gesetzt werden. T-Stöße werden gemeldet. Ein T-Stoß, der nicht geteilt wird, bleibt unverbunden; die Meldung zeigt, wo nachzubessern ist.</p>
+    </div>
+
+    <h2>Mehrere Knoten an einer Stelle</h2>
+    <div class="pair">
+      <div>
+        <h3>Echte Knoten</h3>
+        <p>Punkte verschiedener Ebenen an derselben Stelle sind kein Konflikt, sie bleiben zwei Knoten. Darf aber ein Linienende an mehrere von ihnen anschließen, werden sie zusammengeführt: Der Layer weiter oben im Inhaltsverzeichnis gewinnt, die anderen werden Aliase.</p>
+      </div>
+      <div>
+        <h3>Hilfsknoten</h3>
+        <p>Jede Ebene hat ihren eigenen Hilfstyp. Linienenden fassen sich nur mit Enden desselben Hilfstyps zusammen. Ein Übergang zwischen Ebenen braucht also immer einen echten Knoten, ohne Betriebsmittel gibt es keine Verbindung.</p>
+      </div>
+    </div>
+    <p>Beim Suchen über einen Ort (<code>@x,y</code> oder ein Klick in Carto) wählt die Ebene der Suche den passenden Knoten, siehe <a href="berechnungen.html">Blatt 5</a>.</p>
+
+    <nav class="pager" aria-label="Blätter">
+      <a href="validierung.html"><small>← Blatt 6</small><span>Validierung</span></a>
+      <a class="next" href="gview.html"><small>Blatt 8 →</small><span>Umsetzung in gView</span></a>
+    </nav>
+  </main>
+</div>
+</body>
+</html>

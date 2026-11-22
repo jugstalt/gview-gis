@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Validierung · SpatialNET Netzwerkmodell</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="side">
+    <a class="brand" href="index.html"><small>SpatialNET</small><span>Netzwerkmodell</span></a>
+    <nav aria-label="Blätter">
+      <ol class="toc">
+        <li><a href="index.html"><small>Blatt 1</small>Übersicht</a></li>
+        <li><a href="bilden.html"><small>Blatt 2</small>Netz bilden</a></li>
+        <li><a href="typen.html"><small>Blatt 3</small>Typen</a></li>
+        <li><a href="gewichte.html"><small>Blatt 4</small>Gewichte</a></li>
+        <li><a href="berechnungen.html"><small>Blatt 5</small>Berechnungen</a></li>
+        <li><a href="validierung.html" aria-current="page"><small>Blatt 6</small>Validierung</a></li>
+        <li><a href="ebenen.html"><small>Blatt 7</small>Ebenen und Verbinden</a></li>
+        <li><a href="gview.html"><small>Blatt 8</small>Umsetzung in gView</a></li>
+      </ol>
+    </nav>
+    <dl class="titleblock">
+      <dt>Projekt</dt><dd>SpatialNET</dd>
+      <dt>Inhalt</dt><dd>Netzwerk-Konzept</dd>
+      <dt>Stand</dt><dd>22.11.2026</dd>
+      <dt>Status</dt><dd>umgesetzt</dd>
+      <dt>Bezug</dt><dd>ADR 0052</dd>
+    </dl>
+  </aside>
+
+  <main class="sheet">
+    <p class="eyebrow">Blatt 6 · Validierung</p>
+    <h1>Regeln, die Fehler im Netz finden</h1>
+    <p class="lede">Eine Regel schaut sich ein Element an und zählt seine direkten Nachbarn. Liegt die Anzahl außerhalb der erlaubten Spanne, ist das eine Verletzung. Damit lassen sich die typischen Topologiefehler in einem Leitungsnetz finden, ohne Fachwissen in SpatialNET einzubauen.</p>
+
+    <h2>Aufbau einer Regel</h2>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>Teil</th><th>Bedeutung</th><th>Beispiel</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Prüfe</strong></td><td>welche Elemente geprüft werden: Knoten oder Kanten, mit Typmuster</td><td><code>Knoten [*, Kasten, *]</code></td></tr>
+          <tr><td><strong>Ende</strong></td><td>nur bei Kanten: an welchem Ende gezählt wird, beschrieben über den Knoten dort</td><td><code>Knoten ist kein [*, Kasten, *]</code></td></tr>
+          <tr><td><strong>Zähle</strong></td><td>welche Nachbarn gezählt werden, mit Typmuster (mehrere Muster = ODER)</td><td><code>Kanten [*, Kastenverbinder, *]</code></td></tr>
+          <tr><td><strong>Anzahl</strong></td><td>erlaubte Spanne von bis</td><td><code>1 .. n</code>, <code>genau 1</code>, <code>0</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>„Nachbarn“ heißt: bei einem Knoten die Kanten, die an ihm hängen; bei einer Kante die anderen Kanten an ihrem Ende. Weiter schaut eine Regel nicht. Deshalb braucht eine Prüfung keinen Pfad und keinen Schaltzustand.</p>
+    <div class="note warn">
+      <span class="lbl">Regeln als Tabellenzeilen</span>
+      <p>Die Schreibweise unten zeigt den Inhalt. Gespeichert wird eine Regel als Zeile einer Tabelle: ID, Schwere, was geprüft wird, Ende-Filter, was gezählt wird, Min und Max, optional eine Ebene. Das GIS-Team pflegt die Regeln in gView in der Netzwerk-Konfiguration (Carto, Tab <em>Rules</em>), eine eigene Regelsprache gibt es nicht (ADR 0052).</p>
+    </div>
+
+    <h2>Vier Beispiele</h2>
+    <figure class="fig">
+      <div class="canvas"><img src="img/regeln.png" alt="Vier Regeln jeweils mit einem erfüllten und einem verletzten Beispiel: Kasten mit Kastenverbindern gegen Kasten ohne; Kastenverbinder mit Leitung am freien Ende gegen ohne; Mittel- und Niederspannung am Trafo gegen direkt an einem Hilfsknoten; Hilfsknoten mit zwei Kanten gegen offenes Ende."></div>
+      <figcaption><b>Abb. 6.1</b>Jede Regel links, rechts je ein Fall, der sie erfüllt, und einer, der sie verletzt.</figcaption>
+    </figure>
+
+    <h3>1 · Kasten-Abgänge</h3>
+    <p>Jeder Kasten hat mindestens einen Kastenverbinder. Gilt für jede Spannungsebene, weil die erste Facette ein Platzhalter ist.</p>
+<pre class="rule"><span class="k">Prüfe</span>   Knoten [*, Kasten, *]
+<span class="k">Zähle</span>   Kanten [*, Kastenverbinder, *]
+<span class="k">Anzahl</span>  1 .. n</pre>
+
+    <h3>2 · Freies Ende des Kastenverbinders</h3>
+    <p>Am Ende, das nicht am Kasten hängt, schließt genau eine Leitung an, egal ob Kabel oder Freileitung. Beide Ketten <em>Leitung, Kastenverbinder, Kasten, Kastenverbinder, Leitung</em> und <em>… Kastenverbinder, Kabel</em> erfüllen sie.</p>
+<pre class="rule"><span class="k">Prüfe</span>   Kante [*, Kastenverbinder, *]
+<span class="k">Ende</span>    Knoten ist kein [*, Kasten, *]
+<span class="k">Zähle</span>   andere Kanten [*, Leitung, *]
+<span class="k">Anzahl</span>  genau 1</pre>
+
+    <h3>3 · Keine direkte Verbindung von Nieder- und Mittelspannung</h3>
+    <p>Die beiden Ebenen dürfen sich nur am Trafo treffen. Ohne den Ende-Filter würde die Regel an jedem Trafo anschlagen. Mit getrennten Ebenen beim Bauen (<a href="ebenen.html">Blatt 7</a>) entstehen solche Verbindungen gar nicht erst; die Regel findet dann nur noch, was eine Verbindungsregel ausdrücklich erlaubt.</p>
+<pre class="rule"><span class="k">Prüfe</span>   Kante [Niederspannung, *, *]
+<span class="k">Ende</span>    Knoten ist kein [*, Trafo, *]
+<span class="k">Zähle</span>   andere Kanten [Mittelspannung, *, *]
+<span class="k">Anzahl</span>  0</pre>
+
+    <h3>4 · Offene Leitungsenden</h3>
+    <p>Ein Hilfsknoten mit nur einer Kante ist ein offenes Ende. Das kann gewollt sein (Kabelende in Reserve), deshalb eher als Hinweis gedacht, den man quittieren kann. <code>untyped</code> trifft auch die Hilfstypen der Ebenen.</p>
+<pre class="rule"><span class="k">Prüfe</span>   Knoten untyped
+<span class="k">Zähle</span>   alle Kanten
+<span class="k">Anzahl</span>  2 .. n</pre>
+
+    <h3>Wie gezählt wird</h3>
+    <ul>
+      <li>Zwei parallele Kanten zwischen denselben Knoten zählen als zwei.</li>
+      <li>Eine Kante, die am selben Knoten beginnt und endet, zählt einmal.</li>
+      <li>Mehrere Muster in „Zähle“ werden addiert, z. B. Kasten oder Trafo.</li>
+      <li>Eine Kantenregel wird an jedem gewählten Ende für sich geprüft, nicht über beide Enden summiert.</li>
+      <li>Der Schaltzustand spielt keine Rolle: Regeln prüfen, was gebaut ist, nicht wie geschaltet ist.</li>
+      <li>Eine Regel mit Ebene prüft nur Elemente und zählt nur Kanten dieser Ebene. Eine Suche mit Ebene schränkt alle Regeln so ein.</li>
+    </ul>
+
+    <h2>Was eine Prüfung liefert</h2>
+    <p>Eine Liste von Verletzungen, Stück für Stück, damit sie direkt in eine Fehlertabelle fließen kann. SpatialNET repariert nichts.</p>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>Regel</th><th>Element</th><th>Typ</th><th>gezählt</th><th>erlaubt</th><th>Koordinate</th></tr></thead>
+        <tbody>
+          <tr><td>Kasten-Abgänge</td><td class="mono">K-0815</td><td>15 · NS.Kasten</td><td class="num">0</td><td>1 .. n</td><td class="mono">-12 301.4 / 5 342 990.2</td></tr>
+          <tr><td>Freies Ende</td><td class="mono">KV-91</td><td>13 · NS.Kastenverbinder</td><td class="num">0</td><td>genau 1</td><td class="mono">-12 288.0 / 5 342 975.6</td></tr>
+          <tr><td>Offene Enden</td><td class="mono">N-a41c</td><td>0 · untypisiert</td><td class="num">1</td><td>2 .. n</td><td class="mono">-12 250.7 / 5 343 012.9</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Weil auch Hilfsknoten eine Koordinate haben, lässt sich jede Verletzung auf der Karte zeigen. Weil ihre IDs aus der Koordinate abgeleitet werden, bleibt eine quittierte Verletzung auch nach dem nächsten nächtlichen Neubau quittiert.</p>
+
+    <h2>Ein Gebiet prüfen</h2>
+    <p>Prüfungen lassen sich auf ein Gebiet beschränken, etwa ein Ortsnetz (Shard), ein Polygon oder einen Kartenausschnitt. Änderungen im GIS sind erst nach dem nächsten Neubau im Netz. Für eine schnelle Prüfung direkt beim Speichern kann der Host ein temporäres Netz nur für das betroffene Ortsnetz bauen (in gView noch nicht umgesetzt):</p>
+    <figure class="fig">
+      <div class="canvas"><img src="img/ortsnetz.png" alt="Ein Ortsnetzpolygon mit blauen Knoten und Kanten innerhalb. Kanten, die über den Rand gehen, enden an weißen Kontextknoten außerhalb. Noch weiter außen gestrichelte Linien, die nicht geladen werden."></div>
+      <figcaption><b>Abb. 6.2</b>Geladen wird alles, was das Ortsnetz berührt. Geprüft werden nur die Knoten innerhalb. Die Kontextknoten am Rand sorgen dafür, dass Leitungen über die Grenze nicht als offene Enden gemeldet werden.</figcaption>
+    </figure>
+    <ol class="steps">
+      <li><strong>Objekte holen</strong>Alle Punkte und Linien, die das Ortsnetzpolygon berühren, ungeschnitten.</li>
+      <li><strong>Netz bauen</strong>Der Builder baut daraus ein Netz im Speicher, ohne Datenbank.</li>
+      <li><strong>Prüfen</strong>Startmenge sind nur die Knoten im Polygon. Der Host wählt die Regeln, die für diesen Fall passen.</li>
+      <li><strong>Anzeigen</strong>Verletzungen erscheinen direkt beim Bearbeiter, das gespeicherte Netz bleibt unverändert.</li>
+    </ol>
+
+    <h2>Was Regeln nicht prüfen</h2>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>Frage</th><th>Wo sie hingehört</th></tr></thead>
+        <tbody>
+          <tr><td>Ist jeder Kunde von einer Station versorgt?</td><td>Trace, siehe <a href="berechnungen.html">Blatt 5</a>. Das ist keine lokale Frage.</td></tr>
+          <tr><td>Passt der Querschnitt der Leitung zur Sicherung?</td><td>Host. Fachattribute stehen nicht im Netz.</td></tr>
+          <tr><td>Liegen zwei Kästen übereinander?</td><td>Builder. Das ist ein Fehler beim Bauen oder wird zusammengeführt, siehe <a href="bilden.html">Blatt 2</a>.</td></tr>
+          <tr><td>Liegt eine Muffe zufällig auf einer Leitung einer anderen Ebene?</td><td>Builder, mit Verbindungsregeln: <em>Report</em> meldet die Stelle beim Bauen, siehe <a href="ebenen.html">Blatt 7</a>.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <nav class="pager" aria-label="Blätter">
+      <a href="berechnungen.html"><small>← Blatt 5</small><span>Berechnungen</span></a>
+      <a class="next" href="ebenen.html"><small>Blatt 7 →</small><span>Ebenen und Verbinden</span></a>
+    </nav>
+  </main>
+</div>
+</body>
+</html>
