@@ -48,5 +48,68 @@
     "input": [ {} ],
     "output": [ { "name": "lv_lines_test", "deletedFeatures": 1250 } ],
     "verified": false
+  },
+  {
+    "title": "Copy the schema of a feature class and add fields",
+    "description": "Additional fields are added to the schema (here the input item, the output of Describe), Exclude fields leaves fields out.",
+    "parameters": {
+      "operation": "create",
+      "featureClass": "lv_lines_test",
+      "additionalFields": [
+        {
+          "name": "status",
+          "type": "text",
+          "size": 20
+        }
+      ],
+      "excludeFields": "internal_note"
+    },
+    "input": [
+      {
+        "name": "lv_lines",
+        "geometryType": "polyline",
+        "srs": 31256,
+        "idField": "OID",
+        "shapeField": "SHAPE",
+        "fields": [
+          {
+            "name": "line_id",
+            "type": "text",
+            "size": 20,
+            "nullable": true
+          },
+          {
+            "name": "internal_note",
+            "type": "text",
+            "size": 50,
+            "nullable": true
+          }
+        ]
+      }
+    ],
+    "output": [
+      {
+        "name": "lv_lines_test",
+        "geometryType": "polyline",
+        "srs": 31256,
+        "idField": "OID",
+        "shapeField": "SHAPE",
+        "fields": [
+          {
+            "name": "line_id",
+            "type": "text",
+            "size": 20,
+            "nullable": true
+          },
+          {
+            "name": "status",
+            "type": "text",
+            "size": 20,
+            "nullable": true
+          }
+        ]
+      }
+    ],
+    "verified": false
   }
 ]

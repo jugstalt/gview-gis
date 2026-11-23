@@ -58,11 +58,19 @@ public sealed class FeatureClassParameters
         Description = "The schema to create, e.g. {{ $json.schema }}; empty takes the input item, e.g. the output of a Describe")]
     public JsonNode? Schema { get; set; }
 
-    [PipeParameter(Label = "If it exists", Order = 5, Expressions = false, ShowWhen = nameof(Operation), ShowWhenValues = ["create"],
+    [PipeParameter(Label = "Additional fields", Order = 5, ShowWhen = nameof(Operation), ShowWhenValues = ["create", "createIfNotExists"],
+        Description = "Fields to add to the schema, e.g. [{ \"name\": \"status\", \"type\": \"text\", \"size\": 20 }]; type is boolean, smallInteger, integer, bigInteger, float, double, text, date, guid or binary")]
+    public JsonNode? AdditionalFields { get; set; }
+
+    [PipeParameter(Label = "Exclude fields", Order = 6, Expressions = false, ShowWhen = nameof(Operation), ShowWhenValues = ["create", "createIfNotExists"],
+        Description = "Comma-separated fields of the schema to leave out, e.g. internal_note")]
+    public string ExcludeFields { get; set; } = "";
+
+    [PipeParameter(Label = "If it exists", Order = 7, Expressions = false, ShowWhen = nameof(Operation), ShowWhenValues = ["create"],
         Description = "When the feature class is already there: stop, or replace it and lose its features")]
     public GisIfExists IfExists { get; set; } = GisIfExists.Fail;
 
-    [PipeParameter(Label = "Target SRS", Order = 6, Expressions = false, ShowWhen = nameof(Operation), ShowWhenValues = ["create", "createIfNotExists"],
+    [PipeParameter(Label = "Target SRS", Order = 8, Expressions = false, ShowWhen = nameof(Operation), ShowWhenValues = ["create", "createIfNotExists"],
         Description = "EPSG code of the new feature class, e.g. 31256; 0 takes the srs of the schema")]
     [Range(0, int.MaxValue)]
     public int TargetSrs { get; set; }
@@ -152,7 +160,7 @@ public sealed class FeatureClassNode : IPipeNode<FeatureClassParameters>
             ?? throw new PipeException("The schema must be an object, e.g. the output of Describe");
     }
 
-    static private async Task<JsonObject> CreateAsync(IFeatureDataset dataset, GisDatasourceCredential credential, FeatureClassParameters parameters, JsonObject schema)
+    static internal async Task<JsonObject> CreateAsync(IFeatureDataset dataset, GisDatasourceCredential credential, FeatureClassParameters parameters, JsonObject schema)
     {
         var name = !string.IsNullOrWhiteSpace(parameters.FeatureClass)
             ? parameters.FeatureClass.Trim()
@@ -176,7 +184,7 @@ public sealed class FeatureClassNode : IPipeNode<FeatureClassParameters>
 
         RequireSchemaChanges(credential, "create");
         var database = Database(dataset);
-        var (geometryType, fields) = GisSchema.FromItem(schema);
+        var (geometryType, fields) = GisSchema.FromItem(GisSchema.Extend(schema, parameters.AdditionalFields, parameters.ExcludeFields));
         var srs = parameters.TargetSrs > 0 ? parameters.TargetSrs : GisSpatialReferences.ToEpsg(schema["srs"]);
 
         if (await FindAsync(dataset, name) is { } replaced && !await database.DeleteFeatureClass(replaced.Name))
@@ -224,7 +232,7 @@ public sealed class FeatureClassNode : IPipeNode<FeatureClassParameters>
         return new JsonObject { ["name"] = featureClass.Name, ["deleted"] = true };
     }
 
-    static private async Task<IFeatureClass?> FindAsync(IFeatureDataset dataset, string name)
+    static internal async Task<IFeatureClass?> FindAsync(IFeatureDataset dataset, string name)
     {
         if ((await dataset.Element(name))?.Class is IFeatureClass featureClass)
         {

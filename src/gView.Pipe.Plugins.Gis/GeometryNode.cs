@@ -34,7 +34,16 @@ public enum GisGeometryOperation
     Area,
 
     [PipeEnumValue("Writes the length (the perimeter of polygons) into a property; the geometry stays. Needs a projected srs")]
-    Length
+    Length,
+
+    [PipeEnumValue("A line parallel to the line (or the ring of a polygon) at a distance, left or right of its direction; needs a projected srs", Label = "Offset curve")]
+    OffsetCurve,
+
+    [PipeEnumValue("Rounds the corners of lines and polygons, e.g. for a river; adds vertices")]
+    Smooth,
+
+    [PipeEnumValue("The point on a line at a distance from its start or at a fraction of its length, optionally beside the line", Label = "Point at distance")]
+    PointAtDistance
 }
 
 public enum GisCapStyle
@@ -66,8 +75,8 @@ public sealed class GeometryParameters
     [PipeParameter(Label = "Operation", Order = 1, Expressions = false, Description = "What to do with the geometry of each item")]
     public GisGeometryOperation Operation { get; set; } = GisGeometryOperation.Buffer;
 
-    [PipeParameter(Label = "Distance", Order = 2, ShowWhen = nameof(Operation), ShowWhenValues = ["buffer"],
-        Description = "Buffer distance in units of the srs, e.g. 10 or {{ $json.properties.width / 2 }}; negative shrinks polygons")]
+    [PipeParameter(Label = "Distance", Order = 2, ShowWhen = nameof(Operation), ShowWhenValues = ["buffer", "offsetCurve"],
+        Description = "Buffer distance in units of the srs, e.g. 10 or {{ $json.properties.width / 2 }}; negative shrinks polygons. For an offset curve positive is left of the direction of the line, negative right")]
     public JsonNode? Distance { get; set; } = 10;
 
     [PipeParameter(Label = "Tolerance", Order = 3, Expressions = false, ShowWhen = nameof(Operation), ShowWhenValues = ["simplify"],
@@ -88,15 +97,32 @@ public sealed class GeometryParameters
         Description = "Name of the property for the result, e.g. area_m2; empty is area or length")]
     public string Property { get; set; } = "";
 
+    [PipeParameter(Label = "Iterations", Order = 11, Expressions = false, ShowWhen = nameof(Operation), ShowWhenValues = ["smooth"],
+        Description = "How often the corners are cut, e.g. 2; every round doubles the vertices")]
+    [Range(1, 10)]
+    public int Iterations { get; set; } = 2;
+
+    [PipeParameter(Label = "Position", Order = 12, ShowWhen = nameof(Operation), ShowWhenValues = ["pointAtDistance"],
+        Description = "Distance from the start of the line in units of the srs, e.g. 50 or {{ $json.properties.pos }}; with Position is a fraction a value between 0 and 1")]
+    public JsonNode? Position { get; set; } = 0;
+
+    [PipeParameter(Label = "Position is a fraction", Order = 13, Expressions = false, ShowWhen = nameof(Operation), ShowWhenValues = ["pointAtDistance"],
+        Description = "Position is a fraction of the length (0 start, 0.5 middle, 1 end) instead of a distance")]
+    public bool PositionIsFraction { get; set; }
+
+    [PipeParameter(Label = "Side offset", Order = 14, ShowWhen = nameof(Operation), ShowWhenValues = ["pointAtDistance"],
+        Description = "Distance beside the line, e.g. 2; positive left of the direction of the line, negative right")]
+    public JsonNode? SideOffset { get; set; } = 0;
+
     [PipeParameter(Label = "End cap", Order = 7, Expressions = false, Advanced = true, ShowWhen = nameof(Operation), ShowWhenValues = ["buffer"],
         Description = "Ends of buffered lines")]
     public GisCapStyle CapStyle { get; set; } = GisCapStyle.Round;
 
-    [PipeParameter(Label = "Join style", Order = 8, Expressions = false, Advanced = true, ShowWhen = nameof(Operation), ShowWhenValues = ["buffer"],
-        Description = "Corners of the buffer")]
+    [PipeParameter(Label = "Join style", Order = 8, Expressions = false, Advanced = true, ShowWhen = nameof(Operation), ShowWhenValues = ["buffer", "offsetCurve"],
+        Description = "Corners of the buffer or offset curve")]
     public GisJoinStyle JoinStyle { get; set; } = GisJoinStyle.Round;
 
-    [PipeParameter(Label = "Segments per quarter circle", Order = 9, Expressions = false, Advanced = true, ShowWhen = nameof(Operation), ShowWhenValues = ["buffer"],
+    [PipeParameter(Label = "Segments per quarter circle", Order = 9, Expressions = false, Advanced = true, ShowWhen = nameof(Operation), ShowWhenValues = ["buffer", "offsetCurve"],
         Description = "Vertices of round parts, e.g. 8; more is smoother")]
     [Range(1, 100)]
     public int QuadrantSegments { get; set; } = 8;
@@ -108,7 +134,7 @@ public sealed class GeometryParameters
 
 [PipeNode("5a8e2c41-7b3d-4f9a-b1e6-0c4d8f2a6e93", "Geometry",
     Category = "GIS",
-    Description = "Changes the geometry of each GeoJSON item: buffer, centroid, hull, simplify, make valid, densify; "
+    Description = "Changes the geometry of each GeoJSON item: buffer, offset curve, smooth, point at a distance, centroid, hull, simplify, make valid, densify; "
                   + "or writes its area or length into a property. Works on the coordinates of the items with SpatialNET.")]
 [PipeNodeExamples]
 public sealed class GeometryNode : IPipeNode<GeometryParameters>
@@ -190,6 +216,46 @@ public sealed class GeometryNode : IPipeNode<GeometryParameters>
                     throw new PipeException("Max segment length must be greater than 0");
                 }
                 return geometry.Densify(parameters.MaxSegmentLength, factory);
+            case GisGeometryOperation.OffsetCurve:
+                GisSpatial.RequireProjected(srs, "Offset curve");
+                var offsetOptions = new OffsetOptions
+                {
+                    JoinStyle = parameters.JoinStyle switch { GisJoinStyle.Mitre => JoinStyle.Mitre, GisJoinStyle.Bevel => JoinStyle.Bevel, _ => JoinStyle.Round },
+                    QuadrantSegments = parameters.QuadrantSegments
+                };
+                var offset = GisSpatial.Number(parameters.Distance, "Distance");
+                return geometry switch
+                {
+                    IPolyline2D polyline => polyline.OffsetCurve(offset, offsetOptions, factory),
+                    IPolygon2D polygon => polygon.OffsetCurve(offset, offsetOptions, factory),
+                    _ => throw new PipeException("An offset curve needs lines or polygons")
+                };
+            case GisGeometryOperation.Smooth:
+                return geometry.Smooth(parameters.Iterations, SmoothingMethod.Chaikin, factory);
+            case GisGeometryOperation.PointAtDistance:
+                if (geometry is not IPolyline2D line)
+                {
+                    throw new PipeException("A point at a distance needs lines");
+                }
+                var position = GisSpatial.Number(parameters.Position, "Position");
+                var side = GisSpatial.Number(parameters.SideOffset, "Side offset");
+                if (parameters.PositionIsFraction)
+                {
+                    if (position is < 0 or > 1)
+                    {
+                        throw new PipeException("A fraction of the length lies between 0 and 1");
+                    }
+                    position *= line.Length();
+                }
+                else
+                {
+                    GisSpatial.RequireProjected(srs, "Point at distance");
+                }
+                if (side != 0)
+                {
+                    GisSpatial.RequireProjected(srs, "Point at distance with a side offset");
+                }
+                return line.Interpolate(position, side) is { } at ? GisSpatial.Point(at) : null;
             default:
                 throw new PipeException($"Unknown operation {parameters.Operation}");
         }

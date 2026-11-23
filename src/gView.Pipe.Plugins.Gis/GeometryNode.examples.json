@@ -21,5 +21,107 @@
       { "type": "Feature", "geometry": { "type": "Polygon", "coordinates": [ [ [ 0, 0 ], [ 20, 0 ], [ 20, 10 ], [ 0, 10 ], [ 0, 0 ] ] ] }, "properties": { "parcel": "112/4", "area_m2": 200 }, "srs": 31256 }
     ],
     "verified": false
+  },
+  {
+    "title": "A line parallel to a street, 5 m to the left",
+    "description": "Offset curve: positive Distance is left of the direction of the line, negative right.",
+    "parameters": {
+      "operation": "offsetCurve",
+      "distance": 5
+    },
+    "input": [
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [ [ 0, 0 ], [ 100, 0 ] ]
+        },
+        "properties": { },
+        "srs": 31256
+      }
+    ],
+    "output": [
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [ [ 0, 5 ], [ 100, 5 ] ]
+        },
+        "properties": { },
+        "srs": 31256
+      }
+    ],
+    "verified": false
+  },
+  {
+    "title": "Smooth a river",
+    "parameters": {
+      "operation": "smooth",
+      "iterations": 2
+    },
+    "input": [
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [ [ 0, 0 ], [ 10, 10 ], [ 20, 0 ] ]
+        },
+        "properties": {
+          "name": "Mur"
+        },
+        "srs": 31256
+      }
+    ],
+    "output": [
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [ [ 0, 0 ], [ 5.625, 5.625 ], [ 8.75, 7.5 ], [ 11.25, 7.5 ], [ 14.375, 5.625 ], [ 20, 0 ] ]
+        },
+        "properties": {
+          "name": "Mur"
+        },
+        "srs": 31256
+      }
+    ],
+    "verified": false
+  },
+  {
+    "title": "The middle of a line, and a point 2 m beside it",
+    "description": "Point at distance: Position is a distance from the start, or a fraction of the length with Position is a fraction; Side offset moves the point left (positive) or right.",
+    "parameters": {
+      "operation": "pointAtDistance",
+      "position": 0.5,
+      "positionIsFraction": true,
+      "sideOffset": 2
+    },
+    "input": [
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [ [ 0, 0 ], [ 100, 0 ] ]
+        },
+        "properties": {
+          "line_id": "L-1"
+        },
+        "srs": 31256
+      }
+    ],
+    "output": [
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [ 50, 2 ]
+        },
+        "properties": {
+          "line_id": "L-1"
+        },
+        "srs": 31256
+      }
+    ],
+    "verified": false
   }
 ]

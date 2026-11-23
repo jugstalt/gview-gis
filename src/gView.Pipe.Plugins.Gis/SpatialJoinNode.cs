@@ -19,7 +19,13 @@ public enum GisJoinOperation
     Difference,
 
     [PipeEnumValue("Adds the properties of matching overlay features to each main feature; the geometry stays")]
-    Join
+    Join,
+
+    [PipeEnumValue("Splits the polygons or lines of the main input along the lines of the overlay, one item per piece with the properties of the main feature, e.g. parcels along a road")]
+    Cut,
+
+    [PipeEnumValue("Finds the nearest overlay line of each main point and adds where the point lies along it: position, fraction, offset and distance. The geometry stays, or becomes the point on the line", Label = "Locate along line")]
+    LocateAlongLine
 }
 
 public enum GisJoinRelation
@@ -55,13 +61,22 @@ public sealed class SpatialJoinParameters
         Description = "One output item per main feature with the first match; else one per match")]
     public bool FirstMatchOnly { get; set; }
 
-    [PipeParameter(Label = "Prefix", Order = 5, Expressions = false, ShowWhen = nameof(Operation), ShowWhenValues = ["intersect", "join"],
-        Description = "Prefix of the overlay properties, e.g. join_ makes name join_name")]
+    [PipeParameter(Label = "Prefix", Order = 5, Expressions = false, ShowWhen = nameof(Operation), ShowWhenValues = ["intersect", "join", "locateAlongLine"],
+        Description = "Prefix of the overlay properties, e.g. join_ makes name join_name; for Locate along line also of position, fraction, offset and distance")]
     public string Prefix { get; set; } = "join_";
 
-    [PipeParameter(Label = "Keep unmatched", Order = 6, Expressions = false, ShowWhen = nameof(Operation), ShowWhenValues = ["join"],
+    [PipeParameter(Label = "Keep unmatched", Order = 6, Expressions = false, ShowWhen = nameof(Operation), ShowWhenValues = ["join", "locateAlongLine"],
         Description = "Main features without a match stay without overlay properties; else they are dropped")]
     public bool KeepUnmatched { get; set; } = true;
+
+    [PipeParameter(Label = "Locate max distance", Order = 8, Expressions = false, ShowWhen = nameof(Operation), ShowWhenValues = ["locateAlongLine"],
+        Description = "Lines further away from the point don't match, e.g. 20; 0 has no limit")]
+    [Range(0, double.MaxValue)]
+    public double LocateMaxDistance { get; set; }
+
+    [PipeParameter(Label = "Point on the line", Order = 9, Expressions = false, ShowWhen = nameof(Operation), ShowWhenValues = ["locateAlongLine"],
+        Description = "The geometry becomes the point on the line nearest to the main point, e.g. to snap it; else the point stays where it is")]
+    public bool PointOnLine { get; set; }
 
     [PipeParameter(Label = "Keep empty results", Order = 7, Expressions = false, Advanced = true, ShowWhen = nameof(Operation), ShowWhenValues = ["clip", "difference"],
         Description = "Keeps main features whose result is empty with geometry null; else they are dropped")]
@@ -108,6 +123,14 @@ public sealed class SpatialJoinNode : IPipeNode<SpatialJoinParameters>
             ? overlays.Select(o => o.Geometry).UnionAll(factory: factory)
             : null;
 
+        // cut works with the lines of the overlay
+        var cutLines = parameters.Operation == GisJoinOperation.Cut ? overlays.Select(o => o.Geometry).OfType<IPolyline2D>().ToList() : [];
+        var cutter = cutLines.Count > 0 ? (IPolyline2D)cutLines.UnionAll(factory: factory) : null;
+        if (parameters.Operation == GisJoinOperation.LocateAlongLine)
+        {
+            GisSpatial.RequireProjected(srs ?? overlaySrs, "Locate along line");
+        }
+
         var output = new List<PipeItem>();
         foreach (var item in main)
         {
@@ -125,6 +148,42 @@ public sealed class SpatialJoinNode : IPipeNode<SpatialJoinParameters>
                     {
                         output.Add(GisSpatial.WithGeometry(item, GisSpatial.IsEmpty(result) ? null : result));
                     }
+                    break;
+
+                case GisJoinOperation.Cut:
+                    var pieces = geometry switch
+                    {
+                        null => [],
+                        _ when cutter is null => [geometry],
+                        IPolygon2D polygon => polygon.Cut(cutter, factory).Cast<IGeometry2D>().ToList(),
+                        IPolyline2D line => line.Cut(cutter, factory).Cast<IGeometry2D>().ToList(),
+                        _ => [geometry]   // points can't be cut
+                    };
+                    output.AddRange(pieces.Select(piece => GisSpatial.WithGeometry(item, piece)));
+                    break;
+
+                case GisJoinOperation.LocateAlongLine:
+                    if (geometry is not null and not IPoint2D)
+                    {
+                        throw new PipeException("Locate along line needs points as main features, e.g. the centroids of the features");
+                    }
+                    var located = geometry is IPoint2D point ? Locate(point, overlays, parameters) : null;
+                    if (located is null)
+                    {
+                        if (parameters.KeepUnmatched)
+                        {
+                            output.Add(item.Clone());
+                        }
+                        break;
+                    }
+                    var result2 = parameters.PointOnLine ? GisSpatial.WithGeometry(item, GisSpatial.Point(located.Value.Projection.Point)) : item.Clone();
+                    var props = result2.Json["properties"] as JsonObject ?? new JsonObject();
+                    result2.Json["properties"] = props;
+                    props[$"{parameters.Prefix}position"] = located.Value.Projection.Position;
+                    props[$"{parameters.Prefix}fraction"] = located.Value.Length > 0 ? located.Value.Projection.Position / located.Value.Length : 0;
+                    props[$"{parameters.Prefix}offset"] = located.Value.Projection.Offset;
+                    props[$"{parameters.Prefix}distance"] = located.Value.Projection.Distance;
+                    output.Add(Joined(result2, located.Value.Line, parameters.Prefix));
                     break;
 
                 case GisJoinOperation.Intersect:
@@ -166,6 +225,23 @@ public sealed class SpatialJoinNode : IPipeNode<SpatialJoinParameters>
         }
 
         return Task.FromResult(PipeNodeResult.FromMain(output));
+    }
+
+    // the nearest line of the overlay and where the point lies along it
+    static private (PipeItem Line, LineProjection Projection, double Length)? Locate(IPoint2D point,
+        List<(PipeItem Item, IGeometry2D Geometry)> overlays, SpatialJoinParameters parameters)
+    {
+        var nearest = overlays
+            .Where(o => o.Geometry is IPolyline2D)
+            .Select(o => (o.Item, Line: (IPolyline2D)o.Geometry, Distance: point.Distance(o.Geometry)))
+            .Where(o => parameters.LocateMaxDistance <= 0 || o.Distance <= parameters.LocateMaxDistance)
+            .OrderBy(o => o.Distance)
+            .FirstOrDefault();
+        if (nearest.Item is null || nearest.Line.ProjectDetailed(point) is not { } projection)
+        {
+            return null;
+        }
+        return (nearest.Item, projection, nearest.Line.Length());
     }
 
     static private IEnumerable<PipeItem> Matches(IGeometry2D geometry, List<(PipeItem Item, IGeometry2D Geometry)> overlays,

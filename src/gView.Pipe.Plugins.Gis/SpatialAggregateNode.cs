@@ -1,6 +1,7 @@
 using gView.Pipe.Abstraction;
 using gView.Pipe.Abstraction.Data;
 using gView.Pipe.Abstraction.Nodes;
+using Microsoft.Extensions.Logging;
 using SpatialNET;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
@@ -30,7 +31,10 @@ public enum GisAggregateOperation
     ConcaveHull,
 
     [PipeEnumValue("Joins lines that meet at their ends into longer lines", Label = "Line merge")]
-    LineMerge
+    LineMerge,
+
+    [PipeEnumValue("One polygon per area enclosed by the lines, e.g. parcels from boundary lines; lines that enclose nothing are left out")]
+    Polygonize
 }
 
 public sealed class SpatialAggregateParameters
@@ -50,6 +54,14 @@ public sealed class SpatialAggregateParameters
         Description = "Between 0 and 1: 1 is the convex hull, smaller values follow the shape more closely, e.g. 0.3")]
     [Range(0.0, 1.0)]
     public double EdgeLengthRatio { get; set; } = 0.3;
+
+    [PipeParameter(Label = "Clip geometry", Order = 5, ShowWhen = nameof(Operation), ShowWhenValues = ["voronoi"],
+        Description = "Polygon (GeoJSON geometry or feature) or bounding box [minx, miny, maxx, maxy] the cells are cut to; empty uses an extent around the points")]
+    public JsonNode? ClipGeometry { get; set; }
+
+    [PipeParameter(Label = "Clip geometry SRS", Order = 6, ShowWhen = nameof(Operation), ShowWhenValues = ["voronoi"],
+        Description = "EPSG code of the clip geometry, e.g. 31256; it must be the srs of the items, empty takes it as that")]
+    public JsonNode? ClipSrs { get; set; }
 }
 
 [PipeNode("9c4f1e7a-3d6b-4a2e-8f5c-b7a1d3e9f046", "Spatial Aggregate",
@@ -83,7 +95,7 @@ public sealed class SpatialAggregateNode : IPipeNode<SpatialAggregateParameters>
                 output = features.Count == 0 ? [] : [GisSpatial.Feature(features.Select(f => f.Geometry).UnionAll(factory: factory), new JsonObject(), srs)];
                 break;
             case GisAggregateOperation.Voronoi:
-                output = Voronoi(features, srs);
+                output = Voronoi(features, srs, Clip(parameters, srs));
                 break;
             case GisAggregateOperation.Delaunay:
                 output = features.Count == 0 ? []
@@ -101,6 +113,19 @@ public sealed class SpatialAggregateNode : IPipeNode<SpatialAggregateParameters>
             case GisAggregateOperation.LineMerge:
                 var lines = features.Select(f => f.Geometry).OfType<IPolyline2D>().ToList();
                 output = lines.Count == 0 ? [] : [GisSpatial.Feature(lines.UnionAll(factory: factory).LineMerge(factory: factory), new JsonObject(), srs)];
+                break;
+            case GisAggregateOperation.Polygonize:
+                var boundaries = features.Select(f => f.Geometry).OfType<IPolyline2D>().ToList();
+                if (boundaries.Count == 0)
+                {
+                    output = [];
+                    break;
+                }
+                // the union nodes the lines where they cross, so enclosed areas are found
+                var noded = (IPolyline2D)boundaries.UnionAll(factory: factory);
+                var polygons = noded.Polygonize(factory);
+                context.Logger.LogInformation("{Polygons} polygon(s) enclosed by {Lines} line(s)", polygons.Count, boundaries.Count);
+                output = polygons.Select(polygon => GisSpatial.Feature(polygon, new JsonObject(), srs)).ToList();
                 break;
             default:
                 throw new PipeException($"Unknown operation {parameters.Operation}");
@@ -174,8 +199,54 @@ public sealed class SpatialAggregateNode : IPipeNode<SpatialAggregateParameters>
     static private double? Number(JsonNode? value)
         => value is JsonValue v && double.TryParse(v.ToString(), NumberStyles.Float, CultureInfo.InvariantCulture, out var number) ? number : null;
 
+    // the clip polygon of Voronoi: a polygon or a bounding box in the srs of the items
+    static private IPolygon2D? Clip(SpatialAggregateParameters parameters, int? srs)
+    {
+        var node = parameters.ClipGeometry;
+        if (node is JsonValue value && value.TryGetValue<string>(out var text))
+        {
+            node = string.IsNullOrWhiteSpace(text) ? null : JsonNode.Parse(text);
+        }
+        if (node is null)
+        {
+            return null;
+        }
+
+        if (GisSpatialReferences.ToEpsg(parameters.ClipSrs) is { } clipSrs && srs is { } itemsSrs && clipSrs != itemsSrs)
+        {
+            throw new PipeException($"The clip geometry is in EPSG:{clipSrs}, the items in EPSG:{itemsSrs}; project one of them first");
+        }
+
+        if (node is JsonArray bbox)
+        {
+            if (bbox.Count != 4 || bbox.Any(v => v is not JsonValue number || !number.TryGetValue<double>(out _)))
+            {
+                throw new PipeException("A bounding box needs four numbers: [minx, miny, maxx, maxy]");
+            }
+            var b = bbox.Select(v => v!.GetValue<double>()).ToArray();
+            node = new JsonObject
+            {
+                ["type"] = "Polygon",
+                ["coordinates"] = new JsonArray(new JsonArray(
+                    new JsonArray(b[0], b[1]), new JsonArray(b[2], b[1]), new JsonArray(b[2], b[3]), new JsonArray(b[0], b[3]), new JsonArray(b[0], b[1])))
+            };
+        }
+        if (node is JsonObject feature && feature["type"]?.ToString() == "Feature")
+        {
+            // a feature item brings its own srs
+            if (GisSpatialReferences.ToEpsg(feature["srs"]) is { } featureSrs && srs is { } itemsSrs2 && featureSrs != itemsSrs2)
+            {
+                throw new PipeException($"The clip geometry is in EPSG:{featureSrs}, the items in EPSG:{itemsSrs2}; project one of them first");
+            }
+            node = feature["geometry"];
+        }
+
+        return GisSpatial.Geometry(node) as IPolygon2D
+            ?? throw new PipeException("The clip geometry must be a polygon or a bounding box");
+    }
+
     // the cell keeps the properties of the point (site) it belongs to
-    static private List<PipeItem> Voronoi(List<(PipeItem Item, IGeometry2D Geometry)> features, int? srs)
+    static private List<PipeItem> Voronoi(List<(PipeItem Item, IGeometry2D Geometry)> features, int? srs, IPolygon2D? clip)
     {
         var sites = new Dictionary<Coordinate, PipeItem>();
         foreach (var (item, geometry) in features)
@@ -191,7 +262,7 @@ public sealed class SpatialAggregateNode : IPipeNode<SpatialAggregateParameters>
             return [];
         }
 
-        return GisSpatial.MultiPoint(sites.Keys).VoronoiDiagram(factory: GisSpatial.Factory)
+        return GisSpatial.MultiPoint(sites.Keys).VoronoiDiagram(clip, GisSpatial.Factory)
             .Select(cell =>
             {
                 var site = sites.TryGetValue(new Coordinate(cell.Site.X, cell.Site.Y), out var item) ? item : null;

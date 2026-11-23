@@ -56,6 +56,13 @@ internal sealed class FakeNodeContext(object parameters, IReadOnlyDictionary<str
         return result.Outputs[PipePorts.Main].Select(i => i.Json).ToList();
     }
 
+    /// <summary>All output ports, e.g. the Error output of Write Features.</summary>
+    static public async Task<IReadOnlyDictionary<string, List<JsonObject>>> RunPortsAsync(IPipeNode node, object parameters, Dictionary<string, object> credentials, params JsonObject[] input)
+    {
+        var result = await node.ExecuteAsync(new FakeNodeContext(parameters, input, credentials), CancellationToken.None);
+        return result.Outputs.ToDictionary(o => o.Key, o => o.Value.Select(i => i.Json).ToList());
+    }
+
     static public async Task<List<JsonObject>> RunAsync(IPipeNode node, object parameters, IReadOnlyDictionary<string, IReadOnlyList<JsonObject>> inputs)
     {
         var result = await node.ExecuteAsync(new FakeNodeContext(parameters, inputs, new Dictionary<string, object>()), CancellationToken.None);

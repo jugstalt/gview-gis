@@ -143,6 +143,70 @@ static internal class GisSchema
         return (geometryType.Key, fields);
     }
 
+    /// <summary>
+    /// A copy of the schema without the excluded fields and with the additional ones, e.g. to extend the schema of a Describe.
+    /// A field that is there already is an error; fields are compared without regard to case.
+    /// </summary>
+    static public JsonObject Extend(JsonObject schema, JsonNode? additionalFields, string? excludeFields)
+    {
+        var extended = (JsonObject)schema.DeepClone();
+        var fields = extended["fields"] as JsonArray ?? new JsonArray();
+        extended["fields"] = fields;
+
+        var excluded = (excludeFields ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        foreach (var field in fields.ToList())
+        {
+            if (field is JsonObject json && Text(json["name"]) is { } name && excluded.Remove(name))
+            {
+                fields.Remove(field);
+            }
+        }
+        if (excluded.Count > 0)
+        {
+            throw new PipeException($"The schema has no field {string.Join(", ", excluded.Select(e => $"'{e}'"))} to exclude");
+        }
+
+        if (additionalFields is JsonValue value && value.TryGetValue<string>(out var text))
+        {
+            try
+            {
+                additionalFields = string.IsNullOrWhiteSpace(text) ? null : JsonNode.Parse(text);
+            }
+            catch (JsonException)
+            {
+                throw new PipeException("The additional fields are text but no JSON array; use e.g. [{ \"name\": \"status\", \"type\": \"text\" }]");
+            }
+        }
+        if (additionalFields is JsonObject single)
+        {
+            additionalFields = new JsonArray(single.DeepClone());
+        }
+        if (additionalFields is null)
+        {
+            return extended;
+        }
+        if (additionalFields is not JsonArray additional)
+        {
+            throw new PipeException("The additional fields must be an array of fields, e.g. [{ \"name\": \"status\", \"type\": \"text\" }]");
+        }
+
+        var names = fields.OfType<JsonObject>().Select(f => Text(f["name"])).OfType<string>().ToHashSet(StringComparer.OrdinalIgnoreCase);
+        foreach (var node in additional)
+        {
+            if (node is not JsonObject field || Text(field["name"]) is not { Length: > 0 } name)
+            {
+                throw new PipeException("Every additional field needs a name");
+            }
+            if (!names.Add(name) || name.Equals(Text(schema["idField"]), StringComparison.OrdinalIgnoreCase) || name.Equals(Text(schema["shapeField"]), StringComparison.OrdinalIgnoreCase))
+            {
+                throw new PipeException($"The schema has a field '{name}' already");
+            }
+            fields.Add(field.DeepClone());
+        }
+        return extended;
+    }
+
     static private string? Text(JsonNode? node)
         => node is JsonValue value && value.GetValueKind() == JsonValueKind.String ? value.GetValue<string>().Trim() : null;
 

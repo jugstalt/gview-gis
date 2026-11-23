@@ -1,0 +1,53 @@
+[
+  {
+    "title": "Copy a feature class to a test database",
+    "description": "Creates the target from the schema of the source and copies the features inside gView, without passing them through the workflow. The target credential needs Allow schema changes.",
+    "parameters": {
+      "sourceFeatureClass": "lv_lines",
+      "targetFeatureClass": "lv_lines_test",
+      "mode": "create"
+    },
+    "input": [
+      { }
+    ],
+    "output": [
+      {
+        "source": "lv_lines",
+        "target": "lv_lines_test",
+        "copied": 120345,
+        "seconds": 41.7
+      }
+    ],
+    "verified": false
+  },
+  {
+    "title": "Copy a district with an extra field",
+    "description": "Where and spatial filter select what is copied; Additional fields adds fields to the target that stay empty.",
+    "parameters": {
+      "sourceFeatureClass": "lv_lines",
+      "targetFeatureClass": "lv_lines_north",
+      "mode": "replace",
+      "where": "voltage = 400",
+      "additionalFields": [
+        {
+          "name": "status",
+          "type": "text",
+          "size": 20
+        }
+      ],
+      "excludeFields": "internal_note"
+    },
+    "input": [
+      { }
+    ],
+    "output": [
+      {
+        "source": "lv_lines",
+        "target": "lv_lines_north",
+        "copied": 5120,
+        "seconds": 2.4
+      }
+    ],
+    "verified": false
+  }
+]

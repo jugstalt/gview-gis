@@ -29,5 +29,92 @@
       { "type": "Feature", "geometry": { "type": "Polygon", "coordinates": [ [ [ 50, -100 ], [ 200, -100 ], [ 200, 100 ], [ 50, 100 ], [ 50, -100 ] ] ] }, "properties": { "station": "T-2" }, "srs": 31256 }
     ],
     "verified": false
+  },
+  {
+    "title": "Parcels from boundary lines",
+    "description": "Polygonize builds one polygon per area the lines enclose; lines that enclose nothing are left out.",
+    "parameters": {
+      "operation": "polygonize"
+    },
+    "input": [
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [ [ 0, 0 ], [ 10, 0 ], [ 10, 10 ], [ 0, 10 ], [ 0, 0 ] ]
+        },
+        "properties": { },
+        "srs": 31256
+      }
+    ],
+    "output": [
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [ [ [ 0, 0 ], [ 10, 0 ], [ 10, 10 ], [ 0, 10 ], [ 0, 0 ] ] ]
+        },
+        "properties": { },
+        "srs": 31256
+      }
+    ],
+    "verified": false
+  },
+  {
+    "title": "Supply areas of stations, cut to a district",
+    "description": "Voronoi with Clip geometry: a polygon or a bounding box [minx, miny, maxx, maxy] in the srs of the items.",
+    "parameters": {
+      "operation": "voronoi",
+      "clipGeometry": [ 0, 0, 100, 100 ]
+    },
+    "input": [
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [ 25, 50 ]
+        },
+        "properties": {
+          "station": "T-1"
+        },
+        "srs": 31256
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [ 75, 50 ]
+        },
+        "properties": {
+          "station": "T-2"
+        },
+        "srs": 31256
+      }
+    ],
+    "output": [
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [ [ [ 0, 0 ], [ 50, 0 ], [ 50, 100 ], [ 0, 100 ], [ 0, 0 ] ] ]
+        },
+        "properties": {
+          "station": "T-1"
+        },
+        "srs": 31256
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [ [ [ 50, 0 ], [ 100, 0 ], [ 100, 100 ], [ 50, 100 ], [ 50, 0 ] ] ]
+        },
+        "properties": {
+          "station": "T-2"
+        },
+        "srs": 31256
+      }
+    ],
+    "verified": false
   }
 ]

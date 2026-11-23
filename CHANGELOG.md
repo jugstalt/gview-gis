@@ -14,16 +14,26 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   it from a gView app folder (`Pipe:ExternalPlugins`).
   - Credential type gView Datasource: PostGIS, SQL Server geometry, SDE, shape files,
     GeoPackage, gView FDB or any dataset plugin GUID; `Allow schema changes` switch.
-  - Read Features: features as GeoJSON items, with where clause, match field, spatial filter,
-    field list and target SRS.
+  - Read Features: features as GeoJSON items, with where clause, match field, spatial filter
+    (a GeoJSON geometry or a bounding box), field list, order by, offset, limit and target SRS;
+    output as features, distinct values or a count. The feature class is a choice list of the
+    data source.
   - Write Features: insert, update, upsert and delete by object id or a key field; geometries
-    are projected into the feature class.
-  - Feature Class: list, describe, create (from a described schema), create if not exists,
-    truncate and delete feature classes.
+    are projected into the feature class. Write fields and write geometry limit what is
+    written (e.g. only one field of an update), field mapping renames properties, unknown
+    properties are ignored or an error, and with `On error` = skip item the items that can't be
+    written go to an Error output.
+  - Feature Class: list, describe, create (from a described schema, with additional and
+    excluded fields), create if not exists, truncate and delete feature classes.
+  - Copy Feature Class: copies a feature class with its schema and features inside gView, from
+    one data source to the same or another (create, append, replace; where and spatial filter),
+    for volumes too large for items.
   - Geometry, Spatial Aggregate and Spatial Join: buffer, centroid, hulls, simplify, make valid,
     densify, area/length; dissolve with group by and aggregates, union, Voronoi, Delaunay, line
-    merge; intersect, clip, difference and spatial join (intersects, within, contains, nearest).
-    They work on the GeoJSON items with SpatialNET only, without a data source.
+    merge, polygonize; intersect, clip, difference, cut and spatial join (intersects, within,
+    contains, nearest); offset curve, smooth, point at distance; locate points along lines;
+    Voronoi cells cut to a clip geometry. They work on the GeoJSON items with SpatialNET only,
+    without a data source.
   - Deploy build: the plugin is part of the server and web apps ZIPs and Docker images.
 - PlugInManager: `PluginDirectory` sets the folder scanned for plugins (default: folder of the
   entry assembly); inside an isolated load context plugins are loaded into that context.

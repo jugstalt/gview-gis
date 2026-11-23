@@ -22,5 +22,91 @@
       { "type": "Feature", "geometry": { "type": "LineString", "coordinates": [ [ 0, 5 ], [ 5, 5 ] ] }, "properties": { "line_id": "L-1" }, "srs": 31256 }
     ],
     "verified": false
+  },
+  {
+    "title": "Split a parcel along a new road",
+    "description": "Cut: main gets the polygons or lines, overlay the cutting lines; every piece is an item with the properties of its main feature.",
+    "parameters": {
+      "operation": "cut"
+    },
+    "input": [
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [ [ [ 0, 0 ], [ 10, 0 ], [ 10, 10 ], [ 0, 10 ], [ 0, 0 ] ] ]
+        },
+        "properties": {
+          "parcel": "P-1"
+        },
+        "srs": 31256
+      }
+    ],
+    "output": [
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [ [ [ 0, 0 ], [ 5, 0 ], [ 5, 10 ], [ 0, 10 ], [ 0, 0 ] ] ]
+        },
+        "properties": {
+          "parcel": "P-1"
+        },
+        "srs": 31256
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [ [ [ 5, 0 ], [ 10, 0 ], [ 10, 10 ], [ 5, 10 ], [ 5, 0 ] ] ]
+        },
+        "properties": {
+          "parcel": "P-1"
+        },
+        "srs": 31256
+      }
+    ],
+    "verified": false
+  },
+  {
+    "title": "Where does a house connection meet the street?",
+    "description": "Locate along line: main gets points, overlay the lines. Each point learns the position, fraction, offset and distance to its nearest line; Point on the line snaps it.",
+    "parameters": {
+      "operation": "locateAlongLine",
+      "prefix": "street_",
+      "locateMaxDistance": 20
+    },
+    "input": [
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [ 30, 4 ]
+        },
+        "properties": {
+          "house": "12"
+        },
+        "srs": 31256
+      }
+    ],
+    "output": [
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [ 30, 4 ]
+        },
+        "properties": {
+          "house": "12",
+          "street_position": 30,
+          "street_fraction": 0.3,
+          "street_offset": 4,
+          "street_distance": 4,
+          "street_name": "Main Street"
+        },
+        "srs": 31256
+      }
+    ],
+    "verified": false
   }
 ]

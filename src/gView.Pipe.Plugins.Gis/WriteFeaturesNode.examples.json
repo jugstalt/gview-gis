@@ -29,5 +29,106 @@
       { "type": "Feature", "id": 1, "geometry": { "type": "Point", "coordinates": [ 15.4395, 47.0707 ] }, "properties": { "value": 3.2 }, "srs": 4326 }
     ],
     "verified": false
+  },
+  {
+    "title": "Change only one field",
+    "description": "Write fields limits what is written: the status changes, other properties of the item and its geometry are left alone.",
+    "parameters": {
+      "featureClass": "lv_lines",
+      "mode": "update",
+      "keyField": "line_id",
+      "writeFields": "status",
+      "writeGeometry": "never"
+    },
+    "input": [
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [ [ 0, 0 ], [ 1, 1 ] ]
+        },
+        "properties": {
+          "line_id": "L-1",
+          "status": "checked",
+          "voltage": 999
+        }
+      }
+    ],
+    "output": [
+      {
+        "type": "Feature",
+        "id": 101,
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [ [ 0, 0 ], [ 1, 1 ] ]
+        },
+        "properties": {
+          "line_id": "L-1",
+          "status": "checked",
+          "voltage": 999
+        }
+      }
+    ],
+    "verified": false
+  },
+  {
+    "title": "Skip items that cannot be written",
+    "description": "With On error Skip item the node has an Error output with the items that failed, and error.message says why. The other items are written. Here the main output is shown: it is empty, the item has no geometry.",
+    "parameters": {
+      "featureClass": "lv_lines",
+      "mode": "insert",
+      "writeGeometry": "always",
+      "onError": "skipItem"
+    },
+    "input": [
+      {
+        "type": "Feature",
+        "properties": {
+          "line_id": "L-9"
+        }
+      }
+    ],
+    "output": [ ],
+    "verified": false
+  },
+  {
+    "title": "Rename properties on the way",
+    "description": "Field mapping: field of the feature class to property of the item.",
+    "parameters": {
+      "featureClass": "lv_lines",
+      "mode": "insert",
+      "fieldMapping": {
+        "line_id": "name",
+        "voltage": "volt"
+      }
+    },
+    "input": [
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [ [ 0, 0 ], [ 5, 5 ] ]
+        },
+        "properties": {
+          "name": "L-7",
+          "volt": 400
+        }
+      }
+    ],
+    "output": [
+      {
+        "type": "Feature",
+        "id": 7,
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [ [ 0, 0 ], [ 5, 5 ] ]
+        },
+        "properties": {
+          "name": "L-7",
+          "volt": 400
+        }
+      }
+    ],
+    "verified": false
   }
 ]

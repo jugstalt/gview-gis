@@ -33,5 +33,108 @@
       { "type": "Feature", "id": 5521, "geometry": { "type": "Polygon", "coordinates": [ [ [ 15.4393, 47.0705 ], [ 15.4398, 47.0705 ], [ 15.4398, 47.0709 ], [ 15.4393, 47.0709 ], [ 15.4393, 47.0705 ] ] ] }, "properties": { "parcel_no": "112/4" }, "srs": 4326 }
     ],
     "verified": false
+  },
+  {
+    "title": "The feeders of a network as a list",
+    "description": "Output Distinct values gives one item per value of Fields, without geometry, e.g. to run a workflow per feeder.",
+    "parameters": {
+      "featureClass": "lv_lines",
+      "output": "distinctValues",
+      "fields": "feeder",
+      "orderBy": "feeder"
+    },
+    "input": [
+      { }
+    ],
+    "output": [
+      {
+        "type": "Feature",
+        "properties": {
+          "feeder": "T-0815#C-1"
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "feeder": "T-0815#C-2"
+        }
+      }
+    ],
+    "verified": false
+  },
+  {
+    "title": "Count the lines of a feeder",
+    "parameters": {
+      "featureClass": "lv_lines",
+      "output": "count",
+      "matchField": "feeder",
+      "matchValue": "T-0815#C-1"
+    },
+    "input": [
+      { }
+    ],
+    "output": [
+      {
+        "featureClass": "lv_lines",
+        "count": 42
+      }
+    ],
+    "verified": false
+  },
+  {
+    "title": "Read page by page",
+    "description": "Order by with Offset and Limit: the second page of 1000 lines, longest first. Not every data source supports Offset.",
+    "parameters": {
+      "featureClass": "lv_lines",
+      "orderBy": "length desc, line_id",
+      "offset": 1000,
+      "limit": 1000
+    },
+    "input": [
+      { }
+    ],
+    "output": [
+      {
+        "type": "Feature",
+        "id": 3011,
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [ [ -68210.5, 214033.2 ], [ -68180.1, 214051.9 ] ]
+        },
+        "properties": {
+          "line_id": "L-3011",
+          "length": 35.6
+        },
+        "srs": 31256
+      }
+    ],
+    "verified": false
+  },
+  {
+    "title": "Read what lies in a bounding box",
+    "description": "Filter geometry also takes a bounding box [minx, miny, maxx, maxy] in the srs of Filter geometry SRS, or of the feature class.",
+    "parameters": {
+      "featureClass": "lv_lines",
+      "spatialFilter": "intersects",
+      "filterGeometry": [ -68300, 214000, -68100, 214100 ]
+    },
+    "input": [
+      { }
+    ],
+    "output": [
+      {
+        "type": "Feature",
+        "id": 101,
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [ [ -68210.5, 214033.2 ], [ -68180.1, 214051.9 ] ]
+        },
+        "properties": {
+          "line_id": "L-1"
+        },
+        "srs": 31256
+      }
+    ],
+    "verified": false
   }
 ]
