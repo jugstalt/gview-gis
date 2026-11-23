@@ -1,0 +1,37 @@
+[
+  {
+    "title": "Read the low-voltage lines of a station",
+    "description": "Runs once per input item; every feature becomes a GeoJSON item. The station id goes in as Match value, never as SQL text.",
+    "parameters": {
+      "featureClass": "lv_lines",
+      "matchField": "station_id",
+      "matchValue": "{{ $json.properties.id }}",
+      "fields": "line_id, station_id, voltage"
+    },
+    "input": [
+      { "type": "Feature", "id": 7, "geometry": { "type": "Point", "coordinates": [ 15.44, 47.07 ] }, "properties": { "id": "T-0815" }, "srs": 4326 }
+    ],
+    "output": [
+      { "type": "Feature", "id": 101, "geometry": { "type": "LineString", "coordinates": [ [ -68210.5, 214033.2 ], [ -68180.1, 214051.9 ] ] }, "properties": { "line_id": "L-1", "station_id": "T-0815", "voltage": 400 }, "srs": 31256 },
+      { "type": "Feature", "id": 102, "geometry": { "type": "LineString", "coordinates": [ [ -68180.1, 214051.9 ], [ -68142.7, 214060.4 ] ] }, "properties": { "line_id": "L-2", "station_id": "T-0815", "voltage": 400 }, "srs": 31256 }
+    ],
+    "verified": false
+  },
+  {
+    "title": "Read the parcels a point lies in, in WGS 84",
+    "parameters": {
+      "featureClass": "parcels",
+      "spatialFilter": "contains",
+      "filterGeometry": "{{ $json.geometry }}",
+      "filterSrs": "{{ $json.srs }}",
+      "targetSrs": 4326
+    },
+    "input": [
+      { "type": "Feature", "geometry": { "type": "Point", "coordinates": [ 15.4395, 47.0707 ] }, "properties": {}, "srs": 4326 }
+    ],
+    "output": [
+      { "type": "Feature", "id": 5521, "geometry": { "type": "Polygon", "coordinates": [ [ [ 15.4393, 47.0705 ], [ 15.4398, 47.0705 ], [ 15.4398, 47.0709 ], [ 15.4393, 47.0709 ], [ 15.4393, 47.0705 ] ] ] }, "properties": { "parcel_no": "112/4" }, "srs": 4326 }
+    ],
+    "verified": false
+  }
+]

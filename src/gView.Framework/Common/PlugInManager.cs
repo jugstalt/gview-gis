@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.Loader;
 using System.Text;
 using System.Xml;
 
@@ -73,6 +74,35 @@ namespace gView.Framework.Common
         public static bool InitSilent = false;
 
         /// <summary>
+        /// Folder scanned for plugin assemblies (gView.*.dll). Default (null): the folder of the entry assembly.
+        /// A host that loads gView from another folder, e.g. gView.Pipe loading a plugin out of a gView installation,
+        /// sets it before the first use of the PlugInManager.
+        /// </summary>
+        public static string PluginDirectory { get; set; }
+
+        /// <summary>
+        /// Loads a plugin assembly. In the default load context as before (Assembly.LoadFrom); inside an isolated
+        /// load context (gView loaded as a plugin of another host) into that context, so the plugin types
+        /// share gView.Framework with the code that asks for them.
+        /// </summary>
+        private static Assembly LoadPluginAssembly(string path)
+        {
+            var context = AssemblyLoadContext.GetLoadContext(typeof(PlugInManager).Assembly);
+            if (context is null || context == AssemblyLoadContext.Default)
+            {
+                return Assembly.LoadFrom(path);
+            }
+
+            var name = AssemblyName.GetAssemblyName(path).Name;
+            return context.Assemblies.FirstOrDefault(a => String.Equals(a.GetName().Name, name, StringComparison.OrdinalIgnoreCase))
+                ?? context.LoadFromAssemblyPath(path);
+        }
+
+        // assemblies of gView.Pipe plugins: they reference the Pipe contracts, which only the Pipe host provides
+        private static bool IsPipePluginAssembly(string fileName)
+            => fileName.StartsWith("gview.pipe.", StringComparison.OrdinalIgnoreCase);
+
+        /// <summary>
         /// Blazor/Razor UI component plugins (e.g. "gView.Carto.Razor.dll", "gView.*.Blazor.*.dll")
         /// are only usable inside the Blazor web host (gView.WebApps). Their dependencies
         /// (Microsoft.AspNetCore.Components.*) are typically not resolvable/deployed for the
@@ -137,15 +167,22 @@ namespace gView.Framework.Common
             try
             {
                 _pluginTypes = new Dictionary<Guid, Type>();
-                FileInfo entryAssembly = new FileInfo(Assembly.GetEntryAssembly().Location);
+                var pluginDirectory = new DirectoryInfo(String.IsNullOrWhiteSpace(PluginDirectory)
+                    ? Path.GetDirectoryName(Assembly.GetEntryAssembly().Location)
+                    : PluginDirectory);
 
-                Console.WriteLine($"Init PluginManager: {entryAssembly.Directory.FullName}");
+                Console.WriteLine($"Init PluginManager: {pluginDirectory.FullName}");
 
-                foreach (FileInfo dll in entryAssembly.Directory.GetFiles("*.dll")
-                                                                .Where(f => f.Name.ToLower().StartsWith("gview."))
-                                                                .OrderBy(f => f.Name, StringComparer.OrdinalIgnoreCase))
+                foreach (FileInfo dll in pluginDirectory.GetFiles("*.dll")
+                                                        .Where(f => f.Name.ToLower().StartsWith("gview."))
+                                                        .OrderBy(f => f.Name, StringComparer.OrdinalIgnoreCase))
                 {
                     if (SkipUiComponentPlugins && IsUiComponentAssembly(dll.Name))
+                    {
+                        continue;
+                    }
+
+                    if (IsPipePluginAssembly(dll.Name))
                     {
                         continue;
                     }
@@ -156,7 +193,7 @@ namespace gView.Framework.Common
 
                     try
                     {
-                        Assembly assembly = Assembly.LoadFrom(dll.FullName);
+                        Assembly assembly = LoadPluginAssembly(dll.FullName);
 
                         foreach (var pluginType in assembly.GetTypes())
                         {

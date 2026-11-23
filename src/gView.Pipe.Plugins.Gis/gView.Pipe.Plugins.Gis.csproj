@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Nodes for gView.Pipe that read and write geodata through the gView dataset model (gview-pipe ADR 0044).
+    gView.Pipe loads this assembly out of a gView folder (Pipe:ExternalPlugins); its dependencies come from that folder.
+    For development the build output of this project is such a folder.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <!-- the output folder needs all dependencies -->
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- the Pipe contracts come from the host; never ship them (package source: nuget.config next to this file) -->
+    <PackageReference Include="gView.Pipe.Abstraction" Version="0.1.0" ExcludeAssets="runtime" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\gView.Framework\gView.Framework.csproj" />
+    <ProjectReference Include="..\gView.Framework.Core\gView.Framework.Core.csproj" />
+    <ProjectReference Include="..\gView.Framework.Data\gView.Framework.Data.csproj" />
+    <ProjectReference Include="..\gView.Framework.Geometry\gView.Framework.Geometry.csproj" />
+    <!-- the data sources the plugin brings into its output folder; in a gView installation all of them are there anyway -->
+    <ProjectReference Include="..\gView.DataSources.Shape\gView.DataSources.Shape.csproj" />
+    <ProjectReference Include="..\gView.DataSources.PostGIS\gView.DataSources.PostGIS.csproj" />
+    <ProjectReference Include="..\gView.DataSources.MSSqlSpatial\gView.DataSources.MSSqlSpatial.csproj" />
+    <ProjectReference Include="..\gView.DataSources.GeoPackage\gView.DataSources.GeoPackage.csproj" />
+    <ProjectReference Include="..\gView.DataSources.Fdb.PostgreSql\gView.DataSources.Fdb.PostgreSql.csproj" />
+    <ProjectReference Include="..\gView.DataSources.Fdb.SqlServer\gView.DataSources.Fdb.SqlServer.csproj" />
+    <ProjectReference Include="..\gView.DataSources.Fdb.SQLite\gView.DataSources.Fdb.SQLite.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="**\*.examples.json" />
+    <InternalsVisibleTo Include="gView.Pipe.Plugins.Gis.Tests" />
+  </ItemGroup>
+
+</Project>

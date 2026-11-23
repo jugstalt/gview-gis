@@ -1,0 +1,33 @@
+[
+  {
+    "title": "Label lines with their station and connector",
+    "description": "Update by the key field line_id: only the property feeder changes, the geometry stays because the item has none.",
+    "parameters": {
+      "featureClass": "lv_lines",
+      "mode": "update",
+      "keyField": "line_id"
+    },
+    "input": [
+      { "type": "Feature", "properties": { "line_id": "L-1", "feeder": "T-0815#C-3" } }
+    ],
+    "output": [
+      { "type": "Feature", "id": 101, "properties": { "line_id": "L-1", "feeder": "T-0815#C-3" } }
+    ],
+    "verified": false
+  },
+  {
+    "title": "Insert points measured in WGS 84",
+    "description": "The geometries are projected into the coordinate system of the feature class; the output items carry the new object ids.",
+    "parameters": {
+      "featureClass": "measurements",
+      "mode": "insert"
+    },
+    "input": [
+      { "type": "Feature", "geometry": { "type": "Point", "coordinates": [ 15.4395, 47.0707 ] }, "properties": { "value": 3.2 }, "srs": 4326 }
+    ],
+    "output": [
+      { "type": "Feature", "id": 1, "geometry": { "type": "Point", "coordinates": [ 15.4395, 47.0707 ] }, "properties": { "value": 3.2 }, "srs": 4326 }
+    ],
+    "verified": false
+  }
+]

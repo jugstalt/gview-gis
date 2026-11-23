@@ -61,6 +61,8 @@ class Build : NukeBuild
     static readonly GViewApp Server = new("server", (RelativePath)"src/gView.Server/gView.Server.csproj", "gview-server", "gview-server-base", "gview-server", false);
     static readonly GViewApp WebApps = new("webapps", (RelativePath)"src/Blazor/gView.WebApps/gView.WebApps.csproj", "gview-webapps", "gview-webapps", null, true);
     static readonly GViewApp Cmd = new("cmd", (RelativePath)"src/gView.Cmd/gView.Cmd.csproj", null, null, null, false);
+    // nodes for gView.Pipe (ADR 0004): shipped in every app folder, gView.Pipe loads it from there (Pipe:ExternalPlugins)
+    static readonly GViewApp PipeGis = new("pipe-gis", (RelativePath)"src/gView.Pipe.Plugins.Gis/gView.Pipe.Plugins.Gis.csproj", null, null, null, false);
 
     static readonly GViewApp[] DeployApps = { Server, WebApps };
 
@@ -232,6 +234,18 @@ class Build : NukeBuild
                     .SetProperty("PublishProfile", publishProfile)
                     .SetProperty("PublishDir", Artifacts(Cmd, platform))
                     .SetProperty("SkiaVariant", "Skia3"));
+
+                // never self-contained: the plugin runs in the .NET of the gView.Pipe host
+                Log.Information("Compile {App} {Platform}", PipeGis.Name, platform);
+
+                Artifacts(PipeGis, platform).CreateOrCleanDirectory();
+                DotNetTasks.DotNetPublish(s => s
+                    .SetProject(RootDirectory / PipeGis.Project)
+                    .SetConfiguration(Configuration)
+                    .SetRuntime(platform == "win64" ? "win-x64" : "linux-x64")
+                    .SetSelfContained(false)
+                    .SetProperty("PublishDir", Artifacts(PipeGis, platform))
+                    .SetProperty("SkiaVariant", "Skia3"));
             }
         });
 
@@ -241,7 +255,7 @@ class Build : NukeBuild
         {
             foreach (var platform in Platform)
             {
-                foreach (var app in DeployApps.Append(Cmd))
+                foreach (var app in DeployApps.Append(Cmd).Append(PipeGis))
                 {
                     var artifacts = Artifacts(app, platform);
 
@@ -288,6 +302,8 @@ class Build : NukeBuild
                     // gView.Cmd tools: only add files, never replace the app's own files
                     content.AddDirectory(Artifacts(Cmd, platform), appPrefix, overwrite: false);
                 }
+                // the gView.Pipe plugin: likewise only its own files (dll, deps.json), it uses the app's assemblies
+                content.AddDirectory(Artifacts(PipeGis, platform), appPrefix, overwrite: false);
                 content.AddDirectory(AssetsDirectory / app.Name / "override", appPrefix, overwrite: true);
                 content.AddDirectory(AssetsDirectory / app.Name / platform / "override", appPrefix, overwrite: true);
 
@@ -318,6 +334,7 @@ class Build : NukeBuild
                 contextDirectory.CreateOrCleanDirectory();
 
                 CopyDirectory(Artifacts(app, "linux64"), contextDirectory / "app", overwrite: true);
+                CopyDirectory(Artifacts(PipeGis, "linux64"), contextDirectory / "app", overwrite: false);
                 CopyDirectory(AssetsDirectory / app.Name / "override", contextDirectory / "app", overwrite: true);
                 CopyDirectory(AssetsDirectory / app.Name / "docker" / "override", contextDirectory / "app", overwrite: true);
                 (AssetsDirectory / app.Name / "docker" / "Dockerfile").Copy(contextDirectory / "Dockerfile", ExistsPolicy.FileOverwrite);
