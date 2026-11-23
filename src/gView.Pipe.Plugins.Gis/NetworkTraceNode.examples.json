@@ -1,0 +1,77 @@
+[
+  {
+    "title": "Label every low-voltage line with its transformer and connector",
+    "description": "One run for the whole network: every line gets the transformer (source) and the connector (branch) it hangs on. The item id is the object id of the line: a Set node with Keep only set fields sets id, properties.TRAFO = sourceOid and properties.ABZWEIGID = branchOid, and Write Features updates the line feature class by object id. A closed ring gives kind Multiple with both connectors, cheapest first.",
+    "parameters": {
+      "operation": "feeders",
+      "sources": "[Mittelspannung,Trafo,*]",
+      "branches": "[Niederspannung,Anlagenverbinder,*]",
+      "tier": "Niederspannung",
+      "outputTypes": "[Niederspannung,Leitung,*]"
+    },
+    "input": [],
+    "output": [
+      { "type": "Feature", "id": 88, "geometry": null, "properties": { "layer": "Netz/Leitung", "oid": 88, "type": "Niederspannung.Leitung.Kabel", "kind": "Edge", "source": "Netz/Trafo#4711", "sourceOid": 4711, "branch": "Netz/Anlagenverbinder#123", "branchOid": 123, "cost": 41.5, "length": 63.2, "parts": 2 }, "srs": 31256 },
+      { "type": "Feature", "id": 91, "geometry": null, "properties": { "layer": "Netz/Leitung", "oid": 91, "type": "Niederspannung.Leitung.Kabel", "kind": "Multiple", "source": "Netz/Trafo#4711 Netz/Trafo#4712", "sourceOid": 4711, "branch": "Netz/Anlagenverbinder#124 Netz/Anlagenverbinder#310", "branchOid": 124, "cost": 120.8, "length": 35.0, "parts": 1 }, "srs": 31256 }
+    ],
+    "verified": false
+  },
+  {
+    "title": "Feeders of some transformers only",
+    "description": "The input items are the transformers (e.g. read with Read Features for one substation area); Node makes the network node Trafo#<id> of each item.",
+    "parameters": {
+      "operation": "feedersOfItems",
+      "node": "Trafo#{{ $json.id }}",
+      "branches": "[Niederspannung,Anlagenverbinder,*]",
+      "tier": "Niederspannung",
+      "outputTypes": "[Niederspannung,Leitung,*]"
+    },
+    "input": [
+      { "type": "Feature", "id": 4711, "geometry": null, "properties": { "name": "TS Hauptplatz" } }
+    ],
+    "output": [
+      { "type": "Feature", "id": 88, "geometry": null, "properties": { "layer": "Netz/Leitung", "oid": 88, "type": "Niederspannung.Leitung.Kabel", "kind": "Edge", "source": "Netz/Trafo#4711", "sourceOid": 4711, "branch": "Netz/Anlagenverbinder#123", "branchOid": 123, "cost": 41.5, "length": 63.2, "parts": 2 }, "srs": 31256 }
+    ],
+    "verified": false
+  },
+  {
+    "title": "Trace from each cable box",
+    "description": "One trace per input item; with a tier the trace stops at the sources of the tier (the transformers). Each item says from which start it was found.",
+    "parameters": {
+      "operation": "trace",
+      "node": "Kasten#{{ $json.id }}",
+      "tier": "Niederspannung",
+      "outputTypes": "[Niederspannung,Leitung,*]"
+    },
+    "input": [
+      { "type": "Feature", "id": 23660, "geometry": null, "properties": {} }
+    ],
+    "output": [
+      { "type": "Feature", "id": 88, "geometry": null, "properties": { "layer": "Netz/Leitung", "oid": 88, "type": "Niederspannung.Leitung.Kabel", "kind": "Edge", "start": "Kasten#23660", "cost": 0, "length": 63.2, "parts": 2 }, "srs": 31256 }
+    ],
+    "verified": false
+  },
+  {
+    "title": "Colour classes for the map, ready to write back",
+    "description": "Colour fields adds the colour class of the transformer and of the branch (object id modulo Colours); Only the colour fields leaves id and the two fields, so Write Features (update by object id) follows directly, without a Set node. Open lines adds the lines no branch went along at a reached node, e.g. switched off at the separation point of a ring, with the Open colour 998.",
+    "parameters": {
+      "operation": "feeders",
+      "sources": "[Mittelspannung,Trafo,*]",
+      "branches": "[Niederspannung,Anlagenverbinder,*]",
+      "tier": "Niederspannung",
+      "outputTypes": "[Niederspannung,Leitung,*]",
+      "openLines": true,
+      "colorFields": true,
+      "colors": 100,
+      "openColor": 998,
+      "sourceColorField": "STAT_COLOR",
+      "branchColorField": "ABZW_COLOR",
+      "colorFieldsOnly": true
+    },
+    "input": [],
+    "output": [
+      { "type": "Feature", "id": 88, "geometry": null, "properties": { "STAT_COLOR": 11, "ABZW_COLOR": 23 }, "srs": 31256 }
+    ],
+    "verified": false
+  }
+]

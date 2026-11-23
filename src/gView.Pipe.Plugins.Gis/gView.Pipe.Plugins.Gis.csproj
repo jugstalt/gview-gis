@@ -31,6 +31,8 @@
     <ProjectReference Include="..\gView.Framework.Core\gView.Framework.Core.csproj" />
     <ProjectReference Include="..\gView.Framework.Data\gView.Framework.Data.csproj" />
     <ProjectReference Include="..\gView.Framework.Geometry\gView.Framework.Geometry.csproj" />
+    <!-- Network Trace: searches networks built with gView -->
+    <ProjectReference Include="..\gView.Framework.NetworkModel\gView.Framework.NetworkModel.csproj" />
     <!-- the data sources the plugin brings into its output folder; in a gView installation all of them are there anyway -->
     <ProjectReference Include="..\gView.DataSources.Shape\gView.DataSources.Shape.csproj" />
     <ProjectReference Include="..\gView.DataSources.PostGIS\gView.DataSources.PostGIS.csproj" />

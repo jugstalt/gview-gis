@@ -20,7 +20,7 @@ public sealed record NetworkPickedItem(string Reference, string Label);
 public class NetworkSearchContext
 {
     /// <summary>The operations of the tool; nearest is what a click into the map does anyway.</summary>
-    public static readonly IReadOnlyList<string> Operations = NetworkQueryService.Operations.Where(o => o != "nearest").ToList();
+    public static readonly IReadOnlyList<string> Operations = NetworkQueryService.Operations.Where(o => o is not ("nearest" or "feeders")).ToList(); // feeders: gView.Cmd, server and gView.Pipe only (no colouring by branch here yet)
 
     /// <summary>trace | reach | path | supply | outage | info | validate</summary>
     public string Operation { get; set; } = "trace";

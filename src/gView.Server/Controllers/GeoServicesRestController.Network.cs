@@ -67,6 +67,7 @@ public partial class GeoServicesRestController
                     "path" => new JsonNetworkPathDTO(),
                     "supply" => new JsonNetworkSupplyDTO(),
                     "outage" => new JsonNetworkOutageDTO(),
+                    "feeders" => new JsonNetworkFeedersDTO(),
                     "info" => new JsonNetworkInfoDTO(),
                     "nearest" => new JsonNetworkNearestDTO(),
                     "validate" => new JsonNetworkValidateDTO(),

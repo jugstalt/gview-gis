@@ -26,13 +26,13 @@ public class NetworkCommand : ICommand
 {
     public string Name => "Network";
 
-    public string Description => "Build and search SpatialNET networks (-u build | refresh-metadata | config-from-mxl | trace | reach | path | supply | outage | info | nearest | validate)";
+    public string Description => "Build and search SpatialNET networks (-u build | refresh-metadata | config-from-mxl | trace | reach | path | supply | outage | feeders | info | nearest | validate)";
 
     public string ExecutableName => "";
 
     public IEnumerable<ICommandParameterDescription> ParameterDescriptions =>
         [
-            new RequiredCommandParameter<string>("u") { Description = "build | config-from-mxl | trace | reach | path | supply | outage | info | nearest | validate" },
+            new RequiredCommandParameter<string>("u") { Description = "build | config-from-mxl | trace | reach | path | supply | outage | feeders | info | nearest | validate" },
             new CommandParameter<string>("config") { Description = "network config (json); build" },
             new CommandParameter<string>("mxl") { Description = "map (mxl); for build it overrides the map of the config" },
             new CommandParameter<string>("output") { Description = "build: network directory (default: \"directory\" of the config or <map>.network next to the mxl); config-from-mxl: json file" },
@@ -41,7 +41,9 @@ public class NetworkCommand : ICommand
             new CommandParameter<string>("start") { Description = "trace, reach: nodes (Layer#OID, id, type pattern like [*,Trafo,*] or @x,y[~radius]; comma separated)" },
             new CommandParameter<string>("from") { Description = "path: start node" },
             new CommandParameter<string>("to") { Description = "path: end node" },
-            new CommandParameter<string>("sources") { Description = "supply, outage: source nodes (default: supplySources of the config)" },
+            new CommandParameter<string>("sources") { Description = "supply, outage, feeders: source nodes (default: the sources of the tier, else supplySources of the config)" },
+            new CommandParameter<string>("open-edges") { Description = "feeders: true also reports the edges no branch went along at nodes a branch went through (Open)" },
+            new CommandParameter<string>("branches") { Description = "feeders: type pattern of the edges at a source that start a branch, e.g. [Niederspannung,Anlagenverbinder,*] (default: every edge)" },
             new CommandParameter<string>("sinks") { Description = "supply, outage: sink nodes (default: customers of the config)" },
             new CommandParameter<string>("disable") { Description = "searches: edges switched off (Layer#OID, Layer#OID/part, id); outage: the edges to switch off" },
             new CommandParameter<string>("x") { Description = "nearest: x in the spatial reference of the network" },
@@ -81,6 +83,7 @@ public class NetworkCommand : ICommand
             case "path":
             case "supply":
             case "outage":
+            case "feeders":
             case "info":
             case "nearest":
             case "validate":
@@ -95,6 +98,7 @@ public class NetworkCommand : ICommand
                 logger?.LogLine("  -u path   -network <dir> -from <node> -to <node> [-weight <name>] [-out ...]");
                 logger?.LogLine("  -u supply -network <dir> -sources <nodes> -sinks <nodes> [-out ...]");
                 logger?.LogLine("  -u outage -network <dir> -disable <edges> [-sources <nodes>] [-sinks <nodes>] [-filter <pattern>] [-out ...]");
+                logger?.LogLine("  -u feeders -network <dir> [-sources <nodes>] [-branches <edge type pattern>] [-tier <tier>] [-out ...]: every edge gets its source and branch");
                 logger?.LogLine("  -u info   -network <dir> -node <node>");
                 logger?.LogLine("  -u nearest -network <dir> -x <x> -y <y> [-radius <r>] [-count <n>]");
                 logger?.LogLine("  -u validate -network <dir> [-rules <rules.json>] [-rule <id,...>] [-out x.csv|x.geojson]");

@@ -22,7 +22,7 @@ namespace gView.Server.EndPoints.Network;
 /// <summary>
 /// Runs a network search for the NetworkServer resource
 /// (geoservices/rest/services/[{folder}/]{id}/networkserver/{op}, see GeoServicesRestController):
-/// parameters start, from, to, sources, sinks, node, filter, block, unblock, disable (edges), weight, maxCost, rules (ids),
+/// parameters start, from, to, sources, sinks, branches (feeders), node, filter, block, unblock, disable (edges), weight, maxCost, rules (ids),
 /// x, y, radius, count (nearest), area (searches and validate: only the nodes inside take part; xmin,ymin,xmax,ymax,
 /// GeoJSON or Esri JSON polygon, WKT POLYGON/MULTIPOLYGON or shard:key1,key2),
 /// inSR (EPSG code of x/y, the @x,y node references and the area; default the network's),
@@ -106,6 +106,8 @@ public static class NetworkSearch
             To = Nodes("to"),
             Sources = Nodes("sources"),
             Sinks = Nodes("sinks"),
+            Branches = P("branches"),
+            OpenEdges = "true".Equals(P("openEdges"), StringComparison.OrdinalIgnoreCase),
             Node = Nodes("node"),
             Filter = P("filter"),
             Tier = P("tier"),
@@ -204,6 +206,7 @@ public static class NetworkSearch
             Edges = result.Edges.Select(e => new
             {
                 e.Id, e.Label, e.Kind, e.Layer, e.Oid, e.Type, e.Length, e.FromMeasure, e.ToMeasure, e.From, e.To,
+                e.Source, e.Branch, e.Cost,
                 Coordinates = edgeCoordinates.TryGetValue(e.Id, out var c) ? c : (IReadOnlyList<double[]>)[[e.FromX, e.FromY], [e.ToX, e.ToY]],
                 Attributes = Attributes(e.Layer, e.Oid)
             }),

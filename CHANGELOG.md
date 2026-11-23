@@ -22,7 +22,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     are projected into the feature class. Write fields and write geometry limit what is
     written (e.g. only one field of an update), field mapping renames properties, unknown
     properties are ignored or an error, and with `On error` = skip item the items that can't be
-    written go to an Error output.
+    written go to an Error output. Mode Update where sets fixed values on all features of a where
+    clause without items, e.g. a default colour before the computed ones.
   - Feature Class: list, describe, create (from a described schema, with additional and
     excluded fields), create if not exists, truncate and delete feature classes.
   - Copy Feature Class: copies a feature class with its schema and features inside gView, from
@@ -34,7 +35,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     contains, nearest); offset curve, smooth, point at distance; locate points along lines;
     Voronoi cells cut to a clip geometry. They work on the GeoJSON items with SpatialNET only,
     without a data source.
+  - Network Trace and the credential type gView Network (the folder of a network built with
+    gView): Feeders labels every line with the source and branch it hangs on (e.g. transformer
+    and connector) in one run, Multiple for lines reached from more than one branch; Trace runs
+    once per input item. One item per line feature without geometry, object id as `id`.
+    Colour fields (object id modulo Colours) and Open lines (switched off lines at a separation
+    point, kind Open, Open colour) for maps coloured by feeder.
   - Deploy build: the plugin is part of the server and web apps ZIPs and Docker images.
+- Network searches: new operation `feeders` (gView.Cmd `-u feeders -branches …`, server REST
+  `networkserver/feeders?branches=…`): every edge gets its source, its branch (the first edge
+  at the source, e.g. the connector) and its cost from the source; `openEdges` / `-open-edges`
+  adds the edges no branch went along at reached nodes as Open.
 - PlugInManager: `PluginDirectory` sets the folder scanned for plugins (default: folder of the
   entry assembly); inside an isolated load context plugins are loaded into that context.
   `gView.Pipe.*.dll` are never scanned.

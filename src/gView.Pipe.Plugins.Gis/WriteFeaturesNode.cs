@@ -23,7 +23,10 @@ public enum GisWriteMode
     Upsert,
 
     [PipeEnumValue("Removes the features with the item's key")]
-    Delete
+    Delete,
+
+    [PipeEnumValue("Sets fixed values on all features of a where clause, without items, e.g. a default colour before the computed ones are written", Label = "Update where")]
+    UpdateWhere
 }
 
 public enum GisWriteOnError
@@ -69,6 +72,14 @@ public sealed class WriteFeaturesParameters
     [PipeParameter(Label = "Mode", Order = 3, Expressions = false, Description = "Add, change or remove features")]
     public GisWriteMode Mode { get; set; } = GisWriteMode.Insert;
 
+    [PipeParameter(Label = "Where", Order = 4, Code = true, CodeLanguage = "sql", ShowWhen = nameof(Mode), ShowWhenValues = ["updateWhere"],
+        Description = "Which features get the values, in the SQL dialect of the source, e.g. STAT_COLOR IS NULL; empty: all features. Fixed text, not evaluated")]
+    public string Where { get; set; } = "";
+
+    [PipeParameter(Label = "Values", Order = 5, ShowWhen = nameof(Mode), ShowWhenValues = ["updateWhere"],
+        Description = "Field → value set on every feature of the where clause, e.g. STAT_COLOR → 999")]
+    public Dictionary<string, JsonNode?> Values { get; set; } = new();
+
     [PipeParameter(Label = "Key field", Order = 4, Expressions = false, ShowWhen = nameof(Mode), ShowWhenValues = ["update", "upsert", "delete"],
         Description = "Field that identifies a feature, e.g. line_id, with its value in the item's properties; empty, id or the id field of the feature class (e.g. FDB_OID) uses the object id in the item's id")]
     public string KeyField { get; set; } = "";
@@ -105,7 +116,7 @@ public sealed class WriteFeaturesParameters
 [PipeNode("8d2f4b6a-1c3e-4f5a-9b7d-0e2c4a6b8d13", "Write Features",
     Category = "GIS",
     Description = "Writes GeoJSON items as features into a gView data source (PostGIS, SDE, shape files, …): "
-                  + "insert, update, upsert or delete by a key field. Geometries are projected into the coordinate system of the feature class.")]
+                  + "insert, update, upsert or delete by a key field, or fixed values for all features of a where clause. Geometries are projected into the coordinate system of the feature class.")]
 [PipeNodeExamples]
 public sealed class WriteFeaturesNode : IPipeNode<WriteFeaturesParameters>, IPipeParameterOptions, IPipeDynamicPorts
 {
@@ -130,13 +141,14 @@ public sealed class WriteFeaturesNode : IPipeNode<WriteFeaturesParameters>, IPip
     public async Task<PipeNodeResult> ExecuteAsync(IPipeNodeContext context, CancellationToken cancellationToken)
     {
         var items = context.GetInput();
-        if (items.Count == 0)
+        var updateWhere = context.RawParameters["mode"]?.ToString().Equals("updateWhere", StringComparison.OrdinalIgnoreCase) == true;
+        if (items.Count == 0 && !updateWhere)
         {
             return PipeNodeResult.FromMain([]);
         }
 
         // one feature class for all items: these parameters take no expressions
-        var parameters = context.GetParameters<WriteFeaturesParameters>(items[0]);
+        var parameters = context.GetParameters<WriteFeaturesParameters>(items.Count > 0 ? items[0] : null);
         if (string.IsNullOrEmpty(parameters.CredentialId))
         {
             throw new PipeException("Select a data source");
@@ -150,6 +162,20 @@ public sealed class WriteFeaturesNode : IPipeNode<WriteFeaturesParameters>, IPip
             ? parameters.BatchSize
             : Math.Max(updater.SuggestedInsertFeatureCountPerTransaction, 100);
         var writer = new Writer(featureClass, updater, parameters, batchSize);
+
+        if (parameters.Mode == GisWriteMode.UpdateWhere)
+        {
+            // the where clause is never evaluated, like that of Read Features
+            var where = context.RawParameters["where"]?.GetValue<string>() ?? "";
+            var updated = await writer.UpdateWhereAsync(where, context.Logger, cancellationToken);
+            context.Logger.LogInformation("Update where: {Count} feature(s) of {FeatureClass} updated", updated, featureClass.Name);
+            return PipeNodeResult.FromMain([new PipeItem(new JsonObject
+            {
+                ["featureClass"] = featureClass.Name,
+                ["where"] = where,
+                ["updated"] = updated
+            })]);
+        }
 
         var result = parameters.Mode switch
         {
@@ -280,6 +306,71 @@ public sealed class WriteFeaturesNode : IPipeNode<WriteFeaturesParameters>, IPip
             return new WriteResult(written, errors);
         }
 
+        /// <summary>
+        /// Sets the fixed values on every feature of the where clause: the object ids are read first (the cursor is closed before
+        /// writing, some sources lock the table while reading), then updated in batches.
+        /// </summary>
+        public async Task<int> UpdateWhereAsync(string where, ILogger logger, CancellationToken cancellationToken)
+        {
+            if (_parameters.Values.Count == 0)
+            {
+                throw new PipeException("Set Values: the fields and values to write, e.g. STAT_COLOR → 999");
+            }
+            var values = new List<(string Field, object? Value)>();
+            foreach (var (name, value) in _parameters.Values)
+            {
+                var field = _featureClass.FindField(name.Trim())
+                    ?? throw new PipeException($"The feature class '{_featureClass.Name}' has no field '{name}'");
+                if (field.name.Equals(_featureClass.IDFieldName, StringComparison.OrdinalIgnoreCase)
+                    || field.name.Equals(_featureClass.ShapeFieldName, StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new PipeException($"'{field.name}' can't be set by Update where");
+                }
+                values.Add((field.name, GisGeoJson.ToFieldValue(value)));
+            }
+
+            var oids = new List<int>();
+            var filter = new QueryFilter { SubFields = _featureClass.IDFieldName, WhereClause = where.Trim() };
+            using (var cursor = await _featureClass.GetFeatures(filter))
+            {
+                IFeature? feature;
+                while (cursor is not null && (feature = await cursor.NextFeature()) is not null)
+                {
+                    if ((oids.Count & 1023) == 0)
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+                    }
+                    oids.Add(feature.OID);
+                }
+            }
+            logger.LogInformation("Update where: {Count} feature(s) of {FeatureClass} to update", oids.Count, _featureClass.Name);
+
+            int updated = 0;
+            long last = Environment.TickCount64;
+            foreach (var batch in oids.Chunk(_batchSize))
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var features = batch.Select(oid =>
+                {
+                    var feature = new Feature { OID = oid };
+                    foreach (var (field, value) in values)
+                    {
+                        feature.Fields.Add(new FieldValue(field, value));
+                    }
+                    return (IFeature)feature;
+                }).ToList();
+                Check(await _updater.Update(_featureClass, features), "update");
+                updated += batch.Length;
+
+                if (Environment.TickCount64 - last >= 2000)
+                {
+                    last = Environment.TickCount64;
+                    logger.LogInformation("Update where: {Updated}/{Count} feature(s) updated", updated, oids.Count);
+                }
+            }
+            return updated;
+        }
+
         // writes in batches; when a batch fails and items may be skipped, its items are written one by one
         private async Task<List<(PipeItem Item, IFeature Feature)>> WriteAsync(List<(PipeItem Item, IFeature Feature)> entries, bool insert,
             List<PipeItem> errors, CancellationToken cancellationToken)
@@ -341,7 +432,10 @@ public sealed class WriteFeaturesNode : IPipeNode<WriteFeaturesParameters>, IPip
         {
             if (IsObjectIdKey(item))
             {
-                return item.Json["id"] is JsonValue id && id.TryGetValue<int>(out var oid) && oid > 0
+                // read from the JSON text: an id another node set as long (or double) is the same number
+                return item.Json["id"] is JsonValue id
+                       && int.TryParse(id.ToJsonString(), System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var oid)
+                       && oid > 0
                     ? [oid]
                     : throw new PipeException("The item has no object id in 'id'; set a key field or read the features first");
             }

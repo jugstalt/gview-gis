@@ -10,12 +10,12 @@ using System.Globalization;
 namespace gView.Framework.NetworkModel.Query;
 
 /// <summary>
-/// The searches on a built network (trace, reach, path, supply, outage, info, nearest, validate) for gView.Cmd, Carto and the server.
+/// The searches on a built network (trace, reach, path, supply, outage, feeders, info, nearest, validate) for gView.Cmd, Carto and the server.
 /// Thread-safe as long as the graph is: every call keeps its own state.
 /// </summary>
-public sealed class NetworkQueryService
+public sealed partial class NetworkQueryService
 {
-    public static readonly IReadOnlyList<string> Operations = ["trace", "reach", "path", "supply", "outage", "info", "nearest", "validate"];
+    public static readonly IReadOnlyList<string> Operations = ["trace", "reach", "path", "supply", "outage", "feeders", "info", "nearest", "validate"];
 
     private readonly FileNetworkGraph _graph;
 
@@ -35,6 +35,7 @@ public sealed class NetworkQueryService
             "path" => Path(request, progress, cancellationToken),
             "supply" => Supply(request, progress, cancellationToken),
             "outage" => Outage(request, progress, cancellationToken),
+            "feeders" => Feeders(request, progress, cancellationToken),
             "info" => Info(request),
             "nearest" => Nearest(request),
             "validate" => Validate(request, progress, cancellationToken),

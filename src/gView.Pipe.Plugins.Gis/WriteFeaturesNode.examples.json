@@ -130,5 +130,20 @@
       }
     ],
     "verified": false
+  },
+  {
+    "title": "A default colour for all lines before the computed ones",
+    "description": "Update where needs no items: it sets the values on every feature of the where clause (empty: all features) inside gView, in batches. Then Network Trace and a second Write Features (Update) write the computed colours over it, so lines no feeder reaches keep 999.",
+    "parameters": {
+      "featureClass": "lv_lines",
+      "mode": "updateWhere",
+      "where": "",
+      "values": { "STAT_COLOR": 999, "ABZW_COLOR": 999 }
+    },
+    "input": [],
+    "output": [
+      { "featureClass": "lv_lines", "where": "", "updated": 414539 }
+    ],
+    "verified": false
   }
 ]

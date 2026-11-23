@@ -108,6 +108,55 @@ public sealed class FeatureNodesTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task Update_by_object_id_takes_an_id_set_as_long()
+    {
+        var inserted = await FakeNodeContext.RunAsync(new WriteFeaturesNode(), new { credentialId = "shapes", featureClass = "lines", mode = "insert" }, _credentials,
+            Line("L-1", 400, [0, 0], [10, 0]));
+        long oid = inserted[0]["id"]!.GetValue<int>();
+
+        // as Network Trace or a Code node give it: a number, but not an int inside the JSON node
+        await FakeNodeContext.RunAsync(new WriteFeaturesNode(), new { credentialId = "shapes", featureClass = "lines", mode = "update" }, _credentials,
+            new JsonObject { ["type"] = "Feature", ["id"] = JsonValue.Create(oid), ["geometry"] = null, ["properties"] = new JsonObject { ["feeder"] = "T-1#C-3" } });
+
+        Assert.Equal("T-1#C-3", Assert.Single(await ReadAsync(new { credentialId = "shapes", featureClass = "lines" }))["properties"]!["feeder"]!.GetValue<string>());
+    }
+
+    [Fact]
+    public async Task Update_where_sets_fixed_values_without_items()
+    {
+        await FakeNodeContext.RunAsync(new WriteFeaturesNode(), new { credentialId = "shapes", featureClass = "lines", mode = "insert" }, _credentials,
+            Line("L-1", 400, [0, 0], [10, 0]),
+            Line("L-2", 230, [10, 0], [20, 0]),
+            Line("L-3", 400, [20, 0], [30, 0]));
+
+        // no input items: the where clause selects the features
+        var someResult = await FakeNodeContext.RunAsync(new WriteFeaturesNode(),
+            new { credentialId = "shapes", featureClass = "lines", mode = "updateWhere", where = "voltage = 400", values = new Dictionary<string, object> { ["feeder"] = "999" } }, _credentials);
+        var some = await ReadAsync(new { credentialId = "shapes", featureClass = "lines" });
+
+        Assert.Equal(2, Assert.Single(someResult)["updated"]!.GetValue<int>());
+        Assert.Equal(["L-1", "L-3"], some.Where(f => f["properties"]!["feeder"]?.GetValue<string>() == "999").Select(f => f["properties"]!["line_id"]!.GetValue<string>()).Order());
+        Assert.Equal(400, some.Single(f => f["properties"]!["line_id"]!.GetValue<string>() == "L-1")["properties"]!["voltage"]!.GetValue<long>());   // other fields stay
+        Assert.Equal("LineString", some[0]["geometry"]!["type"]!.GetValue<string>());
+
+        // an empty where clause: every feature
+        var allResult = await FakeNodeContext.RunAsync(new WriteFeaturesNode(),
+            new { credentialId = "shapes", featureClass = "lines", mode = "updateWhere", values = new Dictionary<string, object> { ["feeder"] = "none", ["voltage"] = 0 } }, _credentials);
+
+        Assert.Equal(3, Assert.Single(allResult)["updated"]!.GetValue<int>());
+        Assert.All(await ReadAsync(new { credentialId = "shapes", featureClass = "lines" }), f => Assert.Equal(0, f["properties"]!["voltage"]!.GetValue<long>()));
+    }
+
+    [Fact]
+    public async Task Update_where_refuses_an_unknown_field()
+    {
+        var error = await Assert.ThrowsAsync<PipeException>(() => FakeNodeContext.RunAsync(new WriteFeaturesNode(),
+            new { credentialId = "shapes", featureClass = "lines", mode = "updateWhere", values = new Dictionary<string, object> { ["STAT_COLOR"] = 999 } }, _credentials));
+
+        Assert.Contains("STAT_COLOR", error.Message);
+    }
+
+    [Fact]
     public async Task Update_of_a_missing_key_fails_and_upsert_inserts_it()
     {
         var item = new JsonObject { ["type"] = "Feature", ["properties"] = new JsonObject { ["line_id"] = "L-9", ["voltage"] = 230 } };

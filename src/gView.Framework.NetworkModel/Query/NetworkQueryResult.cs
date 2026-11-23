@@ -2,7 +2,7 @@ namespace gView.Framework.NetworkModel.Query;
 
 /// <summary>
 /// What a search needs; which fields count depends on the operation:
-/// trace/reach: Start; path: From, To; supply: Sources, Sinks; info: Node; validate: Rules (default: the rules of network.json), RuleIds;
+/// trace/reach: Start; path: From, To; supply: Sources, Sinks; feeders: Sources, Branches; info: Node; validate: Rules (default: the rules of network.json), RuleIds;
 /// nearest: X, Y, Radius, Count; outage: Disable, Sources, Sinks (supply and outage default to SupplySources/Customers of network.json).
 /// Nodes are Layer#OID, raw ids, type patterns or @x,y[~radius], comma separated; edges Layer#OID[/part] or raw ids.
 /// </summary>
@@ -14,6 +14,18 @@ public sealed record NetworkQueryRequest
     public string? Sources { get; init; }
     public string? Sinks { get; init; }
     public string? Node { get; init; }
+
+    /// <summary>
+    /// feeders: the type pattern of the edges at a source that start a branch (Abzweig), e.g. [Niederspannung,Anlagenverbinder,*];
+    /// empty: every edge at a source starts a branch.
+    /// </summary>
+    public string? Branches { get; init; }
+
+    /// <summary>
+    /// feeders: also the edges at a node a branch went through that no branch went along (switched off, against their
+    /// direction), as Kind Open with the branches of the ends that were reached.
+    /// </summary>
+    public bool OpenEdges { get; init; }
 
     /// <summary>Only edges of these types (pattern).</summary>
     public string? Filter { get; init; }
@@ -90,8 +102,17 @@ public sealed record NetworkResultNode(long Id, string Label, string? Layer, lon
 /// <summary>An edge of a result: a part of a line feature between two measures.</summary>
 public sealed record NetworkResultEdge(long Id, string Label, string Layer, long Oid, string Type, double Length, double FromMeasure, double ToMeasure, long From, long To, double FromX, double FromY, double ToX, double ToY)
 {
-    /// <summary>What the edge is in the result: Edge, Boundary (leaves the area of the search, not followed), or for outage Disabled (switched off) and Dead (no supply any more).</summary>
+    /// <summary>What the edge is in the result: Edge, Boundary (leaves the area of the search, not followed), for outage Disabled (switched off) and Dead (no supply any more), for feeders Multiple (reached from more than one branch) and Open (not gone along, at a node a branch went through).</summary>
     public string Kind { get; init; } = "Edge";
+
+    /// <summary>feeders: the source (feeder) of the edge as Layer#OID; several, space separated and cheapest first, for Kind Multiple.</summary>
+    public string? Source { get; init; }
+
+    /// <summary>feeders: the branch (Abzweig) of the edge, the feature of its first edge at the source as Layer#OID; several like <see cref="Source"/>.</summary>
+    public string? Branch { get; init; }
+
+    /// <summary>feeders: the cost from the source to the near end of the edge (the cheapest for Kind Multiple).</summary>
+    public double? Cost { get; init; }
 }
 
 /// <summary>A rule violation at a node or an edge.</summary>

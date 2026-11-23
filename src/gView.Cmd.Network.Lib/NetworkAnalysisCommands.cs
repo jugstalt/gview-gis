@@ -9,7 +9,7 @@ using System.Text.Json;
 namespace gView.Cmd.Network.Lib;
 
 /// <summary>
-/// Searches on a built network with <see cref="NetworkQueryService"/>: trace, reach, path, supply, outage, info, nearest, validate.
+/// Searches on a built network with <see cref="NetworkQueryService"/>: trace, reach, path, supply, outage, feeders, info, nearest, validate.
 /// Nodes are given as Layer#OID, raw id, type pattern ([*,Trafo,*]) or @x,y[~radius].
 /// </summary>
 internal static class NetworkAnalysisCommands
@@ -31,6 +31,8 @@ internal static class NetworkAnalysisCommands
             To = Optional(parameters, "to"),
             Sources = Optional(parameters, "sources"),
             Sinks = Optional(parameters, "sinks"),
+            Branches = Optional(parameters, "branches"),
+            OpenEdges = "true".Equals(Optional(parameters, "open-edges"), StringComparison.OrdinalIgnoreCase),
             Node = Optional(parameters, "node"),
             Filter = Optional(parameters, "filter"),
             Tier = Optional(parameters, "tier"),

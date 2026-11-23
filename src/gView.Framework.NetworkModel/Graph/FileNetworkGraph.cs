@@ -32,6 +32,13 @@ public sealed class FileNetworkGraph : IGraph<long, long>
     private readonly ConcurrentDictionary<long, Lazy<LoadedShard>> _shards = new();
     private long _clock;
 
+    /// <summary>
+    /// Type patterns resolved to their nodes: each resolution reads the whole node index, and many searches in a row (one trace
+    /// per item in gView.Pipe, the sources of a tier as stops) ask for the same pattern. The indexes never change for an instance.
+    /// </summary>
+    private readonly ConcurrentDictionary<string, IReadOnlyList<long>> _patterns = new(StringComparer.Ordinal);
+    private const int MaxCachedPatterns = 64, MaxCachedPatternNodes = 1_000_000;
+
     public FileNetworkGraph(string directory)
     {
         _directory = directory;
@@ -359,9 +366,19 @@ public sealed class FileNetworkGraph : IGraph<long, long>
             return _index.TryGet(rawId, out _, out _) ? [rawId] : throw new ArgumentException($"Node id {rawId} is not in the network.");
         }
 
+        var key = reference.Trim();
+        if (_patterns.TryGetValue(key, out var cached))
+        {
+            return cached;
+        }
         var types = Types.Nodes(reference);
         // merged points of the type (customers drawn on a box) stand for the node they were merged into
-        return _index.NodesOfTypes(types.Contains).Concat(_aliases.NodesOfAliasTypes(types.Contains)).Distinct().ToList();
+        var nodes = _index.NodesOfTypes(types.Contains).Concat(_aliases.NodesOfAliasTypes(types.Contains)).Distinct().ToList();
+        if (_patterns.Count < MaxCachedPatterns && nodes.Count <= MaxCachedPatternNodes)
+        {
+            _patterns.TryAdd(key, nodes);
+        }
+        return nodes;
     }
 
     /// <summary>

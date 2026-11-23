@@ -190,6 +190,20 @@ public class JsonNetworkOutageDTO : JsonNetworkSearchOptionsDTO
     public string Sinks { get; set; } = "";
 }
 
+/// <summary>feeders: every edge gets its source and branch; sources default to the sources of the tier, else of the config.</summary>
+public class JsonNetworkFeedersDTO : JsonNetworkSearchOptionsDTO
+{
+    [JsonPropertyName("sources")]
+    public string Sources { get; set; } = "";
+
+    [JsonPropertyName("branches")]
+    public string Branches { get; set; } = "";
+
+    [JsonPropertyName("openEdges")]
+    [FormInput(Values = new[] { "false", "true" })]
+    public string OpenEdges { get; set; } = "false";
+}
+
 public class JsonNetworkInfoDTO
 {
     [JsonPropertyName("node")]

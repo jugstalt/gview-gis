@@ -4,7 +4,7 @@ using System.Text.Json;
 
 namespace gView.Framework.NetworkModel.Query;
 
-/// <summary>Writes a <see cref="NetworkQueryResult"/> as CSV (one row per node or violation) or GeoJSON.</summary>
+/// <summary>Writes a <see cref="NetworkQueryResult"/> as CSV (one row per node or violation, per edge for feeders) or GeoJSON.</summary>
 public static class NetworkResultWriter
 {
     /// <summary>The coordinates of an edge (x, y pairs); null for a straight line between its nodes.</summary>
@@ -30,6 +30,19 @@ public static class NetworkResultWriter
                   .Append(v.X.ToString("0.###", CultureInfo.InvariantCulture)).Append(';')
                   .Append(v.Y.ToString("0.###", CultureInfo.InvariantCulture)).Append(';')
                   .Append(string.Join(";", v.Aliases)).Append('\n');
+            }
+            return sb.ToString();
+        }
+
+        if (result.Operation == "feeders")
+        {
+            sb.Append("id;edge;layer;oid;type;kind;source;branch;cost;length\n");
+            foreach (var e in result.Edges)
+            {
+                sb.Append(e.Id).Append(';').Append(e.Label).Append(';').Append(e.Layer).Append(';').Append(e.Oid).Append(';')
+                  .Append(e.Type).Append(';').Append(e.Kind).Append(';').Append(e.Source).Append(';').Append(e.Branch).Append(';')
+                  .Append(e.Cost?.ToString("0.###", CultureInfo.InvariantCulture)).Append(';')
+                  .Append(e.Length.ToString("0.###", CultureInfo.InvariantCulture)).Append('\n');
             }
             return sb.ToString();
         }
@@ -67,7 +80,7 @@ public static class NetworkResultWriter
             {
                 type = "Feature",
                 geometry = new { type = "LineString", coordinates },
-                properties = new { kind = e.Kind, id = e.Id.ToString(), edge = e.Label, layer = e.Layer, oid = e.Oid, type = e.Type, length = e.Length, from_measure = e.FromMeasure, to_measure = e.ToMeasure, from_node = e.From.ToString(), to_node = e.To.ToString(), attributes = attributes?.Invoke(e.Layer, e.Oid) }
+                properties = new { kind = e.Kind, id = e.Id.ToString(), edge = e.Label, layer = e.Layer, oid = e.Oid, type = e.Type, length = e.Length, from_measure = e.FromMeasure, to_measure = e.ToMeasure, from_node = e.From.ToString(), to_node = e.To.ToString(), source = e.Source, branch = e.Branch, cost = e.Cost, attributes = attributes?.Invoke(e.Layer, e.Oid) }
             });
         }
         foreach (var v in result.Violations)
