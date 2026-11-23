@@ -9,6 +9,22 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Added
 
+- gView.Pipe plugin `gView.Pipe.Plugins.Gis` ([ADR 0004](docs/adr/0004-gview-as-pipe-plugin.md)):
+  nodes for the workflow app gView.Pipe that work with the gView data sources. gView.Pipe loads
+  it from a gView app folder (`Pipe:ExternalPlugins`).
+  - Credential type gView Datasource: PostGIS, SQL Server geometry, SDE, shape files,
+    GeoPackage, gView FDB or any dataset plugin GUID; `Allow schema changes` switch.
+  - Read Features: features as GeoJSON items, with where clause, match field, spatial filter,
+    field list and target SRS.
+  - Write Features: insert, update, upsert and delete by object id or a key field; geometries
+    are projected into the feature class.
+  - Feature Class: list, describe, create (from a described schema), create if not exists,
+    truncate and delete feature classes.
+  - Deploy build: the plugin is part of the server and web apps ZIPs and Docker images.
+- PlugInManager: `PluginDirectory` sets the folder scanned for plugins (default: folder of the
+  entry assembly); inside an isolated load context plugins are loaded into that context.
+  `gView.Pipe.*.dll` are never scanned.
+
 - Vector tile cache (Mapbox Vector Tiles, MVT 2.1) for the grid of the tile service metadata
   ([ADR 0003](docs/adr/0003-vector-tile-cache.md)): any EPSG code and the metadata scales, not
   only WebMercator. New metadata options `supportMvt`, `mvtLayerAttributes` (extra fields per
