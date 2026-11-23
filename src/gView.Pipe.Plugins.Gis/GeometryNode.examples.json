@@ -1,0 +1,25 @@
+[
+  {
+    "title": "Buffer lines by half their width",
+    "description": "The distance is evaluated per item; the properties stay.",
+    "parameters": { "operation": "buffer", "distance": "{{ $json.properties.width / 2 }}", "capStyle": "flat" },
+    "input": [
+      { "type": "Feature", "geometry": { "type": "LineString", "coordinates": [ [ 0, 0 ], [ 10, 0 ] ] }, "properties": { "width": 2 }, "srs": 31256 }
+    ],
+    "output": [
+      { "type": "Feature", "geometry": { "type": "Polygon", "coordinates": [ [ [ 10, 1 ], [ 0, 1 ], [ 0, -1 ], [ 10, -1 ], [ 10, 1 ] ] ] }, "properties": { "width": 2 }, "srs": 31256 }
+    ],
+    "verified": false
+  },
+  {
+    "title": "Write the area of parcels into a property",
+    "parameters": { "operation": "area", "property": "area_m2" },
+    "input": [
+      { "type": "Feature", "geometry": { "type": "Polygon", "coordinates": [ [ [ 0, 0 ], [ 20, 0 ], [ 20, 10 ], [ 0, 10 ], [ 0, 0 ] ] ] }, "properties": { "parcel": "112/4" }, "srs": 31256 }
+    ],
+    "output": [
+      { "type": "Feature", "geometry": { "type": "Polygon", "coordinates": [ [ [ 0, 0 ], [ 20, 0 ], [ 20, 10 ], [ 0, 10 ], [ 0, 0 ] ] ] }, "properties": { "parcel": "112/4", "area_m2": 200 }, "srs": 31256 }
+    ],
+    "verified": false
+  }
+]

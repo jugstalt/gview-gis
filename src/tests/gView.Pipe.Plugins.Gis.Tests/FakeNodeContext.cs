@@ -16,8 +16,11 @@ namespace gView.Pipe.Plugins.Gis.Tests;
 /// Just enough of a node context to run a node: parameters are bound as they are (no expressions),
 /// credentials come from a dictionary. The Pipe engine isn't available here.
 /// </summary>
-internal sealed class FakeNodeContext(object parameters, IReadOnlyList<JsonObject> input, Dictionary<string, object> credentials) : IPipeNodeContext
+internal sealed class FakeNodeContext(object parameters, IReadOnlyDictionary<string, IReadOnlyList<JsonObject>> inputs, Dictionary<string, object> credentials) : IPipeNodeContext
 {
+    public FakeNodeContext(object parameters, IReadOnlyList<JsonObject> input, Dictionary<string, object> credentials)
+        : this(parameters, new Dictionary<string, IReadOnlyList<JsonObject>> { [PipePorts.Main] = input }, credentials) { }
+
     public string WorkflowId => "test";
     public string WorkflowName => "test";
     public string ExecutionId => "test";
@@ -25,9 +28,10 @@ internal sealed class FakeNodeContext(object parameters, IReadOnlyList<JsonObjec
     public string NodeName => "node";
     public string Environment => "DEFAULT";
     public PipeResolvedVariables Variables => throw new NotSupportedException();
-    public IReadOnlyCollection<string> InputPorts => [PipePorts.Main];
+    public IReadOnlyCollection<string> InputPorts => inputs.Keys.ToList();
 
-    public IReadOnlyList<PipeItem> GetInput(string port = PipePorts.Main) => input.Select(j => new PipeItem((JsonObject)j.DeepClone())).ToList();
+    public IReadOnlyList<PipeItem> GetInput(string port = PipePorts.Main)
+        => inputs.TryGetValue(port, out var input) ? input.Select(j => new PipeItem((JsonObject)j.DeepClone())).ToList() : [];
 
     public JsonObject RawParameters { get; } = JsonSerializer.SerializeToNode(parameters, PipeJson.Options)!.AsObject();
 
@@ -49,6 +53,12 @@ internal sealed class FakeNodeContext(object parameters, IReadOnlyList<JsonObjec
     static public async Task<List<JsonObject>> RunAsync(IPipeNode node, object parameters, Dictionary<string, object> credentials, params JsonObject[] input)
     {
         var result = await node.ExecuteAsync(new FakeNodeContext(parameters, input, credentials), CancellationToken.None);
+        return result.Outputs[PipePorts.Main].Select(i => i.Json).ToList();
+    }
+
+    static public async Task<List<JsonObject>> RunAsync(IPipeNode node, object parameters, IReadOnlyDictionary<string, IReadOnlyList<JsonObject>> inputs)
+    {
+        var result = await node.ExecuteAsync(new FakeNodeContext(parameters, inputs, new Dictionary<string, object>()), CancellationToken.None);
         return result.Outputs[PipePorts.Main].Select(i => i.Json).ToList();
     }
 }

@@ -1,0 +1,33 @@
+[
+  {
+    "title": "Dissolve lines by feeder with their count and total length",
+    "description": "One feature per feeder; the length comes from a property written before, e.g. by Geometry with Length.",
+    "parameters": {
+      "operation": "dissolve",
+      "groupBy": [ "feeder" ],
+      "aggregates": { "lines": "count", "total_length": "sum(length)" }
+    },
+    "input": [
+      { "type": "Feature", "geometry": { "type": "LineString", "coordinates": [ [ 0, 0 ], [ 10, 0 ] ] }, "properties": { "feeder": "T-1#C-3", "length": 10 }, "srs": 31256 },
+      { "type": "Feature", "geometry": { "type": "LineString", "coordinates": [ [ 10, 0 ], [ 10, 5 ] ] }, "properties": { "feeder": "T-1#C-3", "length": 5 }, "srs": 31256 }
+    ],
+    "output": [
+      { "type": "Feature", "geometry": { "type": "MultiLineString", "coordinates": [ [ [ 0, 0 ], [ 10, 0 ] ], [ [ 10, 0 ], [ 10, 5 ] ] ] }, "properties": { "feeder": "T-1#C-3", "lines": 2, "total_length": 15 }, "srs": 31256 }
+    ],
+    "verified": false
+  },
+  {
+    "title": "Voronoi cells of stations",
+    "description": "Each cell keeps the properties of its station point.",
+    "parameters": { "operation": "voronoi" },
+    "input": [
+      { "type": "Feature", "geometry": { "type": "Point", "coordinates": [ 0, 0 ] }, "properties": { "station": "T-1" }, "srs": 31256 },
+      { "type": "Feature", "geometry": { "type": "Point", "coordinates": [ 100, 0 ] }, "properties": { "station": "T-2" }, "srs": 31256 }
+    ],
+    "output": [
+      { "type": "Feature", "geometry": { "type": "Polygon", "coordinates": [ [ [ -100, -100 ], [ 50, -100 ], [ 50, 100 ], [ -100, 100 ], [ -100, -100 ] ] ] }, "properties": { "station": "T-1" }, "srs": 31256 },
+      { "type": "Feature", "geometry": { "type": "Polygon", "coordinates": [ [ [ 50, -100 ], [ 200, -100 ], [ 200, 100 ], [ 50, 100 ], [ 50, -100 ] ] ] }, "properties": { "station": "T-2" }, "srs": 31256 }
+    ],
+    "verified": false
+  }
+]

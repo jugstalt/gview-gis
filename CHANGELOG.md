@@ -20,6 +20,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     are projected into the feature class.
   - Feature Class: list, describe, create (from a described schema), create if not exists,
     truncate and delete feature classes.
+  - Geometry, Spatial Aggregate and Spatial Join: buffer, centroid, hulls, simplify, make valid,
+    densify, area/length; dissolve with group by and aggregates, union, Voronoi, Delaunay, line
+    merge; intersect, clip, difference and spatial join (intersects, within, contains, nearest).
+    They work on the GeoJSON items with SpatialNET only, without a data source.
   - Deploy build: the plugin is part of the server and web apps ZIPs and Docker images.
 - PlugInManager: `PluginDirectory` sets the folder scanned for plugins (default: folder of the
   entry assembly); inside an isolated load context plugins are loaded into that context.

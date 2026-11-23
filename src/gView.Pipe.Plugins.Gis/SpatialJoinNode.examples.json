@@ -1,0 +1,26 @@
+[
+  {
+    "title": "Add the district to each station",
+    "description": "Stations come into main, districts into overlay; the district's properties get the prefix join_.",
+    "parameters": { "operation": "join", "relation": "within", "firstMatchOnly": true },
+    "input": [
+      { "type": "Feature", "geometry": { "type": "Point", "coordinates": [ 5, 5 ] }, "properties": { "station": "T-1" }, "srs": 31256 }
+    ],
+    "output": [
+      { "type": "Feature", "geometry": { "type": "Point", "coordinates": [ 5, 5 ] }, "properties": { "station": "T-1", "join_district": "North", "join_id": 3 }, "srs": 31256 }
+    ],
+    "verified": false
+  },
+  {
+    "title": "Cut lines to a district",
+    "description": "Main gets the lines, overlay the district polygon; lines outside are dropped.",
+    "parameters": { "operation": "clip" },
+    "input": [
+      { "type": "Feature", "geometry": { "type": "LineString", "coordinates": [ [ -5, 5 ], [ 5, 5 ] ] }, "properties": { "line_id": "L-1" }, "srs": 31256 }
+    ],
+    "output": [
+      { "type": "Feature", "geometry": { "type": "LineString", "coordinates": [ [ 0, 5 ], [ 5, 5 ] ] }, "properties": { "line_id": "L-1" }, "srs": 31256 }
+    ],
+    "verified": false
+  }
+]
