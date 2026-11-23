@@ -47,7 +47,7 @@ public sealed class SpatialAggregateParameters
     public List<string> GroupBy { get; set; } = new();
 
     [PipeParameter(Label = "Aggregates", Order = 3, Expressions = false, ShowWhen = nameof(Operation), ShowWhenValues = ["dissolve"],
-        Description = "Output property → function, e.g. lines → count, total → sum(length); functions count, sum, min, max, avg, first, list")]
+        Description = "Output property → function, e.g. lines → count, total → sum(length); functions count, sum, min, max, avg, first, list. id is the object id of the item, e.g. min(id)")]
     public Dictionary<string, string> Aggregates { get; set; } = new();
 
     [PipeParameter(Label = "Edge length ratio", Order = 4, Expressions = false, ShowWhen = nameof(Operation), ShowWhenValues = ["concaveHull"],
@@ -143,14 +143,14 @@ public sealed class SpatialAggregateNode : IPipeNode<SpatialAggregateParameters>
             .ToList();
 
         var output = new List<PipeItem>();
-        foreach (var group in items.GroupBy(item => string.Join("\u001f", groupBy.Select(g => GisSpatial.Properties(item)[g]?.ToJsonString() ?? "null"))))
+        foreach (var group in items.GroupBy(item => string.Join("\u001f", groupBy.Select(g => Value(item, g)?.ToJsonString() ?? "null"))))
         {
             cancellationToken.ThrowIfCancellationRequested();
             var members = group.ToList();
             var properties = new JsonObject();
             foreach (var field in groupBy)
             {
-                properties[field] = GisSpatial.Properties(members[0])[field]?.DeepClone();
+                properties[field] = Value(members[0], field)?.DeepClone();
             }
             foreach (var (name, (function, field)) in aggregates)
             {
@@ -163,6 +163,10 @@ public sealed class SpatialAggregateNode : IPipeNode<SpatialAggregateParameters>
         }
         return output;
     }
+
+    // a property of the item; "id" is the object id of the item when it has no property of that name
+    static private JsonNode? Value(PipeItem item, string field)
+        => GisSpatial.Properties(item)[field] ?? (field.Equals("id", StringComparison.OrdinalIgnoreCase) ? item.Json["id"] : null);
 
     static private (string Function, string? Field) ParseAggregate(string text)
     {
@@ -182,7 +186,7 @@ public sealed class SpatialAggregateNode : IPipeNode<SpatialAggregateParameters>
 
     static private JsonNode? Aggregate(string function, string? field, List<PipeItem> members)
     {
-        var values = field is null ? [] : members.Select(m => GisSpatial.Properties(m)[field]).ToList();
+        var values = field is null ? [] : members.Select(m => Value(m, field)).ToList();
         var numbers = values.Select(Number).OfType<double>().ToList();
         return function switch
         {

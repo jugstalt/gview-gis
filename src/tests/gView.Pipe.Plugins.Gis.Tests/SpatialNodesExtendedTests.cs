@@ -107,6 +107,26 @@ public class SpatialNodesExtendedTests
     #region Spatial Aggregate
 
     [Fact]
+    public async Task Dissolve_aggregates_can_use_the_object_id_of_the_items()
+    {
+        var a = Square(0, 0, 10, """{"feeder":"A"}""");
+        a["id"] = 7;
+        var b = Square(10, 0, 10, """{"feeder":"A"}""");
+        b["id"] = 3;
+
+        var result = Assert.Single(await AggregateAsync(new
+        {
+            operation = "dissolve",
+            groupBy = new[] { "feeder" },
+            aggregates = new Dictionary<string, string> { ["n"] = "count", ["first_id"] = "min(id)", ["ids"] = "list(id)" }
+        }, a, b));
+
+        Assert.Equal(2, result["properties"]!["n"]!.GetValue<int>());
+        Assert.Equal(3, result["properties"]!["first_id"]!.GetValue<double>());
+        Assert.Equal("[7,3]", result["properties"]!["ids"]!.ToJsonString());
+    }
+
+    [Fact]
     public async Task Polygonize_builds_polygons_from_lines_that_enclose_an_area()
     {
         var result = await AggregateAsync(new { operation = "polygonize" },

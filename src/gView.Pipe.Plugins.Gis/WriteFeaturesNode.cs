@@ -70,7 +70,7 @@ public sealed class WriteFeaturesParameters
     public GisWriteMode Mode { get; set; } = GisWriteMode.Insert;
 
     [PipeParameter(Label = "Key field", Order = 4, Expressions = false, ShowWhen = nameof(Mode), ShowWhenValues = ["update", "upsert", "delete"],
-        Description = "Field that identifies a feature, e.g. line_id, with its value in the item's properties; empty uses the object id in the item's id")]
+        Description = "Field that identifies a feature, e.g. line_id, with its value in the item's properties; empty, id or the id field of the feature class (e.g. FDB_OID) uses the object id in the item's id")]
     public string KeyField { get; set; } = "";
 
     [PipeParameter(Label = "Write fields", Order = 5, Expressions = false, ShowWhen = nameof(Mode), ShowWhenValues = ["insert", "update", "upsert"],
@@ -339,7 +339,7 @@ public sealed class WriteFeaturesNode : IPipeNode<WriteFeaturesParameters>, IPip
         // object ids of the features with the item's key
         private async Task<List<int>> FindAsync(PipeItem item)
         {
-            if (string.IsNullOrWhiteSpace(_parameters.KeyField))
+            if (IsObjectIdKey(item))
             {
                 return item.Json["id"] is JsonValue id && id.TryGetValue<int>(out var oid) && oid > 0
                     ? [oid]
@@ -364,8 +364,17 @@ public sealed class WriteFeaturesNode : IPipeNode<WriteFeaturesParameters>, IPip
             return oids;
         }
 
+        // the object id of the item is the key: no key field, or the id field of the feature class (e.g. FDB_OID) or "id" when the item has no property of that name
+        private bool IsObjectIdKey(PipeItem item)
+        {
+            var key = _parameters.KeyField.Trim();
+            return key.Length == 0
+                || ((key.Equals("id", StringComparison.OrdinalIgnoreCase) || key.Equals(_featureClass.IDFieldName, StringComparison.OrdinalIgnoreCase))
+                    && Properties(item)[key] is null);
+        }
+
         private string KeyText(PipeItem item)
-            => string.IsNullOrWhiteSpace(_parameters.KeyField)
+            => IsObjectIdKey(item)
                 ? $"id = {item.Json["id"]?.ToJsonString()}"
                 : $"{_parameters.KeyField} = {(Properties(item)[_parameters.KeyField] ?? item.Json[_parameters.KeyField])?.ToJsonString()}";
 

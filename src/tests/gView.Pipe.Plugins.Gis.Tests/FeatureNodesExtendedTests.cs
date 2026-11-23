@@ -218,6 +218,25 @@ public sealed class FeatureNodesExtendedTests : IAsyncLifetime
         Assert.Equal("[[0,0],[10,0]]", line["geometry"]!["coordinates"]!.ToJsonString());
     }
 
+    [Theory]
+    [InlineData("")]
+    [InlineData("id")]
+    [InlineData("FDB_OID")]
+    public async Task The_object_id_of_the_item_is_the_key_when_the_key_field_is_empty_id_or_the_id_field(string keyField)
+    {
+        await SeedAsync();
+        var read = await ReadAsync(new { credentialId = "test", featureClass = "lines", matchField = "line_id", matchValue = "L-2" });
+        var item = Assert.Single(read);
+        item["properties"]!["feeder"] = "Z";
+
+        await FakeNodeContext.RunAsync(new WriteFeaturesNode(),
+            new { credentialId = "test", featureClass = "lines", mode = "update", keyField, writeGeometry = "never" }, _credentials, item);
+
+        var lines = await ReadAsync(new { credentialId = "test", featureClass = "lines" });
+        Assert.Equal(["Z"], lines.Where(f => f["properties"]!["feeder"]!.GetValue<string>() == "Z").Select(f => f["properties"]!["feeder"]!.GetValue<string>()));
+        Assert.Equal("L-2", lines.Single(f => f["properties"]!["feeder"]!.GetValue<string>() == "Z")["properties"]!["line_id"]!.GetValue<string>());
+    }
+
     [Fact]
     public async Task Write_fields_with_a_missing_field_is_an_error()
     {
