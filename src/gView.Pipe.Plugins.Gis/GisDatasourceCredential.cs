@@ -51,6 +51,10 @@ public sealed class GisDatasourceCredential
         Description = "The connection string as gView expects it for this type, e.g. a folder for shape files; may hold a password")]
     public string ConnectionString { get; set; } = "";
 
+    [PipeParameter(Label = "Allow schema changes", Order = 4,
+        Description = "Lets the Feature Class node create, replace, truncate and delete feature classes here; off for production data, e.g. on for a test database")]
+    public bool AllowSchemaChanges { get; set; }
+
     static private readonly Dictionary<GisDatasourceType, Guid> PluginGuids = new()
     {
         [GisDatasourceType.PostGis] = new("206CF40B-D4D9-4e85-B872-D2E63C3556BA"),

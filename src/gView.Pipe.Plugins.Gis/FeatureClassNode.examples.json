@@ -1,0 +1,52 @@
+[
+  {
+    "title": "Describe a feature class",
+    "description": "The schema as item: geometry type, coordinate system and the attribute fields; id and geometry columns are named, not listed.",
+    "parameters": {
+      "operation": "describe",
+      "featureClass": "lv_lines"
+    },
+    "input": [ {} ],
+    "output": [
+      {
+        "name": "lv_lines", "geometryType": "polyline", "srs": 31256, "idField": "gid", "shapeField": "the_geom",
+        "fields": [
+          { "name": "line_id", "type": "text", "size": 20, "nullable": true },
+          { "name": "voltage", "type": "integer", "nullable": true }
+        ]
+      }
+    ],
+    "verified": false
+  },
+  {
+    "title": "Create a test copy of a feature class",
+    "description": "After a Describe of the source: Schema is empty, so the input item is the schema. It is created under a new name, if it isn't there yet. The output is the schema as the target created it.",
+    "parameters": {
+      "operation": "createIfNotExists",
+      "featureClass": "lv_lines_test"
+    },
+    "input": [
+      {
+        "name": "lv_lines", "geometryType": "polyline", "srs": 31256, "idField": "gid", "shapeField": "the_geom",
+        "fields": [ { "name": "line_id", "type": "text", "size": 20, "nullable": true } ]
+      }
+    ],
+    "output": [
+      {
+        "name": "lv_lines_test", "geometryType": "polyline", "srs": 31256, "idField": "gid", "shapeField": "the_geom",
+        "fields": [ { "name": "line_id", "type": "text", "size": 20, "nullable": true } ]
+      }
+    ],
+    "verified": false
+  },
+  {
+    "title": "Empty a test feature class before a run",
+    "parameters": {
+      "operation": "truncate",
+      "featureClass": "lv_lines_test"
+    },
+    "input": [ {} ],
+    "output": [ { "name": "lv_lines_test", "deletedFeatures": 1250 } ],
+    "verified": false
+  }
+]
