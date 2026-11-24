@@ -1,4 +1,4 @@
-@using gView.GraphicsEngine
+﻿@using gView.GraphicsEngine
 
 @inherits ModalDialogFormBase<SetSymbolPropertiesModel>
 
@@ -33,7 +33,7 @@
                     <MudCheckBox T="bool" Label="@(Model.IsPolygon ? "Outline dash style" : "Dash style")" @bind-Value="Model.ApplyDashStyle" />
                 </GvGridItem>
                 <GvGridItem>
-                    <MudSelect T="LineDashStyle" Value="Model.DashStyle"
+                    <MudSelect PopoverClass="carto-nested-dialog-popover" T="LineDashStyle" Value="Model.DashStyle"
                                ValueChanged="(val) => { Model.DashStyle = val; Model.ApplyDashStyle = true; }">
                         @foreach (var dashStyle in Enum.GetValues<LineDashStyle>())
                         {
@@ -69,7 +69,7 @@
                 <MudCheckBox T="bool" Label="Smoothing" @bind-Value="Model.ApplySmoothing" />
             </GvGridItem>
             <GvGridItem>
-                <MudSelect T="SymbolSmoothing" Value="Model.Smoothing"
+                <MudSelect PopoverClass="carto-nested-dialog-popover" T="SymbolSmoothing" Value="Model.Smoothing"
                            ValueChanged="(val) => { Model.Smoothing = val; Model.ApplySmoothing = true; }">
                     @foreach (var smoothing in Enum.GetValues<SymbolSmoothing>())
                     {
@@ -79,7 +79,13 @@
             </GvGridItem>
         </GvGrid>
 
-        @if (Model.HasAllOtherValues)
+        @if (Model.SelectedCount > 0)
+        {
+            <MudAlert Severity="Severity.Info" Dense="true">
+                @($"Applies to {Model.SelectedCount} selected class(es) only.")
+            </MudAlert>
+        }
+        else if (Model.HasAllOtherValues)
         {
             <MudCheckBox T="bool" Label="Include &quot;All other values&quot;" @bind-Value="Model.IncludeAllOtherValues" />
         }

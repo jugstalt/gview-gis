@@ -1,9 +1,12 @@
 @using gView.Framework.Cartography.Rendering
 @using gView.Framework.Symbology.Extensions
+@using Microsoft.Extensions.DependencyInjection
 
 @inherits BaseHandler
+@implements IDisposable
 @inject IApplicationScopeFactory AppScopeFactory
 @inject ICartoDocumentService CartoDocument
+@inject IServiceProvider ServiceProvider
 
 @if (Symbol is not null)
 {
@@ -32,6 +35,18 @@
                                Icon="@Icons.Material.Outlined.Undo"
                                title="Undo"
                                OnClick="UndoSymbol" />
+                @if (_clipboard is not null)
+                {
+                    <MudIconButton Size="MudBlazor.Size.Medium"
+                                   Icon="@Icons.Material.Outlined.ContentCopy"
+                                   title="Copy symbol"
+                                   OnClick="CopySymbol" />
+                    <MudIconButton Size="MudBlazor.Size.Medium"
+                                   Disabled="@(!CanPaste())"
+                                   Icon="@Icons.Material.Outlined.ContentPaste"
+                                   title="Paste symbol"
+                                   OnClick="PasteSymbol" />
+                }
                 <MudIconButton Size="MudBlazor.Size.Medium" 
                                Color="Color.Primary"
                                Icon="@Icons.Material.Outlined.Settings"
@@ -77,12 +92,57 @@ else if(SymbolDefaultGeometry != GeometryType.Unknown)
 
     private IQuickSymbolProperties? _quickSymbolProperties { get; set; }
     private ISymbol? _undoSymbol = null;
+    private ISymbolClipboard? _clipboard;
 
     protected override void OnInitialized()
     {
         base.OnInitialized();
 
         SetQuickSymbolProperties();
+
+        _clipboard = ServiceProvider.GetService<ISymbolClipboard>();
+        if (_clipboard is not null)
+        {
+            _clipboard.Changed += OnClipboardChanged;
+        }
+    }
+
+    private bool CanPaste()
+        => Symbol is not null
+           && _clipboard?.Symbol is not null
+           && _clipboard.CanPaste(Symbol.ToGeometryType())
+           && (Symbol is ITextSymbol) == (_clipboard.Symbol is ITextSymbol);
+
+    private void OnClipboardChanged() => InvokeAsync(StateHasChanged);
+
+    private void CopySymbol() => Handle(() =>
+    {
+        if (Symbol is not null)
+        {
+            _clipboard?.Copy(Symbol);
+        }
+    });
+
+    private Task PasteSymbol() => HandleAsync(async () =>
+    {
+        if (!CanPaste())
+        {
+            return;
+        }
+
+        _undoSymbol = Symbol!.Clone() as ISymbol;
+        Symbol = _clipboard!.Symbol!.CreatePasteSymbol(Symbol!, keepColors: false, out _);
+
+        SetQuickSymbolProperties();
+        await SymbolChanged.InvokeAsync(Symbol);
+    });
+
+    public void Dispose()
+    {
+        if (_clipboard is not null)
+        {
+            _clipboard.Changed -= OnClipboardChanged;
+        }
     }
 
     private void SetQuickSymbolProperties() => Handle(() => 

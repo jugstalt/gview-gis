@@ -38,6 +38,7 @@ static public class ServicesExtensions
             .AddDataTables()
             .AddDisplayService()
             .AddScoped<ICartoInteractiveToolService, CartoInteractiveToolService>()
+            .AddScoped<ISymbolClipboard, SymbolClipboardService>()
             .AddScoped<ICartoApplicationScopeService, CartoApplicationScopeService>();
     }
 

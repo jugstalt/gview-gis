@@ -1,6 +1,7 @@
 @using gView.Carto.Razor.Components.Controls.Renderers.Models
 
 @inject ICartoDocumentService CartoDocument
+@inject IDialogService MessageDialogs
 @inherits BaseHandler
 @typeparam TKey
 
@@ -11,19 +12,42 @@
                       ItemDropped="ReorderItems"
                       ItemsSelector="@((item,zone) => true)">
         <ChildContent>
-            
+
             @if (_composeSymbolKey != null)
             {
                 var composeSymbol = KeySymbols.First(k => k.Key?.Equals(_composeSymbolKey) == true).Symbol;
-                
+                int selectedOthers = SelectedOtherCount(_composeSymbolKey);
+
                 <GvGridItem Span="8">
                     <GvCard Title="@_composeSymbolKey.ToString()">
                         <GvCardContent>
                             <QuickSymbolPropertiesControl Symbol="composeSymbol"
                                                           SymbolChanged="(symbol) => OnSymbolChanged(_composeSymbolKey, symbol)" />
-                            <MudButton Color="Color.Primary"
-                                        Variant="Variant.Filled"
-                                        OnClick="() => _composeSymbolKey = default">Done</MudButton>
+                            <MudButtonGroup Color="Color.Primary" Variant="Variant.Filled">
+                                <MudButton OnClick="() => _composeSymbolKey = default">Done</MudButton>
+                                <MudMenu Label="Apply to ..." Variant="Variant.Filled">
+                                    @if (selectedOthers > 0)
+                                    {
+                                        <MudMenuItem OnClick="() => ApplyComposedSymbolAsync(_composeSymbolKey, keepColors: false)">
+                                            @($"{selectedOthers} selected classes")
+                                        </MudMenuItem>
+                                        <MudMenuItem OnClick="() => ApplyComposedSymbolAsync(_composeSymbolKey, keepColors: true)"
+                                                     Disabled="@(!composeSymbol.CanBulkEdit())">
+                                            @($"{selectedOthers} selected classes, keep colors")
+                                        </MudMenuItem>
+                                    }
+                                    else
+                                    {
+                                        <MudMenuItem OnClick="() => ApplyComposedSymbolAsync(_composeSymbolKey, keepColors: false)">
+                                            All classes
+                                        </MudMenuItem>
+                                        <MudMenuItem OnClick="() => ApplyComposedSymbolAsync(_composeSymbolKey, keepColors: true)"
+                                                     Disabled="@(!composeSymbol.CanBulkEdit())">
+                                            All classes, keep colors
+                                        </MudMenuItem>
+                                    }
+                                </MudMenu>
+                            </MudButtonGroup>
                         </GvCardContent>
                     </GvCard>
                 </GvGridItem>
@@ -37,12 +61,45 @@
                         {
                             @ListItemTools
                         }
+                        @if (SelectedKeys is not null && KeySymbols.Count > 0)
+                        {
+                            <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap">
+                                <MudText Typo="Typo.body2" Class="me-2">
+                                    @($"{SelectedKeysCount()} selected")
+                                </MudText>
+                                <MudButton Size="MudBlazor.Size.Small" Variant="Variant.Text" OnClick="SelectAll">All</MudButton>
+                                <MudButton Size="MudBlazor.Size.Small" Variant="Variant.Text" OnClick="SelectNone">None</MudButton>
+                                <MudButton Size="MudBlazor.Size.Small" Variant="Variant.Text" OnClick="InvertSelection">Invert</MudButton>
+                                <MudButton Size="MudBlazor.Size.Small" Variant="Variant.Text"
+                                           Color="Color.Secondary"
+                                           StartIcon="@Icons.Material.Outlined.Delete"
+                                           Disabled="@(SelectedKeysCount() == 0)"
+                                           OnClick="RemoveSelected">Remove selected</MudButton>
+                            </div>
+                        }
+                        @if (KeySymbols.Count > 1000)
+                        {
+                            <MudAlert Severity="Severity.Warning" Dense="true">
+                                @($"Only the first 1000 of {KeySymbols.Count} classes are listed.")
+                            </MudAlert>
+                        }
                     </MudDropZone>
-                </div>   
+                </div>
             }
         </ChildContent>
         <ItemRenderer>
             <GvGrid ColumnCount="12">
+                @if (SelectedKeys is not null)
+                {
+                    <GvGridItem Span="1">
+                        <MudIconButton Icon="@(IsSelected(context.Key) ? Icons.Material.Filled.CheckBox : Icons.Material.Filled.CheckBoxOutlineBlank)"
+                                       OnClick="(e) => ToggleSelection(context.Key, e)"
+                                       Size="MudBlazor.Size.Small"
+                                       Color="@(IsSelected(context.Key) ? Color.Primary : Color.Default)"
+                                       title="Select (Shift: select range)"
+                                       aria-label="select"></MudIconButton>
+                    </GvGridItem>
+                }
                 <GvGridItem Span="1">
                     <MudIconButton Icon="@Icons.Material.Filled.Delete"
                                    OnClick="() => DeleteItem(context)"
@@ -60,7 +117,7 @@
                         @context.Key
                     </div>
                 </GvGridItem>
-                <GvGridItem Span="6">
+                <GvGridItem Span="@(SelectedKeys is not null ? 5 : 6)">
                     @if (_editLabelKey is not null && _editLabelKey.Equals(context.Key))
                     {
                         <InlineInput @bind-Value="@context.LegendLabel"
@@ -68,7 +125,9 @@
                     }
                     else
                     {
-                        <div @onclick="() => _editLabelKey = context.Key">
+                        <div @onclick="() => _editLabelKey = context.Key"
+                             style="cursor:text"
+                             title="Click to edit the legend label">
                             @context.LegendLabel
                         </div>
                     }
@@ -85,8 +144,19 @@
     [Parameter] public EventCallback<KeySymbol<TKey>> OnKeySymbolChanged { get; set; }
     [Parameter] public EventCallback<List<KeySymbol<TKey>>> OnKeySymbolsChanged { get; set; }
 
+    /// <summary>
+    /// The selected keys (owned by the page). If null, the list has no selection column.
+    /// </summary>
+    [Parameter] public HashSet<TKey>? SelectedKeys { get; set; }
+    [Parameter] public EventCallback OnSelectionChanged { get; set; }
+    /// <summary>
+    /// Identifies the "all other values" class: "Apply to all classes" leaves it out.
+    /// </summary>
+    [Parameter] public Func<TKey, bool>? IsAllOtherValues { get; set; }
+
     private TKey? _composeSymbolKey = default;
     private TKey? _editLabelKey = default;
+    private int _lastToggledIndex = -1;
 
     protected override Task OnParametersSetAsync()
     {
@@ -127,18 +197,23 @@
         {
             var keySymbol = KeySymbols?.FirstOrDefault(k => k.Key?.Equals(_editLabelKey) == true);
             _editLabelKey = default(TKey);
-            
+
             return OnKeySymbolChanged.InvokeAsync(keySymbol);
         }
-       
+
         return Task.CompletedTask;
     });
 
-    private Task DeleteItem(KeySymbol<TKey> keySymbol) => HandleAsync(() =>
+    private Task DeleteItem(KeySymbol<TKey> keySymbol) => HandleAsync(async () =>
     {
         KeySymbols?.Remove(keySymbol);
 
-        return OnKeySymbolsChanged.InvokeAsync(KeySymbols);
+        if (SelectedKeys?.Remove(keySymbol.Key) == true)
+        {
+            await OnSelectionChanged.InvokeAsync();
+        }
+
+        await OnKeySymbolsChanged.InvokeAsync(KeySymbols);
     });
 
     async Task ReorderItems(MudItemDropInfo<KeySymbol<TKey>> dropInfo)
@@ -181,4 +256,130 @@
 
         StateHasChanged();
     }
+
+    #region Selection
+
+    private bool IsSelected(TKey key) => SelectedKeys?.Contains(key) == true;
+
+    private int SelectedKeysCount()
+        => KeySymbols?.SelectedKeySymbols(SelectedKeys).Length ?? 0;
+
+    private int SelectedOtherCount(TKey key)
+        => KeySymbols?.SelectedKeySymbols(SelectedKeys).Count(k => !Equals(k.Key, key)) ?? 0;
+
+    private Task ToggleSelection(TKey key, MouseEventArgs e) => HandleAsync(async () =>
+    {
+        if (SelectedKeys is null || KeySymbols is null)
+        {
+            return;
+        }
+
+        int index = KeySymbols.FindIndex(k => Equals(k.Key, key));
+        bool select = !SelectedKeys.Contains(key);
+
+        if (e.ShiftKey && _lastToggledIndex >= 0 && _lastToggledIndex < KeySymbols.Count && index >= 0)
+        {
+            int from = Math.Min(_lastToggledIndex, index), to = Math.Max(_lastToggledIndex, index);
+            foreach (var keySymbol in KeySymbols.Skip(from).Take(to - from + 1))
+            {
+                if (select)
+                {
+                    SelectedKeys.Add(keySymbol.Key);
+                }
+                else
+                {
+                    SelectedKeys.Remove(keySymbol.Key);
+                }
+            }
+        }
+        else if (select)
+        {
+            SelectedKeys.Add(key);
+        }
+        else
+        {
+            SelectedKeys.Remove(key);
+        }
+
+        _lastToggledIndex = index;
+        await OnSelectionChanged.InvokeAsync();
+    });
+
+    private Task SelectAll() => ChangeSelection(keys =>
+    {
+        keys.Clear();
+        keys.UnionWith(KeySymbols!.Select(k => k.Key));
+    });
+
+    private Task SelectNone() => ChangeSelection(keys => keys.Clear());
+
+    private Task InvertSelection() => ChangeSelection(keys =>
+    {
+        var inverted = KeySymbols!.Select(k => k.Key).Where(k => !keys.Contains(k)).ToArray();
+        keys.Clear();
+        keys.UnionWith(inverted);
+    });
+
+    private Task ChangeSelection(Action<HashSet<TKey>> change) => HandleAsync(async () =>
+    {
+        if (SelectedKeys is null || KeySymbols is null)
+        {
+            return;
+        }
+
+        change(SelectedKeys);
+        _lastToggledIndex = -1;
+
+        await OnSelectionChanged.InvokeAsync();
+    });
+
+    private Task RemoveSelected() => HandleAsync(async () =>
+    {
+        if (SelectedKeys is null || KeySymbols is null)
+        {
+            return;
+        }
+
+        foreach (var keySymbol in KeySymbols.SelectedKeySymbols(SelectedKeys))
+        {
+            KeySymbols.Remove(keySymbol);
+            keySymbol.Symbol?.Release();
+        }
+        SelectedKeys.Clear();
+        _lastToggledIndex = -1;
+
+        KeySymbols = KeySymbols.Select(k => k.Copy()).ToList();
+
+        await OnSelectionChanged.InvokeAsync();
+        await OnKeySymbolsChanged.InvokeAsync(KeySymbols);
+    });
+
+    private Task ApplyComposedSymbolAsync(TKey sourceKey, bool keepColors) => HandleAsync(async () =>
+    {
+        if (KeySymbols is null)
+        {
+            return;
+        }
+
+        var template = KeySymbols.First(k => Equals(k.Key, sourceKey)).Symbol;
+        var selected = KeySymbols.SelectedKeySymbols(SelectedKeys);
+        var targets = (selected.Length > 0
+                        ? selected
+                        : KeySymbols.Where(k => IsAllOtherValues?.Invoke(k.Key) != true))
+                      .Where(k => !Equals(k.Key, sourceKey))
+                      .ToArray();
+
+        KeySymbols = KeySymbols.PasteSymbol(template, targets, keepColors, out int noColorCount);
+        _composeSymbolKey = default;
+
+        await OnKeySymbolsChanged.InvokeAsync(KeySymbols);
+
+        if (noColorCount > 0)
+        {
+            await MessageDialogs.ShowMessageBoxAsync("Apply symbol",
+                $"{noColorCount} class(es) had no color to keep (complex symbol) and got the colors of the template.");
+        }
+    });
+
+    #endregion
 }

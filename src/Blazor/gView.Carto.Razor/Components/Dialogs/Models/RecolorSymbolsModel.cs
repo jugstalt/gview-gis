@@ -1,4 +1,4 @@
-using gView.Blazor.Models.Dialogs;
+﻿using gView.Blazor.Models.Dialogs;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Symbology.Models;
 using gView.Framework.Symbology.Palettes;
@@ -20,6 +20,8 @@ public class RecolorSymbolsModel : IDialogResultItem
     public int ClassCount { get; set; }
     public int SkippedCount { get; set; }
     public bool HasAllOtherValues { get; set; }
+    /// <summary>Number of selected classes the dialog applies to (0 = no selection, all classes).</summary>
+    public int SelectedCount { get; set; }
 
     // options
     public RecolorMode Mode { get; set; } = RecolorMode.Palette;

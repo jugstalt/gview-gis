@@ -1,4 +1,4 @@
-using gView.Blazor.Models.Dialogs;
+﻿using gView.Blazor.Models.Dialogs;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Core.Symbology;
 using gView.Framework.Symbology.Models;
@@ -13,6 +13,8 @@ public class SetSymbolPropertiesModel : IDialogResultItem
     public int ClassCount { get; set; }
     public int SkippedCount { get; set; }
     public bool HasAllOtherValues { get; set; }
+    /// <summary>Number of selected classes the dialog applies to (0 = no selection, all classes).</summary>
+    public int SelectedCount { get; set; }
 
     public bool IncludeAllOtherValues { get; set; }
 

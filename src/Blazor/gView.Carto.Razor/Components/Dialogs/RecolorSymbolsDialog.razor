@@ -1,4 +1,4 @@
-@using gView.Framework.Symbology.Models
+﻿@using gView.Framework.Symbology.Models
 @using gView.Framework.Symbology.Palettes
 
 @inherits ModalDialogFormBase<RecolorSymbolsModel>
@@ -15,20 +15,17 @@
 
         @if (Model.Mode == RecolorMode.Palette)
         {
-            <MudSelect T="string" Label="Palette"
+            <MudSelect PopoverClass="carto-nested-dialog-popover" T="string" Label="Palette"
                        @bind-Value="Model.PaletteName">
-                @foreach (var paletteType in Enum.GetValues<ColorPaletteType>())
+                @foreach (var palette in ColorPalettes.All)
                 {
-                    <MudListSubheader>@paletteType</MudListSubheader>
-                    @foreach (var palette in ColorPalettes.All.Where(p => p.Type == paletteType))
-                    {
-                        <MudSelectItem Value="palette.Name">
-                            <div style="display:flex;align-items:center;gap:12px">
-                                <div style="@ColorBarStyle(palette.Colors, palette.Type == ColorPaletteType.Qualitative, 120)"></div>
-                                <span>@palette.Name</span>
-                            </div>
-                        </MudSelectItem>
-                    }
+                    <MudSelectItem Value="palette.Name">
+                        <div style="display:flex;align-items:center;gap:12px">
+                            <div style="@ColorBarStyle(palette.Colors, palette.Type == ColorPaletteType.Qualitative, 120)"></div>
+                            <span>@palette.Name</span>
+                            <span style="opacity:.6;font-size:.85em">@palette.Type.ToString().ToLower()</span>
+                        </div>
+                    </MudSelectItem>
                 }
             </MudSelect>
         }
@@ -56,7 +53,7 @@
 
         @if (IsPolygon)
         {
-            <MudSelect T="SymbolColorTarget" Label="Apply color to"
+            <MudSelect PopoverClass="carto-nested-dialog-popover" T="SymbolColorTarget" Label="Apply color to"
                        @bind-Value="Model.Target">
                 <MudSelectItem Value="SymbolColorTarget.Both">Fill and outline</MudSelectItem>
                 <MudSelectItem Value="SymbolColorTarget.Fill">Fill</MudSelectItem>
@@ -64,7 +61,13 @@
             </MudSelect>
         }
 
-        @if (Model.HasAllOtherValues)
+        @if (Model.SelectedCount > 0)
+        {
+            <MudAlert Severity="Severity.Info" Dense="true">
+                @($"Applies to {Model.SelectedCount} selected class(es) only.")
+            </MudAlert>
+        }
+        else if (Model.HasAllOtherValues)
         {
             <MudCheckBox T="bool" Label="Include &quot;All other values&quot;" @bind-Value="Model.IncludeAllOtherValues" />
         }

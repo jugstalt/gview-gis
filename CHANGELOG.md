@@ -173,6 +173,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - `Set Symbol Properties ...`: sets checked properties (colour, width, dash style, fill
     opacity, size, smoothing) to the same value for all classes.
   - "All other values" is left out unless included; classes with composite symbols are skipped.
+- Carto: classes of these renderers can be selected (checkbox, Shift for a range, All / None /
+  Invert, Remove selected); Recolor, Set Symbol Properties and paste then work on the selection
+  only.
+- Carto: copy and paste of symbols: Copy / Paste buttons next to Random and Undo wherever a symbol
+  is edited (also across layers of the same geometry type), `Paste Symbol` and `Paste Symbol, keep
+  colors` in the `More ...` menu of the class renderers and `Apply to ...` in the symbol card of a
+  class. "Keep colors" takes the style from the pasted symbol and keeps the colour of each class.
 
 ## Changed
 

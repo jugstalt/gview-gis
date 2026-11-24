@@ -7,13 +7,18 @@
 @implements IDisposable
 
 @inject IApplicationScopeFactory AppScopeFactory
+@inject ISymbolClipboard SymbolClipboard
+@inject IDialogService MessageDialogs
 
 @if(_renderer is not null && _layer?.FeatureClass is not null)
 {
     <KeySymbolListControl TKey="string"
                           KeySymbols="@(CurrentKeySymbolsList() ?? [])"
                           OnKeySymbolsChanged="SymbolsListChanged"
-                          OnKeySymbolChanged="SymbolChanged">
+                          OnKeySymbolChanged="SymbolChanged"
+                          SelectedKeys="_selectedKeys"
+                          OnSelectionChanged="StateHasChanged"
+                          IsAllOtherValues="IsAllOtherValuesKey">
         <ListItemTools>
             <GvGrid ColumnCount="2">
                 <GvGridItem>
@@ -87,6 +92,18 @@
                                      IconColor="Color.Primary"
                                      OnClick="OnSetSymbolPropertiesClickAsync">
                             Set Symbol Properties ...
+                        </MudMenuItem>
+                        <MudMenuItem Icon="@MudBlazor.Icons.Material.Outlined.ContentPaste"
+                                     IconColor="Color.Primary"
+                                     Disabled="@(!CanPasteSymbol())"
+                                     OnClick="() => OnPasteSymbolClickAsync(keepColors: false)">
+                            Paste Symbol
+                        </MudMenuItem>
+                        <MudMenuItem Icon="@MudBlazor.Icons.Material.Outlined.ContentPasteGo"
+                                     IconColor="Color.Primary"
+                                     Disabled="@(!CanPasteSymbol(keepColors: true))"
+                                     OnClick="() => OnPasteSymbolClickAsync(keepColors: true)">
+                            Paste Symbol, keep colors
                         </MudMenuItem>
                         <MudMenuItem Icon="@MudBlazor.Icons.Material.Outlined.TextFormat"
                                      IconColor="Color.Primary"
@@ -182,6 +199,7 @@
     private ManyValueMapRenderer? _renderer;
 
     private Dictionary<string, List<KeySymbol<string>>> _dictKeySymbols = new();
+    private HashSet<string> _selectedKeys = new();
     private ManyValueItemModel? _addValueItem = null;
 
     private bool _processingAddAllValues = false;
@@ -266,6 +284,8 @@
 
     private void OnValueFieldChanged(int index, string field)
     {
+        _selectedKeys.Clear();
+
         if (_renderer is not null)
         {
             switch(index)
@@ -288,6 +308,37 @@
 
     #region Button Events
 
+    private bool CanPasteSymbol(bool keepColors = false)
+        => _layer is not null
+           && SymbolClipboard.CanPaste(_layer.LayerGeometryType)
+           && (!keepColors || SymbolClipboard.Symbol.CanBulkEdit());
+
+    private Task OnPasteSymbolClickAsync(bool keepColors) => HandleAsync(async () =>
+    {
+        if (_renderer is null || SymbolClipboard.Symbol is null || !CanPasteSymbol(keepColors))
+        {
+            return;
+        }
+
+        var keySymbols = CurrentKeySymbolsList();
+        var selected = keySymbols.SelectedKeySymbols(_selectedKeys);
+        var targets = selected.Length > 0
+            ? selected
+            : keySymbols.Where(k => !IsAllOtherValuesKey(k.Key)).ToArray();
+
+        _dictKeySymbols[CurrentKey()] = keySymbols.PasteSymbol(SymbolClipboard.Symbol, targets, keepColors, out int noColorCount);
+        ApplyChanges();
+
+        if (noColorCount > 0)
+        {
+            await MessageDialogs.ShowMessageBoxAsync("Paste Symbol",
+                $"{noColorCount} class(es) had no color to keep (complex symbol) and got the colors of the pasted symbol.");
+        }
+    });
+
+    private bool IsAllOtherValuesKey(string key) => key == ValueMapRenderer.AllOtherValuesKey;
+
+
     private Task OnRecolorClickAsync() => HandleAsync(async () =>
     {
         if (_renderer is null || _layer is null)
@@ -298,7 +349,8 @@
         var keySymbols = await CurrentKeySymbolsList().RecolorAsync(
             AppScopeFactory,
             _layer.LayerGeometryType,
-            key => key == ValueMapRenderer.AllOtherValuesKey);
+            IsAllOtherValuesKey,
+            _selectedKeys);
 
         if (keySymbols is not null)
         {
@@ -317,7 +369,8 @@
         var keySymbols = await CurrentKeySymbolsList().SetSymbolPropertiesAsync(
             AppScopeFactory,
             _layer.LayerGeometryType,
-            key => key == ValueMapRenderer.AllOtherValuesKey);
+            IsAllOtherValuesKey,
+            _selectedKeys);
 
         if (keySymbols is not null)
         {
@@ -608,6 +661,8 @@
 
     private Task OnSetValueFieldsClickAsync() => HandleAsync(async () =>
     {
+        _selectedKeys.Clear();
+
         if (_renderer is null || _layer is null)
             return;
 

@@ -157,4 +157,93 @@ public static class ISymbolExtensions
 
         return values;
     }
+
+    /// <summary>
+    /// True, if the symbol can draw features of the given (layer) geometry type.
+    /// Envelopes count as polygons, multipoints as points.
+    /// </summary>
+    public static bool FitsGeometryType(this ISymbol? symbol, GeometryType geometryType)
+    {
+        if (symbol is null)
+        {
+            return false;
+        }
+
+        var symbolGeometryType = symbol.ToGeometryType();
+
+        return symbolGeometryType != GeometryType.Unknown
+            && symbolGeometryType == geometryType switch
+            {
+                GeometryType.Envelope => GeometryType.Polygon,
+                GeometryType.Multipoint => GeometryType.Point,
+                _ => geometryType
+            };
+    }
+
+    /// <summary>
+    /// Creates the symbol that replaces <paramref name="target"/> when <paramref name="template"/> is pasted:
+    /// a clone of the template with the legend label of the target.
+    /// With <paramref name="keepColors"/> the RGB colours of the target are applied to the clone
+    /// (alpha from the template; polygons keep fill and outline separately). This needs simple
+    /// symbols on both sides, otherwise the clone keeps the template colours.
+    /// </summary>
+    /// <param name="colorsKept">true, if the colours of the target were applied</param>
+    public static ISymbol CreatePasteSymbol(this ISymbol template, ISymbol? target, bool keepColors, out bool colorsKept)
+    {
+        var symbol = (ISymbol)template.Clone();
+        colorsKept = false;
+
+        if (keepColors && symbol.CanBulkEdit() && target.CanBulkEdit())
+        {
+            var fillColor = target switch
+            {
+                IBrushColor brush when brush.FillColor.A > 0 => brush.FillColor,
+                IFontColor font => font.FontColor,
+                IPenColor pen => pen.PenColor,
+                IBrushColor brush => brush.FillColor,
+                _ => (ArgbColor?)null
+            };
+            var penColor = target switch
+            {
+                IPenColor pen when pen.PenColor.A > 0 => pen.PenColor,
+                _ => fillColor
+            };
+
+            switch (symbol.ToGeometryType())
+            {
+                case GeometryType.Polygon:
+                    if (fillColor.HasValue)
+                    {
+                        symbol.ApplyColor(fillColor.Value, SymbolColorTarget.Fill);
+                    }
+                    if (penColor.HasValue)
+                    {
+                        symbol.ApplyColor(penColor.Value, SymbolColorTarget.Outline);
+                    }
+                    colorsKept = fillColor.HasValue || penColor.HasValue;
+                    break;
+                case GeometryType.Polyline:
+                    if (penColor.HasValue)
+                    {
+                        symbol.ApplyColor(penColor.Value);
+                        colorsKept = true;
+                    }
+                    break;
+                default:
+                    if (fillColor.HasValue)
+                    {
+                        symbol.ApplyColor(fillColor.Value);
+                        colorsKept = true;
+                    }
+                    break;
+            }
+        }
+
+        if (target is ILegendItem targetLegendItem && symbol is ILegendItem legendItem)
+        {
+            legendItem.LegendLabel = targetLegendItem.LegendLabel;
+        }
+
+        return symbol;
+    }
 }
