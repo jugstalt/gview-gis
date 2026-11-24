@@ -1,6 +1,8 @@
 @using gView.Carto.Razor.Components.Controls.Renderers.Models
 @using gView.Framework.Core.Data.Cursors
 @using gView.Framework.Data.Filters
+@using gView.Framework.Cartography.Rendering.Classification
+@using gView.Framework.Symbology.Palettes
 
 @inherits BaseHandler
 @implements IDisposable
@@ -116,9 +118,8 @@
                     </GvCardActions>
                 </GvCard>
             }
-            else if(_wizardModel is not null) 
+            else if(_wizardModel is not null)
             {
-                <MudRadioGroup @bind-Value="_wizardModel.FixStepMethod">
                 <GvCard Title="Wizard">
                     <GvCardContent>
                         <GvGrid ColumnCount="2">
@@ -137,22 +138,75 @@
                                                  Label="Maximum Value"></MudNumericField>
                             </GvGridItem>
                             <GvGridItem>
-                                <QuickSymbolPropertiesControl Symbol="_wizardModel.MaxValueSymbol"
-                                                              ShowPropertyGrid="false"
-                                                              SymbolChanged="(sym) => _wizardModel.MaxValueSymbol = sym" />
+                                @if (_wizardModel.Colors == QuantityWizardColors.MinMaxSymbol)
+                                {
+                                    <QuickSymbolPropertiesControl Symbol="_wizardModel.MaxValueSymbol"
+                                                                  ShowPropertyGrid="false"
+                                                                  SymbolChanged="(sym) => _wizardModel.MaxValueSymbol = sym" />
+                                }
                             </GvGridItem>
 
                             <GvGridItem>
-                                <MudRadio Value="StepMethod.FixWidth">
-                                    <MudNumericField @bind-Value="_wizardModel.FixStepWidth"
-                                                        Label="Use Fix Step Width" />
-                                </MudRadio>
+                                <MudSelect T="ClassificationMethod" Label="Method"
+                                           PopoverClass="gv-dialog-popover"
+                                           @bind-Value="_wizardModel.Method">
+                                    <MudSelectItem Value="ClassificationMethod.EqualInterval">Equal Interval</MudSelectItem>
+                                    <MudSelectItem Value="ClassificationMethod.Quantile">Quantile (same number of features)</MudSelectItem>
+                                    <MudSelectItem Value="ClassificationMethod.NaturalBreaks">Natural Breaks (Jenks)</MudSelectItem>
+                                </MudSelect>
                             </GvGridItem>
                             <GvGridItem>
-                                <MudRadio Value="StepMethod.FixCount">
+                                @if (_wizardModel.Method == ClassificationMethod.EqualInterval)
+                                {
+                                    <MudRadioGroup @bind-Value="_wizardModel.FixStepMethod">
+                                        <MudRadio Value="StepMethod.FixCount">
+                                            <MudNumericField @bind-Value="_wizardModel.FixStepCount"
+                                                             Label="Number of classes" Min="1" />
+                                        </MudRadio>
+                                        <MudRadio Value="StepMethod.FixWidth">
+                                            <MudNumericField @bind-Value="_wizardModel.FixStepWidth"
+                                                             Label="Step width" />
+                                        </MudRadio>
+                                    </MudRadioGroup>
+                                }
+                                else
+                                {
                                     <MudNumericField @bind-Value="_wizardModel.FixStepCount"
-                                                     Label="Use Fix Step Count" />
-                                </MudRadio>
+                                                     Label="Number of classes" Min="1" Max="50" />
+                                }
+                            </GvGridItem>
+
+                            <GvGridItem>
+                                <MudSelect T="QuantityWizardColors" Label="Colors"
+                                           PopoverClass="gv-dialog-popover"
+                                           @bind-Value="_wizardModel.Colors">
+                                    <MudSelectItem Value="QuantityWizardColors.MinMaxSymbol">Minimum to maximum symbol</MudSelectItem>
+                                    <MudSelectItem Value="QuantityWizardColors.Palette">Palette (style of the minimum symbol)</MudSelectItem>
+                                </MudSelect>
+                            </GvGridItem>
+                            <GvGridItem>
+                                @if (_wizardModel.Colors == QuantityWizardColors.Palette)
+                                {
+                                    <MudSelect T="string" Label="Palette"
+                                               PopoverClass="gv-dialog-popover"
+                                               @bind-Value="_wizardModel.PaletteName">
+                                        @foreach (var palette in ColorPalettes.All)
+                                        {
+                                            <MudSelectItem Value="palette.Name">
+                                                <div style="display:flex;align-items:center;gap:12px">
+                                                    <div style="@PaletteBarStyle(palette)"></div>
+                                                    <span>@palette.Name</span>
+                                                </div>
+                                            </MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                    <MudCheckBox T="bool" Label="Reverse" @bind-Value="_wizardModel.Reverse" />
+                                }
+                            </GvGridItem>
+
+                            <GvGridItem>
+                                <MudNumericField @bind-Value="_wizardModel.Decimals"
+                                                 Label="Decimals (limits and labels)" Min="0" Max="10" />
                             </GvGridItem>
                         </GvGrid>
                     </GvCardContent>
@@ -161,10 +215,12 @@
                                    OnClick="() => _wizardModel = null">Close</MudButton>
                         <MudButton Variant="Variant.Filled"
                                    Color="Color.Primary"
-                                   OnClick="OnWizardCreateLegendItems">Create Legend Items</MudButton>
+                                   Disabled="_processingWizard"
+                                   OnClick="OnWizardCreateLegendItemsAsync">
+                            @(_processingWizard ? "Reading values ..." : "Create Legend Items")
+                        </MudButton>
                     </GvCardActions>
                 </GvCard>
-                </MudRadioGroup>
             }
         </ListItemTools>
     </KeySymbolListControl>
@@ -465,67 +521,84 @@
         }
     });
 
-    private void OnWizardCreateLegendItems() => Handle(() =>
+    private bool _processingWizard = false;
+
+    private static string PaletteBarStyle(ColorPalette palette)
+        => $"background:{palette.Colors.ToCssLinearGradient(palette.Type == ColorPaletteType.Qualitative)};height:16px;width:100px;border-radius:4px;flex-shrink:0";
+
+    private Task OnWizardCreateLegendItemsAsync() => HandleAsync(async () =>
     {
-        if (_wizardModel is null || _renderer is null)
-        {
-            return;
-        }
-        if (Math.Abs(_wizardModel.MinValue - _wizardModel.MaxValue) < 1e-10)
+        if (_wizardModel is null || _renderer is null || _layer is null)
         {
             return;
         }
 
-        double stepWidth = _wizardModel.FixStepMethod switch
+        try
         {
-            StepMethod.FixWidth => _wizardModel.FixStepWidth,
-            StepMethod.FixCount => (_wizardModel.MaxValue - _wizardModel.MinValue) / Math.Max(_wizardModel.FixStepCount, 1),
-            _ => 0D
-        };
+            _processingWizard = true;
+            await ForceRenderComponent();
 
-        if(stepWidth<=double.Epsilon)
-        {
-            return;
-        }
+            var wizard = _wizardModel;
+            var values = await _layer.ReadNumericValuesAsync(_renderer.ValueField);
+            values.Sort();
 
-        OnRemoveAllItems();
-        var keySymbols = CurrentKeySymbolsList();
+            double min = wizard.MinValue, max = wizard.MaxValue;
+            var inRange = values.Where(v => v >= min && v <= max).ToArray();
 
-        double x;
-        RangeClass? rangeClass;
-        ISymbol? symbol;
-
-        for (x = _wizardModel.MinValue; x < _wizardModel.MaxValue - stepWidth; x += stepWidth)
-        {
-            symbol = AlternateSymbol(_wizardModel.MinValueSymbol!, _wizardModel.MaxValueSymbol!,
-                                    (float)((x - _wizardModel.MinValue) / (_wizardModel.MaxValue - _wizardModel.MinValue)));
-            if (symbol == null)
+            double[] limits = wizard.Method switch
             {
-                continue;
+                ClassificationMethod.Quantile => ClassBreaks.Quantile(inRange, wizard.FixStepCount),
+                ClassificationMethod.NaturalBreaks => ClassBreaks.NaturalBreaks(inRange, wizard.FixStepCount),
+                _ => wizard.FixStepMethod == StepMethod.FixWidth
+                        ? ClassBreaks.EqualIntervalByWidth(min, max, wizard.FixStepWidth)
+                        : ClassBreaks.EqualInterval(min, max, wizard.FixStepCount)
+            };
+            limits = ClassBreaks.Round(limits, wizard.Decimals);
+
+            if (limits.Length < 2)
+            {
+                throw new ArgumentException("No classes: the value range is empty (minimum = maximum or no values in the range)");
             }
 
-            if (symbol is ILegendItem)
+            var ranges = limits.Zip(limits.Skip(1)).Select(l => (Min: l.First, Max: l.Second)).ToArray();
+            var colors = wizard.Colors == QuantityWizardColors.Palette
+                ? (ColorPalettes.Find(wizard.PaletteName) ?? ColorPalettes.All[0]).GetColors(ranges.Length, wizard.Reverse)
+                : null;
+
+            OnRemoveAllItems();
+            var keySymbols = CurrentKeySymbolsList();
+
+            for (int i = 0; i < ranges.Length; i++)
             {
-                ((ILegendItem)symbol).LegendLabel = $"{x.ToString()} - {(x + stepWidth).ToString()}";
+                ISymbol? symbol = colors is not null
+                    ? wizard.MinValueSymbol?.Clone() as ISymbol
+                    : AlternateSymbol(wizard.MinValueSymbol!, wizard.MaxValueSymbol!,
+                                      ranges.Length == 1 ? 0f : (float)i / (ranges.Length - 1));
+                if (symbol is null)
+                {
+                    continue;
+                }
+
+                if (colors is not null)
+                {
+                    symbol.ApplyColor(colors[i]);
+                }
+
+                symbol.AddLegendLabel(ClassBreaks.Label(ranges[i].Min, ranges[i].Max, wizard.Decimals));
+                keySymbols.Add(new KeySymbol<RangeClass>(new RangeClass(ranges[i].Min, ranges[i].Max), symbol));
             }
 
-            rangeClass = new RangeClass(x, x + stepWidth);
-            keySymbols.Add(new KeySymbol<RangeClass>(rangeClass, symbol));
+            var counts = ClassBreaks.CountByRanges(values, ranges);
+            _counts = keySymbols
+                .Select((k, i) => (k.Key, Count: counts[i]))
+                .ToDictionary(k => k.Key, k => k.Count);
+
+            ApplyChanges();
         }
-        
-        symbol = _wizardModel.MaxValueSymbol?.Clone() as ISymbol;
-        
-        if (symbol is not null)
+        finally
         {
-            if (symbol is ILegendItem)
-            {
-                ((ILegendItem)symbol).LegendLabel = $"{x.ToString()} - {(_wizardModel.MaxValue).ToString()}";
-            }
-            rangeClass = new RangeClass(x, _wizardModel.MaxValue);
-            keySymbols.Add(new KeySymbol<RangeClass>(rangeClass, symbol));
+            _processingWizard = false;
         }
-
-        ApplyChanges();
     });
 
     private Task SetRotation() => HandleAsync(() =>

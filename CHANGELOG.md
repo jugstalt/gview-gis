@@ -183,6 +183,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Carto: number of features per class in the class renderers (counted by `Add All Values` in one
   grouped query, or with `More ...` > `Count Features`; respects the layer filter); classes without
   features are greyed out, `Select empty` selects them, `Order by ...` sorts by label, value or count.
+- Carto: Quantity renderer wizard: methods Equal Interval, Quantile and Natural Breaks (Jenks), colours
+  from a palette (style of the minimum symbol) or interpolated between the minimum and maximum symbol,
+  decimals for limits and labels (`10 – 20` instead of `0.30000000000000004 - 0.4`); minimum, maximum
+  and classes respect the layer filter, feature counts are shown after creating.
 
 ## Changed
 

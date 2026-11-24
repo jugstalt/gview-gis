@@ -1,4 +1,6 @@
 ﻿using gView.Framework.Cartography.Rendering;
+using gView.Framework.Cartography.Rendering.Classification;
+using gView.Framework.Symbology.Palettes;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Symbology;
 using gView.Framework.Data.Filters;
@@ -9,6 +11,7 @@ namespace gView.Carto.Razor.Components.Controls.Renderers.Models;
 
 internal enum StepMethod { FixWidth, FixCount };
 internal enum QuantityWizardSymbol { Minimum, Maximum };
+internal enum QuantityWizardColors { MinMaxSymbol, Palette };
 internal class QuantityWizardModel
 {
     private QuantityWizardModel() { }
@@ -44,6 +47,15 @@ internal class QuantityWizardModel
 
     public StepMethod FixStepMethod { get; set; }
 
+    public ClassificationMethod Method { get; set; } = ClassificationMethod.EqualInterval;
+
+    public QuantityWizardColors Colors { get; set; } = QuantityWizardColors.MinMaxSymbol;
+    public string PaletteName { get; set; } = ColorPalettes.All[0].Name;
+    public bool Reverse { get; set; }
+
+    /// <summary>Decimals of the class limits and labels.</summary>
+    public int Decimals { get; set; } = 2;
+
     public double FixStepWidth { get; set; }
     public int FixStepCount { get; set; }
 
@@ -61,11 +73,17 @@ internal class QuantityWizardModel
         {
             object minObj = await FunctionFilter.QueryScalar(
                     featureClass,
-                    new FunctionFilter("MIN", renderer.ValueField, "field_min"),
+                    new FunctionFilter("MIN", renderer.ValueField, "field_min")
+                    {
+                        WhereClause = featureLayer.FilterQuery?.WhereClause ?? ""
+                    },
                     "field_min");
             object maxObj = await FunctionFilter.QueryScalar(
                 featureClass,
-                new FunctionFilter("MAX", renderer.ValueField, "field_max"),
+                new FunctionFilter("MAX", renderer.ValueField, "field_max")
+                {
+                    WhereClause = featureLayer.FilterQuery?.WhereClause ?? ""
+                },
                 "field_max");
 
             if (minObj != null)
@@ -81,6 +99,7 @@ internal class QuantityWizardModel
             wizard.FixStepMethod = StepMethod.FixCount;
             wizard.FixStepCount = 10;
             wizard.FixStepWidth = (double)((int)((wizard.MaxValue - wizard.MinValue) / 10));
+            wizard.Decimals = ClassBreaks.AutoDecimals(wizard.MinValue, wizard.MaxValue);
         }
 
         return wizard;

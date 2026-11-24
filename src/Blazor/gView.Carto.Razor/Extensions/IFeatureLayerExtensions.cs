@@ -1,6 +1,7 @@
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Data.Cursors;
 using gView.Framework.Core.Data.Statistics;
+using gView.Framework.Cartography.Rendering.Classification;
 using gView.Framework.Data.Filters;
 using gView.Framework.Data.Statistics;
 
@@ -97,8 +98,14 @@ static internal class IFeatureLayerExtensions
     static public async Task<long[]> CountByRangesAsync(this IFeatureLayer layer,
                                                        string field,
                                                        IReadOnlyList<(double Min, double Max)> ranges)
+        => ClassBreaks.CountByRanges(await layer.ReadNumericValuesAsync(field), ranges);
+
+    /// <summary>
+    /// All numeric values of <paramref name="field"/> (NULL and non numeric values are skipped).
+    /// </summary>
+    static public async Task<List<double>> ReadNumericValuesAsync(this IFeatureLayer layer, string field)
     {
-        var counts = new long[ranges.Count];
+        var values = new List<double>();
 
         await layer.ScanAsync([field], feature =>
         {
@@ -108,27 +115,17 @@ static internal class IFeatureLayerExtensions
                 return;
             }
 
-            double d;
             try
             {
-                d = Convert.ToDouble(value);
+                values.Add(Convert.ToDouble(value));
             }
             catch
             {
-                return;
-            }
-
-            for (int i = 0; i < ranges.Count; i++)
-            {
-                if (ranges[i].Min <= d && ranges[i].Max >= d)
-                {
-                    counts[i]++;
-                    break;
-                }
+                // not numeric => like the renderer: no class
             }
         });
 
-        return counts;
+        return values;
     }
 
     #region Helper
