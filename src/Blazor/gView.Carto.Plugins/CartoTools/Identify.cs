@@ -97,7 +97,16 @@ internal class Identify : ICartoTool
             }
         }
 
-        await scope.EventBus.FireShowDataTableAsync(queryLayer.First());
+        var resultLayer = queryLayer.First();
+        bool sameTableLayer = scope.DataTableService.CurrentLayer == resultLayer;
+
+        await scope.EventBus.FireShowDataTableAsync(resultLayer);
+
+        if (sameTableLayer)
+        {
+            // the data table only reloads when its layer changes: query the new identify filter explicitly
+            await scope.EventBus.FireRefreshDataTableAsync(resultLayer, null);
+        }
 
         return true;
     }

@@ -20,7 +20,7 @@
                     <GvCardContent>
                         <MudTextField T="string" Label="Name" @bind-Value="config.Name" />
                         <MudTextField T="string" Label="Spatial reference (e.g. epsg:31256; empty = map, must be metric)" @bind-Value="config.Srs" />
-                        <MudNumericField T="double" Label="Tolerance (joins line ends and points)" @bind-Value="config.Tolerance" />
+                        <DecimalField Label="Tolerance (joins line ends and points, e.g. 0,01)" Value="config.Tolerance" ValueChanged="v => config.Tolerance = v ?? config.Tolerance" />
                         <MudSelect T="NodeConflictMode" Label="Points of different layers at one place" @bind-Value="config.NodeConflicts">
                             <MudSelectItem Value="NodeConflictMode.Error">Error: the build stops and lists the conflicts</MudSelectItem>
                             <MudSelectItem Value="NodeConflictMode.PriorityByToc">Merge: the layer higher in the TOC wins, the others become aliases</MudSelectItem>
@@ -75,7 +75,7 @@
                                             }
                                         </MudSelect>
                                     </td>
-                                    <td><MudNumericField T="double?" Label="Fallback" @bind-Value="weight.Fallback" /></td>
+                                    <td><DecimalField Label="Fallback" Nullable="true" @bind-Value="weight.Fallback" /></td>
                                     <td style="width:50px">
                                         <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="() => config.Weights.Remove(weight)" />
                                     </td>

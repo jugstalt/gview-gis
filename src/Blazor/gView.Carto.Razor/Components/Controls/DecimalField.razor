@@ -1,0 +1,62 @@
+@using System.Globalization
+
+@* A number field for small decimals (e.g. tolerances): accepts "," and "." as decimal separator,
+   independent of the server/browser culture. MudNumericField only parses its own culture and steps by 1. *@
+<MudTextField T="string" Label="@Label" HelperText="@HelperText"
+              Value="_text" ValueChanged="OnTextChanged"
+              Error="_error" ErrorText="Enter a number, e.g. 0,01 or 0.01"
+              InputMode="@(InputMode.@decimal)" />
+
+@code {
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public string? HelperText { get; set; }
+    [Parameter] public double? Value { get; set; }
+    [Parameter] public EventCallback<double?> ValueChanged { get; set; }
+
+    /// <summary>When false, an empty field is an error instead of null.</summary>
+    [Parameter] public bool Nullable { get; set; }
+
+    private string? _text;
+    private double? _shown;
+    private bool _error;
+
+    protected override void OnParametersSet()
+    {
+        if (_text is null || Value != _shown)
+        {
+            _shown = Value;
+            _text = Value?.ToString("0.##########", CultureInfo.CurrentCulture);
+            _error = false;
+        }
+    }
+
+    private async Task OnTextChanged(string? text)
+    {
+        _text = text;
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            _error = !Nullable;
+            if (Nullable)
+            {
+                await Publish(null);
+            }
+            return;
+        }
+
+        if (double.TryParse(text.Trim().Replace(',', '.'), NumberStyles.Float, CultureInfo.InvariantCulture, out double value))
+        {
+            _error = false;
+            await Publish(value);
+        }
+        else
+        {
+            _error = true;
+        }
+    }
+
+    private Task Publish(double? value)
+    {
+        _shown = value;
+        return ValueChanged.InvokeAsync(value);
+    }
+}
