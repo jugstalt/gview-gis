@@ -10,50 +10,10 @@
     <MudDropContainer T="KeySymbol<TKey>"
                       Items="KeySymbols.Take(1000)"
                       ItemDropped="ReorderItems"
+                      ItemDisabled="@(item => IsComposing(item.Key))"
+                      DisabledClass=""
                       ItemsSelector="@((item,zone) => true)">
         <ChildContent>
-
-            @if (_composeSymbolKey != null)
-            {
-                var composeSymbol = KeySymbols.First(k => k.Key?.Equals(_composeSymbolKey) == true).Symbol;
-                int selectedOthers = SelectedOtherCount(_composeSymbolKey);
-
-                <GvGridItem Span="8">
-                    <GvCard Title="@_composeSymbolKey.ToString()">
-                        <GvCardContent>
-                            <QuickSymbolPropertiesControl Symbol="composeSymbol"
-                                                          SymbolChanged="(symbol) => OnSymbolChanged(_composeSymbolKey, symbol)" />
-                            <MudButtonGroup Color="Color.Primary" Variant="Variant.Filled">
-                                <MudButton OnClick="() => _composeSymbolKey = default">Done</MudButton>
-                                <MudMenu Label="Apply to ..." Variant="Variant.Filled">
-                                    @if (selectedOthers > 0)
-                                    {
-                                        <MudMenuItem OnClick="() => ApplyComposedSymbolAsync(_composeSymbolKey, keepColors: false)">
-                                            @($"{selectedOthers} selected classes")
-                                        </MudMenuItem>
-                                        <MudMenuItem OnClick="() => ApplyComposedSymbolAsync(_composeSymbolKey, keepColors: true)"
-                                                     Disabled="@(!composeSymbol.CanBulkEdit())">
-                                            @($"{selectedOthers} selected classes, keep colors")
-                                        </MudMenuItem>
-                                    }
-                                    else
-                                    {
-                                        <MudMenuItem OnClick="() => ApplyComposedSymbolAsync(_composeSymbolKey, keepColors: false)">
-                                            All classes
-                                        </MudMenuItem>
-                                        <MudMenuItem OnClick="() => ApplyComposedSymbolAsync(_composeSymbolKey, keepColors: true)"
-                                                     Disabled="@(!composeSymbol.CanBulkEdit())">
-                                            All classes, keep colors
-                                        </MudMenuItem>
-                                    }
-                                </MudMenu>
-                            </MudButtonGroup>
-                        </GvCardContent>
-                    </GvCard>
-                </GvGridItem>
-            }
-            else
-            {
                 <div style="height:63vh;overflow-y:auto;overflow-x:hidden;white-space:nowrap">
                     <MudDropZone T="KeySymbol<TKey>"
                                  AllowReorder="AllowReorder">
@@ -91,9 +51,9 @@
                         }
                     </MudDropZone>
                 </div>
-            }
         </ChildContent>
         <ItemRenderer>
+            <div style="@RowStyle(context.Key)">
             <div style="@EmptyStyle(context.Key)">
             <GvGrid ColumnCount="12">
                 @if (SelectedKeys is not null)
@@ -116,6 +76,7 @@
                 </GvGridItem>
                 <GvGridItem Span="1">
                     <div style="display:inline-block;width:30px;height:30px;cursor:pointer;background-image:url('@context.Symbol.ToBase64ImageSource(CartoDocument.CurrentMap, 30,30)')"
+                         title="@(IsComposing(context.Key) ? "Close symbol editor" : "Edit symbol")"
                          @onclick="() => ComposeSymbol(context.Key)">
                     </div>
                 </GvGridItem>
@@ -148,6 +109,49 @@
                     </GvGridItem>
                 }
             </GvGrid>
+            </div>
+            @if (IsComposing(context.Key))
+            {
+                int selectedOthers = SelectedOtherCount(context.Key);
+                var composeKey = context.Key;
+                var composeSymbol = context.Symbol;
+
+                <div style="white-space:normal;padding:0 8px 8px 8px">
+                    <div style="display:flex;align-items:flex-start;gap:4px">
+                        <div style="flex:1;min-width:0">
+                            <QuickSymbolPropertiesControl @key="composeSymbol"
+                                                          Symbol="composeSymbol"
+                                                          SymbolChanged="(symbol) => OnSymbolChanged(composeKey, symbol)" />
+                        </div>
+                        <MudIconButton Icon="@Icons.Material.Filled.Close"
+                                       Size="MudBlazor.Size.Small"
+                                       title="Close symbol editor"
+                                       OnClick="CloseComposer" />
+                    </div>
+                    <MudMenu Label="Apply to ..." Variant="Variant.Outlined" Size="MudBlazor.Size.Small" Color="Color.Primary">
+                        @if (selectedOthers > 0)
+                        {
+                            <MudMenuItem OnClick="() => ApplyComposedSymbolAsync(composeKey, keepColors: false)">
+                                @($"{selectedOthers} selected classes")
+                            </MudMenuItem>
+                            <MudMenuItem OnClick="() => ApplyComposedSymbolAsync(composeKey, keepColors: true)"
+                                         Disabled="@(!composeSymbol.CanBulkEdit())">
+                                @($"{selectedOthers} selected classes, keep colors")
+                            </MudMenuItem>
+                        }
+                        else
+                        {
+                            <MudMenuItem OnClick="() => ApplyComposedSymbolAsync(composeKey, keepColors: false)">
+                                All classes
+                            </MudMenuItem>
+                            <MudMenuItem OnClick="() => ApplyComposedSymbolAsync(composeKey, keepColors: true)"
+                                         Disabled="@(!composeSymbol.CanBulkEdit())">
+                                All classes, keep colors
+                            </MudMenuItem>
+                        }
+                    </MudMenu>
+                </div>
+            }
             </div>
         </ItemRenderer>
     </MudDropContainer>
@@ -187,15 +191,35 @@
 
     protected override Task OnParametersSetAsync()
     {
+        // the edited class is gone (deleted, other value field, ...) => close the editor
+        if (_composeSymbolKey is not null
+            && KeySymbols?.Any(k => _composeSymbolKey.Equals(k.Key)) != true)
+        {
+            _composeSymbolKey = default;
+        }
+
         return base.OnParametersSetAsync();
     }
 
+    private bool IsComposing(TKey key)
+        => _composeSymbolKey is not null && _composeSymbolKey.Equals(key);
+
+    /// <summary>
+    /// Opens the inline symbol editor below the class (a second click closes it). Only one is open.
+    /// </summary>
     private void ComposeSymbol(TKey key)
     {
-        _composeSymbolKey = key;
+        _composeSymbolKey = IsComposing(key) ? default : key;
 
         StateHasChanged();
     }
+
+    private void CloseComposer() => _composeSymbolKey = default;
+
+    private string RowStyle(TKey key)
+        => IsComposing(key)
+            ? "background:var(--mud-palette-action-default-hover);border-left:3px solid var(--mud-palette-primary);border-radius:4px;margin:2px 0"
+            : "";
 
     private Task OnSymbolChanged(TKey key, ISymbol newSymbol) => HandleAsync(async () =>
     {
@@ -405,7 +429,6 @@
                       .ToArray();
 
         KeySymbols = KeySymbols.PasteSymbol(template, targets, keepColors, out int noColorCount);
-        _composeSymbolKey = default;
 
         await OnKeySymbolsChanged.InvokeAsync(KeySymbols);
 

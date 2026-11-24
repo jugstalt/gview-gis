@@ -187,6 +187,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   from a palette (style of the minimum symbol) or interpolated between the minimum and maximum symbol,
   decimals for limits and labels (`10 – 20` instead of `0.30000000000000004 - 0.4`); minimum, maximum
   and classes respect the layer filter, feature counts are shown after creating.
+- Carto: the symbol of a class is edited in a panel that opens below the class (click on the symbol,
+  click again or ✕ to close) instead of a card that replaced the list; the list keeps its scroll
+  position.
 
 ## Changed
 
