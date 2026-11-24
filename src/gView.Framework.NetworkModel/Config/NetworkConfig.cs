@@ -74,6 +74,10 @@ public class NetworkConfig
     /// </summary>
     public List<ConnectRuleConfig> ConnectRules { get; set; } = [];
 
+    /// <summary>"Connect rule 3" or "Connect rule 3 'LS auf Muffe'" for messages (index from 1).</summary>
+    public static string ConnectRuleLabel(ConnectRuleConfig rule, int index)
+        => string.IsNullOrWhiteSpace(rule.Name) ? $"Connect rule {index}" : $"Connect rule {index} '{rule.Name.Trim()}'";
+
     /// <summary>
     /// Whether a real node within the tolerance of the inside of a line splits it when no connect rule matches (and, with
     /// separate tiers, node and line are of one tier). Connect by default.
@@ -216,11 +220,12 @@ public class NetworkConfig
             throw new InvalidDataException(string.IsNullOrWhiteSpace(duplicateRule.Key) ? "Every rule needs an id." : $"The rule id '{duplicateRule.Key}' is used twice.");
         }
         ValidateTiersAndRules();
-        foreach (var (rule, index) in ConnectRules.Select((r, i) => (r, i + 1)))
+        // switched off rules may be unfinished
+        foreach (var (rule, index) in ConnectRules.Select((r, i) => (r, i + 1)).Where(r => r.r.Enabled))
         {
             if (string.IsNullOrWhiteSpace(rule.Nodes) || string.IsNullOrWhiteSpace(rule.Edges))
             {
-                throw new InvalidDataException($"Connect rule {index}: nodes and edges need a type pattern (* for all).");
+                throw new InvalidDataException($"{ConnectRuleLabel(rule, index)}: nodes and edges need a type pattern (* for all).");
             }
         }
         if (Shards is not null && ((string.IsNullOrWhiteSpace(Shards.Layer) && Shards.LayerId is null) || string.IsNullOrWhiteSpace(Shards.Field)))
@@ -275,6 +280,15 @@ public enum ConnectAction
 /// </summary>
 public class ConnectRuleConfig
 {
+    /// <summary>A short name, e.g. "LS auf Muffe"; shown in the module page, in errors and in the build reports.</summary>
+    public string? Name { get; set; }
+
+    /// <summary>Why the rule exists, e.g. which data error it works around.</summary>
+    public string? Description { get; set; }
+
+    /// <summary>Off: the build skips the rule as if it were deleted (to try a network without it).</summary>
+    public bool Enabled { get; set; } = true;
+
     /// <summary>Line ends, the inside of lines, or both.</summary>
     public ConnectAt At { get; set; } = ConnectAt.Any;
 
@@ -287,6 +301,12 @@ public class ConnectRuleConfig
     public ConnectAction Action { get; set; } = ConnectAction.Connect;
 
     public override string ToString() => $"{At.ToString().ToLowerInvariant()}: {Nodes} -> {Edges}: {Action.ToString().ToLowerInvariant()}";
+
+    /// <summary>The name, or without one the rule in short, e.g. "inside: [Niederspannung,Trennstelle,*] -> *".</summary>
+    public string DisplayName => string.IsNullOrWhiteSpace(Name) ? $"{At.ToString().ToLowerInvariant()}: {Nodes} -> {Edges}" : Name.Trim();
+
+    /// <summary>A copy with the same settings (Duplicate in the module page).</summary>
+    public ConnectRuleConfig Clone() => (ConnectRuleConfig)MemberwiseClone();
 }
 
 public class FacetConfig

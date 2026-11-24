@@ -285,7 +285,7 @@ public sealed class NetworkBuildService
         connectRules?.Resolve(config, registry);
         if (tiers.Count > 0)
         {
-            _log($"Tiers: {string.Join(", ", tiers.Select(t => t.Name))}{(config.SeparateTiers ? " (separate)" : "")}, connect rules: {config.ConnectRules.Count}");
+            _log($"Tiers: {string.Join(", ", tiers.Select(t => t.Name))}{(config.SeparateTiers ? " (separate)" : "")}, connect rules: {config.ConnectRules.Count(r => r.Enabled)}{(config.ConnectRules.Any(r => !r.Enabled) ? $" ({config.ConnectRules.Count(r => !r.Enabled)} off)" : "")}");
         }
 
         using var writer = store.CreateWriter();

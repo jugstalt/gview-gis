@@ -215,7 +215,7 @@
                 </GvCard>
             </MudTabPanel>
 
-            <MudTabPanel Text="@($"Connections ({config.ConnectRules.Count})")">
+            <MudTabPanel Text="@(config.ConnectRules.All(r => r.Enabled) ? $"Connections ({config.ConnectRules.Count})" : $"Connections ({config.ConnectRules.Count(r => r.Enabled)}/{config.ConnectRules.Count})")">
                 <GvCard Title="Connections (build)">
                     <GvCardContent>
                         @GvUtilities.InfoText("Which lines connect to which nodes when the network is built. Ends: a line end within the tolerance of a node connects to it. Inside: a node within the tolerance of the inside of a line splits it; the node is a real node, or the helper node (untyped) of line ends at a T junction, e.g. untyped & [Niederspannung,*,*]. The first rule that matches decides; without a match, separate tiers connect only within a tier (line ends also connect to the sources of their tier), then the defaults below decide for splits, otherwise everything connects. Ignore refuses silently, Report refuses and lists the place in the build log (probably a data error). Build again after a change.")
@@ -237,38 +237,83 @@
                                 </MudSelect>
                             </div>
                         </div>
-                        <div style="display:flex;gap:8px;margin-bottom:8px">
+                        <div style="display:flex;gap:8px;margin-bottom:8px;align-items:flex-end">
                             <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AddConnectRule">Add rule</MudButton>
+                            <MudButton Variant="Variant.Text" OnClick="() => _openConnectRules = config.ConnectRules.ToHashSet()">Expand all</MudButton>
+                            <MudButton Variant="Variant.Text" OnClick="() => _openConnectRules.Clear()">Collapse all</MudButton>
+                            <div style="flex:1"></div>
+                            <div style="width:280px">
+                                <MudTextField T="string" @bind-Value="_connectFilter" Immediate="true" Clearable="true" Placeholder="Filter (name, description, types)"
+                                              Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Margin="Margin.Dense" />
+                            </div>
                         </div>
-                        @for (int i = 0; i < config.ConnectRules.Count; i++)
+                        @if (!string.IsNullOrWhiteSpace(_connectFilter))
                         {
-                            var index = i;
-                            var current = config.ConnectRules[i];
-                            <div style="border-bottom:1px solid var(--mud-palette-lines-default);padding:6px 0">
-                                <div style="display:flex;gap:8px;align-items:flex-end">
-                                    <MudChip T="string" Size="MudBlazor.Size.Small">@(index + 1)</MudChip>
-                                    <div style="flex:1">
-                                        <MudSelect T="ConnectAt" Label="Where" @bind-Value="current.At">
-                                            <MudSelectItem Value="ConnectAt.Any">Ends and inside</MudSelectItem>
-                                            <MudSelectItem Value="ConnectAt.End">Ends (connect)</MudSelectItem>
-                                            <MudSelectItem Value="ConnectAt.Inside">Inside (split)</MudSelectItem>
-                                        </MudSelect>
-                                    </div>
-                                    <div style="flex:1">
-                                        <MudSelect T="ConnectAction" Label="Action" @bind-Value="current.Action">
-                                            <MudSelectItem Value="ConnectAction.Connect">Connect / split</MudSelectItem>
-                                            <MudSelectItem Value="ConnectAction.Ignore">Ignore</MudSelectItem>
-                                            <MudSelectItem Value="ConnectAction.Report">Report</MudSelectItem>
-                                        </MudSelect>
-                                    </div>
-                                    <MudIconButton Icon="@Icons.Material.Filled.ArrowUpward" Disabled="@(index == 0)" OnClick="() => MoveConnectRule(index, -1)" />
-                                    <MudIconButton Icon="@Icons.Material.Filled.ArrowDownward" Disabled="@(index == config.ConnectRules.Count - 1)" OnClick="() => MoveConnectRule(index, 1)" />
-                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="() => config.ConnectRules.Remove(current)" />
-                                </div>
-                                <NetworkTypePatternEditor Label="Node types (untyped = helper nodes, e.g. T junctions)" @bind-Value="current.Nodes" FacetNames="_facetNames" Suggestions="_suggestions" Nodes="true" />
-                                <NetworkTypePatternEditor Label="Edge types" @bind-Value="current.Edges" FacetNames="_facetNames" Suggestions="_suggestions" />
+                            <div class="mud-typography mud-typography-caption" style="opacity:.7;margin-bottom:4px">
+                                @config.ConnectRules.Count(MatchesConnectFilter) of @config.ConnectRules.Count rules match; the order of the list still decides.
                             </div>
                         }
+
+                        <MudExpansionPanels MultiExpansion="true" Dense="true">
+                            @for (int i = 0; i < config.ConnectRules.Count; i++)
+                            {
+                                var index = i;
+                                var current = config.ConnectRules[i];
+                                if (!MatchesConnectFilter(current))
+                                {
+                                    continue;
+                                }
+                                <MudExpansionPanel @key="current" Expanded="_openConnectRules.Contains(current)" ExpandedChanged="(bool open) => SetConnectOpen(current, open)">
+                                    <TitleContent>
+                                        <div style="display:grid;grid-template-columns:auto auto auto minmax(0,1fr) auto auto auto;gap:8px;align-items:center;width:100%;min-width:0;@(current.Enabled ? "" : "opacity:.5")">
+                                            <div @onclick:stopPropagation="true" title="@(current.Enabled ? "Used by the build: click to switch off" : "Switched off: the build skips it")">
+                                                <MudCheckBox T="bool" @bind-Value="current.Enabled" Color="Color.Primary" Dense="true" Size="MudBlazor.Size.Small" />
+                                            </div>
+                                            <span style="opacity:.7">@(index + 1)</span>
+                                            <b style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:260px" title="@current.Description">@current.DisplayName</b>
+                                            <span style="opacity:.7;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0">@ConnectRuleSummary(current)</span>
+                                            <MudChip T="string" Size="MudBlazor.Size.Small" Variant="Variant.Outlined">@ConnectAtLabel(current.At)</MudChip>
+                                            <MudChip T="string" Size="MudBlazor.Size.Small" Color="@ConnectActionColor(current.Action)">@ConnectActionLabel(current.Action)</MudChip>
+                                            <div style="display:flex" @onclick:stopPropagation="true">
+                                                <MudIconButton Icon="@Icons.Material.Filled.ArrowUpward" Size="MudBlazor.Size.Small" Disabled="@(index == 0)" OnClick="() => MoveConnectRule(index, -1)" title="Up: earlier rules win" />
+                                                <MudIconButton Icon="@Icons.Material.Filled.ArrowDownward" Size="MudBlazor.Size.Small" Disabled="@(index == config.ConnectRules.Count - 1)" OnClick="() => MoveConnectRule(index, 1)" title="Down" />
+                                            </div>
+                                        </div>
+                                    </TitleContent>
+                                    <ChildContent>
+                                        <div style="display:flex;gap:8px;align-items:flex-end">
+                                            <div style="flex:1"><MudTextField T="string" Label="Name" @bind-Value="current.Name" Placeholder="@ConnectRuleSummary(current)" /></div>
+                                            <div style="flex:1">
+                                                <MudSelect T="ConnectAt" Label="Where" @bind-Value="current.At">
+                                                    <MudSelectItem Value="ConnectAt.Any">Ends and inside</MudSelectItem>
+                                                    <MudSelectItem Value="ConnectAt.End">Ends (connect)</MudSelectItem>
+                                                    <MudSelectItem Value="ConnectAt.Inside">Inside (split)</MudSelectItem>
+                                                </MudSelect>
+                                            </div>
+                                            <div style="flex:1">
+                                                <MudSelect T="ConnectAction" Label="Action" @bind-Value="current.Action">
+                                                    @foreach (var action in Enum.GetValues<ConnectAction>())
+                                                    {
+                                                        <MudSelectItem Value="action">@ConnectActionLabel(action)</MudSelectItem>
+                                                    }
+                                                </MudSelect>
+                                            </div>
+                                        </div>
+                                        <MudTextField T="string" Label="Description (why the rule exists)" @bind-Value="current.Description" Lines="2" AutoGrow="true" MaxLines="6" />
+                                        <div style="margin-top:6px">
+                                            <NetworkTypePatternEditor Label="Node types (untyped = helper nodes, e.g. T junctions)" @bind-Value="current.Nodes" FacetNames="_facetNames" Suggestions="_suggestions" Nodes="true" />
+                                        </div>
+                                        <div style="margin-top:6px">
+                                            <NetworkTypePatternEditor Label="Edge types" @bind-Value="current.Edges" FacetNames="_facetNames" Suggestions="_suggestions" />
+                                        </div>
+                                        <div style="display:flex;gap:8px;margin-top:4px">
+                                            <MudButton Size="MudBlazor.Size.Small" OnClick="() => DuplicateConnectRule(index)">Duplicate</MudButton>
+                                            <MudButton Size="MudBlazor.Size.Small" Color="Color.Error" OnClick="() => RemoveConnectRule(current)">Delete</MudButton>
+                                        </div>
+                                    </ChildContent>
+                                </MudExpansionPanel>
+                            }
+                        </MudExpansionPanels>
                     </GvCardContent>
                 </GvCard>
             </MudTabPanel>
@@ -536,11 +581,84 @@
         _module.Config.Tiers.Add(new NetworkTierConfig { Name = TierNames().FirstOrDefault(n => !used.Contains(n)) ?? "" });
     });
 
+    #region Connect rules
+
+    /// <summary>The connect rules expanded in the list; new ones are open, the others closed when the page opens.</summary>
+    private HashSet<ConnectRuleConfig> _openConnectRules = [];
+
+    private string? _connectFilter;
+
+    private void SetConnectOpen(ConnectRuleConfig rule, bool open)
+    {
+        if (open) { _openConnectRules.Add(rule); } else { _openConnectRules.Remove(rule); }
+    }
+
+    private bool MatchesConnectFilter(ConnectRuleConfig rule)
+    {
+        if (string.IsNullOrWhiteSpace(_connectFilter))
+        {
+            return true;
+        }
+        var filter = _connectFilter.Trim();
+        return new[] { rule.Name, rule.Description, rule.Nodes, rule.Edges, ConnectActionLabel(rule.Action), ConnectAtLabel(rule.At) }
+            .Any(text => text?.Contains(filter, StringComparison.OrdinalIgnoreCase) == true);
+    }
+
+    /// <summary>The types of a rule in short, e.g. "[Niederspannung,Trennstelle,*] → *" (all-* patterns as *).</summary>
+    private static string ConnectRuleSummary(ConnectRuleConfig rule)
+    {
+        static string Short(string pattern) => System.Text.RegularExpressions.Regex.IsMatch(pattern.Trim(), @"^\[\s*\*(\s*,\s*\*)*\s*\]$") ? "*" : pattern.Trim();
+        return $"{Short(rule.Nodes)} → {Short(rule.Edges)}";
+    }
+
+    private static string ConnectAtLabel(ConnectAt at) => at switch
+    {
+        ConnectAt.End => "Ends",
+        ConnectAt.Inside => "Inside",
+        _ => "Ends + inside"
+    };
+
+    private static string ConnectActionLabel(ConnectAction action) => action switch
+    {
+        ConnectAction.Connect => "Connect / split",
+        ConnectAction.Ignore => "Ignore",
+        ConnectAction.Report => "Report",
+        _ => action.ToString()
+    };
+
+    private static Color ConnectActionColor(ConnectAction action) => action switch
+    {
+        ConnectAction.Connect => Color.Success,
+        ConnectAction.Report => Color.Warning,
+        _ => Color.Default
+    };
+
     private void AddConnectRule() => Handle(() =>
     {
         var any = $"[{string.Join(",", Enumerable.Repeat("*", Math.Max(1, _facetNames.Count)))}]";
-        _module!.Config.ConnectRules.Add(new ConnectRuleConfig { At = ConnectAt.Inside, Nodes = any, Edges = any, Action = ConnectAction.Report });
+        var rule = new ConnectRuleConfig { At = ConnectAt.Inside, Nodes = any, Edges = any, Action = ConnectAction.Report };
+        _module!.Config.ConnectRules.Add(rule);
+        _openConnectRules.Add(rule);
+        _connectFilter = null;
     });
+
+    /// <summary>A copy right below the rule, open, so it can be changed at once.</summary>
+    private void DuplicateConnectRule(int index) => Handle(() =>
+    {
+        var rules = _module!.Config.ConnectRules;
+        var copy = rules[index].Clone();
+        copy.Name = string.IsNullOrWhiteSpace(copy.Name) ? null : $"{copy.Name} (copy)";
+        rules.Insert(index + 1, copy);
+        _openConnectRules.Add(copy);
+    });
+
+    private void RemoveConnectRule(ConnectRuleConfig rule) => Handle(() =>
+    {
+        _module!.Config.ConnectRules.Remove(rule);
+        _openConnectRules.Remove(rule);
+    });
+
+    #endregion
 
     private void MoveConnectRule(int index, int by) => Handle(() =>
     {
@@ -651,6 +769,7 @@
         var problems = _module!.ImportJson(File.ReadAllText(_jsonPath));
         _command = null;
         _openRules.Clear();
+        _openConnectRules.Clear();
         if (problems.Count == 0)
         {
             SetMessages(Severity.Success, $"Imported: {_module.Config.Nodes.Count} node layer(s), {_module.Config.Edges.Count} edge layer(s).");

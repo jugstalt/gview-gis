@@ -30,7 +30,7 @@ internal sealed class NetworkConnectRules
 
     /// <summary>Whether the config asks for any callback; without, the build connects everything as before.</summary>
     public static bool Needed(NetworkConfig config)
-        => config.SeparateTiers || config.ConnectRules.Count > 0
+        => config.SeparateTiers || config.ConnectRules.Any(r => r.Enabled)
            || config.NodesOnLine != ConnectAction.Connect || config.LineEndsOnLine != ConnectAction.Connect;
 
     private static ConnectionDecision Decision(ConnectAction action) => action switch
@@ -82,7 +82,8 @@ internal sealed class NetworkConnectRules
     public void Resolve(NetworkConfig config, TypeRegistry registry)
     {
         var problems = new List<string>();
-        foreach (var (rule, index) in config.ConnectRules.Select((r, i) => (r, i + 1)))
+        // switched off rules are left out as if deleted (the numbers in messages stay those of the list)
+        foreach (var (rule, index) in config.ConnectRules.Select((r, i) => (r, i + 1)).Where(r => r.r.Enabled))
         {
             try
             {
@@ -90,7 +91,7 @@ internal sealed class NetworkConnectRules
             }
             catch (ArgumentException ex)
             {
-                problems.Add($"Connect rule {index} ({rule}): {ex.Message}");
+                problems.Add($"{NetworkConfig.ConnectRuleLabel(rule, index)} ({rule}): {ex.Message}");
             }
         }
 

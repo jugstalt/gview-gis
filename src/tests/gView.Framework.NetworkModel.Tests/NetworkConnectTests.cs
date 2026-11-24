@@ -160,6 +160,35 @@ public class NetworkConnectTests : IDisposable
     }
 
     [Fact]
+    public void ConnectRule_SwitchedOff_IsSkipped_AsIfDeleted()
+    {
+        var result = Build(Config(true, new ConnectRuleConfig { At = ConnectAt.Inside, Nodes = "[NS,*]", Edges = "[MS,*]", Action = ConnectAction.Report, Enabled = false }));
+        Assert.DoesNotContain(result.Diagnostics, d => d.Kind == BuildDiagnosticKind.SplitRefused);
+    }
+
+    [Fact]
+    public void ConnectRule_SwitchedOff_MayBeUnfinished_AndIsNotNeeded()
+    {
+        var config = new NetworkConfig { ConnectRules = [new ConnectRuleConfig { Nodes = "[NS,Gibtsnicht]", Edges = "", Enabled = false }] };
+        Assert.False(NetworkConnectRules.Needed(config));
+        Build(Config(true, new ConnectRuleConfig { Nodes = "[NS,Gibtsnicht]", Edges = "", Enabled = false }));
+    }
+
+    [Fact]
+    public void ConnectRule_WithAName_IsNamedInErrors()
+    {
+        var ex = Assert.Throws<InvalidDataException>(() => Build(Config(true, new ConnectRuleConfig { Name = "LS auf Muffe", Nodes = "[NS,Gibtsnicht]", Edges = "*" })));
+        Assert.Contains("Connect rule 1 'LS auf Muffe'", ex.Message);
+    }
+
+    [Fact]
+    public void ConnectRule_DisplayName_IsTheNameOrTheRuleInShort()
+    {
+        Assert.Equal("inside: [NS,*] -> [MS,*]", new ConnectRuleConfig { At = ConnectAt.Inside, Nodes = "[NS,*]", Edges = "[MS,*]" }.DisplayName);
+        Assert.Equal("LS auf Muffe", new ConnectRuleConfig { Name = " LS auf Muffe ", Nodes = "*", Edges = "*" }.DisplayName);
+    }
+
+    [Fact]
     public void ConnectRule_WinsOverTheTiers()
     {
         // the joint may split MS cables again

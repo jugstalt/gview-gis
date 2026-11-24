@@ -292,7 +292,7 @@ public class NetworkModule : IMapApplicationModule, IPersistable
             }
             catch (ArgumentException ex)
             {
-                problems.Add($"Connect rule {index} ({rule}): {ex.Message}");
+                problems.Add($"{NetworkConfig.ConnectRuleLabel(rule, index)}{(rule.Enabled ? "" : " (off)")} ({rule}): {ex.Message}");
             }
         }
         return problems;
