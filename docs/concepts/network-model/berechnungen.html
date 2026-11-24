@@ -27,7 +27,7 @@
     <dl class="titleblock">
       <dt>Projekt</dt><dd>SpatialNET</dd>
       <dt>Inhalt</dt><dd>Netzwerk-Konzept</dd>
-      <dt>Stand</dt><dd>22.11.2026</dd>
+      <dt>Stand</dt><dd>24.11.2026</dd>
       <dt>Status</dt><dd>umgesetzt</dd>
       <dt>Bezug</dt><dd>ADR 0049, 0051</dd>
     </dl>
@@ -104,6 +104,30 @@
       <div class="canvas"><img src="img/trafo-filter.png" alt="Ein Trafo in der Mitte. Links gestrichelte Mittelspannungskanten, vom Filter ausgeschlossen. Rechts Niederspannungskanten zu zwei Kunden, in die der Trace läuft."></div>
       <figcaption><b>Abb. 5.2</b>Trace ab dem Trafo auf der Ebene Niederspannung (wirkt wie der Filter <code>[1, *, *]</code>). Die Mittelspannung wird nicht betreten und auch nicht geladen.</figcaption>
     </figure>
+
+    <h2>Abzweige: An welchem Abzweig hängt eine Leitung?</h2>
+    <p>Ein Trace pro Trafo sagt, welcher Trafo eine Leitung versorgt. Für Netzpläne braucht man oft mehr: an welchem <strong>Abzweig</strong> des Trafos, also an welchem Anlagenverbinder, sie hängt. Das liefert die Operation <em>feeders</em> in gView, in einem Lauf über das ganze Netz:</p>
+    <ul>
+      <li>Ein Abzweig ist eine Kante an einer Quelle, deren Typ zum Muster passt, z. B. <code>[Niederspannung, Anlagenverbinder, *]</code>.</li>
+      <li>Gesucht wird vom fernen Ende jedes Abzweigs aus. Die Trafos sind Stopps, so bleiben die Abzweige eines Trafos getrennt.</li>
+      <li>Jede erreichte Kante bekommt den Trafo, den Abzweig und die Kosten ab dem Trafo. Wie sie erreicht wurde, sagt ihre Art (<em>kind</em>).</li>
+    </ul>
+    <figure class="fig">
+      <div class="canvas"><img src="img/abzweige.png" alt="Ein Niederspannungsnetz mit zwei Trafos und drei Anlagenverbindern. Die Leitungen jedes Abzweigs sind in seiner Farbe gezeichnet (Edge). Eine Leitung zwischen Abzweig 2 und 3 schließt einen Ring und ist orange (Multiple). Eine abgeschaltete Leitung mit Schalter zwischen Abzweig 1 und 2 ist rot gestrichelt (Open). Eine nicht angeschlossene Leitung ist grau und bekommt kein Item. Rechts die Erklärung der Arten und ein Beispiel-Item für Multiple."></div>
+      <figcaption><b>Abb. 5.3</b>Die Arten an einem kleinen Netz. Der geschlossene Ring zwischen Abzweig #2 und #3 ist <em>Multiple</em>, die abgeschaltete Trennstelle zwischen #1 und #2 ist <em>Open</em>, die nicht angeschlossene Leitung bekommt gar kein Ergebnis.</figcaption>
+    </figure>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>Art</th><th>Bedeutung</th><th>Trafo und Abzweig im Ergebnis</th></tr></thead>
+        <tbody>
+          <tr><td><code>Edge</code></td><td>genau ein Abzweig erreicht die Leitung</td><td>dieser Abzweig</td></tr>
+          <tr><td><code>Multiple</code></td><td>mehr als ein Abzweig erreicht sie: ein geschlossener Ring, eine Doppelversorgung oder ein Datenfehler</td><td>alle, der günstigste zuerst; Felder mit einer ID bekommen den günstigsten</td></tr>
+          <tr><td><code>Open</code></td><td>sie hängt an einem erreichten Knoten, aber kein Abzweig läuft über sie: an einer Trennstelle abgeschaltet oder gegen ihre Richtung. Nur auf Wunsch (<code>openEdges</code>)</td><td>die Abzweige an ihren erreichten Enden</td></tr>
+          <tr><td>kein Ergebnis</td><td>kein Abzweig erreicht sie, z. B. weil sie nicht angeschlossen ist</td><td>nichts; ein Standardwert muss vorher gesetzt werden</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Eine <em>Multiple</em>-Leitung zeigt einen Ring, der offen sein sollte, eine <em>Open</em>-Leitung die Stelle, an der er offen ist. In gView.Pipe schreibt der Node Network Trace Trafo, Abzweig, Art und eine Klasse für die Einfärbung direkt in Felder der Leitungen (<a href="gview.html">Blatt 8</a>).</p>
 
     <h2>Erreichbarkeit</h2>
     <p>Alle Knoten innerhalb bestimmter Kosten, sortiert nach Kosten, mit der Kante, über die jeder erreicht wurde. Beispiele: alle Kunden innerhalb von 300 m Kabellänge ab einem Kasten, oder alle Straßen, die in 5 Minuten erreichbar sind.</p>

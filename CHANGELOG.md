@@ -39,7 +39,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     gView): Feeders labels every line with the source and branch it hangs on (e.g. transformer
     and connector) in one run, Multiple for lines reached from more than one branch; Trace runs
     once per input item. One item per line feature without geometry, object id as `id`.
-    Output fields (source and branch id, kind, classes as object id modulo Classes, Multiple and
+    Output fields (source and branch id, all ids as text, kind, classes as object id modulo Classes, Multiple and
     Open class) and Open lines (switched off lines at a separation point, kind Open).
   - Deploy build: the plugin is part of the server and web apps ZIPs and Docker images.
 - Network searches: new operation `feeders` (gView.Cmd `-u feeders -branches …`, server REST

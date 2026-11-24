@@ -209,7 +209,7 @@ public sealed class NetworkTraceNodeTests : IDisposable
     {
         credentialId = CredentialId, operation = "feeders", sources = "[*,Trafo,*]", branches = "[*,Anlagenverbinder,*]", tier = "Niederspannung",
         outputTypes = "[*,Leitung,*]", openLines, classes = 2, multipleClass, onlyOutputFields,
-        sourceIdField = "TRAFO", branchIdField = "ABZWEIGID", kindField = "ZUSTAND", sourceClassField = "STAT_CLASS", branchClassField = "ABZW_CLASS"
+        sourceIdField = "TRAFO", branchIdField = "ABZWEIGID", sourceIdsField = "TRAFOS", branchIdsField = "ABZWEIGE", kindField = "ZUSTAND", sourceClassField = "STAT_CLASS", branchClassField = "ABZW_CLASS"
     };
 
     [Fact]
@@ -229,7 +229,9 @@ public sealed class NetworkTraceNodeTests : IDisposable
         Assert.Equal("Knoten#2", P(line, "source").GetValue<string>());
 
         var bare = only.Single(i => i["id"]!.GetValue<int>() == 1);
-        Assert.Equal(["ABZW_CLASS", "ABZWEIGID", "STAT_CLASS", "TRAFO", "ZUSTAND"], bare["properties"]!.AsObject().Select(p => p.Key).Order());
+        Assert.Equal(["ABZW_CLASS", "ABZWEIGE", "ABZWEIGID", "STAT_CLASS", "TRAFO", "TRAFOS", "ZUSTAND"], bare["properties"]!.AsObject().Select(p => p.Key).Order());
+        Assert.Equal("2", P(line, "TRAFOS").GetValue<string>());
+        Assert.Equal("1", P(line, "ABZWEIGE").GetValue<string>());
     }
 
     [Fact]
@@ -258,6 +260,9 @@ public sealed class NetworkTraceNodeTests : IDisposable
         Assert.Equal(997, P(marked, "STAT_CLASS").GetValue<int>());
         Assert.Equal(997, P(marked, "ABZW_CLASS").GetValue<int>());
         Assert.Equal(2, P(marked, "ABZWEIGID").GetValue<int>());
+        // all of them as text, cheapest first
+        Assert.Equal("2,3", P(cheapest, "ABZWEIGE").GetValue<string>());
+        Assert.Equal("2,3", P(cheapest, "TRAFOS").GetValue<string>());
     }
 
     [Fact]

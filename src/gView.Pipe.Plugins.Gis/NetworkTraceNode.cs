@@ -69,32 +69,40 @@ public sealed class NetworkTraceParameters
         Description = "Property that gets the object id of the branch, e.g. the connector; for Multiple and Open the cheapest. Empty: not written")]
     public string BranchIdField { get; set; } = "";
 
-    [PipeParameter(Label = "Kind field", Order = 12, Expressions = false, ShowWhen = nameof(Operation), ShowWhenValues = ["feeders", "feedersOfItems"], Placeholder = "SUPPLY_KIND",
+    [PipeParameter(Label = "Source ids field", Order = 12, Expressions = false, ShowWhen = nameof(Operation), ShowWhenValues = ["feeders", "feedersOfItems"], Placeholder = "TRANSFORMER_IDS",
+        Description = "Property that gets the object ids of all sources as text, comma separated and cheapest first, e.g. 4711,4712 for a line of kind Multiple; one id for Edge. Empty: not written")]
+    public string SourceIdsField { get; set; } = "";
+
+    [PipeParameter(Label = "Branch ids field", Order = 13, Expressions = false, ShowWhen = nameof(Operation), ShowWhenValues = ["feeders", "feedersOfItems"], Placeholder = "BRANCH_IDS",
+        Description = "Property that gets the object ids of all branches as text, comma separated and cheapest first, e.g. 2,3 for a line of kind Multiple. Empty: not written")]
+    public string BranchIdsField { get; set; } = "";
+
+    [PipeParameter(Label = "Kind field", Order = 14, Expressions = false, ShowWhen = nameof(Operation), ShowWhenValues = ["feeders", "feedersOfItems"], Placeholder = "SUPPLY_KIND",
         Description = "Property that gets the kind as text: Edge (one branch), Multiple (more than one: a closed ring, double supply) or Open (see Open lines). Empty: not written")]
     public string KindField { get; set; } = "";
 
-    [PipeParameter(Label = "Source class field", Order = 13, Expressions = false, ShowWhen = nameof(Operation), ShowWhenValues = ["feeders", "feedersOfItems"], Placeholder = "SOURCE_CLASS",
+    [PipeParameter(Label = "Source class field", Order = 15, Expressions = false, ShowWhen = nameof(Operation), ShowWhenValues = ["feeders", "feedersOfItems"], Placeholder = "SOURCE_CLASS",
         Description = "Property that gets the class of the source: 0 to Classes−1, derived from its object id (id modulo Classes), the same in every run; e.g. for a renderer with a fixed number of colours. Empty: not written")]
     public string SourceClassField { get; set; } = "";
 
-    [PipeParameter(Label = "Branch class field", Order = 14, Expressions = false, ShowWhen = nameof(Operation), ShowWhenValues = ["feeders", "feedersOfItems"], Placeholder = "BRANCH_CLASS",
+    [PipeParameter(Label = "Branch class field", Order = 16, Expressions = false, ShowWhen = nameof(Operation), ShowWhenValues = ["feeders", "feedersOfItems"], Placeholder = "BRANCH_CLASS",
         Description = "Property that gets the class of the branch, like Source class field; neighbouring branches may get the same class. Empty: not written")]
     public string BranchClassField { get; set; } = "";
 
-    [PipeParameter(Label = "Classes", Order = 15, Expressions = false, ShowWhen = nameof(Operation), ShowWhenValues = ["feeders", "feedersOfItems"],
+    [PipeParameter(Label = "Classes", Order = 17, Expressions = false, ShowWhen = nameof(Operation), ShowWhenValues = ["feeders", "feedersOfItems"],
         Description = "Number of classes of the class fields, e.g. 100 for 0 to 99")]
     [Range(1, int.MaxValue)]
     public int Classes { get; set; } = 100;
 
-    [PipeParameter(Label = "Multiple class", Order = 16, Expressions = false, ShowWhen = nameof(Operation), ShowWhenValues = ["feeders", "feedersOfItems"], Placeholder = "997",
+    [PipeParameter(Label = "Multiple class", Order = 18, Expressions = false, ShowWhen = nameof(Operation), ShowWhenValues = ["feeders", "feedersOfItems"], Placeholder = "997",
         Description = "Class of both class fields for a line of kind Multiple, e.g. 997 to show rings and double supply on the map; empty: the class of the cheapest branch")]
     public int? MultipleClass { get; set; }
 
-    [PipeParameter(Label = "Open class", Order = 17, Expressions = false, ShowWhen = nameof(OpenLines), ShowWhenValues = ["true"],
+    [PipeParameter(Label = "Open class", Order = 19, Expressions = false, ShowWhen = nameof(OpenLines), ShowWhenValues = ["true"],
         Description = "Class of both class fields for a line of kind Open, e.g. 998, so separation points stand out on the map")]
     public int OpenClass { get; set; } = 998;
 
-    [PipeParameter(Label = "Only the output fields", Order = 18, Expressions = false, ShowWhen = nameof(Operation), ShowWhenValues = ["feeders", "feedersOfItems"],
+    [PipeParameter(Label = "Only the output fields", Order = 20, Expressions = false, ShowWhen = nameof(Operation), ShowWhenValues = ["feeders", "feedersOfItems"],
         Description = "The items keep only id and the fields named above, ready for Write Features (update by object id) without a Set node")]
     public bool OnlyOutputFields { get; set; }
 
@@ -291,7 +299,7 @@ public sealed class NetworkTraceNode : IPipeNode<NetworkTraceParameters>
             properties["parts"] = parts.Count;
             if (first.Source is not null && HasOutputFields(parameters))
             {
-                properties = OutputFields(parameters, properties, kind, OidOf(first.Source), OidOf(first.Branch));
+                properties = OutputFields(parameters, properties, kind, first.Source, first.Branch);
             }
 
             output.Add(new PipeItem(new JsonObject
@@ -389,6 +397,18 @@ public sealed class NetworkTraceNode : IPipeNode<NetworkTraceParameters>
         return hash >= 0 && long.TryParse(first![(hash + 1)..], NumberStyles.Integer, CultureInfo.InvariantCulture, out var oid) ? oid : null;
     }
 
+    /// <summary>The OIDs of a label list as text, in its order ("Transformer#4711 Transformer#4712" → "4711,4712").</summary>
+    static private string? OidsOf(string? labels)
+    {
+        var oids = (labels ?? "").Split(' ', StringSplitOptions.RemoveEmptyEntries)
+            .Select(OidOf)
+            .OfType<long>()
+            .Distinct()
+            .Select(oid => oid.ToString(CultureInfo.InvariantCulture))
+            .ToList();
+        return oids.Count == 0 ? null : string.Join(",", oids);
+    }
+
     static private int PartOf(string label)
     {
         int slash = label.LastIndexOf('/');
@@ -409,15 +429,18 @@ public sealed class NetworkTraceNode : IPipeNode<NetworkTraceParameters>
     static private JsonNode ObjectId(long oid) => oid is >= int.MinValue and <= int.MaxValue ? JsonValue.Create((int)oid) : JsonValue.Create(oid);
 
     static private bool HasOutputFields(NetworkTraceParameters parameters)
-        => new[] { parameters.SourceIdField, parameters.BranchIdField, parameters.KindField, parameters.SourceClassField, parameters.BranchClassField }
+        => new[] { parameters.SourceIdField, parameters.BranchIdField, parameters.SourceIdsField, parameters.BranchIdsField,
+                   parameters.KindField, parameters.SourceClassField, parameters.BranchClassField }
             .Any(name => !string.IsNullOrWhiteSpace(name));
 
     /// <summary>
     /// The fields named in the parameters: ids of the (cheapest) source and branch, the kind, and their classes (id modulo
     /// Classes; Multiple class and Open class for those kinds). With Only the output fields nothing else.
     /// </summary>
-    static private JsonObject OutputFields(NetworkTraceParameters parameters, JsonObject properties, string kind, long? sourceOid, long? branchOid)
+    static private JsonObject OutputFields(NetworkTraceParameters parameters, JsonObject properties, string kind, string? sources, string? branches)
     {
+        var sourceOid = OidOf(sources);
+        var branchOid = OidOf(branches);
         var target = parameters.OnlyOutputFields ? new JsonObject() : properties;
         var classes = Math.Max(1, parameters.Classes);
         int? fixedClass = kind switch
@@ -437,6 +460,8 @@ public sealed class NetworkTraceNode : IPipeNode<NetworkTraceParameters>
         }
         Set(parameters.SourceIdField, sourceOid is long source ? ObjectId(source) : null);
         Set(parameters.BranchIdField, branchOid is long branch ? ObjectId(branch) : null);
+        Set(parameters.SourceIdsField, OidsOf(sources));
+        Set(parameters.BranchIdsField, OidsOf(branches));
         Set(parameters.KindField, kind);
         Set(parameters.SourceClassField, Class(sourceOid));
         Set(parameters.BranchClassField, Class(branchOid));
