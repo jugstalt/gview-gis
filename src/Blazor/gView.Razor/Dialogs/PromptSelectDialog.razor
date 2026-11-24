@@ -8,6 +8,7 @@
         @if(Model.Options is not null) 
         {
             <MudSelect T="TValue"
+                       PopoverClass="gv-dialog-popover"
                        @bind-Value="Model.SelectedValue"
                        Label="@Model.Prompt"
                        Required="@Model.Required" >

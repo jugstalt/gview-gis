@@ -180,6 +180,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   is edited (also across layers of the same geometry type), `Paste Symbol` and `Paste Symbol, keep
   colors` in the `More ...` menu of the class renderers and `Apply to ...` in the symbol card of a
   class. "Keep colors" takes the style from the pasted symbol and keeps the colour of each class.
+- Carto: number of features per class in the class renderers (counted by `Add All Values` in one
+  grouped query, or with `More ...` > `Count Features`; respects the layer filter); classes without
+  features are greyed out, `Select empty` selects them, `Order by ...` sorts by label, value or count.
 
 ## Changed
 
@@ -203,6 +206,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Fixed
 
+- Carto: select boxes in dialogs opened from another dialog (e.g. `Order by ...`, `Label Style ...`
+  and `Set Value Field ...` of the renderers) opened behind the dialog.
 - Tile service: tiles rendered on the fly (vector and raster) failed with "file used by another process" /
   "access denied" when clients requested the same tile several times at once. A tile is now rendered once per
   process for concurrent requests (`TileCacheFile`), written via a temp file without overwriting, a locked cache

@@ -17,6 +17,7 @@
                           OnKeySymbolsChanged="SymbolsListChanged"
                           OnKeySymbolChanged="SymbolChanged"
                           SelectedKeys="_selectedKeys"
+                          Counts="_counts"
                           OnSelectionChanged="StateHasChanged">
         <ListItemTools>
             @if(_addQuantityItem is null && _wizardModel is null) 
@@ -50,9 +51,10 @@
                         <MudButton OnClick="OnShowWizard">Wizard</MudButton>
                         <MudButton OnClick="() => _addQuantityItem = new()">Add Value</MudButton>
                         <MudMenu Label="More ..." Variant="Variant.Filled">
-                            <MudMenuItem Icon="@MudBlazor.Icons.Material.Outlined.Cancel"
-                                         IconColor="Color.Surface">
-                                Cancel
+                            <MudMenuItem Icon="@MudBlazor.Icons.Material.Outlined.Numbers"
+                                         IconColor="Color.Primary"
+                                         OnClick="OnCountFeaturesClickAsync">
+                                Count Features
                             </MudMenuItem>
                             <MudMenuItem Icon="@MudBlazor.Icons.Material.Outlined.Palette"
                                          IconColor="Color.Primary"
@@ -191,6 +193,7 @@
 
     private Dictionary<string, List<KeySymbol<RangeClass>>> _dictKeySymbols = new();
     private HashSet<RangeClass> _selectedKeys = new();
+    private Dictionary<RangeClass, long>? _counts = null;
     private QuantityItemModel? _addQuantityItem = null;
     private QuantityWizardModel? _wizardModel = null;
 
@@ -283,6 +286,7 @@
     private void OnValueFieldChanged(string field)
     {
         _selectedKeys.Clear();
+        _counts = null;
 
         if (_renderer is not null)
         {
@@ -293,6 +297,24 @@
     }
 
     #region Button Events
+
+    private Task OnCountFeaturesClickAsync() => HandleAsync(async () =>
+    {
+        if (_renderer is null || _layer?.FeatureClass is null)
+        {
+            return;
+        }
+
+        var keySymbols = CurrentKeySymbolsList();
+        var counts = await _layer.CountByRangesAsync(
+            _renderer.ValueField,
+            keySymbols.Select(k => (k.Key.Min, k.Key.Max)).ToArray());
+
+        _counts = keySymbols
+            .Select((k, i) => (k.Key, Count: counts[i]))
+            .ToDictionary(k => k.Key, k => k.Count);
+    });
+
 
     private bool CanPasteSymbol(bool keepColors = false)
         => _layer is not null

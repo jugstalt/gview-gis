@@ -17,6 +17,7 @@
                           OnKeySymbolsChanged="SymbolsListChanged"
                           OnKeySymbolChanged="SymbolChanged"
                           SelectedKeys="_selectedKeys"
+                          Counts="_counts"
                           OnSelectionChanged="StateHasChanged"
                           IsAllOtherValues="IsAllOtherValuesKey">
         <ListItemTools>
@@ -57,9 +58,10 @@
                     <MudButton OnClick="() => _addValueItem = new()"  >Add Value</MudButton>
                     <MudButton OnClick="OnAddAllOtherValuesItem">Add "All other"</MudButton>
                     <MudMenu Label="More ..." Variant="Variant.Filled">
-                        <MudMenuItem Icon="@MudBlazor.Icons.Material.Outlined.Cancel"
-                                     IconColor="Color.Surface">
-                            Cancel
+                        <MudMenuItem Icon="@MudBlazor.Icons.Material.Outlined.Numbers"
+                                     IconColor="Color.Primary"
+                                     OnClick="OnCountFeaturesClickAsync">
+                            Count Features
                         </MudMenuItem>
                         <MudMenuItem Icon="@MudBlazor.Icons.Material.Outlined.Palette"
                                      IconColor="Color.Primary"
@@ -96,7 +98,7 @@
                         <MudMenuItem Icon="@MudBlazor.Icons.Material.Outlined.Sort"
                                      IconColor="Color.Primary"
                                      OnClick="OnLabelOrderingClickAsync">
-                            Order by Labels ...
+                            Order by ...
                         </MudMenuItem>
                         <MudMenuItem Icon="@MudBlazor.Icons.Material.Outlined.TextFields"
                                      IconColor="Color.Primary"
@@ -106,7 +108,7 @@
                         <MudMenuItem Icon="@MudBlazor.Icons.Material.Outlined.Delete"
                                      IconColor="Color.Secondary"
                                      OnClick="OnRemoveNotExistingItemsClickAsync">
-                            Remove, if not exsts in source
+                            Remove, if not exists in source
                         </MudMenuItem>
                         <MudMenuItem Icon="@MudBlazor.Icons.Material.Filled.Delete"
                                      IconColor="Color.Secondary"
@@ -169,6 +171,7 @@
 
     private Dictionary<string, List<KeySymbol<string>>> _dictKeySymbols = new();
     private HashSet<string> _selectedKeys = new();
+    private Dictionary<string, long>? _counts = null;
     private ValueItemModel? _addValueItem = null;
 
     private bool _processingAddAllValues = false;
@@ -255,6 +258,7 @@
     private void OnValueFieldChanged(string field)
     {
         _selectedKeys.Clear();
+        _counts = null;
 
         if (_renderer is not null)
         {
@@ -265,6 +269,18 @@
     }
 
     #region Button Events
+
+    private Task OnCountFeaturesClickAsync() => HandleAsync(async () =>
+    {
+        if (_renderer is null || _layer?.FeatureClass is null)
+        {
+            return;
+        }
+
+        var valueCounts = await _layer.CountByFieldAsync(_renderer.ValueField);
+        SetCounts(new Dictionary<string, long>(valueCounts));
+    });
+
 
     private bool CanPasteSymbol(bool keepColors = false)
         => _layer is not null
@@ -353,18 +369,25 @@
 
             await this.ForceRenderComponent();
 
-            DistinctFilter filter = new DistinctFilter(_renderer.ValueField);
-            filter.OrderBy = _renderer.ValueField;
-            filter.WhereClause = _layer.FilterQuery?.WhereClause;
+            // values with their feature counts in one (grouped) query,
+            // if that fails (statistics not supported by the source) only the distinct values
+            Dictionary<string, long>? rawCounts = null;
+            IEnumerable<string> keys;
+            try
+            {
+                var valueCounts = await _layer.CountByFieldAsync(_renderer.ValueField);
+                rawCounts = new Dictionary<string, long>(valueCounts);
+                keys = valueCounts.Select(v => v.Key);
+            }
+            catch
+            {
+                keys = await DistinctValuesAsync();
+            }
 
-            using (IFeatureCursor cursor = (IFeatureCursor)await _layer.FeatureClass.Search(filter))
             {
                 int counter = 0;
-                IFeature feature;
-                while ((feature = await cursor.NextFeature()) is not null)
+                foreach (var key in keys)
                 {
-                    var key = feature.Fields[0].Value?.ToString() ?? "";
-
                     if (keySymbols.ContainsKey(key)) continue;
 
                     var symbol = RendererFunctions.CreateStandardSymbol(_layer.LayerGeometryType);
@@ -388,11 +411,12 @@
                 }
             }
 
+            SetCounts(rawCounts);
             ApplyChanges();
-        } 
+        }
         finally
         {
-            _processingAddAllValues = false;    
+            _processingAddAllValues = false;
         }
     });
 
@@ -568,24 +592,12 @@
         if (_renderer is null || !_dictKeySymbols.ContainsKey(_renderer.ValueField))
             return;
 
-        var selectPromptModel = await AppScopeFactory.ShowModalDialog(
-                typeof(gView.Razor.Dialogs.PromptSelectDialog<SortDirection>),
-                "Label Ordering",
-                new PromptSelectDialogModel<SortDirection>()
-                    {
-                        Options = EnumExt.ToKeyValuePairs<SortDirection>(ignoreNone: true),
-                        Required = true,
-                        Prompt = "Order by",
-                        SelectedValue = SortDirection.Ascending
-                    }
-        );
+        var ordered = await _dictKeySymbols[_renderer.ValueField]
+                                .OrderByDialogAsync(AppScopeFactory, _counts, IsAllOtherValuesKey);
 
-        if (selectPromptModel is null) return;
+        if (ordered is null) return;
 
-        _dictKeySymbols[_renderer.ValueField] = _dictKeySymbols[_renderer.ValueField]
-                                .OrderByDirection(selectPromptModel.SelectedValue, k => k.LegendLabel)
-                                .Select(k => new KeySymbol<string>(k.Key, k.Symbol))  // create new KeySymbols to enforce resortable list to refresh!
-                                .ToList();
+        _dictKeySymbols[_renderer.ValueField] = ordered;
 
 
         ApplyChanges();
@@ -594,6 +606,7 @@
     private Task OnSetValueFieldClickAsync() => HandleAsync(async () =>
     {
         _selectedKeys.Clear();
+        _counts = null;
 
         if (_renderer is null || _layer is null)
             return;
@@ -645,6 +658,47 @@
     #endregion
 
     #region Helper
+
+    /// <summary>
+    /// Counts per class from the counts per value; "all other values" gets the features of all values without a class.
+    /// </summary>
+    private void SetCounts(Dictionary<string, long>? rawCounts)
+    {
+        if (rawCounts is null)
+        {
+            _counts = null;
+            return;
+        }
+
+        var keys = CurrentKeySymbolsList().Select(k => k.Key).ToHashSet();
+        _counts = keys.ToDictionary(k => k, k => rawCounts.TryGetValue(k, out long count) ? count : 0L);
+
+        if (keys.Contains(ValueMapRenderer.AllOtherValuesKey))
+        {
+            _counts[ValueMapRenderer.AllOtherValuesKey] = rawCounts.Where(kv => !keys.Contains(kv.Key)).Sum(kv => kv.Value);
+        }
+    }
+
+    private async Task<List<string>> DistinctValuesAsync()
+    {
+        var values = new List<string>();
+
+        DistinctFilter filter = new DistinctFilter(_renderer!.ValueField);
+        filter.OrderBy = _renderer.ValueField;
+        filter.WhereClause = _layer!.FilterQuery?.WhereClause;
+
+        using (IFeatureCursor cursor = (IFeatureCursor)await _layer.FeatureClass.Search(filter))
+        {
+            IFeature feature;
+            while ((feature = await cursor.NextFeature()) is not null)
+            {
+                values.Add(feature.Fields[0].Value?.ToString() ?? "");
+            }
+        }
+
+        return values;
+    }
+
 
     private List<KeySymbol<string>> CurrentKeySymbolsList()
     {

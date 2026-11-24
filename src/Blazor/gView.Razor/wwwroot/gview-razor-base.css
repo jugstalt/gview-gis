@@ -100,3 +100,8 @@
     outline: none;
     background:none;
 }
+
+/* selects/menus inside (nested) modal dialogs: the popover must lie above the dialog */
+.gv-dialog-popover {
+    z-index: 1500 !important;
+}

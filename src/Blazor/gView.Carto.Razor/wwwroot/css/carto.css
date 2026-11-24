@@ -783,7 +783,3 @@
     background: #ff000070;
 }
 
-/* selects inside nested modal dialogs (e.g. Recolor over the layer dialog): popover above the dialog */
-.carto-nested-dialog-popover {
-    z-index: 1500 !important;
-}

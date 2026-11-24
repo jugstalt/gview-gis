@@ -124,6 +124,100 @@ static internal class KeySymbolExtensions
     }
 
     /// <summary>
+    /// Asks for the order (label, value or feature count; count only if counted) and returns the ordered list.
+    /// The "all other values" class stays at the end.
+    /// </summary>
+    /// <returns>A new list (new item instances, so the list control refreshes) or null if cancelled</returns>
+    static public async Task<List<KeySymbol<string>>?> OrderByDialogAsync(
+                this List<KeySymbol<string>> keySymbols,
+                IApplicationScopeFactory appScope,
+                IReadOnlyDictionary<string, long>? counts,
+                Func<string, bool>? isAllOtherValues = null)
+    {
+        var options = new List<KeyValuePair<string, KeySymbolOrder>>()
+        {
+            new("Label (A-Z)", KeySymbolOrder.LabelAscending),
+            new("Label (Z-A)", KeySymbolOrder.LabelDescending),
+            new("Value (ascending)", KeySymbolOrder.ValueAscending),
+            new("Value (descending)", KeySymbolOrder.ValueDescending)
+        };
+        if (counts is not null)
+        {
+            options.Add(new("Feature count (most first)", KeySymbolOrder.CountDescending));
+            options.Add(new("Feature count (fewest first)", KeySymbolOrder.CountAscending));
+        }
+
+        var model = await appScope.ShowModalDialog(
+                typeof(gView.Razor.Dialogs.PromptSelectDialog<KeySymbolOrder>),
+                "Order Classes",
+                new gView.Razor.Dialogs.Models.PromptSelectDialogModel<KeySymbolOrder>()
+                {
+                    Options = options,
+                    Required = true,
+                    Prompt = "Order by",
+                    SelectedValue = KeySymbolOrder.LabelAscending
+                });
+
+        if (model is null)
+        {
+            return null;
+        }
+
+        return keySymbols.OrderKeySymbols(model.SelectedValue, counts, isAllOtherValues);
+    }
+
+    static public List<KeySymbol<string>> OrderKeySymbols(
+                this IEnumerable<KeySymbol<string>> keySymbols,
+                KeySymbolOrder order,
+                IReadOnlyDictionary<string, long>? counts,
+                Func<string, bool>? isAllOtherValues = null)
+    {
+        isAllOtherValues ??= _ => false;
+        long CountOf(KeySymbol<string> k) => counts?.TryGetValue(k.Key, out long c) == true ? c : 0;
+
+        var classes = keySymbols.Where(k => !isAllOtherValues(k.Key));
+        var ordered = order switch
+        {
+            KeySymbolOrder.LabelAscending => classes.OrderBy(k => k.LegendLabel, NaturalComparer.Instance),
+            KeySymbolOrder.LabelDescending => classes.OrderByDescending(k => k.LegendLabel, NaturalComparer.Instance),
+            KeySymbolOrder.ValueAscending => classes.OrderBy(k => k.Key, NaturalComparer.Instance),
+            KeySymbolOrder.ValueDescending => classes.OrderByDescending(k => k.Key, NaturalComparer.Instance),
+            KeySymbolOrder.CountDescending => classes.OrderByDescending(CountOf),
+            KeySymbolOrder.CountAscending => classes.OrderBy(CountOf),
+            _ => classes
+        };
+
+        return ordered
+                .Concat(keySymbols.Where(k => isAllOtherValues(k.Key)))
+                .Select(k => k.Copy())  // new instances, so the list control refreshes
+                .ToList();
+    }
+
+    /// <summary>
+    /// Compares numbers as numbers (2 &lt; 10), everything else as text (ignoring case).
+    /// </summary>
+    private class NaturalComparer : IComparer<string?>
+    {
+        public static readonly NaturalComparer Instance = new();
+
+        public int Compare(string? x, string? y)
+        {
+            bool xIsNumber = TryParse(x, out double dx), yIsNumber = TryParse(y, out double dy);
+
+            return (xIsNumber, yIsNumber) switch
+            {
+                (true, true) => dx.CompareTo(dy),
+                (true, false) => -1,   // numbers first
+                (false, true) => 1,
+                _ => StringComparer.OrdinalIgnoreCase.Compare(x, y)
+            };
+        }
+
+        private static bool TryParse(string? s, out double d)
+            => double.TryParse(s, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out d);
+    }
+
+    /// <summary>
     /// Replaces the symbols of the target classes with clones of <paramref name="template"/>
     /// (legend labels are kept; with <paramref name="keepColors"/> also the colours of each class).
     /// The replaced symbols are released.

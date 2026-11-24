@@ -15,7 +15,7 @@
 
         @if (Model.Mode == RecolorMode.Palette)
         {
-            <MudSelect PopoverClass="carto-nested-dialog-popover" T="string" Label="Palette"
+            <MudSelect PopoverClass="gv-dialog-popover" T="string" Label="Palette"
                        @bind-Value="Model.PaletteName">
                 @foreach (var palette in ColorPalettes.All)
                 {
@@ -53,7 +53,7 @@
 
         @if (IsPolygon)
         {
-            <MudSelect PopoverClass="carto-nested-dialog-popover" T="SymbolColorTarget" Label="Apply color to"
+            <MudSelect PopoverClass="gv-dialog-popover" T="SymbolColorTarget" Label="Apply color to"
                        @bind-Value="Model.Target">
                 <MudSelectItem Value="SymbolColorTarget.Both">Fill and outline</MudSelectItem>
                 <MudSelectItem Value="SymbolColorTarget.Fill">Fill</MudSelectItem>

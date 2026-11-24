@@ -70,6 +70,12 @@
                                 <MudButton Size="MudBlazor.Size.Small" Variant="Variant.Text" OnClick="SelectAll">All</MudButton>
                                 <MudButton Size="MudBlazor.Size.Small" Variant="Variant.Text" OnClick="SelectNone">None</MudButton>
                                 <MudButton Size="MudBlazor.Size.Small" Variant="Variant.Text" OnClick="InvertSelection">Invert</MudButton>
+                                @if (Counts is not null)
+                                {
+                                    <MudButton Size="MudBlazor.Size.Small" Variant="Variant.Text"
+                                               title="Select all classes without features"
+                                               OnClick="SelectEmpty">Select empty</MudButton>
+                                }
                                 <MudButton Size="MudBlazor.Size.Small" Variant="Variant.Text"
                                            Color="Color.Secondary"
                                            StartIcon="@Icons.Material.Outlined.Delete"
@@ -88,6 +94,7 @@
             }
         </ChildContent>
         <ItemRenderer>
+            <div style="@EmptyStyle(context.Key)">
             <GvGrid ColumnCount="12">
                 @if (SelectedKeys is not null)
                 {
@@ -117,7 +124,7 @@
                         @context.Key
                     </div>
                 </GvGridItem>
-                <GvGridItem Span="@(SelectedKeys is not null ? 5 : 6)">
+                <GvGridItem Span="@(LabelSpan)">
                     @if (_editLabelKey is not null && _editLabelKey.Equals(context.Key))
                     {
                         <InlineInput @bind-Value="@context.LegendLabel"
@@ -132,7 +139,16 @@
                         </div>
                     }
                 </GvGridItem>
+                @if (Counts is not null)
+                {
+                    <GvGridItem Span="1">
+                        <div style="text-align:right;padding-right:8px;opacity:.8" title="Number of features">
+                            @(Counts.TryGetValue(context.Key, out long count) ? count.ToString("N0") : "")
+                        </div>
+                    </GvGridItem>
+                }
             </GvGrid>
+            </div>
         </ItemRenderer>
     </MudDropContainer>
 }
@@ -153,6 +169,17 @@
     /// Identifies the "all other values" class: "Apply to all classes" leaves it out.
     /// </summary>
     [Parameter] public Func<TKey, bool>? IsAllOtherValues { get; set; }
+    /// <summary>
+    /// Number of features per class (if counted). Shows a count column; classes with 0 are greyed.
+    /// </summary>
+    [Parameter] public IReadOnlyDictionary<TKey, long>? Counts { get; set; }
+
+    private int LabelSpan => 6 - (SelectedKeys is not null ? 1 : 0) - (Counts is not null ? 1 : 0);
+
+    private string EmptyStyle(TKey key)
+        => Counts is not null && Counts.TryGetValue(key, out long count) && count == 0
+            ? "opacity:.45"
+            : "";
 
     private TKey? _composeSymbolKey = default;
     private TKey? _editLabelKey = default;
@@ -309,6 +336,14 @@
     {
         keys.Clear();
         keys.UnionWith(KeySymbols!.Select(k => k.Key));
+    });
+
+    private Task SelectEmpty() => ChangeSelection(keys =>
+    {
+        keys.Clear();
+        keys.UnionWith(KeySymbols!
+                        .Where(k => Counts?.TryGetValue(k.Key, out long count) == true && count == 0)
+                        .Select(k => k.Key));
     });
 
     private Task SelectNone() => ChangeSelection(keys => keys.Clear());
