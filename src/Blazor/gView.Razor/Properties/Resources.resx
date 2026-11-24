@@ -117,14 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Credits" xml:space="preserve">
-    <value>&lt;?xml version="1.0" encoding="utf-8" ?&gt;
-&lt;credits&gt;
-  &lt;credit 
-    text="Copyright (c) 1995-2005 LizardTech, Inc. All rights reserved.\n MrSID is protected by U.S. Patent No. 5,710,835.\n Foreign Patents Pending."
-    hyperlink="www.lizardtech.com" /&gt;
-&lt;/credits&gt;</value>
-  </data>
   <data name="License" xml:space="preserve">
     <value>                                 Apache License
                            Version 2.0, January 2004

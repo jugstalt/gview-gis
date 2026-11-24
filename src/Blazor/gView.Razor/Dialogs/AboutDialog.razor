@@ -4,28 +4,36 @@
 
 @inject IAppIdentityProvider IdentityProvider
 
+@* same look as the start page: hero with contour lines, info rows, license *@
 <ModalDialogFormBase T="AboutDialogModel"
                      OnDialogClose="base.OnDialogClose"
                      Model="base.Model">
     <FormContent>
-        <div class="gview-splashscreen">
-           
-            <div class="gview-splashscreen-content">
-                <div class="title">@Model.Title</div>
-                <div class="version">@Model.Version</div>
-                <a style="color: var(--mud-palette-primary);" href="https://github.com/jugstalt/gview-gis" target="_blank">Github Repository & Documentation</a>
-                <div>User: @IdentityProvider.Identity.UserNameAndRole()</div>
-                <div>Graphics Engine: @(gView.GraphicsEngine.Current.Engine?.EngineDisplayName ?? "Unknown")</div>
-                <pre class="license">
-                    @licText
-                </pre>
-                <pre class="credits">
-                    @creditsText
-                </pre>
+        <div class="gv-about">
+            <div class="gv-about-hero">
+                <div class="gv-hero-contours"></div>
+                <div class="gv-about-hero-inner">
+                    <MudIcon Icon="@Icons.Material.Outlined.Map" Class="gv-about-mark" />
+                    <div>
+                        <div class="gv-about-title">@Model.Title</div>
+                        <div class="gv-about-version">Version @Model.Version</div>
+                    </div>
+                </div>
             </div>
 
-            <div class="gview-splashscreen-image"></div>
+            <dl class="gv-about-info">
+                <dt>User</dt>
+                <dd>@IdentityProvider.Identity.UserNameAndRole()</dd>
+                <dt>Graphics engine</dt>
+                <dd>@(gView.GraphicsEngine.Current.Engine?.EngineDisplayName ?? "Unknown")</dd>
+                <dt>Documentation</dt>
+                <dd><a class="gv-link" href="https://docs.gviewonline.com" target="_blank" rel="noopener">docs.gviewonline.com</a></dd>
+                <dt>Source code</dt>
+                <dd><a class="gv-link" href="https://github.com/jugstalt/gview-gis" target="_blank" rel="noopener">github.com/jugstalt/gview-gis</a></dd>
+            </dl>
 
+            <div class="gv-about-section-title">License</div>
+            <pre class="gv-about-license">@licText</pre>
         </div>
     </FormContent>
     <DialogButtons>
@@ -35,7 +43,6 @@
 
 @code {
     private string licText = "";
-    private System.Text.StringBuilder creditsText = new();
 
     async protected override Task OnInitializedAsync()
     {
@@ -46,28 +53,6 @@
         try
         {
             licText = gView.Razor.Properties.Resources.License.Replace("{YEAR}", DateTime.Now.Year.ToString());
-
-            creditsText.Append("Portions of this computer program are:");
-            creditsText.Append(Environment.NewLine);
-            creditsText.Append(Environment.NewLine);
-
-            var doc = new System.Xml.XmlDocument();
-            doc.LoadXml(gView.Razor.Properties.Resources.Credits);
-
-            foreach (System.Xml.XmlNode credit in doc.SelectNodes("credits/credit")!)
-            {
-                if (credit!.Attributes!["text"] != null)
-                {
-                    creditsText.Append(credit.Attributes["text"]!.Value.Replace(@"\n", Environment.NewLine));
-                    creditsText.Append(Environment.NewLine);
-                }
-                if (credit.Attributes["hyperlink"] != null)
-                {
-                    creditsText.Append(Environment.NewLine);
-                    creditsText.Append(credit.Attributes["hyperlink"]!.Value);
-                    creditsText.Append(Environment.NewLine);
-                }
-            }
         }
         catch { }
     }

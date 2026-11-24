@@ -1,17 +1,31 @@
 ﻿@page "/login"
-@attribute [Authorize(Policy = "gview-user")]
+@using gView.Blazor.Core.Services.Abstraction
+@attribute [Authorize(Policy = "gview-login")]
 
 @inject NavigationManager Nav
+@inject IAppIdentityProvider IdentityProvider
 
 @code {
     [CascadingParameter] private HttpContext? HttpContext { get; set; }
+    [SupplyParameterFromQuery(Name = "returnUrl")] public string? ReturnUrl { get; set; }
+
     private string BaseUrl => $"{HttpContext!.Request.PathBase}/";
 
     async protected override Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
 
-        Nav.NavigateTo(BaseUrl);
+        var target = ReturnUrl.ToLocalReturnPath(HttpContext!.Request.PathBase);
+        var identity = IdentityProvider.Identity;
+
+        // users without a gView role (or without admin role for the explorer) would only get "access denied":
+        // the start page tells them what to do
+        if (identity.IsAuthorizedUser != true
+            || (!identity.IsAdministrator && target.StartsWith("explorer", StringComparison.OrdinalIgnoreCase)))
+        {
+            target = "";
+        }
+
+        Nav.NavigateTo($"{BaseUrl}{target}");
     }
 }
-

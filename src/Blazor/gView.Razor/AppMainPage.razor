@@ -9,74 +9,138 @@
 @inject IAppIdentityProvider IdentityProvider
 @inject CustomTilesService CustomTiles
 
+@*
+    Start page of the gView web apps.
+    Anonymous visitors see a login call to action and the apps as locked tiles (login?returnUrl=...),
+    signed in users without a gView role see a hint who to ask, users/admins see their apps.
+    Title, welcome text, logo, no-access text and footer links come from the "Home" config section.
+*@
+
 <GvThemeProvider>
 
 <div class="gv-page">
     <GvAppBar ShowLogin="true" />
 
-    <main class="gv-page-main">
+    <main class="gv-page-main gv-home">
         <div class="gv-home-hero">
-            <h1>gView GIS</h1>
-            <p>
-                Version @SystemInfo.Version
-                @if (_identity?.IsAuthenticated == true ||
-                     _identity?.IsAdministrator == true ||
-                     _identity?.IsAuthorizedUser == true)
+            <div class="gv-hero-contours"></div>
+            <div class="gv-home-hero-inner">
+                @if (!String.IsNullOrEmpty(Home.LogoUrl))
                 {
-                    <span> · @_identity.UserNameAndRole()</span>
+                    <img class="gv-home-logo" src="@Home.LogoUrl" alt="" />
                 }
-            </p>
-        </div>
+                <h1>@(String.IsNullOrWhiteSpace(Home.Title) ? "gView GIS" : Home.Title)</h1>
+                <p class="gv-home-welcome">@(String.IsNullOrWhiteSpace(Home.WelcomeText) ? DefaultWelcomeText : Home.WelcomeText)</p>
+                <p class="gv-home-meta">
+                    @if (IsAuthenticated && IsUser)
+                    {
+                        <span>Signed in as <b>@_identity!.Username</b> · @(IsAdmin ? "administrator" : "user") · </span>
+                    }
+                    Version @SystemInfo.Version
+                </p>
 
-        <div class="gv-home-cards">
-            @if (_identity?.IsAuthorizedUser == true)
-            {
-                <div class="gv-home-card" @onclick="() => NavigateTo(CartoUri)">
-                    <MudIcon Icon="@Icons.Material.Outlined.Map" Class="gv-home-card-icon" />
-                    <span class="gv-home-card-title">gView Carto</span>
-                    <span class="gv-home-card-text">Create maps, include geographic data sources, render with cartographics capabilites</span>
-                    <span class="gv-home-card-open" title="Open in a new tab" @onclick:stopPropagation="true">
-                        <MudIconButton Icon="@Icons.Material.Outlined.OpenInNew" Size="Size.Small" Color="Color.Inherit" OnClick="() => NavigateTo(CartoUri, true)" />
-                    </span>
-                </div>
-            }
-            @if (_identity?.IsAdministrator == true)
-            {
-                <div class="gv-home-card" @onclick="() => NavigateTo(ExplorerUri)">
-                    <MudIcon Icon="@Icons.Material.Outlined.FolderOpen" Class="gv-home-card-icon" />
-                    <span class="gv-home-card-title">gView Explorer</span>
-                    <span class="gv-home-card-text">Explore geographic data, copy data between datasets, run workloads to manage your data</span>
-                    <span class="gv-home-card-open" title="Open in a new tab" @onclick:stopPropagation="true">
-                        <MudIconButton Icon="@Icons.Material.Outlined.OpenInNew" Size="Size.Small" Color="Color.Inherit" OnClick="() => NavigateTo(ExplorerUri, true)" />
-                    </span>
-                </div>
-
-                @foreach (var customTile in CustomTiles.Tiles)
+                @if (IsAnonymous)
                 {
-                    <div class="gv-home-card custom"
-                         style="@("".AppendBackgroundColor(customTile.BackgroundColor).AppendColor(customTile.FontColor))"
-                         @onclick="() => NavigateTo(customTile.TargetUrl)">
-                        <MudIcon Icon="@Icons.Material.Outlined.Apps" Class="gv-home-card-icon" />
-                        <span class="gv-home-card-title">@customTile.Title</span>
-                        <span class="gv-home-card-text">@customTile.Description</span>
-                        <span class="gv-home-card-open" title="Open in a new tab" @onclick:stopPropagation="true">
-                            <MudIconButton Icon="@Icons.Material.Outlined.OpenInNew" Size="Size.Small" Color="Color.Inherit" OnClick="() => NavigateTo(customTile.TargetUrl, true)" />
-                        </span>
+                    <div class="gv-home-cta">
+                        <a class="gv-btn-primary" href="login">
+                            <MudIcon Icon="@Icons.Material.Outlined.Login" />
+                            Sign in
+                        </a>
+                        <span class="gv-home-cta-hint">Sign in to open gView Carto and gView Explorer.</span>
                     </div>
                 }
+                else if (IsNoAccess)
+                {
+                    <div class="gv-home-notice">
+                        <MudIcon Icon="@Icons.Material.Outlined.Block" />
+                        <div>
+                            <b>No permission for gView</b>
+                            <p>You are signed in as <strong>@_identity!.Username</strong>, but this account has no gView role.</p>
+                            <p>@(String.IsNullOrWhiteSpace(Home.NoAccessText) ? "Please contact your administrator." : Home.NoAccessText)</p>
+                            @if (_identity.CanLogout)
+                            {
+                                <a class="gv-link" href="logout">Sign in with another account</a>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
 
-                <div class="gv-home-card static">
-                    <MudIcon Icon="@Icons.Material.Outlined.Memory" Class="gv-home-card-icon" />
-                    <span class="gv-home-card-title">Used Memory</span>
-                    <span class="gv-home-card-text"><span class="gv-home-card-value">@((int)(GC.GetTotalMemory(false) / 1024.0 / 1024.0))</span> MB</span>
-                    <MudButton Variant="Variant.Outlined" Size="Size.Small" Class="gv-home-card-action"
-                               StartIcon="@Icons.Material.Outlined.CleaningServices"
-                               OnClick="CollectMemory">
-                        Collect
-                    </MudButton>
-                </div>
+        <div class="gv-home-body">
+            @if (!IsNoAccess)
+            {
+                <section class="gv-home-section">
+                    <h2 class="gv-home-section-title">Applications</h2>
+                    <div class="gv-home-cards">
+                        @AppTile(Icons.Material.Outlined.Map, "gView Carto",
+                                 "Create maps, include geographic data sources, render with cartographic capabilities",
+                                 CartoUri, needsAdmin: false)
+                        @AppTile(Icons.Material.Outlined.FolderOpen, "gView Explorer",
+                                 "Explore geographic data, copy data between datasets, run workloads to manage your data",
+                                 ExplorerUri, needsAdmin: true)
+
+                        @foreach (var customTile in CustomTiles.Tiles.Where(IsVisible))
+                        {
+                            <div class="gv-home-card custom"
+                                 style="@("".AppendBackgroundColor(customTile.BackgroundColor).AppendColor(customTile.FontColor))"
+                                 @onclick="() => NavigateTo(customTile.TargetUrl)">
+                                <MudIcon Icon="@Icons.Material.Outlined.Apps" Class="gv-home-card-icon" />
+                                <span class="gv-home-card-open" title="Open in a new tab" @onclick:stopPropagation="true">
+                                    <MudIconButton Icon="@Icons.Material.Outlined.OpenInNew" Size="Size.Small" Color="Color.Inherit" OnClick="() => NavigateTo(customTile.TargetUrl, true)" />
+                                </span>
+                                <span class="gv-home-card-title">@customTile.Title</span>
+                                <span class="gv-home-card-text">@customTile.Description</span>
+                                <span class="gv-home-card-foot">Open <MudIcon Icon="@Icons.Material.Outlined.ArrowForward" Size="Size.Small" /></span>
+                            </div>
+                        }
+                    </div>
+                </section>
+            }
+
+            @if (IsAdmin)
+            {
+                <section class="gv-home-section">
+                    <h2 class="gv-home-section-title">System</h2>
+                    <div class="gv-home-system">
+                        <div class="gv-home-stat">
+                            <MudIcon Icon="@Icons.Material.Outlined.Memory" />
+                            <div>
+                                <div class="gv-home-stat-value">@((int)(GC.GetTotalMemory(false) / 1024.0 / 1024.0)) MB</div>
+                                <div class="gv-home-stat-label">Used memory</div>
+                            </div>
+                            <MudButton Variant="Variant.Outlined" Size="Size.Small" Class="gv-home-stat-action"
+                                       StartIcon="@Icons.Material.Outlined.CleaningServices"
+                                       OnClick="CollectMemory">
+                                Collect
+                            </MudButton>
+                        </div>
+
+                        @if (!CustomTiles.AuthenticationConfigured && !IsLocalhost)
+                        {
+                            <div class="gv-home-warn">
+                                <MudIcon Icon="@Icons.Material.Outlined.Warning" />
+                                <div>
+                                    <b>No authentication configured</b>
+                                    <span>Everyone who can reach this site has administrator rights. Configure an OIDC or forms login before exposing gView to a network.</span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </section>
             }
         </div>
+
+        <footer class="gv-home-footer">
+            <div class="gv-home-footer-inner">
+                <span>gView GIS · @SystemInfo.Version</span>
+                <span class="gv-home-footer-space"></span>
+                @foreach (var link in FooterLinks)
+                {
+                    <a class="gv-link" href="@link.Url" target="_blank" rel="noopener">@link.Title</a>
+                }
+            </div>
+        </footer>
     </main>
 </div>
 
@@ -86,14 +150,81 @@
 @code {
     private const string CartoUri = "carto";
     private const string ExplorerUri = "explorer";
+    private const string DefaultWelcomeText = "Create maps, explore and manage geographic data – right in your browser.";
+
+    private static readonly CustomTilesServiceOptions.LinkModel[] DefaultLinks =
+    [
+        new() { Title = "Documentation", Url = "https://docs.gviewonline.com" },
+        new() { Title = "GitHub", Url = "https://github.com/jugstalt/gview-gis" }
+    ];
 
     private AppIdentity? _identity;
+
+    private CustomTilesServiceOptions.HomeModel Home => CustomTiles.Home;
+
+    private IEnumerable<CustomTilesServiceOptions.LinkModel> FooterLinks
+        => Home.Links?.Any() == true ? Home.Links : DefaultLinks;
+
+    private bool IsAuthenticated => _identity?.IsAuthenticated == true;
+    private bool IsAdmin => _identity?.IsAdministrator == true;
+    private bool IsUser => IsAdmin || _identity?.IsAuthorizedUser == true;
+    private bool IsAnonymous => !IsAuthenticated && !IsUser;
+    private bool IsNoAccess => IsAuthenticated && !IsUser;
+
+    private bool IsLocalhost
+        => new Uri(Nav.BaseUri).Host switch
+        {
+            "localhost" or "127.0.0.1" or "[::1]" or "::1" => true,
+            _ => false
+        };
 
     async protected override Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
         _identity = IdentityProvider.Identity;
     }
+
+    private bool IsVisible(CustomTilesServiceOptions.CustomTileModel tile)
+        => tile.Visibility?.ToLowerInvariant() switch
+        {
+            "public" => true,
+            "user" => IsUser,
+            _ => IsAdmin
+        };
+
+    private RenderFragment AppTile(string icon, string title, string text, string uri, bool needsAdmin)
+    {
+        bool allowed = needsAdmin ? IsAdmin : IsUser;
+
+        if (allowed)
+        {
+            return @<div class="gv-home-card" @onclick="() => NavigateTo(uri)">
+                <MudIcon Icon="@icon" Class="gv-home-card-icon" />
+                <span class="gv-home-card-open" title="Open in a new tab" @onclick:stopPropagation="true">
+                    <MudIconButton Icon="@Icons.Material.Outlined.OpenInNew" Size="Size.Small" Color="Color.Inherit" OnClick="() => NavigateTo(uri, true)" />
+                </span>
+                <span class="gv-home-card-title">@title</span>
+                <span class="gv-home-card-text">@text</span>
+                <span class="gv-home-card-foot">Open <MudIcon Icon="@Icons.Material.Outlined.ArrowForward" Size="Size.Small" /></span>
+            </div>;
+        }
+
+        if (!IsAnonymous)
+        {
+            // signed in users don't see apps they can never open
+            return @<text></text>;
+        }
+
+        return @<div class="gv-home-card locked" @onclick="() => NavigateTo(LoginUri(uri))">
+            <MudIcon Icon="@icon" Class="gv-home-card-icon" />
+            <span class="gv-home-badge"><MudIcon Icon="@Icons.Material.Outlined.Lock" />@(needsAdmin ? "Admin" : "Sign in")</span>
+            <span class="gv-home-card-title">@title</span>
+            <span class="gv-home-card-text">@text</span>
+            <span class="gv-home-card-foot">@(needsAdmin ? "Administrators only – sign in" : "Sign in to open") <MudIcon Icon="@Icons.Material.Outlined.ArrowForward" Size="Size.Small" /></span>
+        </div>;
+    }
+
+    private static string LoginUri(string returnUri) => $"login?returnUrl={Uri.EscapeDataString(returnUri)}";
 
     async private Task NavigateTo(string uri, bool newTab = false)
     {

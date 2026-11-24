@@ -218,8 +218,21 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   (kind, branch or source) has a download of its own with only its nodes and lines. Users don't need
   access to the network directory on the server; the `GeoJSON` button that wrote into its `results`
   folder is gone.
+- WebApps start page: config section `Home` with `Title`, `WelcomeText`, `LogoUrl`, `NoAccessText`
+  (shown to signed in users without a gView role) and `Links` (footer links, replace the default
+  documentation and GitHub links). `CustomTiles` have a `Visibility`: `admin` (default, as before),
+  `user` or `public`.
 
 ## Changed
+
+- WebApps start page redesigned: hero with contour lines, a big `Sign in` button and the apps as locked
+  tiles for visitors who are not signed in (a click signs in and opens the app: `/login?returnUrl=...`,
+  only local paths), a hint for signed in users without a gView role, larger app tiles, a `System`
+  section for administrators (used memory, warning when no authentication is configured) and a footer
+  with links. The forms login honours the return url too.
+- Carto/Explorer about dialog in the same look (contour lines instead of the background image); the
+  LizardTech/MrSID credits are removed.
+- gView Server start page: the same hero with contour lines as the web apps start page (same product family).
 
 - Geometry: SpatialNET packages updated to 0.10.0-preview.6.
 - Polygon labels (`SimpleLabelRenderer`, `ChartLabelRenderer`): all polygons now take the SpatialNET path

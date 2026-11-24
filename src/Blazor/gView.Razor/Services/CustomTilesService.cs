@@ -1,9 +1,4 @@
 ﻿using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace gView.Razor.Services;
 
@@ -18,4 +13,10 @@ public class CustomTilesService
 
     public IEnumerable<CustomTilesServiceOptions.CustomTileModel> Tiles
         => _options.CustomTiles ?? [];
+
+    public CustomTilesServiceOptions.HomeModel Home
+        => _options.Home ?? new();
+
+    public bool AuthenticationConfigured
+        => _options.AuthenticationConfigured;
 }

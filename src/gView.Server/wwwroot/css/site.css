@@ -181,6 +181,17 @@ input[type=checkbox] { accent-color: var(--accent); }
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); }
 
 /* ======================================================================== home */
+/* start page hero: same contour lines as the gView web apps start page */
+.home-hero { position: relative; overflow: hidden; margin-bottom: 20px; border: 1px solid var(--border); border-radius: 12px;
+    background: radial-gradient(900px 340px at 88% -20%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 70%), linear-gradient(180deg, var(--surface) 0%, var(--bg) 100%); }
+.home-hero-contours { position: absolute; right: -80px; top: -60px; width: 720px; height: 420px; background: var(--accent); opacity: .22; pointer-events: none;
+    -webkit-mask: url(../images/gview-contours.svg) no-repeat center / contain; mask: url(../images/gview-contours.svg) no-repeat center / contain; }
+[data-theme="dark"] .home-hero-contours { opacity: .28; }
+.home-hero-inner { position: relative; padding: 36px 32px 32px; }
+.home-hero h1 { margin: 0 0 8px; font-size: 30px; font-weight: 600; letter-spacing: -.01em; }
+.home-hero p { margin: 0 0 6px; max-width: 620px; font-size: 15px; opacity: .85; }
+.home-hero-version { font-size: 13px; color: var(--muted); }
+
 .quicklinks { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
 .quicklinks a { display: grid; grid-template-columns: 36px 1fr; grid-template-rows: auto auto; column-gap: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; color: var(--text); box-shadow: var(--shadow); }
 .quicklinks a:hover { border-color: var(--accent); text-decoration: none; }

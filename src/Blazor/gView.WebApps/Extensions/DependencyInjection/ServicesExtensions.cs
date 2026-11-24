@@ -1,6 +1,7 @@
 ﻿using gView.Blazor.Core.Services;
 using gView.Blazor.Core.Services.Abstraction;
 using gView.WebApps.Model;
+using gView.Razor.Services;
 using gView.WebApps.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -22,10 +23,12 @@ static public class ServicesExtensions
     {
         var authConfig = new AuthConfigModel();
         configuration.Bind("Authentication", authConfig);
+        bool authenticationConfigured = false;
 
         if ("oidc".Equals(authConfig.Type, StringComparison.OrdinalIgnoreCase)
             && authConfig.Oidc is not null)
         {
+            authenticationConfigured = true;
             services
                 .AddAuthentication(options =>
                 {
@@ -79,6 +82,9 @@ static public class ServicesExtensions
                             context.User.IsInRoleOrHasRoleClaim(authConfig.Oidc.RequiredAdminRole))
                     );
 
+                // /login: any signed in user, the start page tells users without a gView role what to do
+                config.AddPolicy("gview-login", policy => policy.RequireAuthenticatedUser());
+
                 config.AddPolicy("gview-user", policy =>
                         policy.RequireAssertion(context =>
                             context.User.IsInRoleOrHasRoleClaim(authConfig.Oidc.RequiredUserRole)
@@ -95,6 +101,7 @@ static public class ServicesExtensions
         else if ("forms".Equals(authConfig.Type, StringComparison.OrdinalIgnoreCase)
             && authConfig.Forms is not null)
         {
+            authenticationConfigured = true;
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                 .AddCookie(options =>
                 {
@@ -118,6 +125,9 @@ static public class ServicesExtensions
                             context.User.IsInRoleOrHasRoleClaim(AuthConfigModel.FormsClass.AdminRole))
                     );
 
+                // /login: any signed in user, the start page tells users without a gView role what to do
+                config.AddPolicy("gview-login", policy => policy.RequireAuthenticatedUser());
+
                 config.AddPolicy("gview-user", policy =>
                         policy.RequireAssertion(context =>
                             context.User.IsInRoleOrHasRoleClaim(AuthConfigModel.FormsClass.UserRole)
@@ -129,6 +139,9 @@ static public class ServicesExtensions
         {
             services.AddAuthorization(config =>
             {
+                config.AddPolicy("gview-login", policy =>
+                    policy.RequireAssertion(contextpolicy => true));
+
                 config.AddPolicy("gview-user", policy =>
                     policy.RequireAssertion(contextpolicy => true));
 
@@ -143,6 +156,11 @@ static public class ServicesExtensions
                     config.UserRoleName = "";
                 })
                 .AddScoped<IAppIdentityProvider, AppLocalIdentityProvider>();
+        }
+
+        if (authenticationConfigured)
+        {
+            services.PostConfigure<CustomTilesServiceOptions>(options => options.AuthenticationConfigured = true);
         }
 
         return services.AddHttpContextAccessor();

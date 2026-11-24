@@ -54,6 +54,10 @@
     [SupplyParameterFromForm]
     private LoginForm? Model { get; set; } = null;
 
+    // set by the cookie handler, e.g. /login?returnUrl=carto
+    [SupplyParameterFromQuery(Name = "ReturnUrl")]
+    private string? ReturnUrl { get; set; }
+
     private AuthConfigModel? _authConfig;
 
     private string _errorMessage = "";
@@ -99,7 +103,7 @@
                 _ => []
             });
 
-            NavigationManager.NavigateTo($"{HttpContext!.Request.PathBase}/");
+            NavigationManager.NavigateTo($"{HttpContext!.Request.PathBase}/{ReturnUrl.ToLocalReturnPath(HttpContext!.Request.PathBase)}");
         }
         catch (Exception ex)
         {

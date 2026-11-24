@@ -61,20 +61,6 @@ namespace gView.Razor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot; ?&gt;
-        ///&lt;credits&gt;
-        ///  &lt;credit 
-        ///    text=&quot;Copyright (c) 1995-2005 LizardTech, Inc. All rights reserved.\n MrSID is protected by U.S. Patent No. 5,710,835.\n Foreign Patents Pending.&quot;
-        ///    hyperlink=&quot;www.lizardtech.com&quot; /&gt;
-        ///&lt;/credits&gt;.
-        /// </summary>
-        internal static string Credits {
-            get {
-                return ResourceManager.GetString("Credits", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to                                  Apache License
         ///                           Version 2.0, January 2004
         ///                        http://www.apache.org/licenses/
