@@ -138,7 +138,7 @@
       "featureClass": "lv_lines",
       "mode": "updateWhere",
       "where": "",
-      "values": { "STAT_COLOR": 999, "ABZW_COLOR": 999 }
+      "values": { "SOURCE_CLASS": 999, "BRANCH_CLASS": 999 }
     },
     "input": [],
     "output": [

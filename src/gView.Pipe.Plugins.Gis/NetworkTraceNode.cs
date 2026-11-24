@@ -33,24 +33,24 @@ public sealed class NetworkTraceParameters
         Description = "Feeders labels every line with its source and branch; Trace follows the network from each input item")]
     public GisNetworkOperation Operation { get; set; } = GisNetworkOperation.Feeders;
 
-    [PipeParameter(Label = "Sources", Order = 3, Expressions = false, ShowWhen = nameof(Operation), ShowWhenValues = ["feeders"], Placeholder = "[Mittelspannung,Trafo,*]",
-        Description = "The sources: a type pattern, e.g. [Mittelspannung,Trafo,*] for all transformers, or nodes such as Trafo#4711, comma separated; empty takes the sources of the tier")]
+    [PipeParameter(Label = "Sources", Order = 3, Expressions = false, ShowWhen = nameof(Operation), ShowWhenValues = ["feeders"], Placeholder = "[MediumVoltage,Transformer,*]",
+        Description = "The sources: a type pattern, e.g. [MediumVoltage,Transformer,*] for all transformers, or nodes such as Transformer#4711, comma separated; empty takes the sources of the tier")]
     public string Sources { get; set; } = "";
 
-    [PipeParameter(Label = "Node", Order = 4, ShowWhen = nameof(Operation), ShowWhenValues = ["feedersOfItems", "trace"], Placeholder = "Trafo#{{ $json.id }}",
-        Description = "The network node of each input item, as Layer#OID: e.g. Trafo#{{ $json.id }} for items read from the transformer layer, or {{ $json.properties.node }} for a property holding the reference")]
+    [PipeParameter(Label = "Node", Order = 4, ShowWhen = nameof(Operation), ShowWhenValues = ["feedersOfItems", "trace"], Placeholder = "Transformer#{{ $json.id }}",
+        Description = "The network node of each input item, as Layer#OID: e.g. Transformer#{{ $json.id }} for items read from the transformer layer, or {{ $json.properties.node }} for a property holding the reference")]
     public string Node { get; set; } = "";
 
-    [PipeParameter(Label = "Branches", Order = 5, Expressions = false, ShowWhen = nameof(Operation), ShowWhenValues = ["feeders", "feedersOfItems"], Placeholder = "[Niederspannung,Anlagenverbinder,*]",
-        Description = "Type pattern of the edges at a source that start a branch, e.g. [Niederspannung,Anlagenverbinder,*]; empty: every edge at a source is a branch")]
+    [PipeParameter(Label = "Branches", Order = 5, Expressions = false, ShowWhen = nameof(Operation), ShowWhenValues = ["feeders", "feedersOfItems"], Placeholder = "[LowVoltage,Connector,*]",
+        Description = "Type pattern of the edges at a source that start a branch, e.g. [LowVoltage,Connector,*]; empty: every edge at a source is a branch")]
     public string Branches { get; set; } = "";
 
-    [PipeParameter(Label = "Tier", Order = 6, Expressions = false, Placeholder = "Niederspannung",
-        Description = "Search only in this tier (an Ebene of network.json; several comma separated), e.g. Niederspannung. With a tier the search stops at the sources of the tier")]
+    [PipeParameter(Label = "Tier", Order = 6, Expressions = false, Placeholder = "LowVoltage",
+        Description = "Search only in this tier of the network (several comma separated), e.g. LowVoltage. With a tier the search stops at the sources of the tier")]
     public string Tier { get; set; } = "";
 
-    [PipeParameter(Label = "Output types", Order = 7, Expressions = false, Placeholder = "[Niederspannung,Leitung,*]",
-        Description = "Type pattern of the edges that become items, e.g. [Niederspannung,Leitung,*]; empty: every edge found (Feeders: but the branches themselves)")]
+    [PipeParameter(Label = "Output types", Order = 7, Expressions = false, Placeholder = "[LowVoltage,Line,*]",
+        Description = "Type pattern of the edges that become items, e.g. [LowVoltage,Line,*]; empty: every edge found (Feeders: but the branches themselves)")]
     public string OutputTypes { get; set; } = "";
 
     [PipeParameter(Label = "Group parts", Order = 8, Expressions = false,
@@ -58,52 +58,64 @@ public sealed class NetworkTraceParameters
     public bool GroupParts { get; set; } = true;
 
     [PipeParameter(Label = "Open lines", Order = 9, Expressions = false, ShowWhen = nameof(Operation), ShowWhenValues = ["feeders", "feedersOfItems"],
-        Description = "Also the lines at a reached node that no branch went along, e.g. switched off at a separation point of a ring, with kind Open and the branches of their ends")]
+        Description = "Also the lines at a reached node that no branch went along, e.g. switched off at the separation point of a ring: kind Open, with the branches of their ends")]
     public bool OpenLines { get; set; }
 
-    [PipeParameter(Label = "Colour fields", Order = 10, Expressions = false, ShowWhen = nameof(Operation), ShowWhenValues = ["feeders", "feedersOfItems"],
-        Description = "Adds a colour class for the source and for the branch of each line (object id modulo Colours), e.g. for a map coloured by transformer and branch")]
-    public bool ColorFields { get; set; }
+    [PipeParameter(Label = "Source id field", Order = 10, Expressions = false, ShowWhen = nameof(Operation), ShowWhenValues = ["feeders", "feedersOfItems"], Placeholder = "TRANSFORMER_ID",
+        Description = "Property that gets the object id of the source, e.g. the transformer; for Multiple and Open the cheapest. Empty: not written")]
+    public string SourceIdField { get; set; } = "";
 
-    [PipeParameter(Label = "Colours", Order = 11, Expressions = false, ShowWhen = nameof(ColorFields), ShowWhenValues = ["true"],
-        Description = "Number of colour classes: the fields get 0 … Colours−1, e.g. 100 for 0 to 99")]
+    [PipeParameter(Label = "Branch id field", Order = 11, Expressions = false, ShowWhen = nameof(Operation), ShowWhenValues = ["feeders", "feedersOfItems"], Placeholder = "BRANCH_ID",
+        Description = "Property that gets the object id of the branch, e.g. the connector; for Multiple and Open the cheapest. Empty: not written")]
+    public string BranchIdField { get; set; } = "";
+
+    [PipeParameter(Label = "Kind field", Order = 12, Expressions = false, ShowWhen = nameof(Operation), ShowWhenValues = ["feeders", "feedersOfItems"], Placeholder = "SUPPLY_KIND",
+        Description = "Property that gets the kind as text: Edge (one branch), Multiple (more than one: a closed ring, double supply) or Open (see Open lines). Empty: not written")]
+    public string KindField { get; set; } = "";
+
+    [PipeParameter(Label = "Source class field", Order = 13, Expressions = false, ShowWhen = nameof(Operation), ShowWhenValues = ["feeders", "feedersOfItems"], Placeholder = "SOURCE_CLASS",
+        Description = "Property that gets the class of the source: 0 to Classes−1, derived from its object id (id modulo Classes), the same in every run; e.g. for a renderer with a fixed number of colours. Empty: not written")]
+    public string SourceClassField { get; set; } = "";
+
+    [PipeParameter(Label = "Branch class field", Order = 14, Expressions = false, ShowWhen = nameof(Operation), ShowWhenValues = ["feeders", "feedersOfItems"], Placeholder = "BRANCH_CLASS",
+        Description = "Property that gets the class of the branch, like Source class field; neighbouring branches may get the same class. Empty: not written")]
+    public string BranchClassField { get; set; } = "";
+
+    [PipeParameter(Label = "Classes", Order = 15, Expressions = false, ShowWhen = nameof(Operation), ShowWhenValues = ["feeders", "feedersOfItems"],
+        Description = "Number of classes of the class fields, e.g. 100 for 0 to 99")]
     [Range(1, int.MaxValue)]
-    public int Colors { get; set; } = 100;
+    public int Classes { get; set; } = 100;
 
-    [PipeParameter(Label = "Source colour field", Order = 12, Expressions = false, ShowWhen = nameof(ColorFields), ShowWhenValues = ["true"], Placeholder = "STAT_COLOR",
-        Description = "Name of the property with the colour class of the source, e.g. STAT_COLOR, the field of the line feature class")]
-    public string SourceColorField { get; set; } = "sourceColor";
+    [PipeParameter(Label = "Multiple class", Order = 16, Expressions = false, ShowWhen = nameof(Operation), ShowWhenValues = ["feeders", "feedersOfItems"], Placeholder = "997",
+        Description = "Class of both class fields for a line of kind Multiple, e.g. 997 to show rings and double supply on the map; empty: the class of the cheapest branch")]
+    public int? MultipleClass { get; set; }
 
-    [PipeParameter(Label = "Branch colour field", Order = 13, Expressions = false, ShowWhen = nameof(ColorFields), ShowWhenValues = ["true"], Placeholder = "ABZW_COLOR",
-        Description = "Name of the property with the colour class of the branch, e.g. ABZW_COLOR")]
-    public string BranchColorField { get; set; } = "branchColor";
+    [PipeParameter(Label = "Open class", Order = 17, Expressions = false, ShowWhen = nameof(OpenLines), ShowWhenValues = ["true"],
+        Description = "Class of both class fields for a line of kind Open, e.g. 998, so separation points stand out on the map")]
+    public int OpenClass { get; set; } = 998;
 
-    [PipeParameter(Label = "Open colour", Order = 14, Expressions = false, ShowWhen = nameof(ColorFields), ShowWhenValues = ["true"],
-        Description = "Both colour fields of an open line (kind Open, see Open lines) get this value, e.g. 998, so separation points stand out on the map")]
-    public int OpenColor { get; set; } = 998;
+    [PipeParameter(Label = "Only the output fields", Order = 18, Expressions = false, ShowWhen = nameof(Operation), ShowWhenValues = ["feeders", "feedersOfItems"],
+        Description = "The items keep only id and the fields named above, ready for Write Features (update by object id) without a Set node")]
+    public bool OnlyOutputFields { get; set; }
 
-    [PipeParameter(Label = "Only the colour fields", Order = 15, Expressions = false, ShowWhen = nameof(ColorFields), ShowWhenValues = ["true"],
-        Description = "The items keep only id and the two colour fields, ready for Write Features (update by object id) without a Set node")]
-    public bool ColorFieldsOnly { get; set; }
-
-    [PipeParameter(Label = "Filter", Order = 21, Expressions = false, Advanced = true, Placeholder = "[Niederspannung,*,*]",
+    [PipeParameter(Label = "Filter", Order = 21, Expressions = false, Advanced = true, Placeholder = "[LowVoltage,*,*]",
         Description = "Only edges of this type pattern are walked; the tier already limits the edges to its own")]
     public string Filter { get; set; } = "";
 
-    [PipeParameter(Label = "Block", Order = 22, Expressions = false, Advanced = true, Placeholder = "[*,Trenner,*]",
-        Description = "Nodes the search stops at, besides those blocked in the network: a type pattern or nodes such as Schalter#12, comma separated")]
+    [PipeParameter(Label = "Block", Order = 22, Expressions = false, Advanced = true, Placeholder = "[*,Switch,*]",
+        Description = "Nodes the search stops at, besides those blocked in the network: a type pattern or nodes such as Switch#12, comma separated")]
     public string Block { get; set; } = "";
 
-    [PipeParameter(Label = "Unblock", Order = 23, Expressions = false, Advanced = true, Placeholder = "Schalter#12",
+    [PipeParameter(Label = "Unblock", Order = 23, Expressions = false, Advanced = true, Placeholder = "Switch#12",
         Description = "Blocked nodes opened for this run, e.g. an open switch closed for a what-if")]
     public string Unblock { get; set; } = "";
 
-    [PipeParameter(Label = "Disable", Order = 24, Expressions = false, Advanced = true, Placeholder = "Leitung#4576",
+    [PipeParameter(Label = "Disable", Order = 24, Expressions = false, Advanced = true, Placeholder = "Line#4576",
         Description = "Edges switched off for this run: Layer#OID (the whole line) or Layer#OID/part, comma separated")]
     public string Disable { get; set; } = "";
 
     [PipeParameter(Label = "Stop at sources", Order = 25, Expressions = false, Advanced = true,
-        Description = "With a tier the search stops at the sources of the tier (the transformers of Niederspannung); off goes on through them")]
+        Description = "With a tier the search stops at the sources of the tier (e.g. the transformers of the low voltage tier); off goes on through them")]
     public bool StopAtSources { get; set; } = true;
 
     [PipeParameter(Label = "Weight", Order = 26, Expressions = false, Advanced = true, Placeholder = "length",
@@ -277,21 +289,9 @@ public sealed class NetworkTraceNode : IPipeNode<NetworkTraceParameters>
             properties["cost"] = Math.Round(first.Cost, 3);
             properties["length"] = Math.Round(parts.Sum(p => p.Edge.Length), 3);
             properties["parts"] = parts.Count;
-            if (parameters.ColorFields && first.Source is not null)
+            if (first.Source is not null && HasOutputFields(parameters))
             {
-                var colors = Math.Max(1, parameters.Colors);
-                var colored = parameters.ColorFieldsOnly ? new JsonObject() : properties;
-                if (kind == "Open")
-                {
-                    colored[FieldName(parameters.SourceColorField, "sourceColor")] = parameters.OpenColor;
-                    colored[FieldName(parameters.BranchColorField, "branchColor")] = parameters.OpenColor;
-                }
-                else
-                {
-                    colored[FieldName(parameters.SourceColorField, "sourceColor")] = OidOf(first.Source) is long sourceOid ? sourceOid % colors : null;
-                    colored[FieldName(parameters.BranchColorField, "branchColor")] = OidOf(first.Branch) is long branchOid ? branchOid % colors : null;
-                }
-                properties = colored;
+                properties = OutputFields(parameters, properties, kind, OidOf(first.Source), OidOf(first.Branch));
             }
 
             output.Add(new PipeItem(new JsonObject
@@ -355,7 +355,7 @@ public sealed class NetworkTraceNode : IPipeNode<NetworkTraceParameters>
         {
             if (string.IsNullOrWhiteSpace(template))
             {
-                throw new PipeException("Set Node, the network node of each input item, e.g. Trafo#{{ $json.id }}");
+                throw new PipeException("Set Node, the network node of each input item, e.g. Transformer#{{ $json.id }}");
             }
             log.Warning($"Item {index}: Node is empty");
             return null;
@@ -381,7 +381,7 @@ public sealed class NetworkTraceNode : IPipeNode<NetworkTraceParameters>
             .ToHashSet();
     }
 
-    /// <summary>The OID of the first Layer#OID of a label list ("Trafo#4711 Trafo#4712" → 4711).</summary>
+    /// <summary>The OID of the first Layer#OID of a label list ("Transformer#4711 Transformer#4712" → 4711).</summary>
     static private long? OidOf(string? labels)
     {
         var first = labels?.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
@@ -408,7 +408,40 @@ public sealed class NetworkTraceNode : IPipeNode<NetworkTraceParameters>
     /// <summary>gView's object ids are int: as int, Write Features and expressions read them like those of Read Features.</summary>
     static private JsonNode ObjectId(long oid) => oid is >= int.MinValue and <= int.MaxValue ? JsonValue.Create((int)oid) : JsonValue.Create(oid);
 
-    static private string FieldName(string? name, string fallback) => string.IsNullOrWhiteSpace(name) ? fallback : name.Trim();
+    static private bool HasOutputFields(NetworkTraceParameters parameters)
+        => new[] { parameters.SourceIdField, parameters.BranchIdField, parameters.KindField, parameters.SourceClassField, parameters.BranchClassField }
+            .Any(name => !string.IsNullOrWhiteSpace(name));
+
+    /// <summary>
+    /// The fields named in the parameters: ids of the (cheapest) source and branch, the kind, and their classes (id modulo
+    /// Classes; Multiple class and Open class for those kinds). With Only the output fields nothing else.
+    /// </summary>
+    static private JsonObject OutputFields(NetworkTraceParameters parameters, JsonObject properties, string kind, long? sourceOid, long? branchOid)
+    {
+        var target = parameters.OnlyOutputFields ? new JsonObject() : properties;
+        var classes = Math.Max(1, parameters.Classes);
+        int? fixedClass = kind switch
+        {
+            "Open" => parameters.OpenClass,
+            "Multiple" => parameters.MultipleClass,
+            _ => null
+        };
+        JsonNode? Class(long? oid) => fixedClass is int value ? value : oid is long id ? ObjectId(id % classes) : null;
+
+        void Set(string name, JsonNode? value)
+        {
+            if (!string.IsNullOrWhiteSpace(name))
+            {
+                target[name.Trim()] = value;
+            }
+        }
+        Set(parameters.SourceIdField, sourceOid is long source ? ObjectId(source) : null);
+        Set(parameters.BranchIdField, branchOid is long branch ? ObjectId(branch) : null);
+        Set(parameters.KindField, kind);
+        Set(parameters.SourceClassField, Class(sourceOid));
+        Set(parameters.BranchClassField, Class(branchOid));
+        return target;
+    }
 
     static private string Duration(TimeSpan time)
         => time.TotalHours >= 1 ? $"{(int)time.TotalHours} h {time.Minutes} min"

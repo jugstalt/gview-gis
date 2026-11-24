@@ -205,43 +205,76 @@ public sealed class NetworkTraceNodeTests : IDisposable
         Assert.Contains("Set Node", error.Message);
     }
 
+    private object FeedersWithFields(bool openLines = false, int? multipleClass = null, bool onlyOutputFields = false) => new
+    {
+        credentialId = CredentialId, operation = "feeders", sources = "[*,Trafo,*]", branches = "[*,Anlagenverbinder,*]", tier = "Niederspannung",
+        outputTypes = "[*,Leitung,*]", openLines, classes = 2, multipleClass, onlyOutputFields,
+        sourceIdField = "TRAFO", branchIdField = "ABZWEIGID", kindField = "ZUSTAND", sourceClassField = "STAT_CLASS", branchClassField = "ABZW_CLASS"
+    };
+
     [Fact]
-    public async Task Feeders_add_colour_fields()
+    public async Task Feeders_write_the_output_fields()
     {
         Build();
-        var all = ById(await RunAsync(new { credentialId = CredentialId, operation = "feeders", sources = "[*,Trafo,*]", branches = "[*,Anlagenverbinder,*]", tier = "Niederspannung",
-            colorFields = true, colors = 2, sourceColorField = "STAT_COLOR", branchColorField = "ABZW_COLOR" }));
-        var only = await RunAsync(new { credentialId = CredentialId, operation = "feeders", sources = "[*,Trafo,*]", branches = "[*,Anlagenverbinder,*]", tier = "Niederspannung",
-            colorFields = true, colors = 2, sourceColorField = "STAT_COLOR", branchColorField = "ABZW_COLOR", colorFieldsOnly = true });
+        var all = ById(await RunAsync(FeedersWithFields()));
+        var only = await RunAsync(FeedersWithFields(onlyOutputFields: true));
 
         // Leitung#1: Trafo Knoten#2, Anlagenverbinder#1
-        Assert.Equal(0, P(all["Leitung#1"], "STAT_COLOR").GetValue<long>());
-        Assert.Equal(1, P(all["Leitung#1"], "ABZW_COLOR").GetValue<long>());
-        Assert.Equal("Knoten#2", P(all["Leitung#1"], "source").GetValue<string>());
+        var line = all["Leitung#1"];
+        Assert.Equal(2, P(line, "TRAFO").GetValue<int>());
+        Assert.Equal(1, P(line, "ABZWEIGID").GetValue<int>());
+        Assert.Equal("Edge", P(line, "ZUSTAND").GetValue<string>());
+        Assert.Equal(0, P(line, "STAT_CLASS").GetValue<int>());   // 2 modulo 2
+        Assert.Equal(1, P(line, "ABZW_CLASS").GetValue<int>());   // 1 modulo 2
+        Assert.Equal("Knoten#2", P(line, "source").GetValue<string>());
 
-        var line = only.Single(i => i["id"]!.GetValue<int>() == 1);
-        Assert.Equal(["ABZW_COLOR", "STAT_COLOR"], line["properties"]!.AsObject().Select(p => p.Key).Order());
+        var bare = only.Single(i => i["id"]!.GetValue<int>() == 1);
+        Assert.Equal(["ABZW_CLASS", "ABZWEIGID", "STAT_CLASS", "TRAFO", "ZUSTAND"], bare["properties"]!.AsObject().Select(p => p.Key).Order());
     }
 
     [Fact]
-    public async Task Open_lines_get_the_open_colour()
+    public async Task Fields_left_empty_are_not_written()
     {
-        Build(ringSwitchedOff: true);
-        object Parameters(bool openLines) => new
+        Build();
+        var items = await RunAsync(new
         {
             credentialId = CredentialId, operation = "feeders", sources = "[*,Trafo,*]", branches = "[*,Anlagenverbinder,*]", tier = "Niederspannung",
-            outputTypes = "[*,Leitung,*]", openLines, colorFields = true, colors = 100, sourceColorField = "STAT_COLOR", branchColorField = "ABZW_COLOR"
-        };
+            outputTypes = "[*,Leitung,*]", branchIdField = "ABZWEIGID", onlyOutputFields = true
+        });
 
-        Assert.DoesNotContain("Leitung#3", ById(await RunAsync(Parameters(openLines: false))).Keys);
-        var items = ById(await RunAsync(Parameters(openLines: true)));
+        Assert.All(items, i => Assert.Equal(["ABZWEIGID"], i["properties"]!.AsObject().Select(p => p.Key)));
+    }
+
+    [Fact]
+    public async Task Multiple_gets_the_cheapest_ids_and_the_multiple_class_when_set()
+    {
+        Build(closedRing: true);
+        var cheapest = ById(await RunAsync(FeedersWithFields()))["Leitung#2"];
+        var marked = ById(await RunAsync(FeedersWithFields(multipleClass: 997)))["Leitung#2"];
+
+        Assert.Equal("Multiple", P(cheapest, "ZUSTAND").GetValue<string>());
+        Assert.Equal(2, P(cheapest, "ABZWEIGID").GetValue<int>());     // Anlagenverbinder#2, cost 2 (#3: 6)
+        Assert.Equal(0, P(cheapest, "ABZW_CLASS").GetValue<int>());    // 2 modulo 2
+        Assert.Equal(997, P(marked, "STAT_CLASS").GetValue<int>());
+        Assert.Equal(997, P(marked, "ABZW_CLASS").GetValue<int>());
+        Assert.Equal(2, P(marked, "ABZWEIGID").GetValue<int>());
+    }
+
+    [Fact]
+    public async Task Open_lines_get_the_open_class()
+    {
+        Build(ringSwitchedOff: true);
+
+        Assert.DoesNotContain("Leitung#3", ById(await RunAsync(FeedersWithFields())).Keys);
+        var items = ById(await RunAsync(FeedersWithFields(openLines: true)));
 
         var open = items["Leitung#3"];
-        Assert.Equal("Open", P(open, "kind").GetValue<string>());
+        Assert.Equal("Open", P(open, "ZUSTAND").GetValue<string>());
         Assert.Equal("Anlagenverbinder#3 Anlagenverbinder#2", P(open, "branch").GetValue<string>());
-        Assert.Equal(998, P(open, "STAT_COLOR").GetValue<int>());
-        Assert.Equal(998, P(open, "ABZW_COLOR").GetValue<int>());
-        Assert.Equal(2, P(items["Leitung#2"], "ABZW_COLOR").GetValue<long>());
+        Assert.Equal(3, P(open, "ABZWEIGID").GetValue<int>());         // the cheaper end
+        Assert.Equal(998, P(open, "STAT_CLASS").GetValue<int>());
+        Assert.Equal(998, P(open, "ABZW_CLASS").GetValue<int>());
+        Assert.Equal("Edge", P(items["Leitung#2"], "ZUSTAND").GetValue<string>());
     }
 
     [Fact]
