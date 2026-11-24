@@ -43,13 +43,49 @@ namespace gView.Server.Services.Security
 
         #region Manager Logins
 
-        public AuthToken GetManagerAuthToken(string username, string password, int exipreMinutes = 30)
+        /// <param name="completesLogin">false, if a second factor follows: the failure counter
+        /// of the user is only reset after the second factor (see <see cref="ManagerLoginSucceeded"/>)</param>
+        public AuthToken GetManagerAuthToken(string username, string password, int exipreMinutes = 30, bool completesLogin = true)
         {
-            var di = new DirectoryInfo(_mapServerService.Options.LoginManagerRootPath + "/manage");
+            var di = new DirectoryInfo(ManageFolder);
             username = username?.Trim().ToLower();  // admin logins are always created lowercase
 
-            return Throttled(username, () => AuthToken.Create(di.FullName, username, password, AppCode.AuthToken.AuthTypes.Manage, exipreMinutes));
+            return Throttled(username, () => AuthToken.Create(di.FullName, username, password, AppCode.AuthToken.AuthTypes.Manage, exipreMinutes), completesLogin);
         }
+
+        /// <summary>
+        /// The folder of the admin logins (<c>&lt;user&gt;.lgn</c>, <c>.stamp</c>, <c>.2fa</c>).
+        /// </summary>
+        public string ManageFolder => Path.Combine(_mapServerService.Options.LoginManagerRootPath, "manage");
+
+        /// <summary>
+        /// Admin token after the second factor (password checked before), with the current stamp.
+        /// </summary>
+        public AuthToken CreateManagerAuthTokenAfterSecondFactor(string username, int expireMinutes)
+            => CreateAuthTokenWithoutPasswordCheck(ManageFolder, username, AppCode.AuthToken.AuthTypes.Manage, expireMinutes);
+
+        /// <summary>
+        /// Is the admin login of the user (or the client IP) locked after too many failures?
+        /// </summary>
+        public bool IsManagerLoginBlocked(string username)
+            => _loginThrottle.IsBlocked(ClientIp, username);
+
+        /// <summary>
+        /// A wrong second factor counts like a wrong password.
+        /// </summary>
+        public void ManagerLoginFailed(string username)
+            => _loginThrottle.Failed(ClientIp, username);
+
+        public void ManagerLoginSucceeded(string username)
+            => _loginThrottle.Succeeded(username);
+
+        /// <summary>
+        /// The current security stamp of an admin login (null if the login does not exist).
+        /// </summary>
+        public string CurrentManagerStamp(string username)
+            => LoginStamp.Current(ManageFolder, username);
+
+        public string ClientIp => _httpContextAccessor?.HttpContext?.Connection?.RemoteIpAddress?.ToString();
 
         /// <summary>
         /// Creates the first admin login. Only allowed while no admin exists
@@ -304,7 +340,7 @@ namespace gView.Server.Services.Security
         /// Checks a password, unless the user or the client IP is locked after too many
         /// failures. A locked login fails like a wrong password.
         /// </summary>
-        private AuthToken Throttled(string username, Func<AuthToken> login)
+        private AuthToken Throttled(string username, Func<AuthToken> login, bool completesLogin = true)
         {
             if (String.IsNullOrWhiteSpace(username))
             {
@@ -326,7 +362,7 @@ namespace gView.Server.Services.Security
                 _securityLog.LogWarning("Failed login for user {username} from {ip}", username, ip);
                 _loginThrottle.Failed(ip, username);
             }
-            else
+            else if (completesLogin)
             {
                 _loginThrottle.Succeeded(username);
             }

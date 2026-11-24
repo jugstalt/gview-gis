@@ -1,4 +1,5 @@
 using gView.Framework.Core.Exceptions;
+using gView.Server.Services.Security.TwoFactor;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
@@ -19,7 +20,9 @@ namespace gView.Server.Services.Security;
 ///   "known-networks": [ "10.0.0.0/8" ],
 ///   "manage": {
 ///     "allowed-networks": [ "10.1.5.0/24" ],  // "*" = everywhere
-///     "session-hours": 8                      // admin login, renewed while active
+///     "session-hours": 8,                     // admin login, renewed while active
+///     "two-factor": "optional",               // off | optional | required (TOTP)
+///     "two-factor-issuer": "gView Server"     // name shown in the authenticator app
 ///   },
 ///   "cors": {
 ///     "allowed-origins": [ "*" ]              // or [ "https://maps.example.com" ]
@@ -88,6 +91,18 @@ public class SecurityOptions
     /// Lifetime of an admin (form) login; renewed while the admin is active.
     /// </summary>
     public int ManageSessionHours { get; init; } = 8;
+
+    public const string DefaultTwoFactorIssuer = "gView Server";
+
+    /// <summary>
+    /// Second factor (TOTP) of the admin form login: off, optional (default) or required.
+    /// </summary>
+    public TwoFactorMode ManageTwoFactor { get; init; } = TwoFactorMode.Optional;
+
+    /// <summary>
+    /// Issuer shown in the authenticator app.
+    /// </summary>
+    public string ManageTwoFactorIssuer { get; init; } = DefaultTwoFactorIssuer;
 
     /// <summary>
     /// Origins allowed to call the services from a browser (CORS); null = any origin.
@@ -179,6 +194,10 @@ public class SecurityOptions
                 : 50L * 1024 * 1024,
             RateLimitEnabled = Bool(section["rate-limit:enabled"]) ?? false,
             RateLimitRequestsPerMinute = int.TryParse(section["rate-limit:requests-per-minute"], out int perMinute) && perMinute > 0 ? perMinute : 600,
+            ManageTwoFactor = ParseTwoFactorMode(section["manage:two-factor"]),
+            ManageTwoFactorIssuer = String.IsNullOrWhiteSpace(section["manage:two-factor-issuer"])
+                ? DefaultTwoFactorIssuer
+                : section["manage:two-factor-issuer"].Trim(),
             ManageSessionHours = int.TryParse(section["manage:session-hours"], out int hours) && hours > 0 ? hours : 8,
             CorsAllowedOrigins = corsOrigins.Length == 0 || corsOrigins.Contains("*")
                 ? null
@@ -220,7 +239,23 @@ public class SecurityOptions
                        + "every host in the private networks is trusted to send X-Forwarded-For and can pretend "
                        + "to come from an allowed admin network. Set security:known-proxies to your reverse proxies.";
         }
+
+        // admin login open to the internet with a password only
+        if (ManageAllowedNetworks is null && !OidcAdminLogin && ManageTwoFactor != TwoFactorMode.Required)
+        {
+            yield return "security:manage:allowed-networks is \"*\" (admin login from everywhere), but security:manage:two-factor "
+                       + "is not \"required\": set it to \"required\" for an internet facing server.";
+        }
     }
+
+    public static TwoFactorMode ParseTwoFactorMode(string value)
+        => (value?.Trim().ToLowerInvariant()) switch
+        {
+            null or "" or "optional" => TwoFactorMode.Optional,
+            "off" or "false" or "none" => TwoFactorMode.Off,
+            "required" or "true" => TwoFactorMode.Required,
+            _ => throw new MapServerException($"security:manage:two-factor: invalid value '{value}' (expected off, optional or required)")
+        };
 
     #region Helper
 

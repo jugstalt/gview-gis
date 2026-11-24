@@ -31,6 +31,7 @@ static public class ServiceCollectionExtensions
         services.AddHttpContextAccessor();
         services.AddSingleton<LoginThrottleService>();
         services.AddSingleton<AdminSetupService>();
+        services.AddSingleton<gView.Server.Services.Security.TwoFactor.TwoFactorService>();
 
         services.AddTransient<UrlHelperService>();
         services.AddTransient<LoginManager>();

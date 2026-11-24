@@ -1,6 +1,7 @@
 ﻿@using gView.Server.AppCode
 @inject gView.Server.Services.Hosting.UrlHelperService UrlHelperService
 @inject gView.Server.Services.Security.LoginManager LoginManager
+@inject gView.Server.Services.Security.SecurityOptions SecurityOptions
 @{
     var rootUrl = UrlHelperService.AppRootUrl(this.Context.Request);
     var username = LoginManager.LoginUsername(this.Context.Request);
@@ -47,6 +48,13 @@
             <a asp-area="" asp-controller="Token" asp-action="Logout">
                 <span class="ico ico-logout"></span><span>Logout</span>
             </a>
+            @if (isManageUser && Globals.AllowFormsLogin && this.Context.Request.IsFromAdminNetwork()
+                 && !SecurityOptions.OidcAdminLogin && SecurityOptions.ManageTwoFactor != gView.Server.Services.Security.TwoFactor.TwoFactorMode.Off)
+            {
+                <a class="@Active(controller == "manage" && action == "twofactor")" asp-area="" asp-controller="Manage" asp-action="TwoFactor">
+                    <span class="ico ico-key"></span><span>Two-factor login</span>
+                </a>
+            }
             @if (isManageUser && Globals.AllowFormsLogin && this.Context.Request.IsFromAdminNetwork())
             {
                 <form method="post" action="@rootUrl/manage/signouteverywhere"

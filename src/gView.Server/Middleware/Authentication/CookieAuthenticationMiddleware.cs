@@ -5,6 +5,7 @@ using gView.Server.AppCode;
 using gView.Server.AppCode.Extensions;
 using gView.Server.Extensions;
 using gView.Server.Services.Security;
+using gView.Server.Services.Security.TwoFactor;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Threading.Tasks;
@@ -16,7 +17,9 @@ namespace gView.Server.Middleware.Authentication;
 /// unexpired and carry the current security stamp of its login (see
 /// <see cref="LoginStamp"/>), otherwise the cookie is removed and the request
 /// is anonymous. Admin logins are renewed while the admin is active
-/// (security:manage:session-hours).
+/// (security:manage:session-hours). With security:manage:two-factor = required,
+/// admin sessions of users without a second factor are no longer accepted
+/// (sessions from before the switch): they log in again and set it up.
 /// </summary>
 public class CookieAuthenticationMiddleware
 {
@@ -35,7 +38,7 @@ public class CookieAuthenticationMiddleware
         _securityOptions = securityOptions;
     }
 
-    public async Task InvokeAsync(HttpContext context, LoginManager loginManager)
+    public async Task InvokeAsync(HttpContext context, LoginManager loginManager, TwoFactorService twoFactor)
     {
         if (context.User.ApplyAuthenticationMiddleware())
         {
@@ -52,7 +55,8 @@ public class CookieAuthenticationMiddleware
                     authToken = null;
                 }
 
-                if (authToken is null || authToken.IsExpired || !loginManager.HasCurrentStamp(authToken))
+                if (authToken is null || authToken.IsExpired || !loginManager.HasCurrentStamp(authToken)
+                    || (authToken.IsManageUser && authToken.Stamp is not null && !twoFactor.IsSessionAllowed(authToken.Username)))
                 {
                     AuthCookie.Remove(context.Response);
                 }

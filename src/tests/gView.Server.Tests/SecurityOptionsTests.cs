@@ -1,5 +1,6 @@
 using gView.Framework.Core.Exceptions;
 using gView.Server.Services.Security;
+using gView.Server.Services.Security.TwoFactor;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -105,5 +106,60 @@ public class SecurityOptionsTests
 
         Assert.Equal(expectedScheme, context.Request.Scheme);
         Assert.Equal(expectedClientIp, context.Connection.RemoteIpAddress!.ToString());
+    }
+
+    [Theory]
+    [InlineData(null, TwoFactorMode.Optional)]
+    [InlineData("off", TwoFactorMode.Off)]
+    [InlineData("Optional", TwoFactorMode.Optional)]
+    [InlineData("required", TwoFactorMode.Required)]
+    public void FromConfiguration_TwoFactor(string? value, TwoFactorMode expected)
+    {
+        var options = Options(new() { ["security:manage:two-factor"] = value });
+
+        Assert.Equal(expected, options.ManageTwoFactor);
+        Assert.Equal(SecurityOptions.DefaultTwoFactorIssuer, options.ManageTwoFactorIssuer);
+    }
+
+    [Fact]
+    public void FromConfiguration_TwoFactorInvalid_Throws()
+    {
+        Assert.Throws<MapServerException>(() => Options(new() { ["security:manage:two-factor"] = "maybe" }));
+    }
+
+    [Fact]
+    public void FromConfiguration_TwoFactorIssuer()
+    {
+        var options = Options(new() { ["security:manage:two-factor-issuer"] = " Maps Test " });
+
+        Assert.Equal("Maps Test", options.ManageTwoFactorIssuer);
+    }
+
+    [Theory]
+    [InlineData("optional", true)]
+    [InlineData("off", true)]
+    [InlineData("required", false)]
+    public void ConfigurationWarnings_AdminFromEverywhereWithoutRequiredTwoFactor(string mode, bool warns)
+    {
+        var options = Options(new()
+        {
+            ["security:known-proxies:0"] = "10.0.0.5",
+            ["security:manage:allowed-networks:0"] = "*",
+            ["security:manage:two-factor"] = mode
+        });
+
+        Assert.Equal(warns, options.ConfigurationWarnings().Any(w => w.Contains("two-factor")));
+    }
+
+    [Fact]
+    public void ConfigurationWarnings_RestrictedAdminNetworks_NoTwoFactorWarning()
+    {
+        var options = Options(new()
+        {
+            ["security:known-proxies:0"] = "10.0.0.5",
+            ["security:manage:allowed-networks:0"] = "10.1.0.0/16"
+        });
+
+        Assert.DoesNotContain(options.ConfigurationWarnings(), w => w.Contains("two-factor"));
     }
 }

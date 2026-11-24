@@ -1,6 +1,7 @@
 ﻿using gView.Framework.Data.Sql;
 using gView.Server.Services.MapServer;
 using gView.Server.Services.Security;
+using gView.Server.Services.Security.TwoFactor;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -53,6 +54,23 @@ static internal class WebApplicationExtensions
 
             app.Services.GetRequiredService<AdminSetupService>()
                 .Initialize(scope.ServiceProvider.GetRequiredService<LoginManager>());
+        }
+
+        return app;
+    }
+
+    /// <summary>
+    /// Emergency reset of the second factor of admin logins:
+    /// GVIEW_ADMIN_RESET_2FA = "user1,user2" or "*" (applied on every start while set).
+    /// </summary>
+    public static WebApplication ResetTwoFactorFromEnvironment(this WebApplication app)
+    {
+        var value = app.Configuration[TwoFactorKeys.ResetEnvironmentKey];
+
+        if (!String.IsNullOrWhiteSpace(value)
+            && app.Services.GetRequiredService<MapServiceManager>().Options.IsValid)
+        {
+            app.Services.GetRequiredService<TwoFactorService>().ResetFromEnvironment(value);
         }
 
         return app;

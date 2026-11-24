@@ -1,0 +1,39 @@
+@inject gView.Server.Services.Hosting.UrlHelperService UrlHelperService
+@{
+    ViewData["Title"] = "Login (Manager)";
+    ViewData["SubTitle"] = "Two-factor login";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var rootUrl = UrlHelperService.AppRootUrl(this.Context.Request);
+}
+
+@removeTagHelper Microsoft.AspNetCore.Mvc.TagHelpers.FormTagHelper, Microsoft.AspNetCore.Mvc.TagHelpers
+
+@model ManageLoginCodeModel;
+
+<div class="gview-login-panel">
+    <div class="title">
+        <div class="login-logo"><span class="ico ico-key"></span></div>
+        <div>
+            <h3>@ViewData["Title"]</h3>
+            <div class="subtitle">@ViewData["SubTitle"]</div>
+        </div>
+    </div>
+    @if (!String.IsNullOrWhiteSpace(Model.ErrorMessage))
+    {
+        <div class="error-message">@Model.ErrorMessage</div>
+    }
+    <form action="@rootUrl/Manage/LoginCode" method="post">
+        @Html.AntiForgeryToken()
+        <div class="attribute">
+            <div>
+                <div class="label">Code from your authenticator app</div>
+                <input asp-for="Code" class="form-control twofactor-code" autofocus autocomplete="one-time-code"
+                       inputmode="text" maxlength="16" placeholder="123456" />
+            </div>
+        </div>
+        <div class="twofactor-hint">Lost your phone? Enter one of your recovery codes (xxxxx-xxxxx) instead.</div>
+
+        <button type="submit" class="btn btn-primary">Verify</button>
+    </form>
+    <div class="twofactor-back"><a href="@rootUrl/Manage/Login">Back to login</a></div>
+</div>

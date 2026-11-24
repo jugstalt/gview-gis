@@ -361,6 +361,24 @@ gView Server hardening for internet-facing installations, see
     token login page, OGC API (also `OgcApiException` 500 with database messages) and GeoJson
     service (now with id and stack trace in the log).
   - ArcXML and MapServer `<ERROR>` texts are XML escaped.
+- Two-factor login (TOTP, RFC 6238) for the admin form login (`TwoFactorService`,
+  `security:manage:two-factor` = `off` | `optional` (default) | `required`):
+  - After the password the login asks for the 6 digit code of an authenticator app; between the
+    two steps the browser only holds a 5 minute "pending" cookie without rights. ±30 s clock
+    drift, a used code is refused (replay), wrong codes count like wrong passwords (lockout),
+    5 wrong codes go back to the password.
+  - New page **Two-factor login** (sidebar, `Manage/TwoFactor`): set up with QR code (QRCoder,
+    rendered on the server, no CDN) or manual key, confirm with a code, 10 recovery codes shown
+    once (copy/download); new recovery codes, new device, disable (only `optional`). Setting up,
+    replacing and disabling end all other sessions of the admin (new security stamp).
+  - `required`: admins without a second factor set it up right after the password; existing
+    sessions of admins without one end.
+  - Stored in `<user>.2fa` next to `<user>.lgn`: secret encrypted with the server certificate
+    (`crypto0`), recovery codes hashed. Emergency reset: delete the file, or
+    `GVIEW_ADMIN_RESET_2FA=user1,user2` (or `*`) at startup (warns on every start while set).
+  - Token users (Basic auth, `/token`, url tokens, Carto publishing) and OIDC admin logins are
+    not affected. Issuer name in the app: `security:manage:two-factor-issuer`. Startup warning
+    if `security:manage:allowed-networks` is `"*"` and two-factor login is not `required`.
 - Build: new nuke target `Audit` (runs before `Compile`): all projects of server, webapps and
   cmd (read from `project.assets.json`) are checked with
   `dotnet list package --vulnerable --include-transitive`; vulnerable packages from

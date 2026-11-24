@@ -322,6 +322,28 @@ table.table.kv td:first-child { width: 200px; color: var(--muted); white-space: 
 .gview-login-panel .error-message { background: var(--danger-soft); color: var(--danger); border-radius: 6px; padding: 8px 12px; font-size: 13px; margin-bottom: 8px; }
 .gview-login-panel input { width: 100%; }
 .gview-login-panel .btn { width: 100%; margin-top: 12px; padding: 9px; }
+.gview-login-panel .success-message { background: var(--success-soft); color: var(--success); border-radius: 6px; padding: 8px 12px; font-size: 13px; margin-bottom: 8px; }
+.gview-login-panel .warning-message { background: var(--warn-soft); color: var(--warn); border-radius: 6px; padding: 8px 12px; font-size: 13px; margin-bottom: 8px; }
+
+/* two-factor login (Manage/LoginCode, Manage/TwoFactor) */
+.gview-login-panel.twofactor-panel { max-width: 480px; }
+.gview-login-panel a.btn { display: block; text-align: center; box-sizing: border-box; }
+.twofactor-section { border-top: 1px solid var(--border); margin-top: 16px; padding-top: 12px; }
+.twofactor-section h4 { margin: 0 0 6px; font-size: 14px; }
+.twofactor-section p { margin: 0 0 8px; color: var(--muted); font-size: 13px; }
+.twofactor-section form input { margin-top: 6px; }
+.twofactor-qr { width: 200px; height: 200px; margin: 8px auto; background: #fff; border-radius: 8px; padding: 4px; }
+.twofactor-qr svg { width: 100%; height: 100%; display: block; }
+.twofactor-secret { font-family: var(--mono); font-size: 13px; word-break: break-all; background: var(--surface-2); border-radius: 6px; padding: 6px 8px; }
+.twofactor-code { font-family: var(--mono); letter-spacing: 2px; }
+.twofactor-code::placeholder { font-family: inherit; letter-spacing: normal; }
+.twofactor-hint { color: var(--muted); font-size: 12px; }
+.twofactor-back { margin-top: 14px; text-align: center; font-size: 13px; }
+.twofactor-status { display: flex; gap: 8px; align-items: center; background: var(--success-soft); color: var(--success); border-radius: 6px; padding: 8px 12px; font-size: 13px; margin-bottom: 8px; }
+.twofactor-status .ico { width: 16px; height: 16px; flex: none; }
+.twofactor-recovery-codes { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 16px; list-style: none; margin: 8px 0; padding: 10px 14px; background: var(--surface-2); border-radius: 6px; font-family: var(--mono); font-size: 14px; }
+.twofactor-buttons { display: flex; gap: 8px; }
+.twofactor-buttons .btn { margin-top: 4px; }
 
 /* ======================================================================== about / error */
 .page-about .gview-license { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; white-space: pre-wrap; font-size: 12px; color: var(--muted); max-height: 420px; overflow: auto; }

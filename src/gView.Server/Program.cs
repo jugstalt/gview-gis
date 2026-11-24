@@ -68,6 +68,7 @@ app.LogStartupInformation(
    .LogSecurityWarnings()
    .InitializeSqlSecurity(app.Services.GetRequiredService<ILogger<Startup>>())
    .InitializeAdminSetup()
+   .ResetTwoFactorFromEnvironment()
    .Run();
 
 return 0;

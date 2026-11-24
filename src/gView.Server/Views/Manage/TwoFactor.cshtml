@@ -1,0 +1,189 @@
+@inject gView.Server.Services.Hosting.UrlHelperService UrlHelperService
+@using gView.Server.Services.Security.TwoFactor
+@{
+    ViewData["Title"] = "Two-factor login";
+    ViewData["SubTitle"] = $"Admin {Model.Username}";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var rootUrl = UrlHelperService.AppRootUrl(this.Context.Request);
+}
+
+@removeTagHelper Microsoft.AspNetCore.Mvc.TagHelpers.FormTagHelper, Microsoft.AspNetCore.Mvc.TagHelpers
+
+@model ManageTwoFactorModel;
+
+<div class="gview-login-panel twofactor-panel">
+    <div class="title">
+        <div class="login-logo"><span class="ico ico-key"></span></div>
+        <div>
+            <h3>@ViewData["Title"]</h3>
+            <div class="subtitle">@ViewData["SubTitle"]</div>
+        </div>
+    </div>
+
+    @if (!String.IsNullOrWhiteSpace(Model.ErrorMessage))
+    {
+        <div class="error-message">@Model.ErrorMessage</div>
+    }
+    @if (!String.IsNullOrWhiteSpace(Model.SuccessMessage))
+    {
+        <div class="success-message">@Model.SuccessMessage</div>
+    }
+
+    @if (Model.RecoveryCodes is not null)
+    {
+        <section class="twofactor-section">
+            <h4>Recovery codes</h4>
+            <p>
+                Each code can be used once instead of a code from the app, e.g. when the phone is lost.
+                <b>They are shown only now.</b> Store them in a safe place (password manager).
+            </p>
+            <ul class="twofactor-recovery-codes" id="twofactor-recovery-codes">
+                @foreach (var code in Model.RecoveryCodes)
+                {
+                    <li>@code</li>
+                }
+            </ul>
+            <div class="twofactor-buttons">
+                <button type="button" class="btn" id="twofactor-copy">Copy</button>
+                <button type="button" class="btn" id="twofactor-download">Download .txt</button>
+            </div>
+            <a class="btn btn-primary" href="@rootUrl/Manage">Continue to Manage</a>
+        </section>
+
+        <script>
+            (function () {
+                var text = Array.prototype.map.call(
+                    document.querySelectorAll('#twofactor-recovery-codes li'),
+                    function (li) { return li.textContent.trim(); }).join('\r\n');
+                var header = 'gView Server recovery codes (@Model.Username @@ @this.Context.Request.Host.Host)\r\n'
+                           + 'Each code can be used once.\r\n\r\n';
+
+                document.getElementById('twofactor-copy').addEventListener('click', function () {
+                    navigator.clipboard.writeText(text).then(function () {
+                        document.getElementById('twofactor-copy').textContent = 'Copied';
+                    });
+                });
+                document.getElementById('twofactor-download').addEventListener('click', function () {
+                    var blob = new Blob([header + text + '\r\n'], { type: 'text/plain' });
+                    var a = document.createElement('a');
+                    a.href = URL.createObjectURL(blob);
+                    a.download = 'gview-recovery-codes.txt';
+                    document.body.appendChild(a);
+                    a.click();
+                    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 0);
+                });
+            })();
+        </script>
+    }
+    else if (Model.Setup is not null)
+    {
+        @if (Model.IsPendingSetup)
+        {
+            <div class="warning-message">
+                This server requires a two-factor login for admins. Set it up now to continue.
+            </div>
+        }
+        else if (Model.Enabled)
+        {
+            <div class="warning-message">
+                Set up the new device. The current one stays valid until the new code is confirmed.
+            </div>
+        }
+
+        <section class="twofactor-section">
+            <h4>1. Scan the QR code</h4>
+            <p>Use an authenticator app (e.g. Microsoft Authenticator, Google Authenticator, Aegis, 1Password).</p>
+            <div class="twofactor-qr">@Html.Raw(Model.Setup.QrCodeSvg)</div>
+            <div class="attribute">
+                <div>
+                    <div class="label">Or enter the key manually (account @Model.Setup.Account, time based)</div>
+                    <code class="twofactor-secret">@System.Text.RegularExpressions.Regex.Replace(Model.Setup.Secret, ".{4}(?!$)", "$0 ")</code>
+                </div>
+            </div>
+        </section>
+
+        <section class="twofactor-section">
+            <h4>2. Confirm with a code</h4>
+            <form action="@rootUrl/Manage/TwoFactorConfirm" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="SetupToken" value="@Model.Setup.SetupToken" />
+                <div class="attribute">
+                    <div>
+                        <div class="label">Code from the app</div>
+                        <input name="Code" class="form-control twofactor-code" autofocus autocomplete="one-time-code"
+                               inputmode="numeric" maxlength="8" placeholder="123456" />
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Activate</button>
+            </form>
+        </section>
+
+        @if (Model.IsPendingSetup)
+        {
+            <div class="twofactor-back"><a href="@rootUrl/Manage/Login">Back to login</a></div>
+        }
+        else
+        {
+            <div class="twofactor-back"><a href="@rootUrl/Manage/TwoFactor">Cancel</a></div>
+        }
+    }
+    else if (Model.Enabled)
+    {
+        <div class="twofactor-status">
+            <span class="ico ico-lock"></span>
+            <span>Two-factor login is <b>active</b>. @Model.RemainingRecoveryCodes recovery codes left.</span>
+        </div>
+        @if (Model.RemainingRecoveryCodes <= RecoveryCodes.LowWarning)
+        {
+            <div class="warning-message">
+                Only @Model.RemainingRecoveryCodes recovery codes left. Create new ones below.
+            </div>
+        }
+
+        <section class="twofactor-section">
+            <h4>New recovery codes</h4>
+            <p>Creates @RecoveryCodes.Count new codes; the old ones are no longer valid.</p>
+            <form action="@rootUrl/Manage/TwoFactorRecoveryCodes" method="post">
+                @Html.AntiForgeryToken()
+                <input name="Code" class="form-control twofactor-code" autocomplete="one-time-code"
+                       inputmode="numeric" maxlength="8" placeholder="Code from the app" />
+                <button type="submit" class="btn">Create recovery codes</button>
+            </form>
+        </section>
+
+        <section class="twofactor-section">
+            <h4>New device</h4>
+            <p>Moves the two-factor login to another authenticator app. Ends all other sessions.</p>
+            <form action="@rootUrl/Manage/TwoFactorReplace" method="post">
+                @Html.AntiForgeryToken()
+                <input name="Code" class="form-control twofactor-code" autocomplete="one-time-code"
+                       maxlength="16" placeholder="Code from the app or recovery code" />
+                <button type="submit" class="btn">Set up new device</button>
+            </form>
+        </section>
+
+        @if (Model.Mode == TwoFactorMode.Optional)
+        {
+            <section class="twofactor-section">
+                <h4>Disable</h4>
+                <p>Switches the two-factor login off for this admin. Ends all other sessions.</p>
+                <form action="@rootUrl/Manage/TwoFactorDisable" method="post"
+                      onsubmit="return confirm('Disable the two-factor login for this admin?');">
+                    @Html.AntiForgeryToken()
+                    <input name="Password" type="password" class="form-control" autocomplete="current-password" placeholder="Password" />
+                    <input name="Code" class="form-control twofactor-code" autocomplete="one-time-code"
+                           maxlength="16" placeholder="Code from the app or recovery code" />
+                    <button type="submit" class="btn btn-danger">Disable two-factor login</button>
+                </form>
+            </section>
+        }
+
+        <div class="twofactor-back"><a href="@rootUrl/Manage">Back to Manage</a></div>
+    }
+    else
+    {
+        <p>Two-factor login is not set up.</p>
+        <a class="btn btn-primary" href="@rootUrl/Manage/TwoFactor">Set up</a>
+        <div class="twofactor-back"><a href="@rootUrl/Manage">Back to Manage</a></div>
+    }
+</div>

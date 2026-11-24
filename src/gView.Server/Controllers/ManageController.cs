@@ -15,6 +15,7 @@ using gView.Server.Services.Logging;
 using gView.Server.Services.MapServer;
 using gView.Server.Services.Network;
 using gView.Server.Services.Security;
+using gView.Server.Services.Security.TwoFactor;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -32,7 +33,7 @@ namespace gView.Server.Controllers;
 
 [AdminNetworkOnly]
 [AntiforgeryForCookieAuth]
-public class ManageController : BaseController
+public partial class ManageController : BaseController
 {
     private readonly MapServiceManager _mapServiceMananger;
     private readonly MapServiceDeploymentManager _mapServiceDeploymentManager;
@@ -41,6 +42,7 @@ public class ManageController : BaseController
     private readonly IConfiguration _configuration;
     private readonly NetworkServerService _network;
     private readonly AdminSetupService _adminSetup;
+    private readonly TwoFactorService _twoFactor;
 
     public ManageController(MapServiceManager mapServiceManager,
                             MapServiceDeploymentManager mapServiceDeploymentManager,
@@ -49,9 +51,11 @@ public class ManageController : BaseController
                             EncryptionCertificateService encryptionCertificateService,
                             IConfiguration configuration,
                             NetworkServerService network,
-                            AdminSetupService adminSetup)
+                            AdminSetupService adminSetup,
+                            TwoFactorService twoFactor)
                             : base(mapServiceManager, loginManager, encryptionCertificateService)
     {
+        _twoFactor = twoFactor;
         _network = network;
         _adminSetup = adminSetup;
         _mapServiceMananger = mapServiceManager;
@@ -98,6 +102,8 @@ public class ManageController : BaseController
             return RedirectToAction("Index", "Home");
         }
 
+        RemovePendingCookie();  // a new login starts from the password
+
         return View(new ManageLoginModel()
         {
             SetupRequired = _adminSetup.IsSetupRequired(_loginManager)
@@ -141,14 +147,26 @@ public class ManageController : BaseController
                     model.PasswordRepeat?.Trim());
             }
 
+            var username = model.Username.Trim().ToLowerInvariant();
+            var twoFactorStep = _twoFactor.StepAfterPassword(username);
+
             var authToken = _loginManager.GetManagerAuthToken(
-                model.Username.Trim(),
+                username,
                 model.Password.Trim(),
-                exipreMinutes: 60 * this.HttpContext.RequestServices.GetRequiredService<SecurityOptions>().ManageSessionHours);
+                exipreMinutes: ManageSessionMinutes,
+                completesLogin: twoFactorStep == TwoFactorStep.None);
 
             if (authToken == null)
             {
                 throw new Exception("Unknown user or password");
+            }
+
+            if (twoFactorStep != TwoFactorStep.None)
+            {
+                // no admin rights yet: the code (or the setup) follows
+                SetPendingCookie(_twoFactor.CreatePendingToken(authToken.Username, authToken.Stamp, twoFactorStep));
+
+                return RedirectToAction(twoFactorStep == TwoFactorStep.Code ? "LoginCode" : "TwoFactor");
             }
 
             base.SetAuthCookie(authToken);
