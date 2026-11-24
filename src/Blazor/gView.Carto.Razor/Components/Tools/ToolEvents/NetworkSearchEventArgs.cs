@@ -24,12 +24,25 @@ public enum NetworkSearchAction
     /// <summary>Removes the area: the searches go over the whole network again.</summary>
     RemoveArea,
     /// <summary>Zooms to the area.</summary>
-    ZoomToArea
+    ZoomToArea,
+    /// <summary>Hides or shows the elements of a legend row (Key) in the map.</summary>
+    ToggleLegend,
+    /// <summary>Zooms to the elements of a legend row (Key).</summary>
+    ZoomToLegend,
+    /// <summary>The features of a legend row (Key) become the selection of their layers; Target: add to the selection (Ctrl).</summary>
+    SelectLegend,
+    /// <summary>Zooms to one element of a legend row (Key, Index in its list).</summary>
+    ZoomToElement,
+    /// <summary>Draws the result again, e.g. after the feeders colouring changed.</summary>
+    Redraw
 }
 
-public class NetworkSearchEventArgs(NetworkSearchAction action, int index = 0, bool target = false) : ToolEventArgs
+public class NetworkSearchEventArgs(NetworkSearchAction action, int index = 0, bool target = false, string? key = null) : ToolEventArgs
 {
-    /// <summary>RemovePick, ZoomToPick: the item is in the target list, not in the start list.</summary>
+    /// <summary>The legend actions: the key of the row (<see cref="Context.NetworkLegendEntry.Key"/> or a group key).</summary>
+    public string? Key { get; } = key;
+
+    /// <summary>RemovePick, ZoomToPick: the item is in the target list, not in the start list; SelectLegend: add to the selection.</summary>
     public bool Target { get; } = target;
 
     public NetworkSearchAction Action { get; } = action;

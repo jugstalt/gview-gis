@@ -1,6 +1,7 @@
 @using gView.Carto.Razor.Components.Tools.ToolEvents
 @using gView.Framework.NetworkModel.Graph
 @using gView.Framework.NetworkModel.Query
+@using gView.Carto.Razor.Components.Tools.Context
 
 @inherits BaseHandler
 @implements IDisposable
@@ -9,6 +10,7 @@
 @inject CartoEventBusService EventBus
 @inject IconService Icons
 @inject IJSRuntime JS
+@inject ISnackbar Snackbar
 
 @if (_context is not null)
 {
@@ -129,7 +131,22 @@
                 <MudTextField T="string" Label="Edge types (pattern, e.g. ![*,Anlagen Verbinder,*])" Dense="true" @bind-Value="_context.Filter" />
                 <MudTextField T="string" Label="Blocked nodes" Dense="true" @bind-Value="_context.Block" />
             }
-            @if (_context.Operation is "trace" or "reach" or "path" or "supply")
+            @if (_context.Operation == "feeders")
+            {
+                <MudTextField T="string" Label="Branches (edge types at a source that start a branch, e.g. [Niederspannung,Anlagenverbinder,*]; empty = every edge)" Dense="true" @bind-Value="_context.Branches" />
+                <MudCheckBox T="bool" Label="Show open edges (not gone along, at a node a branch went through)" Dense="true" @bind-Value="_context.IncludeOpen" />
+                <MudSelect T="NetworkFeederColoring" Label="Colours" Dense="true" Value="_context.FeederColoring" ValueChanged="SetFeederColoring">
+                    <MudSelectItem Value="NetworkFeederColoring.Branch">by branch</MudSelectItem>
+                    <MudSelectItem Value="NetworkFeederColoring.Source">by source</MudSelectItem>
+                </MudSelect>
+                <MudSelect T="string" Label="Palette" Dense="true" Value="_context.FeederPalette" ValueChanged="SetFeederPalette">
+                    @foreach (var palette in NetworkResultLegend.FeederPalettes)
+                    {
+                        <MudSelectItem Value="@palette">@palette</MudSelectItem>
+                    }
+                </MudSelect>
+            }
+            @if (_context.Operation is "trace" or "reach" or "path" or "supply" or "feeders")
             {
                 <MudSelect T="string" Label="Weight" Dense="true" @bind-Value="_context.Weight">
                     @foreach (var weight in _context.Weights)
@@ -205,6 +222,10 @@
                                    OnClick="CopyResult" />
                 </div>
                 <pre style="max-height:400px;overflow:auto;font-size:0.75em;margin-top:0">@string.Join(Environment.NewLine, result.Messages)</pre>
+                @if (_context.Legend is NetworkResultLegend legend && legend.Result == result)
+                {
+                    @Legend(legend)
+                }
             }
             @if (_context.Result is NetworkQueryResult { Violations.Count: > 0 } validation)
             {
@@ -295,6 +316,7 @@
         "supply" => "Sources",
         "info" => "Node",
         "outage" => "Switch off",
+        "feeders" => "Sources",
         _ => "Start"
     };
 
@@ -424,7 +446,163 @@
         }
     });
 
-    private void OnContextChanged() => InvokeAsync(StateHasChanged);
+    private void OnContextChanged() => InvokeAsync(() =>
+    {
+        if (_context?.Notice is string notice)
+        {
+            _context.Notice = null;
+            Snackbar.Add(notice, Severity.Info);
+        }
+        StateHasChanged();
+    });
+
+    #region Legend
+
+    /// <summary>The legend rows expanded to their elements (keys).</summary>
+    private readonly HashSet<string> _expanded = [];
+
+    /// <summary>feeders: sources opened or closed by hand; the others are open when there are 5 sources at most.</summary>
+    private readonly Dictionary<string, bool> _openGroups = [];
+
+    private const int MaxListed = 200;
+
+    private bool IsOpen(NetworkResultLegend legend, string group)
+        => _openGroups.TryGetValue(group, out var open) ? open : legend.Groups.Count <= 5;
+
+    private bool IsHidden(IEnumerable<NetworkLegendEntry> entries) => entries.All(e => _context!.HiddenKeys.Contains(e.Key));
+
+    private static string Number(double value) => value.ToString("N0");
+
+    private RenderFragment Legend(NetworkResultLegend legend) => __builder =>
+    {
+        <div style="display:flex;align-items:center;margin-top:6px;font-size:0.8em">
+            <b style="flex:1">Legend</b>
+            <span style="color:var(--mud-palette-text-secondary)">eye: show/hide · ⌖ zoom · select (Ctrl adds)</span>
+        </div>
+        <table style="width:100%;font-size:0.75em;border-collapse:collapse">
+            @foreach (var entry in legend.Entries.Where(e => e.Group is null))
+            {
+                @LegendRow(legend, entry, entry.Key, entry.Name, [entry], 0)
+            }
+            @foreach (var group in legend.Groups)
+            {
+                var branches = legend.Entries.Where(e => e.Group == group).ToList();
+                bool open = IsOpen(legend, group);
+                var groupKey = NetworkResultLegend.GroupKey(group);
+                <tr style="border-top:1px solid var(--mud-palette-lines-default);background:var(--mud-palette-background-gray)">
+                    <td style="width:16px;cursor:pointer;text-align:center" title="@(open ? "Collapse" : "Expand")" @onclick="() => SetGroupOpen(group, !open)">@(open ? "▾" : "▸")</td>
+                    <td style="width:18px">@Swatch(branches.Select(b => b.Color).Distinct().Count() == 1 ? branches[0] : null)</td>
+                    <td style="word-break:break-word;cursor:pointer" @onclick="() => SetGroupOpen(group, !open)"><b>@group</b> <span style="color:var(--mud-palette-text-secondary)">(@branches.Count branch@(branches.Count == 1 ? "" : "es"))</span></td>
+                    <td style="text-align:right;white-space:nowrap">@Number(branches.Sum(b => b.Count))</td>
+                    <td style="text-align:right;white-space:nowrap">@Number(branches.Sum(b => b.Length)) m</td>
+                    @RowActions(groupKey, branches)
+                </tr>
+                @if (open)
+                {
+                    foreach (var branch in branches)
+                    {
+                        @LegendRow(legend, branch, branch.Key, branch.Name, [branch], 1)
+                    }
+                }
+            }
+        </table>
+    };
+
+    private RenderFragment LegendRow(NetworkResultLegend legend, NetworkLegendEntry entry, string key, string name, IReadOnlyList<NetworkLegendEntry> entries, int indent) => __builder =>
+    {
+        bool expanded = _expanded.Contains(key);
+        bool hidden = IsHidden(entries);
+        <tr style="border-top:1px solid var(--mud-palette-lines-default);@(hidden ? "opacity:.5" : "")">
+            <td style="width:16px;cursor:pointer;text-align:center" title="@(expanded ? "Hide the list" : "List them, to zoom to each")" @onclick="() => ToggleExpanded(key)">@(expanded ? "▾" : "▸")</td>
+            <td style="width:18px">@Swatch(entry)</td>
+            <td style="word-break:break-word;cursor:pointer;padding-left:@(indent * 12)px" @onclick="() => ToggleExpanded(key)">@name</td>
+            <td style="text-align:right;white-space:nowrap">@Number(entry.Count)</td>
+            <td style="text-align:right;white-space:nowrap">@(entry.Shape == NetworkLegendShape.Edge ? $"{Number(entry.Length)} m" : "")</td>
+            @RowActions(key, entries)
+        </tr>
+        @if (expanded)
+        {
+            var items = legend.Items(entry);
+            for (int i = 0; i < Math.Min(items.Count, MaxListed); i++)
+            {
+                int index = i;
+                var item = items[i];
+                <tr style="cursor:pointer" title="Zoom to it" @onclick="() => FireLegend(NetworkSearchAction.ZoomToElement, key, index)">
+                    <td></td>
+                    <td></td>
+                    <td colspan="3" style="word-break:break-word;padding-left:@(indent * 12 + 8)px">
+                        @item.Label <span style="color:var(--mud-palette-text-secondary)">@item.Detail</span>
+                    </td>
+                    <td colspan="3" style="text-align:center">⌖</td>
+                </tr>
+            }
+            @if (items.Count > MaxListed)
+            {
+                <tr><td></td><td></td><td colspan="6" style="color:var(--mud-palette-text-secondary)">First @MaxListed of @items.Count: select them or export GeoJSON for all.</td></tr>
+            }
+        }
+    };
+
+    private RenderFragment RowActions(string key, IReadOnlyList<NetworkLegendEntry> entries) => __builder =>
+    {
+        bool hidden = IsHidden(entries);
+        <td style="width:22px;cursor:pointer;text-align:center" title="@(hidden ? "Show in the map" : "Hide in the map")"
+            @onclick="() => FireLegend(NetworkSearchAction.ToggleLegend, key)">
+            <MudIcon Icon="@(hidden ? MudBlazor.Icons.Material.Filled.VisibilityOff : MudBlazor.Icons.Material.Filled.Visibility)" Size="MudBlazor.Size.Small" />
+        </td>
+        <td style="width:22px;cursor:pointer;text-align:center" title="Zoom to them" @onclick="() => FireLegend(NetworkSearchAction.ZoomToLegend, key)">⌖</td>
+        <td style="width:22px;cursor:pointer;text-align:center" title="Select their features (replaces the selection of their layers, Ctrl adds)"
+            @onclick="(MouseEventArgs e) => FireLegend(NetworkSearchAction.SelectLegend, key, add: e.CtrlKey)">
+            <MudIcon Icon="@MudBlazor.Icons.Material.Filled.HighlightAlt" Size="MudBlazor.Size.Small" />
+        </td>
+    };
+
+    private RenderFragment Swatch(NetworkLegendEntry? entry) => __builder =>
+    {
+        if (entry is null)
+        {
+            return;
+        }
+        if (entry.Shape == NetworkLegendShape.Edge)
+        {
+            <span style="display:inline-block;width:16px;height:0;vertical-align:middle;border-top:@(Math.Max(3, entry.Size - 1))px @(entry.Dashed ? "dashed" : "solid") @entry.CssColor"></span>
+        }
+        else
+        {
+            var size = Math.Clamp(entry.Size, 7, 13);
+            <span style="display:inline-block;width:@(size)px;height:@(size)px;border-radius:50%;vertical-align:middle;background:@entry.CssColor;border:1px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.3)"></span>
+        }
+    };
+
+    private void SetGroupOpen(string group, bool open) => _openGroups[group] = open;
+
+    private void ToggleExpanded(string key)
+    {
+        if (!_expanded.Remove(key))
+        {
+            _expanded.Add(key);
+        }
+    }
+
+    private Task FireLegend(NetworkSearchAction action, string key, int index = 0, bool add = false) => HandleAsync(async () =>
+    {
+        await EventBus.FireToolEventAsync(new NetworkSearchEventArgs(action, index, add, key));
+    });
+
+    private Task SetFeederColoring(NetworkFeederColoring coloring) => HandleAsync(async () =>
+    {
+        _context!.FeederColoring = coloring;
+        await EventBus.FireToolEventAsync(new NetworkSearchEventArgs(NetworkSearchAction.Redraw));
+    });
+
+    private Task SetFeederPalette(string palette) => HandleAsync(async () =>
+    {
+        _context!.FeederPalette = palette;
+        await EventBus.FireToolEventAsync(new NetworkSearchEventArgs(NetworkSearchAction.Redraw));
+    });
+
+    #endregion
+
 
     private void OperationChanged(string operation)
     {

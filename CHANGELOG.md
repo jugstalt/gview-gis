@@ -193,6 +193,19 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Carto: `Undo` above the class list of these renderers takes back the last changes to the classes
   (up to 20 steps: add all values, remove, delete, move, recolor, set properties, paste, apply to,
   order by, label style, data value => label, quantity wizard); it starts over when the field changes.
+- Carto network search: every kind of the result has a colour of its own (supply: Supplied green,
+  Multiple amber at the same size, Not supplied red and larger; Start/Source, To, Blocked, Boundary,
+  outage Disabled/Dead and violations by severity each defined) and the report shows a legend with one
+  row per kind that occurs (colour, name, count, length of lines). Per row: hide/show in the map (stays
+  hidden when the same search runs again, resets with another operation), zoom, and select their
+  features (replaces the selection of their layers, Ctrl adds; helper nodes are skipped; a snackbar
+  says how many features in how many layers). A row expands to its nodes and lines (first 200), each
+  zoomable, for every operation.
+- Carto network search: operation `feeders` (Trafo → Abzweig): sources picked like supply sources
+  (empty = sources of the network module or tier), branch edge types, "Show open edges". Lines are
+  coloured by branch (default) or by source from a qualitative palette (Set1, Set3, Paired); Multiple
+  lines red, open lines grey dashed. The legend lists the branches grouped by source (collapsed with
+  more than 5 sources), each with colour, edge count, length, hide/show, zoom and select.
 
 ## Changed
 

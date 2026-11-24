@@ -34,11 +34,6 @@ namespace gView.Carto.Plugins.CartoTools.Network;
 [RegisterPlugIn("B3A1C7E2-5D84-4F0B-9E61-2C7A9D5F3B18")]
 internal class NetworkSearchTool : ICartoTool
 {
-    private static readonly ArgbColor EdgeColor = ArgbColor.FromArgb(200, 0, 120, 255);
-    private static readonly ArgbColor NodeColor = ArgbColor.FromArgb(230, 0, 90, 200);
-    private static readonly ArgbColor ProblemColor = ArgbColor.FromArgb(230, 220, 30, 30);
-    private static readonly ArgbColor DeadColor = ArgbColor.FromArgb(220, 255, 150, 0);
-
     private NetworkSearchContext? _context;
 
     #region ICartoButton
@@ -138,6 +133,11 @@ internal class NetworkSearchTool : ICartoTool
                 NetworkSearchEventArgs { Action: NetworkSearchAction.AreaFromSelection } => await AreaFromSelection(scope),
                 NetworkSearchEventArgs { Action: NetworkSearchAction.RemoveArea } => await RemoveArea(scope),
                 NetworkSearchEventArgs { Action: NetworkSearchAction.ZoomToArea } => await ZoomToArea(scope),
+                NetworkSearchEventArgs { Action: NetworkSearchAction.ToggleLegend } a => await ToggleLegend(scope, a.Key),
+                NetworkSearchEventArgs { Action: NetworkSearchAction.ZoomToLegend } a => await ZoomToLegend(scope, a.Key),
+                NetworkSearchEventArgs { Action: NetworkSearchAction.SelectLegend } a => await SelectLegend(scope, a.Key, a.Target),
+                NetworkSearchEventArgs { Action: NetworkSearchAction.ZoomToElement } a => await ZoomToElement(scope, a.Key, a.Index),
+                NetworkSearchEventArgs { Action: NetworkSearchAction.Redraw } => await Redraw(scope),
                 MapBBoxEventArgs bbox => await AreaFromBox(scope, bbox),
                 _ => await PickNode(scope, eventArgs)
             };
@@ -537,12 +537,14 @@ internal class NetworkSearchTool : ICartoTool
             Tier = tier,
             StopAtSources = context.Operation == "trace" && tier is not null ? context.StopAtSources : null,
             Start = context.Operation is "trace" or "reach" ? context.Start : null,
+            Branches = context.Operation == "feeders" ? context.Branches.NullIfEmpty() : null,
+            OpenEdges = context.Operation == "feeders" && context.IncludeOpen,
             From = context.Operation == "path" ? context.Start : null,
             To = context.Operation == "path" ? context.Target : null,
             // supply and outage: the defaults of the map's network module (they may differ from the built network)
             Sources = context.Operation switch
             {
-                "supply" => context.Start.NullIfEmpty() ?? (tier is null ? config.SupplySources : null),
+                "supply" or "feeders" => context.Start.NullIfEmpty() ?? (tier is null ? config.SupplySources : null),
                 "outage" => context.Sources.NullIfEmpty() ?? (tier is null ? config.SupplySources : null),
                 _ => null
             },
@@ -568,6 +570,7 @@ internal class NetworkSearchTool : ICartoTool
         _runCancel = cancel;
         context.Busy = true;
         context.Result = null;
+        context.Legend = null;
         context.Progress = "starting...";
         context.NotifyChanged();
         var progress = new Progress(line =>
@@ -580,6 +583,13 @@ internal class NetworkSearchTool : ICartoTool
         {
             var result = await Task.Run(() => new NetworkQueryService(graph).Run(context.Operation, request, progress, cancel.Token), cancel.Token);
             context.Result = result;
+            // hidden rows stay hidden when the same operation runs again
+            if (context.HiddenOperation != result.Operation)
+            {
+                context.HiddenKeys.Clear();
+                context.HiddenOperation = result.Operation;
+            }
+            context.Legend = NetworkResultLegend.Build(result, context.FeederColoring, context.FeederPalette);
             context.Progress = "drawing the result...";
             context.NotifyChanged();
             await Draw(scope, result, cancel.Token);
@@ -620,6 +630,8 @@ internal class NetworkSearchTool : ICartoTool
         graphics.Remove(typeof(GraphicTargetPoint));
 
         _context!.Result = null;
+        _context.Legend = null;
+        _drawn = null;
         _context.Start = _context.Target = _context.StartLabel = _context.TargetLabel = null;
         _context.StartItems.Clear();
         _context.TargetItems.Clear();
@@ -640,29 +652,7 @@ internal class NetworkSearchTool : ICartoTool
             return false;
         }
 
-        var layers = MapLayers.FeatureLayers(scope.Document.Map);
-        int count = 0;
-        foreach (var (layerPath, oids) in NetworkResultGeometry.ObjectIdsByLayer(result))
-        {
-            MapLayer layer;
-            try
-            {
-                layer = MapLayers.Find(layers, layerPath);
-            }
-            catch (InvalidDataException)
-            {
-                continue;
-            }
-            if (layer.Layer is not IFeatureSelection selection)
-            {
-                continue;
-            }
-            var set = new IDSelectionSet();
-            set.AddIDs(oids.Select(oid => (int)oid).ToList());
-            selection.SelectionSet = set;
-            selection.FireSelectionChangedEvent();
-            count += oids.Count;
-        }
+        var (count, _) = Select(scope, NetworkResultGeometry.ObjectIdsByLayer(result), add: false);
 
         _context.Info = $"{count} feature(s) selected.";
         await scope.EventBus.FireRefreshMapAsync(DrawPhase.Selection);
@@ -698,6 +688,124 @@ internal class NetworkSearchTool : ICartoTool
 
         var violation = result.Violations[index];
         return await ZoomToNetworkPoints(scope, result.Srs, [(violation.X, violation.Y)]);
+    }
+
+    #endregion
+
+    #region Legend
+
+    /// <summary>Hides or shows the elements of a legend row (or of every branch of a source) in the map.</summary>
+    private async Task<bool> ToggleLegend(ICartoApplicationScopeService scope, string? key)
+    {
+        if (key is null || _context!.Legend is not NetworkResultLegend legend)
+        {
+            return false;
+        }
+        var entries = legend.Find(key);
+        bool hide = entries.Any(e => !_context.HiddenKeys.Contains(e.Key));
+        foreach (var entry in entries)
+        {
+            if (hide)
+            {
+                _context.HiddenKeys.Add(entry.Key);
+            }
+            else
+            {
+                _context.HiddenKeys.Remove(entry.Key);
+            }
+        }
+        AddResultGraphics(scope);
+        await scope.EventBus.FireRefreshMapAsync(DrawPhase.Graphics);
+        return true;
+    }
+
+    /// <summary>Builds the legend again (feeders colouring or palette changed) and draws the result with it.</summary>
+    private async Task<bool> Redraw(ICartoApplicationScopeService scope)
+    {
+        if (_context!.Result is not NetworkQueryResult result)
+        {
+            return false;
+        }
+        _context.Legend = NetworkResultLegend.Build(result, _context.FeederColoring, _context.FeederPalette);
+        AddResultGraphics(scope);
+        await scope.EventBus.FireRefreshMapAsync(DrawPhase.Graphics);
+        return true;
+    }
+
+    private async Task<bool> ZoomToLegend(ICartoApplicationScopeService scope, string? key)
+    {
+        if (key is null || _context!.Legend is not NetworkResultLegend legend)
+        {
+            return false;
+        }
+        var points = legend.Find(key).SelectMany(legend.Items).SelectMany(i => i.Points).Where(p => !double.IsNaN(p.X)).ToList();
+        return points.Count > 0 && await ZoomToNetworkPoints(scope, legend.Result.Srs, points);
+    }
+
+    /// <summary>Zooms to one element of a legend row (index in <see cref="NetworkResultLegend.Items"/>).</summary>
+    private async Task<bool> ZoomToElement(ICartoApplicationScopeService scope, string? key, int index)
+    {
+        if (key is null || _context!.Legend is not NetworkResultLegend legend)
+        {
+            return false;
+        }
+        var items = legend.Find(key).SelectMany(legend.Items).ToList();
+        if (index < 0 || index >= items.Count)
+        {
+            return false;
+        }
+        var points = items[index].Points.Where(p => !double.IsNaN(p.X)).ToList();
+        return points.Count > 0 && await ZoomToNetworkPoints(scope, legend.Result.Srs, points);
+    }
+
+    /// <summary>
+    /// The features of a legend row become the selection of their layers (the selection of other layers stays);
+    /// <paramref name="add"/> (Ctrl) adds them to the selection. Helper nodes have no feature and are left out.
+    /// </summary>
+    private async Task<bool> SelectLegend(ICartoApplicationScopeService scope, string? key, bool add)
+    {
+        if (key is null || _context!.Legend is not NetworkResultLegend legend)
+        {
+            return false;
+        }
+        var (features, layerCount) = Select(scope, legend.ObjectIdsByLayer(legend.Find(key)), add);
+        _context.Notice = $"{features} feature{(features == 1 ? "" : "s")} in {layerCount} layer{(layerCount == 1 ? "" : "s")} {(add ? "added to the selection" : "selected")}";
+        await scope.EventBus.FireRefreshMapAsync(DrawPhase.Selection);
+        return true;
+    }
+
+    /// <summary>Sets (or adds to) the selection of the layers; returns how many features and layers.</summary>
+    private static (int Features, int Layers) Select(ICartoApplicationScopeService scope, Dictionary<string, HashSet<long>> idsByLayer, bool add)
+    {
+        var layers = MapLayers.FeatureLayers(scope.Document.Map);
+        int count = 0, layerCount = 0;
+        foreach (var (layerPath, oids) in idsByLayer)
+        {
+            MapLayer layer;
+            try
+            {
+                layer = MapLayers.Find(layers, layerPath);
+            }
+            catch (InvalidDataException)
+            {
+                continue;
+            }
+            if (layer.Layer is not IFeatureSelection selection)
+            {
+                continue;
+            }
+            var set = new IDSelectionSet();
+            if (add && selection.SelectionSet is IIDSelectionSet { Count: > 0 } existing)
+            {
+                set.AddIDs(existing.IDs.ToList());
+            }
+            set.AddIDs(oids.Select(oid => (int)oid).ToList());
+            selection.SelectionSet = set;
+            selection.FireSelectionChangedEvent();
+            count += oids.Count;
+            layerCount++;
+        }
+        return (count, layerCount);
     }
 
     #endregion
@@ -917,20 +1025,27 @@ internal class NetworkSearchTool : ICartoTool
         graphics.Remove(typeof(GraphicNetworkResultNode));
     }
 
+    /// <summary>The geometries of the drawn result in the display's spatial reference, by index in the result.</summary>
+    private sealed record DrawnResult(NetworkQueryResult Result, Dictionary<int, IPolyline> Edges, Dictionary<int, IPoint> Nodes, Dictionary<int, IPoint> Violations);
+
+    /// <summary>The result drawn last, so legend rows can be hidden and recoloured without reading the lines again.</summary>
+    private DrawnResult? _drawn;
+
     /// <summary>The edges as the parts of their lines, nodes and violations as points, in the display's spatial reference.</summary>
-    private static async Task Draw(ICartoApplicationScopeService scope, NetworkQueryResult result, CancellationToken cancellationToken = default)
+    private async Task Draw(ICartoApplicationScopeService scope, NetworkQueryResult result, CancellationToken cancellationToken = default)
     {
         RemoveResultGraphics(scope);
 
         var map = scope.Document.Map;
-        var graphics = map.Display.GraphicsContainer.Elements;
         var networkSrs = string.IsNullOrEmpty(result.Srs) ? scope.DisplayService.SpatialReference : SpatialReference.FromID(result.Srs);
         IGeometry ToDisplay(IGeometry geometry)
             => scope.GeoTransformer.Transform(geometry, networkSrs, scope.DisplayService.SpatialReference, scope.DisplayService.DatumTransformations);
 
+        var drawn = new DrawnResult(result, [], [], []);
         var coordinates = await NetworkResultGeometry.EdgeCoordinatesAsync(map, result, cancellationToken);
-        foreach (var edge in result.Edges)
+        for (int i = 0; i < result.Edges.Count; i++)
         {
+            var edge = result.Edges[i];
             var points = coordinates.TryGetValue(edge.Id, out var c) ? c : [[edge.FromX, edge.FromY], [edge.ToX, edge.ToY]];
             var path = new gView.Framework.Geometry.Path();
             foreach (var xy in points)
@@ -941,32 +1056,68 @@ internal class NetworkSearchTool : ICartoTool
             polyline.AddPath(path);
             if (ToDisplay(polyline) is IPolyline displayed)
             {
-                graphics.Add(new GraphicNetworkResultEdge(displayed, edge.Kind switch
-                {
-                    "Disabled" => ProblemColor,
-                    "Dead" => DeadColor,
-                    _ => EdgeColor
-                }));
+                drawn.Edges[i] = displayed;
             }
         }
-
-        foreach (var node in result.Nodes.Where(n => n.AliasOf.Length == 0 && !double.IsNaN(n.X)))
+        for (int i = 0; i < result.Nodes.Count; i++)
         {
-            var problem = node.Kind is "NotSupplied" or "Multiple" or "Blocked" or "Affected";
-            if (ToDisplay(new Point(node.X, node.Y)) is IPoint point)
+            var node = result.Nodes[i];
+            if (node.AliasOf.Length == 0 && !double.IsNaN(node.X) && ToDisplay(new Point(node.X, node.Y)) is IPoint point)
             {
-                graphics.Add(new GraphicNetworkResultNode(point, problem ? ProblemColor : NodeColor, problem ? 10 : 7));
+                drawn.Nodes[i] = point;
             }
         }
-        foreach (var violation in result.Violations)
+        for (int i = 0; i < result.Violations.Count; i++)
         {
-            if (ToDisplay(new Point(violation.X, violation.Y)) is IPoint point)
+            if (ToDisplay(new Point(result.Violations[i].X, result.Violations[i].Y)) is IPoint point)
             {
-                graphics.Add(new GraphicNetworkResultNode(point, ProblemColor, 11));
+                drawn.Violations[i] = point;
             }
         }
+        _drawn = drawn;
 
+        AddResultGraphics(scope);
         await scope.EventBus.FireRefreshMapAsync(DrawPhase.Graphics);
+    }
+
+    /// <summary>The drawn result with the colours of the legend, without the hidden rows; lines first, dashed ones below.</summary>
+    private void AddResultGraphics(ICartoApplicationScopeService scope)
+    {
+        RemoveResultGraphics(scope);
+        if (_drawn is null || _context?.Legend is not NetworkResultLegend legend || legend.Result != _drawn.Result)
+        {
+            return;
+        }
+        var graphics = scope.Document.Map.Display.GraphicsContainer.Elements;
+        var visible = legend.Entries.Where(e => !_context.HiddenKeys.Contains(e.Key)).ToList();
+        foreach (var entry in visible.Where(e => e.Shape == NetworkLegendShape.Edge).OrderBy(e => e.Dashed ? 0 : 1))
+        {
+            foreach (var i in entry.Edges)
+            {
+                if (_drawn.Edges.TryGetValue(i, out var polyline))
+                {
+                    graphics.Add(new GraphicNetworkResultEdge(polyline, entry.Color, entry.Size, entry.Dashed));
+                }
+            }
+        }
+        // the small markers first, the large ones (problems) on top
+        foreach (var entry in visible.Where(e => e.Shape != NetworkLegendShape.Edge).OrderBy(e => e.Size))
+        {
+            foreach (var i in entry.Nodes)
+            {
+                if (_drawn.Nodes.TryGetValue(i, out var point))
+                {
+                    graphics.Add(new GraphicNetworkResultNode(point, entry.Color, entry.Size));
+                }
+            }
+            foreach (var i in entry.Violations)
+            {
+                if (_drawn.Violations.TryGetValue(i, out var point))
+                {
+                    graphics.Add(new GraphicNetworkResultNode(point, entry.Color, entry.Size));
+                }
+            }
+        }
     }
 
     #endregion

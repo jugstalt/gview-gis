@@ -20,9 +20,9 @@ public sealed record NetworkPickedItem(string Reference, string Label);
 public class NetworkSearchContext
 {
     /// <summary>The operations of the tool; nearest is what a click into the map does anyway.</summary>
-    public static readonly IReadOnlyList<string> Operations = NetworkQueryService.Operations.Where(o => o is not ("nearest" or "feeders")).ToList(); // feeders: gView.Cmd, server and gView.Pipe only (no colouring by branch here yet)
+    public static readonly IReadOnlyList<string> Operations = NetworkQueryService.Operations.Where(o => o is not "nearest").ToList();
 
-    /// <summary>trace | reach | path | supply | outage | info | validate</summary>
+    /// <summary>trace | reach | path | supply | outage | feeders | info | validate</summary>
     public string Operation { get; set; } = "trace";
 
     public NetworkSearchPick Pick { get; set; } = NetworkSearchPick.Start;
@@ -94,6 +94,33 @@ public class NetworkSearchContext
 
     public NetworkQueryResult? Result { get; set; }
 
+    /// <summary>The legend of <see cref="Result"/>: one row per kind (feeders: per branch), with the colours of the map.</summary>
+    public NetworkResultLegend? Legend { get; set; }
+
+    /// <summary>
+    /// The legend rows hidden in the map (keys of <see cref="NetworkLegendEntry"/>); they stay hidden across reruns of the
+    /// same operation, another operation shows everything again. Not saved with the map.
+    /// </summary>
+    public HashSet<string> HiddenKeys { get; } = [];
+
+    /// <summary>The operation <see cref="HiddenKeys"/> belong to.</summary>
+    public string? HiddenOperation { get; set; }
+
+    /// <summary>feeders: the type pattern of the edges at a source that start a branch (Abzweig); empty: every edge at a source.</summary>
+    public string? Branches { get; set; }
+
+    /// <summary>feeders: also the edges no branch went along at a node a branch went through (Open).</summary>
+    public bool IncludeOpen { get; set; } = true;
+
+    /// <summary>feeders: colour the edges by branch or by source.</summary>
+    public NetworkFeederColoring FeederColoring { get; set; } = NetworkFeederColoring.Branch;
+
+    /// <summary>feeders: the qualitative palette of the branch or source colours.</summary>
+    public string FeederPalette { get; set; } = NetworkResultLegend.DefaultFeederPalette;
+
+    /// <summary>A short message for a snackbar (e.g. "17 features in 2 layers selected"); the panel shows and clears it.</summary>
+    public string? Notice { get; set; }
+
     public string? Error { get; set; }
 
     public string? Info { get; set; }
@@ -110,8 +137,8 @@ public class NetworkSearchContext
 
     public bool NeedsTarget => Operation is "path" or "supply";
 
-    /// <summary>Whether Ctrl-click may pick several starts: trace/reach starts, supply sources, outage edges.</summary>
-    public bool StartAllowsMany => Operation is "trace" or "reach" or "supply" or "outage";
+    /// <summary>Whether Ctrl-click may pick several starts: trace/reach starts, supply and feeders sources, outage edges.</summary>
+    public bool StartAllowsMany => Operation is "trace" or "reach" or "supply" or "outage" or "feeders";
 
     /// <summary>Whether Ctrl-click may pick several targets: supply sinks.</summary>
     public bool TargetAllowsMany => Operation == "supply";

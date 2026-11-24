@@ -38,10 +38,10 @@ class GraphicNetworkResultEdge : IGraphicElement
     private readonly SimpleLineSymbol _symbol;
     private readonly IPolyline _polyline;
 
-    public GraphicNetworkResultEdge(IPolyline polyline, ArgbColor color)
+    public GraphicNetworkResultEdge(IPolyline polyline, ArgbColor color, float width = 5, bool dashed = false)
     {
         _polyline = polyline;
-        _symbol = new SimpleLineSymbol { Color = color, Width = 5 };
+        _symbol = new SimpleLineSymbol { Color = color, Width = width, DashStyle = dashed ? LineDashStyle.Dash : LineDashStyle.Solid };
     }
 
     public void Draw(IDisplay display)
