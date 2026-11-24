@@ -100,11 +100,34 @@ public class NetworkBuildReportsTests : IDisposable
             ]
             """);
 
-        var problems = NetworkBuildReports.Read(_directory).Of(NetworkProblemCategory.Diagnostics);
+        var reports = NetworkBuildReports.Read(_directory);
+        var rules = reports.Of(NetworkProblemCategory.Rules);
 
-        Assert.Equal(["node", "line"], problems[0].Features.Select(f => f.Role));
-        Assert.Equal(new NetworkProblemFeature("Wasser/Leitung", 5, "line"), Assert.Single(problems[1].Features));
-        Assert.Empty(problems[2].Features);
+        Assert.Equal(["node", "line"], rules[0].Features.Select(f => f.Role));
+        Assert.Equal(new NetworkProblemFeature("Wasser/Leitung", 5, "line"), Assert.Single(rules[1].Features));
+        Assert.Empty(Assert.Single(reports.Of(NetworkProblemCategory.Diagnostics)).Features);
+    }
+
+    [Fact]
+    public void Read_Diagnostics_ConnectionsGoToRules_ByRule()
+    {
+        WriteFile("diagnostics.json", """
+            [
+              { "kind": "SplitReported", "x": 1, "y": 1, "message": "m1", "sources": [ "K #1", "L #2" ], "rule": "LS auf Muffe", "ruleIndex": 3 },
+              { "kind": "SplitRefused", "x": 2, "y": 2, "message": "m2", "sources": [ null, "L #5" ], "rule": "default: line ends on a line" },
+              { "kind": "ConnectionRefused", "x": 3, "y": 3, "message": "older build", "sources": [ "K #4", "L #6" ] },
+              { "kind": "IsolatedNode", "x": 4, "y": 4, "message": "m4" }
+            ]
+            """);
+
+        var reports = NetworkBuildReports.Read(_directory);
+        var rules = reports.Of(NetworkProblemCategory.Rules);
+
+        Assert.True(reports.Present.Contains(NetworkProblemCategory.Rules));
+        Assert.Equal(["3: LS auf Muffe", "default: line ends on a line", "ConnectionRefused"], rules.Select(p => p.Group));
+        Assert.Equal("Split reported: m1", rules[0].Message);
+        Assert.Equal("IsolatedNode", Assert.Single(reports.Of(NetworkProblemCategory.Diagnostics)).Group);
+        Assert.Equal("Warning", reports.ToResult(NetworkProblemCategory.Rules, null).Violations[0].Severity);
     }
 
     [Fact]

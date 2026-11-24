@@ -272,6 +272,12 @@ public enum ConnectAction
 
     /// <summary>Do not connect or split, and report it in the build (probably a data error).</summary>
     Report,
+
+    /// <summary>
+    /// Connect or split anyway, and report it in the build: a data error the network should not wait for (e.g. a line not
+    /// broken up at a joint); the places are listed under Problems, Rules, to be fixed.
+    /// </summary>
+    ConnectAndReport,
 }
 
 /// <summary>

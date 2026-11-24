@@ -15,7 +15,7 @@ internal sealed class NetworkConnectRules
 {
     private readonly bool _separateTiers;
     private readonly ConnectionDecision _nodesOnLine, _lineEndsOnLine;
-    private readonly List<(ConnectAt At, TypeSet Nodes, TypeSet Edges, ConnectionDecision Decision)> _rules = [];
+    private readonly List<(ConnectAt At, TypeSet Nodes, TypeSet Edges, ConnectionDecision Decision, int Index, string Name)> _rules = [];
     private readonly Dictionary<int, TypeSet> _sourcesOfTier = [];
     private readonly Dictionary<int, int> _helperOfTier = [];
     private readonly TypeCatalog _types;
@@ -37,6 +37,7 @@ internal sealed class NetworkConnectRules
     {
         ConnectAction.Ignore => ConnectionDecision.Ignore,
         ConnectAction.Report => ConnectionDecision.Report,
+        ConnectAction.ConnectAndReport => ConnectionDecision.ConnectAndReport,
         _ => ConnectionDecision.Connect,
     };
 
@@ -87,7 +88,7 @@ internal sealed class NetworkConnectRules
         {
             try
             {
-                _rules.Add((rule.At, registry.Nodes(rule.Nodes), registry.Edges(rule.Edges), Decision(rule.Action)));
+                _rules.Add((rule.At, registry.Nodes(rule.Nodes), registry.Edges(rule.Edges), Decision(rule.Action), index, rule.DisplayName));
             }
             catch (ArgumentException ex)
             {
@@ -167,13 +168,39 @@ internal sealed class NetworkConnectRules
     }
 
     private ConnectionDecision? Match(ConnectAt at, int nodeType, int edgeType)
+        => MatchRule(at, nodeType, edgeType) is int i ? _rules[i].Decision : null;
+
+    /// <summary>The position in <see cref="_rules"/> of the first rule that matches; null for none.</summary>
+    private int? MatchRule(ConnectAt at, int nodeType, int edgeType)
     {
-        foreach (var rule in _rules)
+        for (int i = 0; i < _rules.Count; i++)
         {
+            var rule = _rules[i];
             if ((rule.At == ConnectAt.Any || rule.At == at) && rule.Nodes.Contains(nodeType) && rule.Edges.Contains(edgeType))
             {
-                return rule.Decision;
+                return i;
             }
+        }
+        return null;
+    }
+
+    public const string DefaultNodesOnLine = "default: nodes on a line";
+    public const string DefaultLineEndsOnLine = "default: line ends on a line";
+
+    /// <summary>
+    /// What decided a connection the build reported (refused or reported): the connect rule (its number in the list, from 1,
+    /// and its name or the rule in short), or for splits without a rule the default for nodes or for line ends on a line;
+    /// null when the tiers decided, which never reports.
+    /// </summary>
+    public (int? Index, string Name)? DecidedBy(bool split, int nodeType, int edgeType)
+    {
+        if (MatchRule(split ? ConnectAt.Inside : ConnectAt.End, nodeType, edgeType) is int i)
+        {
+            return (_rules[i].Index, _rules[i].Name);
+        }
+        if (split && ByTier(nodeType, edgeType) != ConnectionDecision.Ignore)
+        {
+            return (null, _types.IsHelper(nodeType) ? DefaultLineEndsOnLine : DefaultNodesOnLine);
         }
         return null;
     }

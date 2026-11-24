@@ -218,7 +218,7 @@
             <MudTabPanel Text="@(config.ConnectRules.All(r => r.Enabled) ? $"Connections ({config.ConnectRules.Count})" : $"Connections ({config.ConnectRules.Count(r => r.Enabled)}/{config.ConnectRules.Count})")">
                 <GvCard Title="Connections (build)">
                     <GvCardContent>
-                        @GvUtilities.InfoText("Which lines connect to which nodes when the network is built. Ends: a line end within the tolerance of a node connects to it. Inside: a node within the tolerance of the inside of a line splits it; the node is a real node, or the helper node (untyped) of line ends at a T junction, e.g. untyped & [Niederspannung,*,*]. The first rule that matches decides; without a match, separate tiers connect only within a tier (line ends also connect to the sources of their tier), then the defaults below decide for splits, otherwise everything connects. Ignore refuses silently, Report refuses and lists the place in the build log (probably a data error). Build again after a change.")
+                        @GvUtilities.InfoText("Which lines connect to which nodes when the network is built. Ends: a line end within the tolerance of a node connects to it. Inside: a node within the tolerance of the inside of a line splits it; the node is a real node, or the helper node (untyped) of line ends at a T junction, e.g. untyped & [Niederspannung,*,*]. The first rule that matches decides; without a match, separate tiers connect only within a tier (line ends also connect to the sources of their tier), then the defaults below decide for splits, otherwise everything connects. Ignore refuses silently, Report refuses and lists the place (probably a data error), Connect / split + report connects anyway and lists the place: a data error the network should not wait for, e.g. a line not broken up at a joint. The listed places are in the Network Search tool, problems, category Rules (by rule), and can be downloaded there. Build again after a change.")
                         <MudCheckBox T="bool" @bind-Value="config.SeparateTiers" Color="Color.Primary"
                                      Label="Separate tiers: connect and split only within a tier (the first facet) unless a rule allows it" />
                         <div style="display:flex;gap:8px;margin-bottom:8px">
@@ -227,6 +227,7 @@
                                     <MudSelectItem Value="ConnectAction.Connect">Split the line</MudSelectItem>
                                     <MudSelectItem Value="ConnectAction.Ignore">Ignore</MudSelectItem>
                                     <MudSelectItem Value="ConnectAction.Report">Report</MudSelectItem>
+                                    <MudSelectItem Value="ConnectAction.ConnectAndReport">Split + report (listed under Problems, Rules)</MudSelectItem>
                                 </MudSelect>
                             </div>
                             <div style="flex:1">
@@ -234,6 +235,7 @@
                                     <MudSelectItem Value="ConnectAction.Connect">Split the line</MudSelectItem>
                                     <MudSelectItem Value="ConnectAction.Ignore">Ignore (the line end stays unconnected)</MudSelectItem>
                                     <MudSelectItem Value="ConnectAction.Report">Report</MudSelectItem>
+                                    <MudSelectItem Value="ConnectAction.ConnectAndReport">Split + report (listed under Problems, Rules)</MudSelectItem>
                                 </MudSelect>
                             </div>
                         </div>
@@ -623,6 +625,7 @@
         ConnectAction.Connect => "Connect / split",
         ConnectAction.Ignore => "Ignore",
         ConnectAction.Report => "Report",
+        ConnectAction.ConnectAndReport => "Connect / split + report",
         _ => action.ToString()
     };
 
@@ -630,6 +633,7 @@
     {
         ConnectAction.Connect => Color.Success,
         ConnectAction.Report => Color.Warning,
+        ConnectAction.ConnectAndReport => Color.Info,
         _ => Color.Default
     };
 

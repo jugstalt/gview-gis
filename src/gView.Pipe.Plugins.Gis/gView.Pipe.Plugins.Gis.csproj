@@ -21,9 +21,9 @@
     <!-- the Pipe contracts come from the host; never ship them (package source: nuget.config next to this file) -->
     <PackageReference Include="gView.Pipe.Abstraction" Version="0.1.0" ExcludeAssets="runtime" />
     <!-- the spatial nodes work on GeoJSON with SpatialNET only; the version gView uses, it lives in the same folder -->
-    <PackageReference Include="SpatialNET.Extensions" Version="0.10.0-preview.8" />
-    <PackageReference Include="SpatialNET.IO" Version="0.10.0-preview.8" />
-    <PackageReference Include="SpatialNET.Imp" Version="0.10.0-preview.8" />
+    <PackageReference Include="SpatialNET.Extensions" Version="0.10.0-preview.9" />
+    <PackageReference Include="SpatialNET.IO" Version="0.10.0-preview.9" />
+    <PackageReference Include="SpatialNET.Imp" Version="0.10.0-preview.9" />
   </ItemGroup>
 
   <ItemGroup>

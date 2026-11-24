@@ -11,10 +11,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="SpatialNET.Imp" Version="0.10.0-preview.8" />
-    <PackageReference Include="SpatialNET.IO" Version="0.10.0-preview.8" />
-    <PackageReference Include="SpatialNET.Network" Version="0.10.0-preview.8" />
-    <PackageReference Include="SpatialNET.Network.Building" Version="0.10.0-preview.8" />
+    <PackageReference Include="SpatialNET.Imp" Version="0.10.0-preview.9" />
+    <PackageReference Include="SpatialNET.IO" Version="0.10.0-preview.9" />
+    <PackageReference Include="SpatialNET.Network" Version="0.10.0-preview.9" />
+    <PackageReference Include="SpatialNET.Network.Building" Version="0.10.0-preview.9" />
   </ItemGroup>
 
   <ItemGroup>

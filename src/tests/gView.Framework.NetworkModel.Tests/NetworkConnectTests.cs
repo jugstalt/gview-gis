@@ -100,12 +100,16 @@ public class NetworkConnectTests : IDisposable
         var registry = catalog.ToRegistry();
         config.ResolveTiers(registry);
         rules?.Resolve(config, registry);
+        _rules = rules;
 
         using var writer = new FileNetworkStore(_directory).CreateWriter();
         var result = builder.Build(writer);
         writer.Commit(metadata);
         return result;
     }
+
+    /// <summary>The connect rules of the last <see cref="Build"/>.</summary>
+    private NetworkConnectRules? _rules;
 
     private NetworkQueryService Service() => new(new FileNetworkGraph(_directory));
 
@@ -157,6 +161,34 @@ public class NetworkConnectTests : IDisposable
         var result = Build(Config(true, new ConnectRuleConfig { At = ConnectAt.Inside, Nodes = "[NS,*]", Edges = "[MS,*]", Action = ConnectAction.Report }));
         var refused = Assert.Single(result.Diagnostics, d => d.Kind == BuildDiagnosticKind.SplitRefused);
         Assert.Equal([new FeatureRef(NodeClass, 1), new FeatureRef(EdgeClass, 1)], refused.Sources!.Cast<FeatureRef>());
+    }
+
+    [Fact]
+    public void ConnectRule_ConnectAndReport_SplitsTheCable_AndNamesTheRule()
+    {
+        var result = Build(Config(true,
+            new ConnectRuleConfig { At = ConnectAt.End, Nodes = "*", Edges = "*", Action = ConnectAction.Connect, Enabled = false },
+            new ConnectRuleConfig { Name = "LS auf Muffe", At = ConnectAt.Inside, Nodes = "[NS,Muffe]", Edges = "[MS,*]", Action = ConnectAction.ConnectAndReport }));
+
+        Assert.DoesNotContain(result.Diagnostics, d => d.Kind == BuildDiagnosticKind.SplitRefused);
+        var reported = Assert.Single(result.Diagnostics, d => d.Kind == BuildDiagnosticKind.SplitReported);
+        Assert.Equal([new FeatureRef(NodeClass, 1), new FeatureRef(EdgeClass, 1)], reported.Sources!.Cast<FeatureRef>());
+        Assert.Equal((2, "LS auf Muffe"), _rules!.DecidedBy(true, reported.NodeTypeId!.Value, reported.EdgeTypeId!.Value));
+
+        // the cable is split at the joint: MS reaches the joint
+        var ms = Service().Run("trace", new NetworkQueryRequest { Start = "Knoten#2", Tier = "MS" });
+        Assert.Contains("Knoten#1", Labels(ms));
+    }
+
+    [Fact]
+    public void NodesOnLine_ConnectAndReport_IsNamedAsTheDefault()
+    {
+        var config = Config(false);
+        config.NodesOnLine = ConnectAction.ConnectAndReport;
+        var result = Build(config);
+
+        var reported = Assert.Single(result.Diagnostics, d => d.Kind == BuildDiagnosticKind.SplitReported);
+        Assert.Equal((null, NetworkConnectRules.DefaultNodesOnLine), _rules!.DecidedBy(true, reported.NodeTypeId!.Value, reported.EdgeTypeId!.Value));
     }
 
     [Fact]

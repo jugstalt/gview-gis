@@ -44,6 +44,9 @@ public sealed class NetworkBuildService
     /// <summary>The points merged into the point of another layer in the last build.</summary>
     public List<MergedPoint> Merged { get; } = [];
 
+    /// <summary>The connect rules of the last build once resolved; null without rules. Names the rule of reported connections.</summary>
+    internal NetworkConnectRules? ConnectRules { get; private set; }
+
     /// <summary>The metadata of the last build as far as it got, e.g. to name the feature classes of conflicts.</summary>
     public NetworkMetadata? Metadata { get; private set; }
 
@@ -122,6 +125,7 @@ public sealed class NetworkBuildService
 
         // the connection rules are resolved once all types are known; the builder asks them only while building
         NetworkConnectRules? connectRules = null;
+        ConnectRules = null;
         bool rulesNeeded = NetworkConnectRules.Needed(config);
         options = NetworkConnectRules.Attach(options, config, () => connectRules);
 
@@ -277,6 +281,7 @@ public sealed class NetworkBuildService
         if (rulesNeeded)
         {
             connectRules = NetworkConnectRules.Create(config, types);
+            ConnectRules = connectRules;
         }
         metadata.Facets = types.FacetMetadata().ToList();
         metadata.Types = types.TypeMetadata().ToList();

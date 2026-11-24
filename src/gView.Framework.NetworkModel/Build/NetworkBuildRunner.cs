@@ -77,7 +77,9 @@ public static class NetworkBuildRunner
                     d.Location.X,
                     d.Location.Y,
                     Message = NetworkBuildReports.ResolveMessage(d.Message, report.Metadata, types),
-                    Sources = d.Sources?.Select(s => s is FeatureRef r ? SourceLabel(service, r) : null).ToList()
+                    Sources = d.Sources?.Select(s => s is FeatureRef r ? SourceLabel(service, r) : null).ToList(),
+                    Rule = RuleOf(service, d)?.Name,
+                    RuleIndex = RuleOf(service, d)?.Index
                 }),
                 NetworkConfig.JsonOptions));
 
@@ -103,6 +105,22 @@ public static class NetworkBuildRunner
             }
             catch (IOException) { }
         }
+    }
+
+    /// <summary>The connect rule (or split default) that decided a refused or reported connection; null for other diagnostics.</summary>
+    private static (int? Index, string Name)? RuleOf(NetworkBuildService service, BuildDiagnostic diagnostic)
+    {
+        if (diagnostic is not { NodeTypeId: int nodeType, EdgeTypeId: int edgeType } || service.ConnectRules is not NetworkConnectRules rules)
+        {
+            return null;
+        }
+        bool? split = diagnostic.Kind switch
+        {
+            BuildDiagnosticKind.SplitRefused or BuildDiagnosticKind.SplitReported => true,
+            BuildDiagnosticKind.ConnectionRefused or BuildDiagnosticKind.ConnectionReported => false,
+            _ => null
+        };
+        return split is bool s ? rules.DecidedBy(s, nodeType, edgeType) : null;
     }
 
     /// <summary>A source of a conflict or diagnostic as "Layer #oid" (other sources, e.g. ids, as they are).</summary>

@@ -15,7 +15,13 @@ public enum NetworkProblemCategory
     /// <summary>conflicts.json: the data cannot form a network (only after a failed build).</summary>
     Conflicts,
 
-    /// <summary>diagnostics.json: what the builder noticed (refused connections and splits, isolated nodes, ...).</summary>
+    /// <summary>
+    /// diagnostics.json, the connections a connect rule (or split default) refused or connected and reported: the work list
+    /// of data errors, grouped by the rule.
+    /// </summary>
+    Rules,
+
+    /// <summary>diagnostics.json without the rules: what the builder noticed (isolated nodes, merged nodes, short parts, ...).</summary>
     Diagnostics,
 
     /// <summary>duplicates.json: points of one layer at the same place; one was kept, the others left out.</summary>
@@ -58,7 +64,11 @@ public sealed class NetworkBuildReports
     public const string MergedFile = "merged.json";
 
     public static IReadOnlyList<NetworkProblemCategory> Categories { get; } =
-        [NetworkProblemCategory.Conflicts, NetworkProblemCategory.Diagnostics, NetworkProblemCategory.Duplicates, NetworkProblemCategory.Merged];
+        [NetworkProblemCategory.Conflicts, NetworkProblemCategory.Rules, NetworkProblemCategory.Diagnostics, NetworkProblemCategory.Duplicates, NetworkProblemCategory.Merged];
+
+    /// <summary>The diagnostics of connections, decided by the connect rules; they go to <see cref="NetworkProblemCategory.Rules"/>.</summary>
+    public static IReadOnlySet<string> ConnectionKinds { get; } =
+        new HashSet<string>(["ConnectionRefused", "SplitRefused", "ConnectionReported", "SplitReported"], StringComparer.OrdinalIgnoreCase);
 
     public string Directory { get; }
 
@@ -97,7 +107,7 @@ public sealed class NetworkBuildReports
     public static string FileName(NetworkProblemCategory category) => category switch
     {
         NetworkProblemCategory.Conflicts => ConflictsFile,
-        NetworkProblemCategory.Diagnostics => DiagnosticsFile,
+        NetworkProblemCategory.Diagnostics or NetworkProblemCategory.Rules => DiagnosticsFile,
         NetworkProblemCategory.Duplicates => DuplicatesFile,
         _ => MergedFile
     };
@@ -105,7 +115,7 @@ public sealed class NetworkBuildReports
     public static NetworkProblemSeverity Severity(NetworkProblemCategory category) => category switch
     {
         NetworkProblemCategory.Conflicts => NetworkProblemSeverity.Error,
-        NetworkProblemCategory.Diagnostics => NetworkProblemSeverity.Warning,
+        NetworkProblemCategory.Diagnostics or NetworkProblemCategory.Rules => NetworkProblemSeverity.Warning,
         _ => NetworkProblemSeverity.Info
     };
 
@@ -115,6 +125,7 @@ public sealed class NetworkBuildReports
     private static readonly Dictionary<string, string> Descriptions = new(StringComparer.OrdinalIgnoreCase)
     {
         [nameof(NetworkProblemCategory.Conflicts)] = "The data cannot form a network: the build stopped before writing anything. Fix these first.",
+        [nameof(NetworkProblemCategory.Rules)] = "Connections a connect rule refused (Report) or made anyway and reported (Connect / split + report): the places to fix in the data, by rule.",
         [nameof(NetworkProblemCategory.Diagnostics)] = "What the builder noticed while joining, splitting and sharding; the network was built anyway.",
         [nameof(NetworkProblemCategory.Duplicates)] = "Points of one layer at the same place (within the tolerance): the first was kept, the others were left out.",
         [nameof(NetworkProblemCategory.Merged)] = "Points within the tolerance of a point of a layer higher in the TOC were merged into it (conflict mode PriorityByToc).",
@@ -133,6 +144,8 @@ public sealed class NetworkBuildReports
         ["NodesMerged"] = "Points within the tolerance of each other were merged into one node.",
         ["ConnectionRefused"] = "A line end within the tolerance of a point did not connect to it: a connect rule answered Report.",
         ["SplitRefused"] = "A point within the tolerance of the inside of a line did not split it: a split rule answered Report.",
+        ["ConnectionReported"] = "A line end within the tolerance of a point connected to it, and the rule wants it fixed (Connect / split + report).",
+        ["SplitReported"] = "A point within the tolerance of the inside of a line split it, and the rule wants it fixed, e.g. the line is not broken up there (Connect / split + report).",
     };
 
     /// <summary>Reads the reports of a network directory; <paramref name="metadata"/> (network.json) makes older messages readable.</summary>
@@ -153,7 +166,7 @@ public sealed class NetworkBuildReports
             }
         }
 
-        foreach (var category in Categories)
+        foreach (var category in Categories.Where(c => c != NetworkProblemCategory.Rules))
         {
             var path = Path.Combine(directory, FileName(category));
             if (!File.Exists(path))
@@ -163,10 +176,18 @@ public sealed class NetworkBuildReports
             Stamp(path);
             present.Add(category);
             var json = File.ReadAllText(path);
+            if (category == NetworkProblemCategory.Diagnostics)
+            {
+                // one file, two categories: the connections decided by the rules, and the rest
+                var all = ReadDiagnostics(json, metadata);
+                present.Add(NetworkProblemCategory.Rules);
+                problems[NetworkProblemCategory.Rules] = all.Where(p => p.Category == NetworkProblemCategory.Rules).ToList();
+                problems[category] = all.Where(p => p.Category == NetworkProblemCategory.Diagnostics).ToList();
+                continue;
+            }
             problems[category] = category switch
             {
                 NetworkProblemCategory.Conflicts => ReadConflicts(json),
-                NetworkProblemCategory.Diagnostics => ReadDiagnostics(json, metadata),
                 NetworkProblemCategory.Duplicates => ReadDuplicates(json),
                 _ => ReadMerged(json)
             };
@@ -185,7 +206,7 @@ public sealed class NetworkBuildReports
 
     #region Read
 
-    private sealed record KindRecord(string? Kind, double X, double Y, string? Message, List<string?>? Sources);
+    private sealed record KindRecord(string? Kind, double X, double Y, string? Message, List<string?>? Sources, string? Rule = null, int? RuleIndex = null);
     private sealed record DuplicateRecord(string? Layer, long KeptOid, long DroppedOid, double X, double Y);
     private sealed record MergedRecord(string? KeptLayer, long KeptOid, string? MergedLayer, long MergedOid, double X, double Y);
 
@@ -214,6 +235,12 @@ public sealed class NetworkBuildReports
             // the node first, then the line (ConnectionRefused, SplitRefused)
             var features = Features(d.Sources, d.Sources?.Count == 2 ? null : "source");
             var message = metadata is null ? d.Message ?? "" : ResolveMessage(d.Message ?? "", metadata, types);
+            if (ConnectionKinds.Contains(kind))
+            {
+                // by the rule that decided (builds before rule names: by the kind)
+                var rule = string.IsNullOrWhiteSpace(d.Rule) ? kind : d.RuleIndex is int index ? $"{index}: {d.Rule}" : d.Rule;
+                return new NetworkProblem(NetworkProblemCategory.Rules, rule, $"{Readable(kind)}: {message}", d.X, d.Y, features);
+            }
             return new NetworkProblem(NetworkProblemCategory.Diagnostics, kind, message, d.X, d.Y, features);
         }).ToList();
     }
@@ -235,6 +262,10 @@ public sealed class NetworkBuildReports
                 $"{merged}#{m.MergedOid} merged into {kept}#{m.KeptOid}", m.X, m.Y,
                 [new NetworkProblemFeature(merged, m.MergedOid, "merged"), new NetworkProblemFeature(kept, m.KeptOid, "kept")]);
         }).ToList();
+
+    /// <summary>ConnectionReported → "Connection reported".</summary>
+    private static string Readable(string kind)
+        => string.Concat(kind.Select((c, i) => i > 0 && char.IsUpper(c) ? " " + char.ToLowerInvariant(c) : c.ToString()));
 
     /// <summary>"Layer #oid" (or "Layer#oid") sources as features; others (ids of id conflicts) are left out.</summary>
     private static List<NetworkProblemFeature> Features(List<string?>? sources, string? role)
