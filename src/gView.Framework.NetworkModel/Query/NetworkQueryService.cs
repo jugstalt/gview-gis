@@ -17,6 +17,12 @@ public sealed partial class NetworkQueryService
 {
     public static readonly IReadOnlyList<string> Operations = ["trace", "reach", "path", "supply", "outage", "feeders", "info", "nearest", "validate"];
 
+    /// <summary>
+    /// The problems of the build reports (see <see cref="Build.NetworkBuildReports.ToResult"/>): no search, it is read
+    /// from the files next to the network, also when the build failed.
+    /// </summary>
+    public const string ProblemsOperation = "problems";
+
     private readonly FileNetworkGraph _graph;
 
     public NetworkQueryService(FileNetworkGraph graph) => _graph = graph;

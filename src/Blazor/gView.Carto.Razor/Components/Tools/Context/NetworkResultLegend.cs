@@ -1,3 +1,4 @@
+using gView.Framework.NetworkModel.Build;
 using gView.Framework.NetworkModel.Query;
 using gView.Framework.Symbology.Palettes;
 using gView.GraphicsEngine;
@@ -42,6 +43,9 @@ public sealed class NetworkLegendEntry
     public float Size { get; init; }
 
     public bool Dashed { get; init; }
+
+    /// <summary>problems: what the row (kind or category) means, for the tooltip and the line above its list.</summary>
+    public string? Description { get; init; }
 
     /// <summary>Indexes into <see cref="NetworkQueryResult.Nodes"/>, merged points (aliases) included.</summary>
     public List<int> Nodes { get; } = [];
@@ -158,22 +162,32 @@ public sealed class NetworkResultLegend
     /// The elements of an entry for the report, each with its places in the spatial reference of the network: nodes
     /// (merged points left out), edges (both ends), violations.
     /// </summary>
-    public IReadOnlyList<NetworkLegendItem> Items(NetworkLegendEntry entry)
+    public IReadOnlyList<NetworkLegendItem> Items(NetworkLegendEntry entry) => Items(entry, int.MaxValue);
+
+    /// <summary>The first <paramref name="max"/> elements of an entry (a row of build problems may have 100,000s).</summary>
+    public IReadOnlyList<NetworkLegendItem> Items(NetworkLegendEntry entry, int max)
     {
-        var items = new List<NetworkLegendItem>();
+        var all = ItemsOf(entry);
+        return max == int.MaxValue ? all.ToList() : all.Take(max).ToList();
+    }
+
+    private IEnumerable<NetworkLegendItem> ItemsOf(NetworkLegendEntry entry)
+    {
         foreach (var node in entry.Nodes.Select(i => Result.Nodes[i]).Where(n => n.AliasOf.Length == 0))
         {
-            items.Add(new NetworkLegendItem(node.Label, node.Type, [(node.X, node.Y)]));
+            yield return new NetworkLegendItem(node.Label, node.Type, [(node.X, node.Y)]);
         }
         foreach (var edge in entry.Edges.Select(i => Result.Edges[i]))
         {
-            items.Add(new NetworkLegendItem(edge.Label, $"{edge.Type}, {edge.Length.ToString("N1", CultureInfo.InvariantCulture)}", [(edge.FromX, edge.FromY), (edge.ToX, edge.ToY)]));
+            yield return new NetworkLegendItem(edge.Label, $"{edge.Type}, {edge.Length.ToString("N1", CultureInfo.InvariantCulture)}", [(edge.FromX, edge.FromY), (edge.ToX, edge.ToY)]);
         }
+        bool problems = Result.Operation == NetworkQueryService.ProblemsOperation;
         foreach (var violation in entry.Violations.Select(i => Result.Violations[i]))
         {
-            items.Add(new NetworkLegendItem(violation.EdgeLabel ?? violation.NodeLabel, violation.Rule, [(violation.X, violation.Y)]));
+            yield return problems
+                ? new NetworkLegendItem(violation.Message ?? violation.NodeLabel, null, [(violation.X, violation.Y)])
+                : new NetworkLegendItem(violation.EdgeLabel ?? violation.NodeLabel, violation.Rule, [(violation.X, violation.Y)]);
         }
-        return items;
     }
 
     /// <summary>The features (layer, oid) of entries: nodes with their merged points, edges, the nodes and edges of violations; helper nodes have none.</summary>
@@ -200,6 +214,10 @@ public sealed class NetworkResultLegend
             {
                 Add(violation.Layer, violation.Oid);
                 Add(violation.EdgeLayer, violation.EdgeOid);
+                foreach (var (layer, oid) in violation.Features ?? [])
+                {
+                    Add(layer, oid);
+                }
             }
         }
         return ids;
@@ -224,6 +242,11 @@ public sealed class NetworkResultLegend
 
     public static NetworkResultLegend Build(NetworkQueryResult result, NetworkFeederColoring coloring = NetworkFeederColoring.Branch, string? palette = null)
     {
+        if (result.Operation == NetworkQueryService.ProblemsOperation)
+        {
+            return BuildProblems(result);
+        }
+
         var entries = new Dictionary<string, NetworkLegendEntry>();
         var groups = new List<string>();
         NetworkLegendEntry Entry(string key, Func<NetworkLegendEntry> create)
@@ -337,6 +360,36 @@ public sealed class NetworkResultLegend
         }
 
         return new NetworkResultLegend(result, ordered, groups);
+    }
+
+    /// <summary>
+    /// problems: one row per group (kind, or layer(s) for duplicates and merged points), the largest first, each in a
+    /// colour of its own; the description of the kind, or of the category when the group is a layer.
+    /// </summary>
+    private static NetworkResultLegend BuildProblems(NetworkQueryResult result)
+    {
+        var colors = ColorPalettes.Find(DefaultFeederPalette)!.Colors;
+        var entries = new List<NetworkLegendEntry>();
+        foreach (var group in Enumerable.Range(0, result.Violations.Count)
+            .GroupBy(i => result.Violations[i].Rule)
+            .OrderByDescending(g => g.Count())
+            .ThenBy(g => g.Key, StringComparer.OrdinalIgnoreCase))
+        {
+            var first = result.Violations[group.First()];
+            var entry = new NetworkLegendEntry
+            {
+                Key = "problem:" + group.Key,
+                Name = group.Key,
+                Shape = NetworkLegendShape.Violation,
+                Color = ArgbColor.FromArgb(230, colors[entries.Count % colors.Count]),
+                Size = 11,
+                Description = NetworkBuildReports.Describe(group.Key) ?? NetworkBuildReports.Describe(first.Kind)
+            };
+            entry.Violations.AddRange(group);
+            entry.Count = entry.Violations.Count;
+            entries.Add(entry);
+        }
+        return new NetworkResultLegend(result, entries, []);
     }
 
     private static int Rank(string kind)

@@ -22,10 +22,14 @@ public sealed record NetworkDownload(string Path, string FileName);
 /// <summary>The state of the network search tool (SpatialNET network of the map, see NetworkModule).</summary>
 public class NetworkSearchContext
 {
-    /// <summary>The operations of the tool; nearest is what a click into the map does anyway.</summary>
-    public static readonly IReadOnlyList<string> Operations = NetworkQueryService.Operations.Where(o => o is not "nearest").ToList();
+    /// <summary>
+    /// The operations of the tool; nearest is what a click into the map does anyway; problems shows the build reports
+    /// (no search).
+    /// </summary>
+    public static readonly IReadOnlyList<string> Operations =
+        [.. NetworkQueryService.Operations.Where(o => o is not "nearest"), NetworkQueryService.ProblemsOperation];
 
-    /// <summary>trace | reach | path | supply | outage | feeders | info | validate</summary>
+    /// <summary>trace | reach | path | supply | outage | feeders | info | validate | problems</summary>
     public string Operation { get; set; } = "trace";
 
     public NetworkSearchPick Pick { get; set; } = NetworkSearchPick.Start;
@@ -155,5 +159,13 @@ public class NetworkSearchContext
     /// <summary>outage: a click picks an edge (the branch to switch off), not a node.</summary>
     public bool PicksEdge => Operation == "outage";
 
-    public bool NeedsStart => Operation is not "validate";
+    public bool NeedsStart => Operation is not ("validate" or NetworkQueryService.ProblemsOperation);
+
+    /// <summary>problems: the build reports read last (counts per category, build.log); null until read.</summary>
+    public NetworkBuildReports? Reports { get; set; }
+
+    /// <summary>problems: the category shown; null picks the first one with problems.</summary>
+    public NetworkProblemCategory? ProblemCategory { get; set; }
+
+    public bool IsProblems => Operation == NetworkQueryService.ProblemsOperation;
 }

@@ -1,4 +1,6 @@
 @using gView.Carto.Razor.Components.Tools.ToolEvents
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+@using gView.Framework.NetworkModel.Build
 @using gView.Framework.NetworkModel.Graph
 @using gView.Framework.NetworkModel.Query
 @using gView.Carto.Razor.Components.Tools.Context
@@ -40,7 +42,32 @@
         </div>
     }
 
-    @if (_context.Operation != "info")
+    @if (_context.IsProblems)
+    {
+        var reports = _context.Reports;
+        <MudMenu Dense="true" title="The build report to show" Disabled="@(reports is null || !reports.Any)">
+            <ActivatorContent>
+                <MudButton Variant="Variant.Text" Size="MudBlazor.Size.Small"
+                           StartIcon="@SeverityIcon(_context.ProblemCategory)" IconColor="@SeverityColor(_context.ProblemCategory)">
+                    @(_context.ProblemCategory is NetworkProblemCategory shown && reports is not null ? CategoryLabel(reports, shown) : "Category")
+                </MudButton>
+            </ActivatorContent>
+            <ChildContent>
+                @if (reports is not null)
+                {
+                    @foreach (var category in NetworkBuildReports.Categories)
+                    {
+                        var count = reports.Of(category).Count;
+                        <MudMenuItem Disabled="@(count == 0)" Icon="@SeverityIcon(category)" IconColor="@(count == 0 ? Color.Default : SeverityColor(category))"
+                                     title="@NetworkBuildReports.Describe(category.ToString())"
+                                     OnClick="() => ProblemCategoryChanged(category)">@CategoryLabel(reports, category)</MudMenuItem>
+                    }
+                }
+            </ChildContent>
+        </MudMenu>
+    }
+
+    @if (_context.Operation != "info" && !_context.IsProblems)
     {
         <div class="@($"carto-tool {(_context.Pick == NetworkSearchPick.Area ? "selected" : "")}")"
              title="@($"Area: click a polygon feature in the map (e.g. a station polygon) or Ctrl-drag a box; only the nodes inside take part{(_context.Area is null ? "" : $"\nNow: {_context.AreaLabel}")}")"
@@ -76,9 +103,9 @@
     }
     else
     {
-        <div class="carto-tool" title="Run the search" @onclick="Run">
-            <div class=@Icons.FromString("webgis:construct-edge-intersect")></div>
-            <div class="title">Run</div>
+        <div class="carto-tool" title="@(_context.IsProblems ? "Read the build reports again" : "Run the search")" @onclick="Run">
+            <div class=@Icons.FromString(_context.IsProblems ? "basic:refresh" : "webgis:construct-edge-intersect")></div>
+            <div class="title">@(_context.IsProblems ? "Reload" : "Run")</div>
         </div>
     }
 
@@ -110,7 +137,7 @@
                 <MudTextField T="string" Label="@($"{TargetLabel} (Layer#OID, id, type pattern or @x,y; empty = module default)")" Dense="true"
                               Value="_context.Target" ValueChanged="@((string v) => { _context.Target = v; _context.TargetLabel = null; Typed(_context.TargetItems, v); })" />
             }
-            @if (_context.Operation != "info")
+            @if (_context.Operation != "info" && !_context.IsProblems)
             {
                 <MudSelect T="string" Label="Tiers (empty = all)" Dense="true" Clearable="true" MultiSelection="true"
                            SelectedValues="SelectedTiers" SelectedValuesChanged="SetSelectedTiers" OpenChanged="OnTierOpenChanged">
@@ -159,7 +186,7 @@
                 <MudTextField T="string" Label="Blocked nodes" Dense="true" @bind-Value="_context.Block" />
                 <MudTextField T="string" Label="Edges switched off (Layer#OID[/part])" Dense="true" @bind-Value="_context.Disable" />
             }
-            @if (_context.Operation != "validate")
+            @if (_context.Operation != "validate" && !_context.IsProblems)
             {
                 <MudCheckBox T="bool" Label="Download: snap line ends onto the nodes" Dense="true" @bind-Value="_context.SnapExport" />
             }
@@ -213,6 +240,21 @@
             {
                 @PickedList(_context.TargetItems, TargetLabel, true)
             }
+            @if (_context.IsProblems && _context.Reports is NetworkBuildReports reports)
+            {
+                <div style="display:flex;align-items:center;margin-top:6px;font-size:0.8em">
+                    <span style="flex:1"><b>Build reports</b> @(reports.Written is DateTime written ? $"written {written:yyyy-MM-dd HH:mm}" : "")</span>
+                    <MudIconButton Icon="@MudBlazor.Icons.Material.Filled.Refresh" Size="MudBlazor.Size.Small" title="Read the build reports again" OnClick="Run" />
+                </div>
+                @if (reports.Log is string log)
+                {
+                    <div style="font-size:0.8em;cursor:pointer" @onclick="() => _showBuildLog = !_showBuildLog">@(_showBuildLog ? "▾" : "▸") build.log</div>
+                    @if (_showBuildLog)
+                    {
+                        <pre style="max-height:200px;overflow:auto;font-size:0.75em;margin-top:0">@log</pre>
+                    }
+                }
+            }
             @if (_context.Result is NetworkQueryResult result)
             {
                 <div style="display:flex;align-items:center;margin-top:6px;font-size:0.8em">
@@ -227,7 +269,35 @@
                     @Legend(legend)
                 }
             }
-            @if (_context.Result is NetworkQueryResult { Violations.Count: > 0 } validation)
+            @if (_context.Result is NetworkQueryResult { Operation: NetworkQueryService.ProblemsOperation, Violations.Count: > 0 } problems)
+            {
+                bool canSelectFirst = _context.ProblemCategory is NetworkProblemCategory.Duplicates or NetworkProblemCategory.Merged;
+                string firstRole = _context.ProblemCategory == NetworkProblemCategory.Duplicates ? "dropped" : "merged";
+                <div style="max-height:45vh;overflow:auto;margin-top:6px">
+                    <Virtualize Items="ProblemIndexes(problems)" Context="index" ItemSize="24">
+                        @{ var problem = problems.Violations[index]; var entry = _context.Legend?.ViolationEntry(index); }
+                        <div style="display:flex;align-items:center;gap:4px;font-size:0.75em;border-top:1px solid var(--mud-palette-lines-default);padding:2px 0">
+                            <span style="width:12px">@Swatch(entry)</span>
+                            <span style="flex:1;word-break:break-word;cursor:pointer" title="Zoom to it (1:500) and set a pin" @onclick="() => FireZoom(index)">
+                                @problem.Message <span style="color:var(--mud-palette-text-secondary)">@problem.Rule</span>
+                            </span>
+                            <span style="width:20px;cursor:pointer;text-align:center" title="Zoom to it (1:500) and set a pin" @onclick="() => FireZoom(index)">⌖</span>
+                            <span style="width:20px;cursor:pointer;text-align:center" title="@($"Select its features ({string.Join(", ", problem.Aliases)})")"
+                                  @onclick="() => FirePick(NetworkSearchAction.SelectProblem, index, false)">
+                                <MudIcon Icon="@MudBlazor.Icons.Material.Filled.HighlightAlt" Size="MudBlazor.Size.Small" />
+                            </span>
+                            @if (canSelectFirst)
+                            {
+                                <span style="width:20px;cursor:pointer;text-align:center" title="@($"Select only the {firstRole} point ({problem.NodeLabel})")"
+                                      @onclick="() => FirePick(NetworkSearchAction.SelectProblem, index, true)">
+                                    <MudIcon Icon="@MudBlazor.Icons.Material.Filled.Adjust" Size="MudBlazor.Size.Small" />
+                                </span>
+                            }
+                        </div>
+                    </Virtualize>
+                </div>
+            }
+            else if (_context.Result is NetworkQueryResult { Violations.Count: > 0 } validation)
             {
                 <div style="max-height:45vh;overflow:auto;margin-top:6px">
                     <table style="width:100%;font-size:0.75em;border-collapse:collapse">
@@ -257,7 +327,7 @@
             }
             @if (_context.Result is null && string.IsNullOrEmpty(_context.Error) && string.IsNullOrEmpty(_context.Info) && _context.Build is null)
             {
-                <div style="font-size:0.8em">Pick a node in the map, then Run.</div>
+                <div style="font-size:0.8em">@(_context.IsProblems ? "Reload to read the build reports." : "Pick a node in the map, then Run.")</div>
             }
     </div>
     }
@@ -266,6 +336,54 @@
 @code {
     private NetworkSearchContext? _context;
     private bool _showReport;
+    private bool _showBuildLog;
+
+    #region Problems
+
+    private NetworkQueryResult? _problemsResult;
+    private List<int> _problemIndexes = [];
+
+    /// <summary>The rows of the problems list (indexes into the violations), kept per result for the virtualized list.</summary>
+    private List<int> ProblemIndexes(NetworkQueryResult result)
+    {
+        if (!ReferenceEquals(result, _problemsResult))
+        {
+            _problemsResult = result;
+            _problemIndexes = Enumerable.Range(0, result.Violations.Count).ToList();
+        }
+        return _problemIndexes;
+    }
+
+    private static string CategoryLabel(NetworkBuildReports reports, NetworkProblemCategory category)
+        => reports.Present.Contains(category) ? $"{category} ({reports.Of(category).Count:N0})" : $"{category} (no file)";
+
+    private static string SeverityIcon(NetworkProblemCategory? category) => category is null
+        ? MudBlazor.Icons.Material.Filled.ReportProblem
+        : NetworkBuildReports.Severity(category.Value) switch
+        {
+            NetworkProblemSeverity.Error => MudBlazor.Icons.Material.Filled.Error,
+            NetworkProblemSeverity.Warning => MudBlazor.Icons.Material.Filled.Warning,
+            _ => MudBlazor.Icons.Material.Filled.Info
+        };
+
+    private static Color SeverityColor(NetworkProblemCategory? category) => category is null
+        ? Color.Default
+        : NetworkBuildReports.Severity(category.Value) switch
+        {
+            NetworkProblemSeverity.Error => Color.Error,
+            NetworkProblemSeverity.Warning => Color.Warning,
+            _ => Color.Info
+        };
+
+    private Task ProblemCategoryChanged(NetworkProblemCategory category) => HandleAsync(async () =>
+    {
+        _context!.ProblemCategory = category;
+        _expanded.Clear();
+        _showReport = true;
+        await EventBus.FireToolEventAsync(new NetworkSearchEventArgs(NetworkSearchAction.Run));
+    });
+
+    #endregion
 
     private gView.Framework.NetworkModel.Config.NetworkConfig? ModuleConfig
         => AppScope.Modules.OfType<gView.Framework.NetworkModel.Module.NetworkModule>().FirstOrDefault(m => m.IsConfigured)?.Config;
@@ -341,9 +459,12 @@
                 int picked = (_context?.StartItems.Count ?? 0) + (_context?.NeedsTarget == true ? _context.TargetItems.Count : 0);
                 return picked > 0 ? $"Report ({picked} picked)" : "Report";
             }
-            return result.Operation == "validate"
-                ? $"Report ({result.Violations.Count} violations)"
-                : $"Report ({result.Nodes.Count(n => n.AliasOf.Length == 0)} nodes, {result.Edges.Count} edges)";
+            return result.Operation switch
+            {
+                "validate" => $"Report ({result.Violations.Count} violations)",
+                NetworkQueryService.ProblemsOperation => $"Report ({result.Violations.Count} {_context.ProblemCategory?.ToString().ToLowerInvariant() ?? "problems"})",
+                _ => $"Report ({result.Nodes.Count(n => n.AliasOf.Length == 0)} nodes, {result.Edges.Count} edges)"
+            };
         }
     }
 
@@ -420,7 +541,7 @@
             return Task.CompletedTask;
         }
         var sb = new System.Text.StringBuilder();
-        bool validate = result.Operation == "validate";
+        bool validate = result.Operation is "validate" or NetworkQueryService.ProblemsOperation;
         foreach (var line in result.Messages)
         {
             sb.Append(validate ? "" : "# ").AppendLine(line);
@@ -515,14 +636,18 @@
         <tr style="border-top:1px solid var(--mud-palette-lines-default);@(hidden ? "opacity:.5" : "")">
             <td style="width:16px;cursor:pointer;text-align:center" title="@(expanded ? "Hide the list" : "List them, to zoom to each")" @onclick="() => ToggleExpanded(key)">@(expanded ? "▾" : "▸")</td>
             <td style="width:18px">@Swatch(entry)</td>
-            <td style="word-break:break-word;cursor:pointer;padding-left:@(indent * 12)px" @onclick="() => ToggleExpanded(key)">@name</td>
+            <td style="word-break:break-word;cursor:pointer;padding-left:@(indent * 12)px" title="@entry.Description" @onclick="() => ToggleExpanded(key)">@name</td>
             <td style="text-align:right;white-space:nowrap">@Number(entry.Count)</td>
             <td style="text-align:right;white-space:nowrap">@(entry.Shape == NetworkLegendShape.Edge ? $"{Number(entry.Length)} m" : "")</td>
             @RowActions(key, entries)
         </tr>
         @if (expanded)
         {
-            var items = legend.Items(entry);
+            @if (!string.IsNullOrEmpty(entry.Description))
+            {
+                <tr><td></td><td></td><td colspan="7" style="color:var(--mud-palette-text-secondary);padding-left:@(indent * 12 + 8)px">@entry.Description</td></tr>
+            }
+            var items = legend.Items(entry, MaxListed + 1);
             for (int i = 0; i < Math.Min(items.Count, MaxListed); i++)
             {
                 int index = i;
@@ -538,7 +663,7 @@
             }
             @if (items.Count > MaxListed)
             {
-                <tr><td></td><td></td><td colspan="7" style="color:var(--mud-palette-text-secondary)">First @MaxListed of @items.Count: select or download them for all.</td></tr>
+                <tr><td></td><td></td><td colspan="7" style="color:var(--mud-palette-text-secondary)">First @MaxListed of @Number(entry.Count): select or download them for all.</td></tr>
             }
         }
     };
@@ -648,6 +773,11 @@
             _context.StartItems.Clear();
         }
         _context.Pick = _context.NeedsStart ? NetworkSearchPick.Start : NetworkSearchPick.None;
+        if (_context.IsProblems)
+        {
+            // nothing to pick: read the reports at once
+            _ = Run();
+        }
     }
 
     private void SetPick(NetworkSearchPick pick)

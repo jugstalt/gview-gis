@@ -1,5 +1,6 @@
 using gView.Framework.Core.Carto;
 using gView.Framework.NetworkModel.Config;
+using gView.Framework.NetworkModel.Extensions;
 using gView.Framework.NetworkModel.Ids;
 using gView.Framework.NetworkModel.Store;
 using SpatialNET.Network.Building;
@@ -42,7 +43,7 @@ public static class NetworkBuildRunner
             {
                 WriteWarningsAndDuplicates(service, output, Log);
 
-                string Source(object? source) => source is FeatureRef r ? $"{service.LayerOf(r.FeatureClass)} #{r.Oid}" : source?.ToString() ?? "";
+                string Source(object? source) => SourceLabel(service, source);
 
                 Log($"The data cannot form a network: {ex.Conflicts.Count} conflict(s)");
                 foreach (var group in ex.Conflicts
@@ -67,8 +68,17 @@ public static class NetworkBuildRunner
             {
                 Log($"Diagnostic {group.Key}: {group.Count()}");
             }
-            File.WriteAllText(Path.Combine(output, "diagnostics.json"), JsonSerializer.Serialize(
-                report.Diagnostics.Select(d => new { Kind = d.Kind.ToString(), d.Location.X, d.Location.Y, d.Message }),
+            var types = report.Metadata.Types.Count == 0 ? null : report.Metadata.ToTypeRegistry();
+            // the sources as "Layer #oid" (null for a helper node, the node first, then the line) and the ids and type numbers of the message readable
+            File.WriteAllText(Path.Combine(output, NetworkBuildReports.DiagnosticsFile), JsonSerializer.Serialize(
+                report.Diagnostics.Select(d => new
+                {
+                    Kind = d.Kind.ToString(),
+                    d.Location.X,
+                    d.Location.Y,
+                    Message = NetworkBuildReports.ResolveMessage(d.Message, report.Metadata, types),
+                    Sources = d.Sources?.Select(s => s is FeatureRef r ? SourceLabel(service, r) : null).ToList()
+                }),
                 NetworkConfig.JsonOptions));
 
             Log($"Types: {report.Metadata.Types.Count(t => t.Used)} used");
@@ -94,6 +104,10 @@ public static class NetworkBuildRunner
             catch (IOException) { }
         }
     }
+
+    /// <summary>A source of a conflict or diagnostic as "Layer #oid" (other sources, e.g. ids, as they are).</summary>
+    private static string SourceLabel(NetworkBuildService service, object? source)
+        => source is FeatureRef r ? $"{service.LayerOf(r.FeatureClass)} #{r.Oid}" : source?.ToString() ?? "";
 
     private static void WriteWarningsAndDuplicates(NetworkBuildService service, string output, Action<string> log)
     {

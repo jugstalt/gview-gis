@@ -237,6 +237,10 @@ public static class NetworkResultGeometry
         {
             Add(violation.Layer, violation.Oid);
             Add(violation.EdgeLayer, violation.EdgeOid);
+            foreach (var (layer, oid) in violation.Features ?? [])
+            {
+                Add(layer, oid);
+            }
         }
         return ids;
     }

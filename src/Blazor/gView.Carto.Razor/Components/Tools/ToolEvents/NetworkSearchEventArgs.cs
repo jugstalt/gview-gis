@@ -35,7 +35,9 @@ public enum NetworkSearchAction
     /// <summary>Draws the result again, e.g. after the feeders colouring changed.</summary>
     Redraw,
     /// <summary>Writes the result as GeoJSON for a download in the browser; with Key only the elements of that legend row.</summary>
-    Download
+    Download,
+    /// <summary>problems: the features of one problem (Index in the result) become the selection; Target: only the first (the dropped or merged point).</summary>
+    SelectProblem
 }
 
 public class NetworkSearchEventArgs(NetworkSearchAction action, int index = 0, bool target = false, string? key = null) : ToolEventArgs

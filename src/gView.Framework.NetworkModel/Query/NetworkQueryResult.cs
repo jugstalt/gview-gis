@@ -120,7 +120,14 @@ public sealed record NetworkResultViolation(
     string Rule, string Severity, string? Message, string Kind,
     long Node, string NodeLabel, string? Layer, long? Oid,
     long? Edge, string? EdgeLabel, string? EdgeLayer, long? EdgeOid,
-    string Type, long Count, double? Min, double? Max, double X, double Y, IReadOnlyList<string> Aliases);
+    string Type, long Count, double? Min, double? Max, double X, double Y, IReadOnlyList<string> Aliases)
+{
+    /// <summary>
+    /// problems: every feature involved (layer path, oid), also beyond the two of <see cref="Layer"/>/<see cref="Oid"/>
+    /// and <see cref="EdgeLayer"/>/<see cref="EdgeOid"/>; null for rule violations.
+    /// </summary>
+    public IReadOnlyList<(string Layer, long Oid)>? Features { get; init; }
+}
 
 /// <summary>One line per rule of a validation.</summary>
 public sealed record NetworkResultRuleSummary(string Rule, string Severity, string? Description, long Checked, long Violations);
