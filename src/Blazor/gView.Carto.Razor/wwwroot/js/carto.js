@@ -229,5 +229,18 @@ window.cartoInterops = {
         if (el) {
             el.focus();
         }
+    },
+
+    // a file streamed from the server (DotNetStreamReference) is saved by the browser
+    downloadFileFromStream: async function (fileName, contentType, streamRef) {
+        const buffer = await streamRef.arrayBuffer();
+        const url = URL.createObjectURL(new Blob([buffer], { type: contentType }));
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = fileName;
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 30000);
     }
 };

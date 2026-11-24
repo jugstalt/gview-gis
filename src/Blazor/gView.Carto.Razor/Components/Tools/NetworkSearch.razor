@@ -92,9 +92,9 @@
             <div class=@Icons.FromString("webgis:polygon-selected", IconSize.Small)></div>
             <div class="title">Select</div>
         </div>
-        <div class="carto-tool small" title="Write the result as GeoJSON into the results folder of the network" @onclick="() => Fire(NetworkSearchAction.ExportGeoJson)">
+        <div class="carto-tool small" title="Download the result as GeoJSON (the legend rows each have a download of their own)" @onclick="Download">
             <div class=@Icons.FromString("basic:disk-white", IconSize.Small)></div>
-            <div class="title">GeoJSON</div>
+            <div class="title">Download</div>
         </div>
     </div>
 
@@ -161,7 +161,7 @@
             }
             @if (_context.Operation != "validate")
             {
-                <MudCheckBox T="bool" Label="GeoJSON export: snap line ends onto the nodes" Dense="true" @bind-Value="_context.SnapExport" />
+                <MudCheckBox T="bool" Label="Download: snap line ends onto the nodes" Dense="true" @bind-Value="_context.SnapExport" />
             }
             @if (_context.Operation == "validate")
             {
@@ -246,7 +246,7 @@
                     </table>
                     @if (validation.Violations.Count > 300)
                     {
-                        <div style="font-size:0.75em">First 300 of @validation.Violations.Count violations: export GeoJSON for all.</div>
+                        <div style="font-size:0.75em">First 300 of @validation.Violations.Count violations: download the result for all.</div>
                     }
                 </div>
             }
@@ -477,7 +477,7 @@
     {
         <div style="display:flex;align-items:center;margin-top:6px;font-size:0.8em">
             <b style="flex:1">Legend</b>
-            <span style="color:var(--mud-palette-text-secondary)">eye: show/hide · ⌖ zoom · select (Ctrl adds)</span>
+            <span style="color:var(--mud-palette-text-secondary)">eye: show/hide · ⌖ zoom · select (Ctrl adds) · download</span>
         </div>
         <table style="width:100%;font-size:0.75em;border-collapse:collapse">
             @foreach (var entry in legend.Entries.Where(e => e.Group is null))
@@ -533,12 +533,12 @@
                     <td colspan="3" style="word-break:break-word;padding-left:@(indent * 12 + 8)px">
                         @item.Label <span style="color:var(--mud-palette-text-secondary)">@item.Detail</span>
                     </td>
-                    <td colspan="3" style="text-align:center">⌖</td>
+                    <td colspan="4" style="text-align:center">⌖</td>
                 </tr>
             }
             @if (items.Count > MaxListed)
             {
-                <tr><td></td><td></td><td colspan="6" style="color:var(--mud-palette-text-secondary)">First @MaxListed of @items.Count: select them or export GeoJSON for all.</td></tr>
+                <tr><td></td><td></td><td colspan="7" style="color:var(--mud-palette-text-secondary)">First @MaxListed of @items.Count: select or download them for all.</td></tr>
             }
         }
     };
@@ -554,6 +554,10 @@
         <td style="width:22px;cursor:pointer;text-align:center" title="Select their features (replaces the selection of their layers, Ctrl adds)"
             @onclick="(MouseEventArgs e) => FireLegend(NetworkSearchAction.SelectLegend, key, add: e.CtrlKey)">
             <MudIcon Icon="@MudBlazor.Icons.Material.Filled.HighlightAlt" Size="MudBlazor.Size.Small" />
+        </td>
+        <td style="width:22px;cursor:pointer;text-align:center" title="Download them as GeoJSON"
+            @onclick="() => DownloadLegend(key)">
+            <MudIcon Icon="@MudBlazor.Icons.Material.Filled.Download" Size="MudBlazor.Size.Small" />
         </td>
     };
 
@@ -582,6 +586,31 @@
         {
             _expanded.Add(key);
         }
+    }
+
+    private Task Download() => HandleAsync(async () =>
+    {
+        await EventBus.FireToolEventAsync(new NetworkSearchEventArgs(NetworkSearchAction.Download));
+        await SendPendingDownload();
+    });
+
+    private Task DownloadLegend(string key) => HandleAsync(async () =>
+    {
+        await EventBus.FireToolEventAsync(new NetworkSearchEventArgs(NetworkSearchAction.Download, key: key));
+        await SendPendingDownload();
+    });
+
+    /// <summary>Streams the file the tool wrote to the browser, which saves it; the temporary file is deleted afterwards.</summary>
+    private async Task SendPendingDownload()
+    {
+        if (_context?.PendingDownload is not NetworkDownload download)
+        {
+            return;
+        }
+        _context.PendingDownload = null;
+        await using var stream = new FileStream(download.Path, FileMode.Open, FileAccess.Read, FileShare.Read, 81920, FileOptions.DeleteOnClose | FileOptions.Asynchronous);
+        using var reference = new DotNetStreamReference(stream, leaveOpen: true);
+        await JS.InvokeVoidAsync("window.cartoInterops.downloadFileFromStream", download.FileName, "application/geo+json", reference);
     }
 
     private Task FireLegend(NetworkSearchAction action, string key, int index = 0, bool add = false) => HandleAsync(async () =>

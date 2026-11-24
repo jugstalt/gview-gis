@@ -16,6 +16,9 @@ public enum NetworkSearchPick
 /// <summary>A node or edge picked in the map: its reference for the search and a readable label.</summary>
 public sealed record NetworkPickedItem(string Reference, string Label);
 
+/// <summary>A temporary file on the server for a download: its path and the name the user gets.</summary>
+public sealed record NetworkDownload(string Path, string FileName);
+
 /// <summary>The state of the network search tool (SpatialNET network of the map, see NetworkModule).</summary>
 public class NetworkSearchContext
 {
@@ -63,7 +66,7 @@ public class NetworkSearchContext
     /// <summary>What the area is, e.g. "Stationspolygon#4711", "box", "map extent", "selection (3 polygons)".</summary>
     public string? AreaLabel { get; set; }
 
-    /// <summary>GeoJSON export: the line ends set onto the nodes, so the file is a valid network.</summary>
+    /// <summary>Download: the line ends set onto the nodes, so the file is a valid network.</summary>
     public bool SnapExport { get; set; }
 
     public string? Weight { get; set; }
@@ -117,6 +120,12 @@ public class NetworkSearchContext
 
     /// <summary>feeders: the qualitative palette of the branch or source colours.</summary>
     public string FeederPalette { get; set; } = NetworkResultLegend.DefaultFeederPalette;
+
+    /// <summary>
+    /// A file the tool wrote for the browser (GeoJSON of the result or of a legend row): the panel streams it to the
+    /// user as a download and deletes it.
+    /// </summary>
+    public NetworkDownload? PendingDownload { get; set; }
 
     /// <summary>A short message for a snackbar (e.g. "17 features in 2 layers selected"); the panel shows and clears it.</summary>
     public string? Notice { get; set; }

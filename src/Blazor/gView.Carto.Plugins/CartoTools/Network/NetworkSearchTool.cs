@@ -125,7 +125,6 @@ internal class NetworkSearchTool : ICartoTool
                 NetworkSearchEventArgs { Action: NetworkSearchAction.Cancel } => CancelRun(),
                 NetworkSearchEventArgs { Action: NetworkSearchAction.Clear } => await Clear(scope),
                 NetworkSearchEventArgs { Action: NetworkSearchAction.ToSelection } => await ToSelection(scope),
-                NetworkSearchEventArgs { Action: NetworkSearchAction.ExportGeoJson } => await ExportGeoJson(scope),
                 NetworkSearchEventArgs { Action: NetworkSearchAction.ZoomToViolation } a => await ZoomToViolation(scope, a.Index),
                 NetworkSearchEventArgs { Action: NetworkSearchAction.RemovePick } a => await RemovePick(scope, a.Index, a.Target),
                 NetworkSearchEventArgs { Action: NetworkSearchAction.ZoomToPick } a => await ZoomToPick(scope, a.Index, a.Target),
@@ -138,6 +137,7 @@ internal class NetworkSearchTool : ICartoTool
                 NetworkSearchEventArgs { Action: NetworkSearchAction.SelectLegend } a => await SelectLegend(scope, a.Key, a.Target),
                 NetworkSearchEventArgs { Action: NetworkSearchAction.ZoomToElement } a => await ZoomToElement(scope, a.Key, a.Index),
                 NetworkSearchEventArgs { Action: NetworkSearchAction.Redraw } => await Redraw(scope),
+                NetworkSearchEventArgs { Action: NetworkSearchAction.Download } a => await Download(scope, a.Key),
                 MapBBoxEventArgs bbox => await AreaFromBox(scope, bbox),
                 _ => await PickNode(scope, eventArgs)
             };
@@ -659,23 +659,46 @@ internal class NetworkSearchTool : ICartoTool
         return true;
     }
 
-    /// <summary>Writes the result with the real line parts to {network}/results/{operation}-{time}.geojson.</summary>
-    private async Task<bool> ExportGeoJson(ICartoApplicationScopeService scope)
+    /// <summary>The result with the real line parts as GeoJSON (line ends snapped onto the nodes if set).</summary>
+    private async Task WriteGeoJson(ICartoApplicationScopeService scope, NetworkQueryResult result, string path)
     {
-        if (_context!.Result is not NetworkQueryResult result || string.IsNullOrEmpty(_context.NetworkDirectory))
+        var coordinates = await NetworkResultGeometry.EdgeCoordinatesAsync(scope.Document.Map, result,
+            snap: _context!.SnapExport, tolerance: Graph(scope).Metadata.Tolerance);
+        await File.WriteAllTextAsync(path, NetworkResultWriter.ToGeoJson(result, e => coordinates.TryGetValue(e.Id, out var c) ? c : null));
+    }
+
+    /// <summary>
+    /// Writes the result (with a key only the elements of that legend row or source) as GeoJSON into a temporary file
+    /// the panel streams to the browser: users often can't reach the network directory on the server.
+    /// </summary>
+    private async Task<bool> Download(ICartoApplicationScopeService scope, string? key)
+    {
+        if (_context!.Result is not NetworkQueryResult result)
         {
             return false;
         }
-
-        var coordinates = await NetworkResultGeometry.EdgeCoordinatesAsync(scope.Document.Map, result,
-            snap: _context.SnapExport, tolerance: Graph(scope).Metadata.Tolerance);
-        var directory = System.IO.Path.Combine(_context.NetworkDirectory, "results");
-        Directory.CreateDirectory(directory);
-        var path = System.IO.Path.Combine(directory, $"{result.Operation}-{DateTime.Now:yyyyMMdd-HHmmss}.geojson");
-        await File.WriteAllTextAsync(path, NetworkResultWriter.ToGeoJson(result, e => coordinates.TryGetValue(e.Id, out var c) ? c : null));
-
-        _context.Info = $"Written: {path}";
+        string part = "";
+        if (key is not null)
+        {
+            if (_context.Legend is not NetworkResultLegend legend || legend.Result != result)
+            {
+                return false;
+            }
+            var entries = legend.Find(key);
+            result = legend.Subset(entries);
+            part = "-" + (entries.Count == 1 ? entries[0].Name : entries.FirstOrDefault()?.Group ?? key);
+        }
+        var path = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"gview-network-{Guid.NewGuid():N}.geojson");
+        await WriteGeoJson(scope, result, path);
+        _context.PendingDownload = new NetworkDownload(path, SafeFileName($"{result.Operation}{part}-{DateTime.Now:yyyyMMdd-HHmmss}.geojson"));
         return true;
+    }
+
+    /// <summary>Mittelspannung/Anlage#5268 → Mittelspannung_Anlage_5268.</summary>
+    private static string SafeFileName(string name)
+    {
+        var invalid = System.IO.Path.GetInvalidFileNameChars().Concat(['#', ' ', '(', ')']).ToHashSet();
+        return new string(name.Select(c => invalid.Contains(c) ? '_' : c).ToArray());
     }
 
     /// <summary>Zooms to the violation (index in the result) with a little room around it.</summary>

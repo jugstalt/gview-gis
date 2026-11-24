@@ -205,6 +205,19 @@ public sealed class NetworkResultLegend
         return ids;
     }
 
+    /// <summary>A result with only the elements of the entries (merged points with their nodes), e.g. for the download of a row.</summary>
+    public NetworkQueryResult Subset(IEnumerable<NetworkLegendEntry> entries)
+    {
+        var list = entries.ToList();
+        var subset = new NetworkQueryResult { Operation = Result.Operation, Success = Result.Success, Srs = Result.Srs, Cost = Result.Cost };
+        subset.Messages.AddRange(Result.Messages);
+        subset.Messages.Add($"Only: {string.Join(", ", list.Select(e => e.Group is null ? e.Name : $"{e.Group} / {e.Name}"))}");
+        subset.Nodes.AddRange(list.SelectMany(e => e.Nodes).Order().Select(i => Result.Nodes[i]));
+        subset.Edges.AddRange(list.SelectMany(e => e.Edges).Order().Select(i => Result.Edges[i]));
+        subset.Violations.AddRange(list.SelectMany(e => e.Violations).Order().Select(i => Result.Violations[i]));
+        return subset;
+    }
+
     private const string GroupPrefix = "group:";
 
     public static string GroupKey(string group) => GroupPrefix + group;

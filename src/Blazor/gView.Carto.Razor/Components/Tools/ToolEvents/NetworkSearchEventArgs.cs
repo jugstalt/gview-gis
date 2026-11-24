@@ -11,7 +11,6 @@ public enum NetworkSearchAction
     Cancel,
     Clear,
     ToSelection,
-    ExportGeoJson,
     ZoomToViolation,
     /// <summary>Removes a picked item (Index; Target for the target list).</summary>
     RemovePick,
@@ -34,7 +33,9 @@ public enum NetworkSearchAction
     /// <summary>Zooms to one element of a legend row (Key, Index in its list).</summary>
     ZoomToElement,
     /// <summary>Draws the result again, e.g. after the feeders colouring changed.</summary>
-    Redraw
+    Redraw,
+    /// <summary>Writes the result as GeoJSON for a download in the browser; with Key only the elements of that legend row.</summary>
+    Download
 }
 
 public class NetworkSearchEventArgs(NetworkSearchAction action, int index = 0, bool target = false, string? key = null) : ToolEventArgs

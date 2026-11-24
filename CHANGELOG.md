@@ -214,6 +214,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   coloured by branch (default) or by source from a qualitative palette (Set1, Set3, Paired); Multiple
   lines red, open lines grey dashed. The legend lists the branches grouped by source (collapsed with
   more than 5 sources), each with colour, edge count, length, hide/show, zoom and select.
+- Carto network search: `Download` saves the result as GeoJSON in the browser, and every legend row
+  (kind, branch or source) has a download of its own with only its nodes and lines. Users don't need
+  access to the network directory on the server; the `GeoJSON` button that wrote into its `results`
+  folder is gone.
 
 ## Changed
 
