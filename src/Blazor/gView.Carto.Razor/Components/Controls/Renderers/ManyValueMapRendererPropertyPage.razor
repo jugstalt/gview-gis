@@ -78,6 +78,16 @@
                                      IconColor="Color.Surface">
                             Cancel
                         </MudMenuItem>
+                        <MudMenuItem Icon="@MudBlazor.Icons.Material.Outlined.Palette"
+                                     IconColor="Color.Primary"
+                                     OnClick="OnRecolorClickAsync">
+                            Recolor ...
+                        </MudMenuItem>
+                        <MudMenuItem Icon="@MudBlazor.Icons.Material.Outlined.Tune"
+                                     IconColor="Color.Primary"
+                                     OnClick="OnSetSymbolPropertiesClickAsync">
+                            Set Symbol Properties ...
+                        </MudMenuItem>
                         <MudMenuItem Icon="@MudBlazor.Icons.Material.Outlined.TextFormat"
                                      IconColor="Color.Primary"
                                      Onclick="OnLabelStyleClickAsync">
@@ -277,6 +287,45 @@
     }
 
     #region Button Events
+
+    private Task OnRecolorClickAsync() => HandleAsync(async () =>
+    {
+        if (_renderer is null || _layer is null)
+        {
+            return;
+        }
+
+        var keySymbols = await CurrentKeySymbolsList().RecolorAsync(
+            AppScopeFactory,
+            _layer.LayerGeometryType,
+            key => key == ValueMapRenderer.AllOtherValuesKey);
+
+        if (keySymbols is not null)
+        {
+            _dictKeySymbols[CurrentKey()] = keySymbols;
+            ApplyChanges();
+        }
+    });
+
+    private Task OnSetSymbolPropertiesClickAsync() => HandleAsync(async () =>
+    {
+        if (_renderer is null || _layer is null)
+        {
+            return;
+        }
+
+        var keySymbols = await CurrentKeySymbolsList().SetSymbolPropertiesAsync(
+            AppScopeFactory,
+            _layer.LayerGeometryType,
+            key => key == ValueMapRenderer.AllOtherValuesKey);
+
+        if (keySymbols is not null)
+        {
+            _dictKeySymbols[CurrentKey()] = keySymbols;
+            ApplyChanges();
+        }
+    });
+
 
     private Task OnAddAllItemsClickAsync() => HandleAsync(async () =>
     {

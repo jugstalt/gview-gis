@@ -277,6 +277,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Pipe.Plugins.Gis", "s
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Pipe.Plugins.Gis.Tests", "src\tests\gView.Pipe.Plugins.Gis.Tests\gView.Pipe.Plugins.Gis.Tests.csproj", "{9936EFB2-5FD5-4F7D-9827-67DA583D2C85}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Framework.Symbology.Tests", "src\tests\gView.Framework.Symbology.Tests\gView.Framework.Symbology.Tests.csproj", "{C363542E-E227-4F39-B5E4-D911E8A1BD88}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1733,6 +1735,18 @@ Global
 		{9936EFB2-5FD5-4F7D-9827-67DA583D2C85}.Release|x64.Build.0 = Release|Any CPU
 		{9936EFB2-5FD5-4F7D-9827-67DA583D2C85}.Release|x86.ActiveCfg = Release|Any CPU
 		{9936EFB2-5FD5-4F7D-9827-67DA583D2C85}.Release|x86.Build.0 = Release|Any CPU
+		{C363542E-E227-4F39-B5E4-D911E8A1BD88}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C363542E-E227-4F39-B5E4-D911E8A1BD88}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C363542E-E227-4F39-B5E4-D911E8A1BD88}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C363542E-E227-4F39-B5E4-D911E8A1BD88}.Debug|x64.Build.0 = Debug|Any CPU
+		{C363542E-E227-4F39-B5E4-D911E8A1BD88}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C363542E-E227-4F39-B5E4-D911E8A1BD88}.Debug|x86.Build.0 = Debug|Any CPU
+		{C363542E-E227-4F39-B5E4-D911E8A1BD88}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C363542E-E227-4F39-B5E4-D911E8A1BD88}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C363542E-E227-4F39-B5E4-D911E8A1BD88}.Release|x64.ActiveCfg = Release|Any CPU
+		{C363542E-E227-4F39-B5E4-D911E8A1BD88}.Release|x64.Build.0 = Release|Any CPU
+		{C363542E-E227-4F39-B5E4-D911E8A1BD88}.Release|x86.ActiveCfg = Release|Any CPU
+		{C363542E-E227-4F39-B5E4-D911E8A1BD88}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1870,6 +1884,7 @@ Global
 		{664939CD-244D-42CD-B32E-A919EAE3A1B1} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 		{BA2B8650-565E-42D1-8D8A-193D117F891E} = {CE7342F9-541D-0E1C-8219-475DB414D629}
 		{9936EFB2-5FD5-4F7D-9827-67DA583D2C85} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
+		{C363542E-E227-4F39-B5E4-D911E8A1BD88} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {11C25FC0-EB32-4DE1-9CBB-CF2D68D1AA9B}

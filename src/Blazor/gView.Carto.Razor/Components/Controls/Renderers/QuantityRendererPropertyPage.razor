@@ -45,17 +45,28 @@
                     <MudButtonGroup Color="Color.Primary" Variant="Variant.Filled">
                         <MudButton OnClick="OnShowWizard">Wizard</MudButton>
                         <MudButton OnClick="() => _addQuantityItem = new()">Add Value</MudButton>
-                        @* 
-                            <MudButton Color="Color.Primary"
-                            Variant="Variant.Filled"
-                            OnClick="OnAddAllOtherValuesItem">Add "All other"</MudButton>
-                            *@
-                               
+                        <MudMenu Label="More ..." Variant="Variant.Filled">
+                            <MudMenuItem Icon="@MudBlazor.Icons.Material.Outlined.Cancel"
+                                         IconColor="Color.Surface">
+                                Cancel
+                            </MudMenuItem>
+                            <MudMenuItem Icon="@MudBlazor.Icons.Material.Outlined.Palette"
+                                         IconColor="Color.Primary"
+                                         OnClick="OnRecolorClickAsync">
+                                Recolor ...
+                            </MudMenuItem>
+                            <MudMenuItem Icon="@MudBlazor.Icons.Material.Outlined.Tune"
+                                         IconColor="Color.Primary"
+                                         OnClick="OnSetSymbolPropertiesClickAsync">
+                                Set Symbol Properties ...
+                            </MudMenuItem>
+                            <MudMenuItem Icon="@MudBlazor.Icons.Material.Filled.Delete"
+                                         IconColor="Color.Secondary"
+                                         OnClick="OnRemoveAllItems">
+                                Remove All
+                            </MudMenuItem>
+                        </MudMenu>
                     </MudButtonGroup>
-                    
-                    <MudButton Color="Color.Secondary"
-                                Variant="Variant.Filled"
-                                OnClick="OnRemoveAllItems">Remove all</MudButton>
                 </MudPaper>
                 <MudText Typo="Typo.h6">
                     @($"{_dictKeySymbols.IfKeyExists(_renderer.ValueField, (l) => l.Count)} items")
@@ -263,6 +274,39 @@
     }
 
     #region Button Events
+
+    private Task OnRecolorClickAsync() => HandleAsync(async () =>
+    {
+        if (_renderer is null || _layer is null)
+        {
+            return;
+        }
+
+        var keySymbols = await CurrentKeySymbolsList().RecolorAsync(AppScopeFactory, _layer.LayerGeometryType);
+
+        if (keySymbols is not null)
+        {
+            _dictKeySymbols[_renderer.ValueField] = keySymbols;
+            ApplyChanges();
+        }
+    });
+
+    private Task OnSetSymbolPropertiesClickAsync() => HandleAsync(async () =>
+    {
+        if (_renderer is null || _layer is null)
+        {
+            return;
+        }
+
+        var keySymbols = await CurrentKeySymbolsList().SetSymbolPropertiesAsync(AppScopeFactory, _layer.LayerGeometryType);
+
+        if (keySymbols is not null)
+        {
+            _dictKeySymbols[_renderer.ValueField] = keySymbols;
+            ApplyChanges();
+        }
+    });
+
 
     private Task OnShowWizard() => HandleAsync(async () =>
     {

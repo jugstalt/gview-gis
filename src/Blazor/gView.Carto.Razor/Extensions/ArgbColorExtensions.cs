@@ -28,4 +28,30 @@ internal static class ArgbColorExtensions
             return ArgbColor.Transparent;
         }
     }
+
+    static public string ToCssHex(this ArgbColor color)
+        => $"#{color.R:x2}{color.G:x2}{color.B:x2}";
+
+    /// <summary>
+    /// CSS linear-gradient (left to right) for a colour bar. With <paramref name="hardStops"/>
+    /// every colour gets an equally wide band (qualitative palettes).
+    /// </summary>
+    static public string ToCssLinearGradient(this IReadOnlyList<ArgbColor> colors, bool hardStops = false)
+    {
+        if (colors.Count == 0)
+        {
+            return "transparent";
+        }
+        if (colors.Count == 1)
+        {
+            return colors[0].ToCssHex();
+        }
+
+        var stops = hardStops
+            ? colors.Select((c, i) => FormattableString.Invariant(
+                $"{c.ToCssHex()} {100.0 * i / colors.Count:0.##}% {100.0 * (i + 1) / colors.Count:0.##}%"))
+            : colors.Select(c => c.ToCssHex());
+
+        return $"linear-gradient(to right, {String.Join(", ", stops)})";
+    }
 }

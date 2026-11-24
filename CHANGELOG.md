@@ -165,6 +165,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Carto: when the window gets narrow, the ribbon boxes collapse into menu buttons (File first, then
   Map) instead of wrapping out of sight.
 - Carto: "Clear Selection" tool for the whole map and for the selected layer.
+- Carto: the Value Map, Many Value Map and Quantity renderers change all class symbols at once
+  (menu `More ...`, the Quantity renderer now has one too, `Remove All` moved into it):
+  - `Recolor ...`: new colours in list order from a palette (Viridis, Blues, Greens, Reds,
+    YlOrRd, RdYlGn, RdBu, Set1, Set3, Paired), a gradient between two colours or random; reverse,
+    fill and/or outline for polygons, the transparency of each symbol is kept.
+  - `Set Symbol Properties ...`: sets checked properties (colour, width, dash style, fill
+    opacity, size, smoothing) to the same value for all classes.
+  - "All other values" is left out unless included; classes with composite symbols are skipped.
 
 ## Changed
 

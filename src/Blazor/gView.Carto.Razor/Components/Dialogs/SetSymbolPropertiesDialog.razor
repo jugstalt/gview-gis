@@ -1,0 +1,95 @@
+@using gView.GraphicsEngine
+
+@inherits ModalDialogFormBase<SetSymbolPropertiesModel>
+
+<ModalDialogFormBase T="SetSymbolPropertiesModel"
+                     OnDialogClose="base.OnDialogClose"
+                     Model="base.Model">
+    <DialogBody>
+        <MudText Typo="Typo.body2">
+            Only checked properties are applied to all classes. All other properties of each symbol are kept.
+        </MudText>
+
+        <GvGrid ColumnCount="2">
+            <GvGridItem>
+                <MudCheckBox T="bool" Label="Color" @bind-Value="Model.ApplyColor" />
+            </GvGridItem>
+            <GvGridItem>
+                <ColorSelectorButton ArgbColor="Model.Color"
+                                     ArgbColorChanged="(col) => { Model.Color = col; Model.ApplyColor = true; }" />
+            </GvGridItem>
+
+            @if (Model.IsLine || Model.IsPolygon)
+            {
+                <GvGridItem>
+                    <MudCheckBox T="bool" Label="@(Model.IsPolygon ? "Outline width" : "Width")" @bind-Value="Model.ApplyWidth" />
+                </GvGridItem>
+                <GvGridItem>
+                    <MudNumericField T="float" Value="Model.Width" Min="0f" Step="0.5f"
+                                     ValueChanged="(val) => { Model.Width = val; Model.ApplyWidth = true; }" />
+                </GvGridItem>
+
+                <GvGridItem>
+                    <MudCheckBox T="bool" Label="@(Model.IsPolygon ? "Outline dash style" : "Dash style")" @bind-Value="Model.ApplyDashStyle" />
+                </GvGridItem>
+                <GvGridItem>
+                    <MudSelect T="LineDashStyle" Value="Model.DashStyle"
+                               ValueChanged="(val) => { Model.DashStyle = val; Model.ApplyDashStyle = true; }">
+                        @foreach (var dashStyle in Enum.GetValues<LineDashStyle>())
+                        {
+                            <MudSelectItem Value="dashStyle">@dashStyle</MudSelectItem>
+                        }
+                    </MudSelect>
+                </GvGridItem>
+            }
+
+            @if (Model.IsPolygon)
+            {
+                <GvGridItem>
+                    <MudCheckBox T="bool" Label="Fill opacity (%)" @bind-Value="Model.ApplyOpacity" />
+                </GvGridItem>
+                <GvGridItem>
+                    <MudNumericField T="float" Value="Model.Opacity" Min="0f" Max="100f" Step="5f"
+                                     ValueChanged="(val) => { Model.Opacity = val; Model.ApplyOpacity = true; }" />
+                </GvGridItem>
+            }
+
+            @if (Model.IsPoint)
+            {
+                <GvGridItem>
+                    <MudCheckBox T="bool" Label="Size" @bind-Value="Model.ApplySize" />
+                </GvGridItem>
+                <GvGridItem>
+                    <MudNumericField T="float" Value="Model.Size" Min="0f" Step="1f"
+                                     ValueChanged="(val) => { Model.Size = val; Model.ApplySize = true; }" />
+                </GvGridItem>
+            }
+
+            <GvGridItem>
+                <MudCheckBox T="bool" Label="Smoothing" @bind-Value="Model.ApplySmoothing" />
+            </GvGridItem>
+            <GvGridItem>
+                <MudSelect T="SymbolSmoothing" Value="Model.Smoothing"
+                           ValueChanged="(val) => { Model.Smoothing = val; Model.ApplySmoothing = true; }">
+                    @foreach (var smoothing in Enum.GetValues<SymbolSmoothing>())
+                    {
+                        <MudSelectItem Value="smoothing">@smoothing</MudSelectItem>
+                    }
+                </MudSelect>
+            </GvGridItem>
+        </GvGrid>
+
+        @if (Model.HasAllOtherValues)
+        {
+            <MudCheckBox T="bool" Label="Include &quot;All other values&quot;" @bind-Value="Model.IncludeAllOtherValues" />
+        }
+
+        <MudText Typo="Typo.body2">@($"{Model.ClassCount} classes.")</MudText>
+        @if (Model.SkippedCount > 0)
+        {
+            <MudAlert Severity="Severity.Warning" Dense="true">
+                @($"{Model.SkippedCount} class(es) use a complex symbol (e.g. a symbol collection) and will be skipped.")
+            </MudAlert>
+        }
+    </DialogBody>
+</ModalDialogFormBase>

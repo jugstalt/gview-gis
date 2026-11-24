@@ -1,0 +1,97 @@
+@using gView.Framework.Symbology.Models
+@using gView.Framework.Symbology.Palettes
+
+@inherits ModalDialogFormBase<RecolorSymbolsModel>
+
+<ModalDialogFormBase T="RecolorSymbolsModel"
+                     OnDialogClose="base.OnDialogClose"
+                     Model="base.Model">
+    <DialogBody>
+        <MudRadioGroup T="RecolorMode" @bind-Value="Model.Mode">
+            <MudRadio Value="RecolorMode.Palette">Palette</MudRadio>
+            <MudRadio Value="RecolorMode.Gradient">Gradient (2 colors)</MudRadio>
+            <MudRadio Value="RecolorMode.Random">Random</MudRadio>
+        </MudRadioGroup>
+
+        @if (Model.Mode == RecolorMode.Palette)
+        {
+            <MudSelect T="string" Label="Palette"
+                       @bind-Value="Model.PaletteName">
+                @foreach (var paletteType in Enum.GetValues<ColorPaletteType>())
+                {
+                    <MudListSubheader>@paletteType</MudListSubheader>
+                    @foreach (var palette in ColorPalettes.All.Where(p => p.Type == paletteType))
+                    {
+                        <MudSelectItem Value="palette.Name">
+                            <div style="display:flex;align-items:center;gap:12px">
+                                <div style="@ColorBarStyle(palette.Colors, palette.Type == ColorPaletteType.Qualitative, 120)"></div>
+                                <span>@palette.Name</span>
+                            </div>
+                        </MudSelectItem>
+                    }
+                }
+            </MudSelect>
+        }
+        else if (Model.Mode == RecolorMode.Gradient)
+        {
+            <GvGrid ColumnCount="2">
+                <GvGridItem>
+                    <MudText Typo="Typo.subtitle2">From</MudText>
+                    <ColorSelectorButton ArgbColor="Model.Color1"
+                                         ArgbColorChanged="(col) => Model.Color1 = col" />
+                </GvGridItem>
+                <GvGridItem>
+                    <MudText Typo="Typo.subtitle2">To</MudText>
+                    <ColorSelectorButton ArgbColor="Model.Color2"
+                                         ArgbColorChanged="(col) => Model.Color2 = col" />
+                </GvGridItem>
+            </GvGrid>
+        }
+
+        @if (Model.Mode != RecolorMode.Random)
+        {
+            <MudCheckBox T="bool" Label="Reverse" @bind-Value="Model.Reverse" />
+            <div style="@ColorBarStyle(PreviewColors(), PreviewHardStops, null)"></div>
+        }
+
+        @if (IsPolygon)
+        {
+            <MudSelect T="SymbolColorTarget" Label="Apply color to"
+                       @bind-Value="Model.Target">
+                <MudSelectItem Value="SymbolColorTarget.Both">Fill and outline</MudSelectItem>
+                <MudSelectItem Value="SymbolColorTarget.Fill">Fill</MudSelectItem>
+                <MudSelectItem Value="SymbolColorTarget.Outline">Outline</MudSelectItem>
+            </MudSelect>
+        }
+
+        @if (Model.HasAllOtherValues)
+        {
+            <MudCheckBox T="bool" Label="Include &quot;All other values&quot;" @bind-Value="Model.IncludeAllOtherValues" />
+        }
+
+        <MudText Typo="Typo.body2">
+            @($"{Model.ClassCount} classes. Colors are assigned in list order; the existing transparency of each symbol is kept.")
+        </MudText>
+        @if (Model.SkippedCount > 0)
+        {
+            <MudAlert Severity="Severity.Warning" Dense="true">
+                @($"{Model.SkippedCount} class(es) use a complex symbol (e.g. a symbol collection) and will be skipped.")
+            </MudAlert>
+        }
+    </DialogBody>
+</ModalDialogFormBase>
+
+@code {
+    private bool IsPolygon => Model.GeometryType is GeometryType.Polygon or GeometryType.Envelope;
+
+    private bool PreviewHardStops
+        => Model.Mode == RecolorMode.Palette
+           && ColorPalettes.Find(Model.PaletteName)?.Type == ColorPaletteType.Qualitative;
+
+    private IReadOnlyList<GraphicsEngine.ArgbColor> PreviewColors()
+        => Model.GetColors(Math.Clamp(Model.ClassCount, 2, 24));
+
+    private static string ColorBarStyle(IReadOnlyList<GraphicsEngine.ArgbColor> colors, bool hardStops, int? width)
+        => $"background:{colors.ToCssLinearGradient(hardStops)};height:20px;border-radius:4px;border:1px solid #8884;"
+           + (width.HasValue ? $"width:{width}px;flex-shrink:0" : "width:100%;margin:8px 0");
+}
