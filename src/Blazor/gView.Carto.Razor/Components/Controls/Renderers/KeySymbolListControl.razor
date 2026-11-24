@@ -21,9 +21,17 @@
                         {
                             @ListItemTools
                         }
-                        @if (SelectedKeys is not null && KeySymbols.Count > 0)
+                        @if ((SelectedKeys is not null && KeySymbols.Count > 0) || UndoAction is not null)
                         {
                             <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap">
+                                <MudButton Size="MudBlazor.Size.Small" Variant="Variant.Text"
+                                           Color="Color.Primary"
+                                           StartIcon="@Icons.Material.Filled.Undo"
+                                           Disabled="@(UndoAction is null)"
+                                           title="@(UndoAction is null ? "Nothing to undo" : $"Undo: {UndoAction}")"
+                                           OnClick="UndoAsync">@(UndoAction is null ? "Undo" : $"Undo {UndoAction}")</MudButton>
+                                @if (SelectedKeys is not null && KeySymbols.Count > 0)
+                                {
                                 <MudText Typo="Typo.body2" Class="me-2">
                                     @($"{SelectedKeysCount()} selected")
                                 </MudText>
@@ -41,6 +49,7 @@
                                            StartIcon="@Icons.Material.Outlined.Delete"
                                            Disabled="@(SelectedKeysCount() == 0)"
                                            OnClick="RemoveSelected">Remove selected</MudButton>
+                                }
                             </div>
                         }
                         @if (KeySymbols.Count > 1000)
@@ -177,6 +186,18 @@
     /// Number of features per class (if counted). Shows a count column; classes with 0 are greyed.
     /// </summary>
     [Parameter] public IReadOnlyDictionary<TKey, long>? Counts { get; set; }
+    /// <summary>
+    /// Name of the change the undo button takes back (null: nothing to undo, the button is disabled).
+    /// </summary>
+    [Parameter] public string? UndoAction { get; set; }
+    [Parameter] public EventCallback OnUndo { get; set; }
+    /// <summary>
+    /// Called before the list changes the classes itself (delete, move, remove selected, apply to),
+    /// with the name of the change: the page creates an undo point.
+    /// </summary>
+    [Parameter] public EventCallback<string> OnBeforeChange { get; set; }
+
+    private Task UndoAsync() => HandleAsync(() => OnUndo.InvokeAsync());
 
     private int LabelSpan => 6 - (SelectedKeys is not null ? 1 : 0) - (Counts is not null ? 1 : 0);
 
@@ -257,6 +278,7 @@
 
     private Task DeleteItem(KeySymbol<TKey> keySymbol) => HandleAsync(async () =>
     {
+        await OnBeforeChange.InvokeAsync("Delete class");
         KeySymbols?.Remove(keySymbol);
 
         if (SelectedKeys?.Remove(keySymbol.Key) == true)
@@ -273,6 +295,8 @@
         {
             return;
         }
+
+        await OnBeforeChange.InvokeAsync("Move class");
 
         //
         // Completely rebuild a new list
@@ -399,6 +423,7 @@
             return;
         }
 
+        await OnBeforeChange.InvokeAsync("Remove selected");
         foreach (var keySymbol in KeySymbols.SelectedKeySymbols(SelectedKeys))
         {
             KeySymbols.Remove(keySymbol);
@@ -428,6 +453,7 @@
                       .Where(k => !Equals(k.Key, sourceKey))
                       .ToArray();
 
+        await OnBeforeChange.InvokeAsync("Apply to");
         KeySymbols = KeySymbols.PasteSymbol(template, targets, keepColors, out int noColorCount);
 
         await OnKeySymbolsChanged.InvokeAsync(KeySymbols);

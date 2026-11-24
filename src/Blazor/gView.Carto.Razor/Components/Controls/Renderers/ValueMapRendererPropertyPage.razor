@@ -18,6 +18,9 @@
                           OnKeySymbolChanged="SymbolChanged"
                           SelectedKeys="_selectedKeys"
                           Counts="_counts"
+                          UndoAction="@_undo.NextAction"
+                          OnUndo="OnUndo"
+                          OnBeforeChange="PushUndo"
                           OnSelectionChanged="StateHasChanged"
                           IsAllOtherValues="IsAllOtherValuesKey">
         <ListItemTools>
@@ -112,7 +115,7 @@
                         </MudMenuItem>
                         <MudMenuItem Icon="@MudBlazor.Icons.Material.Filled.Delete"
                                      IconColor="Color.Secondary"
-                                     OnClick="OnRemoveAllItems">
+                                     OnClick="OnRemoveAllMenuClick">
                             Remove All
                        </MudMenuItem>
                     </MudMenu>
@@ -172,6 +175,7 @@
     private Dictionary<string, List<KeySymbol<string>>> _dictKeySymbols = new();
     private HashSet<string> _selectedKeys = new();
     private Dictionary<string, long>? _counts = null;
+    private readonly KeySymbolUndoStack<string> _undo = new();
     private ValueItemModel? _addValueItem = null;
 
     private bool _processingAddAllValues = false;
@@ -259,6 +263,7 @@
     {
         _selectedKeys.Clear();
         _counts = null;
+        _undo.Clear();
 
         if (_renderer is not null)
         {
@@ -269,6 +274,39 @@
     }
 
     #region Button Events
+
+    /// <summary>
+    /// Creates an undo point (copy of the current classes) before a change.
+    /// </summary>
+    private void PushUndo(string action)
+        => _undo.Push(action, CurrentKeySymbolsList(), _counts);
+
+    private void OnUndo() => Handle(() =>
+    {
+        if (_renderer is null)
+        {
+            return;
+        }
+
+        var entry = _undo.Pop();
+        if (entry is null)
+        {
+            return;
+        }
+
+        CurrentKeySymbolsList().ForEach(k => k.Symbol?.Release());
+        _dictKeySymbols[_renderer.ValueField] = entry.KeySymbols;
+        _counts = entry.Counts;
+
+        ApplyChanges();
+    });
+
+    private void OnRemoveAllMenuClick()
+    {
+        PushUndo("Remove All");
+        OnRemoveAllItems();
+    }
+
 
     private Task OnCountFeaturesClickAsync() => HandleAsync(async () =>
     {
@@ -300,6 +338,7 @@
             ? selected
             : keySymbols.Where(k => !IsAllOtherValuesKey(k.Key)).ToArray();
 
+        PushUndo(keepColors ? "Paste Symbol, keep colors" : "Paste Symbol");
         _dictKeySymbols[_renderer.ValueField] = keySymbols.PasteSymbol(SymbolClipboard.Symbol, targets, keepColors, out int noColorCount);
         ApplyChanges();
 
@@ -324,7 +363,8 @@
             AppScopeFactory,
             _layer.LayerGeometryType,
             IsAllOtherValuesKey,
-            _selectedKeys);
+            _selectedKeys,
+            () => PushUndo("Recolor"));
 
         if (keySymbols is not null)
         {
@@ -344,7 +384,8 @@
             AppScopeFactory,
             _layer.LayerGeometryType,
             IsAllOtherValuesKey,
-            _selectedKeys);
+            _selectedKeys,
+            () => PushUndo("Set Symbol Properties"));
 
         if (keySymbols is not null)
         {
@@ -366,6 +407,7 @@
         try
         {
             _processingAddAllValues = true;
+            PushUndo("Add All Values");
 
             await this.ForceRenderComponent();
 
@@ -430,6 +472,7 @@
         try
         {
             _processingRemoveNotExistingValues = true;
+            PushUndo("Remove, if not exists");
 
             await this.ForceRenderComponent();
 
@@ -577,6 +620,8 @@
 
         if (selectPromptModel is null) return;
 
+        PushUndo("Label Style");
+
         var keySymbols = CurrentKeySymbolsList();
 
         foreach(var keySymbol in keySymbols)
@@ -597,6 +642,8 @@
 
         if (ordered is null) return;
 
+        PushUndo("Order by");
+
         _dictKeySymbols[_renderer.ValueField] = ordered;
 
 
@@ -607,6 +654,7 @@
     {
         _selectedKeys.Clear();
         _counts = null;
+        _undo.Clear();
 
         if (_renderer is null || _layer is null)
             return;
@@ -643,6 +691,8 @@
 
     private void OnDataValueToLabelClick() => Handle(() =>
     {
+        PushUndo("Data Value => Label");
+
         var keySymbols = CurrentKeySymbolsList();
 
         foreach(var keySymbol in keySymbols)
@@ -721,6 +771,7 @@
 
     public void Dispose()
     {
+        _undo.Clear();
         _dictKeySymbols.ForEach((key, keySymbols) =>
             keySymbols.ForEach((keySymbol) => keySymbol.Symbol?.Release())
         );

@@ -190,6 +190,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Carto: the symbol of a class is edited in a panel that opens below the class (click on the symbol,
   click again or ✕ to close) instead of a card that replaced the list; the list keeps its scroll
   position.
+- Carto: `Undo` above the class list of these renderers takes back the last changes to the classes
+  (up to 20 steps: add all values, remove, delete, move, recolor, set properties, paste, apply to,
+  order by, label style, data value => label, quantity wizard); it starts over when the field changes.
 
 ## Changed
 

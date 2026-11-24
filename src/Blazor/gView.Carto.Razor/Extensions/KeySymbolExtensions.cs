@@ -31,7 +31,8 @@ static internal class KeySymbolExtensions
                 IApplicationScopeFactory appScope,
                 GeometryType geometryType,
                 Func<TKey, bool>? isAllOtherValues = null,
-                ICollection<TKey>? selectedKeys = null)
+                ICollection<TKey>? selectedKeys = null,
+                Action? beforeApply = null)
     {
         isAllOtherValues ??= _ => false;
         var selected = keySymbols.SelectedKeySymbols(selectedKeys);
@@ -55,6 +56,8 @@ static internal class KeySymbolExtensions
         {
             return null;
         }
+
+        beforeApply?.Invoke();
 
         var targets = keySymbols
             .Where(k => selected.Length > 0
@@ -82,7 +85,8 @@ static internal class KeySymbolExtensions
                 IApplicationScopeFactory appScope,
                 GeometryType geometryType,
                 Func<TKey, bool>? isAllOtherValues = null,
-                ICollection<TKey>? selectedKeys = null)
+                ICollection<TKey>? selectedKeys = null,
+                Action? beforeApply = null)
     {
         isAllOtherValues ??= _ => false;
         var selected = keySymbols.SelectedKeySymbols(selectedKeys);
@@ -112,6 +116,8 @@ static internal class KeySymbolExtensions
         {
             return null;
         }
+
+        beforeApply?.Invoke();
 
         foreach (var keySymbol in keySymbols.Where(k => selected.Length > 0
                                                         ? selected.Contains(k)

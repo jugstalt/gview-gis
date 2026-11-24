@@ -20,6 +20,9 @@
                           OnKeySymbolChanged="SymbolChanged"
                           SelectedKeys="_selectedKeys"
                           Counts="_counts"
+                          UndoAction="@_undo.NextAction"
+                          OnUndo="OnUndo"
+                          OnBeforeChange="PushUndo"
                           OnSelectionChanged="StateHasChanged">
         <ListItemTools>
             @if(_addQuantityItem is null && _wizardModel is null) 
@@ -82,7 +85,7 @@
                             </MudMenuItem>
                             <MudMenuItem Icon="@MudBlazor.Icons.Material.Filled.Delete"
                                          IconColor="Color.Secondary"
-                                         OnClick="OnRemoveAllItems">
+                                         OnClick="OnRemoveAllMenuClick">
                                 Remove All
                             </MudMenuItem>
                         </MudMenu>
@@ -250,6 +253,7 @@
     private Dictionary<string, List<KeySymbol<RangeClass>>> _dictKeySymbols = new();
     private HashSet<RangeClass> _selectedKeys = new();
     private Dictionary<RangeClass, long>? _counts = null;
+    private readonly KeySymbolUndoStack<RangeClass> _undo = new();
     private QuantityItemModel? _addQuantityItem = null;
     private QuantityWizardModel? _wizardModel = null;
 
@@ -343,6 +347,7 @@
     {
         _selectedKeys.Clear();
         _counts = null;
+        _undo.Clear();
 
         if (_renderer is not null)
         {
@@ -353,6 +358,39 @@
     }
 
     #region Button Events
+
+    /// <summary>
+    /// Creates an undo point (copy of the current classes) before a change.
+    /// </summary>
+    private void PushUndo(string action)
+        => _undo.Push(action, CurrentKeySymbolsList(), _counts);
+
+    private void OnUndo() => Handle(() =>
+    {
+        if (_renderer is null)
+        {
+            return;
+        }
+
+        var entry = _undo.Pop();
+        if (entry is null)
+        {
+            return;
+        }
+
+        CurrentKeySymbolsList().ForEach(k => k.Symbol?.Release());
+        _dictKeySymbols[_renderer.ValueField] = entry.KeySymbols;
+        _counts = entry.Counts;
+
+        ApplyChanges();
+    });
+
+    private void OnRemoveAllMenuClick()
+    {
+        PushUndo("Remove All");
+        OnRemoveAllItems();
+    }
+
 
     private Task OnCountFeaturesClickAsync() => HandleAsync(async () =>
     {
@@ -390,6 +428,7 @@
             ? selected
             : keySymbols.ToArray();
 
+        PushUndo(keepColors ? "Paste Symbol, keep colors" : "Paste Symbol");
         _dictKeySymbols[_renderer.ValueField] = keySymbols.PasteSymbol(SymbolClipboard.Symbol, targets, keepColors, out int noColorCount);
         ApplyChanges();
 
@@ -408,7 +447,7 @@
             return;
         }
 
-        var keySymbols = await CurrentKeySymbolsList().RecolorAsync(AppScopeFactory, _layer.LayerGeometryType, null, _selectedKeys);
+        var keySymbols = await CurrentKeySymbolsList().RecolorAsync(AppScopeFactory, _layer.LayerGeometryType, null, _selectedKeys, () => PushUndo("Recolor"));
 
         if (keySymbols is not null)
         {
@@ -424,7 +463,7 @@
             return;
         }
 
-        var keySymbols = await CurrentKeySymbolsList().SetSymbolPropertiesAsync(AppScopeFactory, _layer.LayerGeometryType, null, _selectedKeys);
+        var keySymbols = await CurrentKeySymbolsList().SetSymbolPropertiesAsync(AppScopeFactory, _layer.LayerGeometryType, null, _selectedKeys, () => PushUndo("Set Symbol Properties"));
 
         if (keySymbols is not null)
         {
@@ -565,6 +604,7 @@
                 ? (ColorPalettes.Find(wizard.PaletteName) ?? ColorPalettes.All[0]).GetColors(ranges.Length, wizard.Reverse)
                 : null;
 
+            PushUndo("Wizard");
             OnRemoveAllItems();
             var keySymbols = CurrentKeySymbolsList();
 
@@ -712,6 +752,7 @@
 
     public void Dispose()
     {
+        _undo.Clear();
         _dictKeySymbols.ForEach((key, keySymbols) =>
             keySymbols.ForEach((keySymbol) => keySymbol.Symbol?.Release())
         );
