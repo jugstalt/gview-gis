@@ -79,12 +79,97 @@
     </GvCard>
 }
 
+@if (Layer is IFeatureLayer { FeatureClass: not null } featureLayer)
+{
+    <GvCard Title="Statistics">
+        <GvCardContent>
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Outlined.Numbers"
+                           Disabled="_counting"
+                           OnClick="() => OnCountClickAsync(featureLayer)">
+                    Count
+                </MudButton>
+                @if (_counting)
+                {
+                    <MudProgressCircular Indeterminate="true" Size="MudBlazor.Size.Small" />
+                    <MudText Typo="Typo.body2">Counting features ...</MudText>
+                }
+                else if (!String.IsNullOrEmpty(_countError))
+                {
+                    <MudText Typo="Typo.body2" Color="Color.Error">Count failed: @_countError</MudText>
+                }
+                else if (_classCount.HasValue)
+                {
+                    <MudText Typo="Typo.body2">
+                        <strong>@_classCount.Value.ToString("N0")</strong>@(" in class")@if (_filterCount.HasValue)
+                        {
+                            @(", ")<strong>@_filterCount.Value.ToString("N0")</strong>@(" with layer filter")
+                        }
+                        else if (!String.IsNullOrEmpty(_filterCountError))
+                        {
+                            @(", ")<MudText Typo="Typo.body2" Color="Color.Error" Inline="true">layer filter failed: @_filterCountError</MudText>
+                        }
+                    </MudText>
+                }
+            </div>
+            @GvUtilities.InfoText("Counting can take a while for big database tables or web services (WFS, GeoServices).")
+        </GvCardContent>
+    </GvCard>
+}
+
 @code {
     [Parameter] public IMap? Map { get; set; }
     [Parameter] public ILayer? Layer { get; set; }
 
     private IDataset? _dataset;
     private string _clsName = "";
+
+    private bool _counting;
+    private string? _countError;
+    private string? _filterCountError;
+    private long? _classCount;
+    private long? _filterCount;
+
+    async private Task OnCountClickAsync(IFeatureLayer featureLayer)
+    {
+        _counting = true;
+        _countError = _filterCountError = null;
+        _classCount = _filterCount = null;
+        StateHasChanged();
+
+        try
+        {
+            _classCount = await featureLayer.CountFeaturesAsync(withLayerFilter: false);
+
+            if (!String.IsNullOrWhiteSpace(featureLayer.FilterQuery?.WhereClause))
+            {
+                try
+                {
+                    _filterCount = await featureLayer.CountFeaturesAsync(withLayerFilter: true);
+                }
+                catch (Exception ex)
+                {
+                    _filterCountError = ex.Message;   // keep the class count visible
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _countError = ex.Message;
+        }
+        finally
+        {
+            _counting = false;
+        }
+    }
+
+    private void ResetCount()
+    {
+        _countError = _filterCountError = null;
+        _classCount = _filterCount = null;
+    }
 
     async protected override Task OnParametersSetAsync()
     {
@@ -130,6 +215,8 @@
                     layer.Title = _clsName;
                     layer.Class = datasetElement.Class;
                     layer.DatasetID = Map.Datasets.IndexOf(_dataset);
+
+                    ResetCount();
                 }
             }
             catch(Exception)

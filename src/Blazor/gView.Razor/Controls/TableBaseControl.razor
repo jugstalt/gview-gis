@@ -149,7 +149,7 @@
                         {
                             <MudProgressCircular Indeterminate="true" Size="MudBlazor.Size.Small" />
                         }
-                        @($"Loaded {_rows.Count} items {(_selectionSet?.Count > 0 ? $", {_selectionSet.Count} selected" : "")}")
+                        @($"Loaded {_rows.Count:N0}{(_totalCount.HasValue ? $" of {_totalCount.Value:N0}" : "")} items{(_selectionSet?.Count > 0 ? $", {_selectionSet.Count:N0} selected" : "")}")
                     </MudText>
                 } 
                 else if(_tableProperties.DataMode == Mode.Selection)
@@ -196,6 +196,9 @@
 
     private ICursor? _cursor;
     private bool _loading = false;
+    private long? _totalCount;
+    private ITableClass? _totalCountTableClass;
+    private string? _totalCountWhereClause;
     private List<int> _highlightedRows = new();
 
     protected override Task OnInitializedAsync() => HandleAsync(async () =>
@@ -239,7 +242,50 @@
             queryFilter.OrderBy = _tableProperties.OrderByClause;
         }
 
+        if (_tableProperties.DataMode == Mode.AllData)
+        {
+            StartTotalCount(_tableClass, queryFilter.WhereClause ?? "");
+        }
+
         _cursor = await _tableClass.Search(queryFilter);
+    }
+
+    /// <summary>
+    /// Counts the rows for the status line in the background (only if the class can count
+    /// without reading all rows). Does not block loading the rows; recounts only if the where clause changes.
+    /// </summary>
+    private void StartTotalCount(ITableClass tableClass, string whereClause)
+    {
+        if (_totalCountWhereClause == whereClause && _totalCountTableClass == tableClass)
+        {
+            return;
+        }
+
+        _totalCountTableClass = tableClass;
+        _totalCountWhereClause = whereClause;
+        _totalCount = null;
+
+        _ = Task.Run(async () =>
+        {
+            long? count = null;
+            try
+            {
+                count = await tableClass.TryCountRowsFastAsync(whereClause);
+            }
+            catch
+            {
+                // count not supported => keep "Loaded n items"
+            }
+
+            await InvokeAsync(() =>
+            {
+                if (_totalCountTableClass == tableClass && _totalCountWhereClause == whereClause)
+                {
+                    _totalCount = count;
+                    StateHasChanged();
+                }
+            });
+        });
     }
 
     private void ReleaseCursor()

@@ -4,6 +4,7 @@ using gView.Framework.Core.Data.Statistics;
 using gView.Framework.Cartography.Rendering.Classification;
 using gView.Framework.Data.Filters;
 using gView.Framework.Data.Statistics;
+using gView.Razor.Extensions;
 
 namespace gView.Carto.Razor.Extensions;
 
@@ -14,6 +15,18 @@ namespace gView.Carto.Razor.Extensions;
 static internal class IFeatureLayerExtensions
 {
     private const string CountOutName = "gv_count";
+
+    /// <summary>
+    /// Number of features of the layer's feature class, with or without the layer filter.
+    /// Unlike the other counts here this one can ignore the layer filter (Source page shows both).
+    /// Reads all features if the class can not count on its own.
+    /// </summary>
+    static public Task<long> CountFeaturesAsync(this IFeatureLayer layer, bool withLayerFilter)
+    {
+        var featureClass = layer.FeatureClass ?? throw new ArgumentException("Layer has no feature class");
+
+        return featureClass.CountRowsAsync(withLayerFilter ? layer.FilterQuery?.WhereClause : null);
+    }
 
     /// <summary>
     /// Distinct values of <paramref name="field"/> with their feature counts, ordered by value.

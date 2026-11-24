@@ -193,6 +193,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Carto: `Undo` above the class list of these renderers takes back the last changes to the classes
   (up to 20 steps: add all values, remove, delete, move, recolor, set properties, paste, apply to,
   order by, label style, data value => label, quantity wizard); it starts over when the field changes.
+- Carto: Layer Settings → Source has a Statistics card with a `Count` button: number of features in
+  the class and, if the layer has a filter, also with the layer filter. Counts only on click (database
+  `COUNT` where supported, otherwise all features are read, e.g. WFS or GeoServices). Errors are shown
+  as a short message; if only the layer filter is broken, the class count stays visible
+  (`5 in class, layer filter failed: ...`).
+- Carto/Explorer: the attribute table status line shows the total, e.g. `Loaded 100 of 12,345 items`.
+  The count runs in the background when the table opens or its filter changes (layer filter and table
+  filter), only for classes that can count in the database; otherwise the text stays `Loaded 100 items`.
 - Carto network search: every kind of the result has a colour of its own (supply: Supplied green,
   Multiple amber at the same size, Not supplied red and larger; Start/Source, To, Blocked, Boundary,
   outage Disabled/Dead and violations by severity each defined) and the report shows a legend with one
