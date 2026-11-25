@@ -681,9 +681,9 @@
 
     private void RefreshMetadata() => Handle(() =>
     {
-        var metadata = _module!.RefreshMetadata(AppScope.Document?.FilePath ?? "");
-        _tierSeverity = Severity.Success;
-        _tierMessages = [$"Refreshed: {metadata.Tiers.Count} tier(s), {metadata.Rules.Count} rule(s), supply sources and customers written into the built network."];
+        var metadata = _module!.RefreshMetadata(AppScope.Document?.FilePath ?? "", out var warnings);
+        _tierSeverity = warnings.Count > 0 ? Severity.Warning : Severity.Success;
+        _tierMessages = [$"Refreshed: {metadata.Tiers.Count} tier(s), {metadata.Rules.Count} rule(s), supply sources and customers written into the built network.", .. warnings];
     });
 
     private void AddRule() => Handle(() =>

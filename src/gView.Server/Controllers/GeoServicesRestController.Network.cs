@@ -51,44 +51,53 @@ public partial class GeoServicesRestController
                 Tiers = graph.Tiers.Select(t => new JsonNetworkServerDTO.TierInfo { Name = t.Name, Order = t.Rank, Filter = t.Pattern(graph.Types) }).ToArray(),
                 Rules = metadata.Rules.Select(r => new JsonNetworkServerDTO.RuleInfo { Id = r.Id, Severity = r.Severity.ToString(), Description = r.Description }).ToArray(),
             }, folder, id, "NetworkServer"));
-        }));
+        }, search: false));
 
     public Task<IActionResult> NetworkServerOperation(string id, string op, string folder = "")
-        => SecureMethodHandler(identity => WithNetwork(identity, id, folder, async (graph, loadMap) =>
+        => SecureMethodHandler(async identity =>
         {
+            // query, form or JSON body (also f)
             var parameters = await NetworkSearch.Parameters(Request);
-            // like the other resources: without f the HTML form
-            if (ResultFormat() == "")
+            bool search = NetworkSearch.HasSearchParameters(parameters);
+
+            return await WithNetwork(identity, id, folder, async (graph, loadMap) =>
             {
-                object? form = op.ToLowerInvariant() switch
+                // an operation without parameters shows the HTML form
+                if (!search)
                 {
-                    "trace" => new JsonNetworkTraceDTO(),
-                    "reach" => new JsonNetworkReachDTO(),
-                    "path" => new JsonNetworkPathDTO(),
-                    "supply" => new JsonNetworkSupplyDTO(),
-                    "outage" => new JsonNetworkOutageDTO(),
-                    "feeders" => new JsonNetworkFeedersDTO(),
-                    "info" => new JsonNetworkInfoDTO(),
-                    "nearest" => new JsonNetworkNearestDTO(),
-                    "validate" => new JsonNetworkValidateDTO(),
-                    _ => null
-                };
-                if (form is not null)
-                {
-                    return FormResult(form);
+                    object? form = op.ToLowerInvariant() switch
+                    {
+                        "trace" => new JsonNetworkTraceDTO(),
+                        "reach" => new JsonNetworkReachDTO(),
+                        "path" => new JsonNetworkPathDTO(),
+                        "supply" => new JsonNetworkSupplyDTO(),
+                        "outage" => new JsonNetworkOutageDTO(),
+                        "feeders" => new JsonNetworkFeedersDTO(),
+                        "info" => new JsonNetworkInfoDTO(),
+                        "nearest" => new JsonNetworkNearestDTO(),
+                        "validate" => new JsonNetworkValidateDTO(),
+                        _ => null
+                    };
+                    if (form is not null)
+                    {
+                        return FormResult(form);
+                    }
                 }
-            }
 
-            var mapService = _mapServerService.Instance.GetMapService(id, folder);
-            bool mayReadAttributes = mapService is not null && (await mapService.GetAccessTypes(identity)).HasFlag(AccessTypes.Query);
-            var (content, contentType) = await NetworkSearch.RunAsync(Network, graph, op, parameters, loadMap, HttpContext.RequestAborted, mayReadAttributes);
-            return Content(content, contentType, Encoding.UTF8);
-        }));
+                var mapService = _mapServerService.Instance.GetMapService(id, folder);
+                bool mayReadAttributes = mapService is not null && (await mapService.GetAccessTypes(identity)).HasFlag(AccessTypes.Query);
+                var (content, contentType) = await NetworkSearch.RunAsync(Network, graph, op, parameters, loadMap, HttpContext.RequestAborted, mayReadAttributes);
+                return Content(content, contentType, Encoding.UTF8);
+            }, search);
+        });
 
-    /// <summary>Checks the right "network", finds the built network and limits the searches running at the same time.</summary>
+    /// <summary>
+    /// Checks the right "network" and finds the built network. A <paramref name="search"/> waits for one of the searches
+    /// that may run at the same time (Network:MaxParallel), at most Network:TimeoutSeconds; the description and the forms don't.
+    /// </summary>
     private async Task<IActionResult> WithNetwork(
         Identity identity, string id, string folder,
-        Func<FileNetworkGraph, Func<Task<IMap?>>, Task<IActionResult>> action)
+        Func<FileNetworkGraph, Func<Task<IMap?>>, Task<IActionResult>> action, bool search = true)
     {
         var mapService = _mapServerService.Instance.GetMapService(id, folder)
             ?? throw new MapServerException($"Unknown service: {id}");
@@ -108,7 +117,10 @@ public partial class GeoServicesRestController
         }
 
         IServiceMap? serviceMap = null;
-        await network.Searches.WaitAsync(HttpContext.RequestAborted);
+        if (search && !await network.Searches.WaitAsync(TimeSpan.FromSeconds(Math.Max(1, network.Options.TimeoutSeconds)), HttpContext.RequestAborted))
+        {
+            throw new MapServerException("Too many network searches at the same time, try again later.") { StatusCode = 503 };
+        }
         try
         {
             async Task<IMap?> LoadMap()
@@ -119,10 +131,18 @@ public partial class GeoServicesRestController
 
             return await action(NetworkGraphCache.Shared.Get(directory), LoadMap);
         }
+        catch (NetworkRebuildRequiredException)
+        {
+            // a network built by an older version lacks the index files (spatial.idx, ...); the message names no server path
+            throw new MapServerException("The network of the service was built by an older version: rebuild network.");
+        }
         finally
         {
             serviceMap?.Dispose();
-            network.Searches.Release();
+            if (search)
+            {
+                network.Searches.Release();
+            }
         }
     }
 }

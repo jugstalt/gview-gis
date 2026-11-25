@@ -151,7 +151,10 @@ public sealed class NetworkQueryResult
     /// <summary>True when the result was cut at a limit (see <see cref="Truncate"/>).</summary>
     public bool ExceededLimit { get; private set; }
 
-    /// <summary>Keeps at most this many nodes and violations (edges are cut in proportion); marks <see cref="ExceededLimit"/>.</summary>
+    /// <summary>
+    /// Keeps the first <paramref name="maxNodes"/> nodes, of the rest violations, and the first <paramref name="maxNodes"/>
+    /// edges; marks <see cref="ExceededLimit"/>. The limit applies to the result, not to the search itself.
+    /// </summary>
     public void Truncate(int maxNodes)
     {
         if (maxNodes <= 0 || Nodes.Count + Violations.Count <= maxNodes)

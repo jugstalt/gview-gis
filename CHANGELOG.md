@@ -264,6 +264,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Fixed
 
+- Network build with `separateTiers`: points of different tiers that a line end connects to (e.g. a transformer
+  of MS that is a source of NS and an NS box at its place) are merged by the TOC also with `nodeConflicts` =
+  `Error`; before, the build stopped with a conflict. Points of the same tier stay a conflict.
+- Network build: a validation rule with an unknown `tier` (or type) no longer stops the build; it is a warning, the
+  validate step reports it. Refresh metadata warns when it changes the `sources` of a tier with separate tiers
+  (they decide where lines connect on build: build again).
+- Network REST (`.../networkserver/{op}`): a POST with a JSON body (`"f": "json"`) returns the result instead of the
+  form; the form only comes without parameters. The time limit (`Network:TimeoutSeconds`) also covers reading the
+  geometry and attributes of the result, the description and the forms no longer wait for a search slot, and the
+  wait for a slot is limited (503). Networks built by an older version answer "rebuild network" instead of an
+  internal error. Reloading a service opens its network again.
 - Carto: select boxes in dialogs opened from another dialog (e.g. `Order by ...`, `Label Style ...`
   and `Set Value Field ...` of the renderers) opened behind the dialog.
 - Tile service: tiles rendered on the fly (vector and raster) failed with "file used by another process" /

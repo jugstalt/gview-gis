@@ -132,10 +132,7 @@ public sealed class NetworkBuildService
         var ids = new NetworkIds(config.Tolerance);
         var builder = new NetworkBuilder<long, long, FeatureRef>(options, ids);
         var tocOrderOf = new Dictionary<int, int>();
-        if (config.NodeConflicts == NodeConflictMode.PriorityByToc)
-        {
-            builder.ResolveCoincidentNodes = group => ResolveByToc(group, tocOrderOf);
-        }
+        builder.ResolveCoincidentNodes = NodeConflictResolver(config, () => connectRules, group => ResolveByToc(group, tocOrderOf));
 
         // nodes first, then lines
         foreach (var nodeConfig in config.Nodes)
@@ -286,7 +283,12 @@ public sealed class NetworkBuildService
         metadata.Facets = types.FacetMetadata().ToList();
         metadata.Types = types.TypeMetadata().ToList();
         var registry = types.ToRegistry(); // validates the facets and types
-        var tiers = config.ResolveTiers(registry); // and the tiers
+        var tiers = config.ResolveTiers(registry, checkRules: false); // and the tiers
+        // the rules are copied into network.json but never stop the build (validate checks them)
+        foreach (var problem in config.RuleProblems(registry, tiers))
+        {
+            warnings.Add($"Validation rules: {problem} (validate fails until it is fixed)");
+        }
         connectRules?.Resolve(config, registry);
         if (tiers.Count > 0)
         {
@@ -312,6 +314,44 @@ public sealed class NetworkBuildService
         }
 
         return new NetworkBuildReport(metadata, result.Diagnostics, warnings, duplicates, Merged);
+    }
+
+    /// <summary>
+    /// How points within the tolerance of each other are resolved: with <see cref="NodeConflictMode.PriorityByToc"/> by the
+    /// TOC. Otherwise (<see cref="NodeConflictMode.Error"/>) they are a conflict, except with separate tiers: points of
+    /// different tiers that a line end connects to are merged by the TOC in every mode (e.g. a transformer of MS that is a
+    /// source of NS and an NS box at its place); points of the same tier stay a conflict.
+    /// </summary>
+    internal static CoincidentNodesResolver<long, FeatureRef>? NodeConflictResolver(
+        NetworkConfig config, Func<NetworkConnectRules?> rules, Func<IReadOnlyList<CoincidentNode<long, FeatureRef>>, int> byToc)
+    {
+        if (config.NodeConflicts == NodeConflictMode.PriorityByToc)
+        {
+            return group => byToc(group);
+        }
+        if (config.SeparateTiers)
+        {
+            return group => SamePartitionTwice(group, rules()) ? -1 : byToc(group);
+        }
+        return null;
+    }
+
+    /// <summary>Whether two points of a group of coincident points are in the same partition (tier), i.e. a real conflict.</summary>
+    internal static bool SamePartitionTwice(IReadOnlyList<CoincidentNode<long, FeatureRef>> group, NetworkConnectRules? rules)
+    {
+        if (rules is null)
+        {
+            return true;
+        }
+        var partitions = new HashSet<int>();
+        foreach (var node in group)
+        {
+            if (!partitions.Add(rules.Partition(node.TypeId)))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     /// <summary>The point of the layer highest in the TOC stays, within a layer the lowest object id; the others are kept as merged.</summary>

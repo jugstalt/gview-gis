@@ -336,10 +336,31 @@ public class NetworkTierTests : IDisposable
         Build();
         var types = new FileNetworkGraph(_directory).Types;
         Assert.Equal(["MS", "NS"], back.ResolveTiers(types).Select(t => t.Name));
+        Assert.DoesNotContain(back.RuleProblems(types, back.ResolveTiers(types)), p => p.Contains("unknown tier"));
         back.Rules[0].Tier = "HS";
         Assert.Throws<InvalidDataException>(() => back.ResolveTiers(types));
+
+        // the build only reports it: rules never stop a build
+        var tiers = back.ResolveTiers(types, checkRules: false);
+        Assert.Equal(["MS", "NS"], tiers.Select(t => t.Name));
+        Assert.Contains(back.RuleProblems(types, tiers), p => p.Contains("unknown tier 'HS'"));
         back.Rules[0].Tier = null;
         back.Tiers.Add(new NetworkTierConfig { Name = "ms" });
         Assert.Throws<InvalidDataException>(() => back.ValidateTiersAndRules());
+    }
+
+    [Fact]
+    public void Refresh_ChangedTierSources_AreWarnings()
+    {
+        List<NetworkTierConfig> built = [new() { Name = "NS", Sources = "[MS,Trafo]" }, new() { Name = "MS", Sources = "[HS,UW]" }];
+
+        Assert.Empty(NetworkMetadataRefresh.ChangedTierSources(built,
+            [new() { Name = "ns", Sources = " [MS,Trafo] " }, new() { Name = "MS", Sources = "[HS,UW]", Sinks = "[*,Kunde]" }]));
+
+        var warnings = NetworkMetadataRefresh.ChangedTierSources(built,
+            [new() { Name = "NS", Sources = "[MS,Station]" }, new() { Name = "HS", Sources = "[*,Kraftwerk]" }]);
+        Assert.Equal(3, warnings.Count); // HS new, MS gone, NS changed
+        Assert.Contains(warnings, w => w.StartsWith("Tier 'NS': sources changed ([MS,Trafo] -> [MS,Station])"));
+        Assert.Contains(warnings, w => w.StartsWith("Tier 'MS': sources changed ([HS,UW] -> none)"));
     }
 }

@@ -128,10 +128,35 @@ public class NetworkConfig
     }
 
     /// <summary>
-    /// Every tier of a network (the entries and one per value of the first facet), checked against its types, and the
-    /// tiers of the rules; throws an <see cref="InvalidDataException"/> naming the tier or rule.
+    /// The problems of the validation rules (unknown types in their patterns, unknown tiers), one line per rule; empty when
+    /// every rule is fine. The build only reports them: rules never stop a build, the validate step does.
     /// </summary>
-    public List<ResolvedTier> ResolveTiers(SpatialNET.Network.TypeRegistry types)
+    public List<string> RuleProblems(SpatialNET.Network.TypeRegistry types, IReadOnlyCollection<ResolvedTier> tiers)
+    {
+        var problems = new List<string>();
+        foreach (var rule in Rules)
+        {
+            try
+            {
+                rule.Resolve(types);
+            }
+            catch (ArgumentException ex)
+            {
+                problems.Add(ex.Message);
+            }
+            if (!string.IsNullOrWhiteSpace(rule.Tier) && tiers.FindTier(rule.Tier) is null)
+            {
+                problems.Add($"Rule '{rule.Id}': unknown tier '{rule.Tier}'. Tiers: {string.Join(", ", tiers.Select(t => t.Name))}");
+            }
+        }
+        return problems;
+    }
+
+    /// <summary>
+    /// Every tier of a network (the entries and one per value of the first facet), checked against its types, and (with
+    /// <paramref name="checkRules"/>) the tiers of the rules; throws an <see cref="InvalidDataException"/> naming the tier or rule.
+    /// </summary>
+    public List<ResolvedTier> ResolveTiers(SpatialNET.Network.TypeRegistry types, bool checkRules = true)
     {
         List<ResolvedTier> resolved;
         try
@@ -142,7 +167,7 @@ public class NetworkConfig
         {
             throw new InvalidDataException(ex.Message, ex);
         }
-        foreach (var rule in Rules.Where(r => !string.IsNullOrWhiteSpace(r.Tier)))
+        foreach (var rule in Rules.Where(r => checkRules && !string.IsNullOrWhiteSpace(r.Tier)))
         {
             if (resolved.FindTier(rule.Tier) is null)
             {

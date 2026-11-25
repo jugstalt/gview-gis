@@ -39,9 +39,12 @@ public static class NetworkSearch
         NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals,
     };
 
-    /// <summary>Whether the request carries anything but f (else the form is shown).</summary>
+    /// <summary>
+    /// Whether the request asks for a result: an <c>f</c> or any search parameter (not only the token); otherwise the form
+    /// is shown.
+    /// </summary>
     public static bool HasSearchParameters(IReadOnlyDictionary<string, string> parameters)
-        => parameters.Any(p => !p.Key.Equals("f", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(p.Value));
+        => parameters.Any(p => !p.Key.Equals("token", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(p.Value));
 
     /// <summary>The result as text with its content type.</summary>
     public static async Task<(string Content, string ContentType)> RunAsync(
@@ -151,23 +154,32 @@ public static class NetworkSearch
         }
 
         var withGeometry = !"false".Equals(P("geometry"), StringComparison.OrdinalIgnoreCase);
-        var map = withGeometry && result.Edges.Count > 0 ? await loadMap() : null;
-        var edgeCoordinates = map is not null
-            ? await NetworkResultGeometry.EdgeCoordinatesAsync(map, result, cancellationToken,
-                snap: "true".Equals(P("snap"), StringComparison.OrdinalIgnoreCase), tolerance: graph.Metadata.Tolerance)
-            : [];
-
-        Dictionary<string, Dictionary<long, Dictionary<string, object?>>>? attributes = null;
-        if ("true".Equals(P("attributes"), StringComparison.OrdinalIgnoreCase))
+        var withAttributes = "true".Equals(P("attributes"), StringComparison.OrdinalIgnoreCase);
+        if (withAttributes && !mayReadAttributes)
         {
-            if (!mayReadAttributes)
+            throw new NotAuthorizedException("Forbidden: attributes need the right Query");
+        }
+
+        // the geometry and the attributes of the edges are read from the feature classes: within the same time limit
+        IMap? map = null;
+        Dictionary<string, Dictionary<long, Dictionary<string, object?>>>? attributes = null;
+        Dictionary<long, IReadOnlyList<double[]>> edgeCoordinates;
+        try
+        {
+            map = withGeometry && result.Edges.Count > 0 ? await loadMap() : null;
+            edgeCoordinates = map is not null
+                ? await NetworkResultGeometry.EdgeCoordinatesAsync(map, result, timeout.Token,
+                    snap: "true".Equals(P("snap"), StringComparison.OrdinalIgnoreCase), tolerance: graph.Metadata.Tolerance)
+                : [];
+
+            if (withAttributes && (map ?? await loadMap()) is IMap attributeMap)
             {
-                throw new NotAuthorizedException("Forbidden: attributes need the right Query");
+                attributes = await NetworkResultGeometry.AttributesAsync(attributeMap, result, P("outFields"), timeout.Token);
             }
-            if ((map ?? await loadMap()) is IMap attributeMap)
-            {
-                attributes = await NetworkResultGeometry.AttributesAsync(attributeMap, result, P("outFields"), cancellationToken);
-            }
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            throw new MapServerException($"Reading the geometry and attributes of the result took longer than {network.Options.TimeoutSeconds} s.") { StatusCode = 504 };
         }
         IReadOnlyDictionary<string, object?>? Attributes(string? layer, long? oid)
             => attributes is not null && layer is not null && oid is long id

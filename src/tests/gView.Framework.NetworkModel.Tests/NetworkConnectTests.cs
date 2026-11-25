@@ -55,8 +55,10 @@ public class NetworkConnectTests : IDisposable
     /// <summary>
     /// Knoten#1 NS joint at 50,0 on Leitung#1 (MS, 0,0 - 50,0 - 100,0); Knoten#2 MS transformer at 100,0;
     /// Leitung#2 NS from the joint, Leitung#3 NS from the transformer, Leitung#4 NS from 0,0 where Leitung#1 ends.
+    /// <paramref name="extraNodes"/> are added as well; the points within the tolerance of each other are resolved as by
+    /// <see cref="NetworkBuildService"/> (the lowest object id stands for the TOC).
     /// </summary>
-    private BuildResult Build(NetworkConfig config)
+    private BuildResult Build(NetworkConfig config, params (long Oid, double X, double Y, string[] Type)[] extraNodes)
     {
         var catalog = new TypeCatalog(config.Facets, null);
         int msLine = catalog.Resolve(ElementKind.Edge, ["MS", "Leitung"]);
@@ -75,6 +77,12 @@ public class NetworkConnectTests : IDisposable
 
         Node(1, 50, 0, nsJoint);
         Node(2, 100, 0, trafo);
+        foreach (var extra in extraNodes)
+        {
+            Node(extra.Oid, extra.X, extra.Y, catalog.Resolve(ElementKind.Node, extra.Type));
+        }
+        builder.ResolveCoincidentNodes = NetworkBuildService.NodeConflictResolver(config, () => rules,
+            group => group.Select((node, index) => (node.Source.Oid, index)).Min().index);
         builder.AddLine(new FeatureRef(EdgeClass, 1), Line((0, 0), (50, 0), (100, 0)), msLine);
         builder.AddLine(new FeatureRef(EdgeClass, 2), Line((50, 0), (50, 40)), nsLine);
         builder.AddLine(new FeatureRef(EdgeClass, 3), Line((100, 0), (150, 0)), nsLine);
@@ -138,6 +146,27 @@ public class NetworkConnectTests : IDisposable
 
         var types = new FileNetworkGraph(_directory).Metadata.Types.Where(t => t.Helper).ToList();
         Assert.Equal(["MS (untyped)", "NS (untyped)"], types.Select(t => t.Name).Order());
+    }
+
+    [Fact]
+    public void SeparateTiers_NsBoxAtTheTransformer_IsMergedByTheToc_AlsoWithNodeConflictsError()
+    {
+        var config = Config();
+        Assert.Equal(NodeConflictMode.Error, config.NodeConflicts);
+
+        // Knoten#3, an NS box at the place of the transformer: Leitung#3 (NS) may connect to both
+        Build(config, (3, 100, 0, ["NS", "Kasten"]));
+
+        var ns = Service().Run("trace", new NetworkQueryRequest { Start = "Knoten#3", Tier = "NS" });
+        Assert.Contains(ns.Edges, e => e.Layer == "Leitung" && e.Oid == 3);
+    }
+
+    [Fact]
+    public void SeparateTiers_TwoNsBoxesAtOnePlace_StayAConflict()
+    {
+        var ex = Assert.Throws<NetworkBuildException>(() =>
+            Build(Config(), (3, 200, 200, ["NS", "Kasten"]), (4, 200, 200, ["NS", "Kasten"])));
+        Assert.Contains(ex.Conflicts, c => c.Kind == NodeConflictKind.RealNodesTooClose);
     }
 
     [Fact]

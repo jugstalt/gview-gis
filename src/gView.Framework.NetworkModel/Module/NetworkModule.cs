@@ -237,10 +237,11 @@ public class NetworkModule : IMapApplicationModule, IPersistable
 
     /// <summary>
     /// Writes supply sources, customers, rules and tiers into the built network (network.json) without building the shards.
-    /// Throws when the config or its tier patterns are invalid or the network is not built.
+    /// Throws when the config or its tier patterns are invalid or the network is not built. <paramref name="warnings"/> lists
+    /// what needs a new build (changed sources of tiers with separate tiers).
     /// </summary>
-    public NetworkMetadata RefreshMetadata(string mapPath)
-        => NetworkMetadataRefresh.Refresh(Clone(Config), Config.ResolveDirectory(mapPath));
+    public NetworkMetadata RefreshMetadata(string mapPath, out List<string> warnings)
+        => NetworkMetadataRefresh.Refresh(Clone(Config), Config.ResolveDirectory(mapPath), out warnings);
 
     /// <summary>
     /// Checks the tier patterns against the types of the built network; the problems, empty when all are fine.

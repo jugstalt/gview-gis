@@ -200,8 +200,12 @@ public class NetworkCommand : ICommand
                 : config.ResolveDirectory(mxlPath);
         }
 
-        var metadata = NetworkMetadataRefresh.Refresh(config, output);
+        var metadata = NetworkMetadataRefresh.Refresh(config, output, out var warnings);
         logger?.LogLine($"Refreshed: {output} ({metadata.Tiers.Count} tiers, {metadata.Rules.Count} rules, sources {metadata.SupplySources ?? "-"}, customers {metadata.Customers ?? "-"})");
+        foreach (var warning in warnings)
+        {
+            logger?.LogLine($"Warning: {warning}");
+        }
         return true;
     }
 

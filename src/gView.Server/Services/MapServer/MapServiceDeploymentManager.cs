@@ -587,6 +587,12 @@ public class MapServiceDeploymentManager
         if (result)
         {
             _logger.LogInformation("Reloaded map {mapName} successfully", mapName);
+
+            // the network of the service is opened again on the next search (also when network.json did not change)
+            if (gView.Server.Services.Network.NetworkServerService.NetworkDirectoryPath(_mapServiceManager.Options, mapName) is string networkDirectory)
+            {
+                gView.Framework.NetworkModel.Graph.NetworkGraphCache.Shared.Invalidate(networkDirectory);
+            }
         }
 
         return result;

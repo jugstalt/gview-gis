@@ -47,7 +47,7 @@ public sealed class FileNetworkGraph : IGraph<long, long>
         var indexPath = Path.Combine(directory, NodeIndex.FileName);
         if (!File.Exists(indexPath))
         {
-            throw new FileNotFoundException($"{indexPath} is missing; build the network again.");
+            throw new NetworkRebuildRequiredException($"{indexPath} is missing; build the network again.");
         }
         _index = NodeIndex.Read(indexPath);
         _aliases = AliasIndex.Read(Path.Combine(directory, AliasIndex.FileName));
@@ -530,7 +530,7 @@ public sealed class FileNetworkGraph : IGraph<long, long>
         var path = Path.Combine(_directory, fileName);
         return File.Exists(path)
             ? path
-            : throw new FileNotFoundException($"The network has no {fileName} (built before edge ends could be picked); build the network again.");
+            : throw new NetworkRebuildRequiredException($"The network has no {fileName} (built before edge ends could be picked); build the network again.");
     }
 
     private LoadedShard Shard(long shardId)
