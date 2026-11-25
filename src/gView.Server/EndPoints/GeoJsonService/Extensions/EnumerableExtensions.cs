@@ -19,20 +19,29 @@ internal static class EnumerableExtensions
     static private string[] ExcludeIdStrings = Enumerable.Range(0, 1000).Select(i => $"-{i}").ToArray();
     static private string[] IncludeIdStrings = Enumerable.Range(0, 1000).Select(i => $"+{i}").ToArray();
 
-    public static MapLayerVisibility LayerOrParentIsInArray(this string[] layerIds, ITocElement tocElement)
+    /// <summary>
+    /// How the ids treat a layer: by the layers of its TOC entry (one entry may hold several layers), else by the group
+    /// layers above it (a shown group shows all its layers). Only the ids of the groups count, not those of their
+    /// other layers: -0 must not hide the other layers of the group of 0.
+    /// </summary>
+    public static MapLayerVisibility LayerOrParentIsInArray(this string[] layerIds, ILayer layer, ITocElement? tocElement)
     {
-        while (tocElement != null)
+        foreach (var entryLayer in tocElement?.Layers ?? [layer])
         {
-            foreach (var layer in tocElement.Layers ?? [])
+            var visibility = layerIds.ContainsId(entryLayer.ID);
+            if (visibility != MapLayerVisibility.Invisible)
             {
-                var visibility = layerIds.ContainsId(layer.ID);
-                if (visibility != MapLayerVisibility.Invisible)
-                {
-                    return visibility;
-                }
+                return visibility;
             }
+        }
 
-            tocElement = tocElement.ParentGroup;
+        for (ILayer? group = layer.GroupLayer; group is not null; group = group.GroupLayer)
+        {
+            var visibility = layerIds.ContainsId(group.ID);
+            if (visibility != MapLayerVisibility.Invisible)
+            {
+                return visibility;
+            }
         }
 
         return MapLayerVisibility.Invisible;

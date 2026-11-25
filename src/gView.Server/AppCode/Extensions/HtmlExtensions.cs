@@ -599,6 +599,10 @@ static internal class HtmlExtensions
                 {
                     value = crs.ToSpatialReferenceName();
                 }
+                else if (value is gView.GeoJsonService.DTOs.Geometry geometry)
+                {
+                    value = gView.GeoJsonService.GeoJsonSerializer.Serialize(geometry);  // as GeoJSON, sent back as it is
+                }
                 else if (value is string[] stringArray)
                 {
                     value = String.Join(",", stringArray);

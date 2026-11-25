@@ -19,6 +19,8 @@ internal class Routes
     public const string GetLegend = "legend";
     public const string GetFeatures = "query";
     public const string EditFeatures = "features";
+    public const string GetLayers = "layers";
+    public const string Identify = "identify";
 }
 
 internal class RouteBuilder

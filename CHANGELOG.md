@@ -229,6 +229,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     `command`, `returnGeometry`. `exceededLimit` in the feature collection tells whether there are more features.
   - Edit responses carry `objectIds` (for inserts the new ids).
   - GetMap is rendered by the shared `MapImageRenderer` (like GeoServices export); the response has `rotation`.
+- GeoJson services, phase 2:
+  - `.../layers` and `.../layers/{layerId}`: extent (in `crs`), description, edit operations, the properties with
+    length, nullable, editable and domain (range, values, dictionary), and the renderer in a simple form (single,
+    categories, classes or other) with colors and a legend image per class, so clients can color features themselves.
+  - `.../identify` (GET/POST): the features of several layers at a point (tolerance in pixels) or in a line/polygon;
+    `layerOption` visible (visible and in scale of the client's map), top or all; `layers` like GetMap (+id/-id).
+  - Capabilities: `layers` and `identify` in `supportedRequests` (clients ignore requests they don't know), layer type
+    of each layer.
 - OGC API - Features Part 4: optimistic locking. `GET .../items/{featureId}` returns an `ETag`
   (hash of id, CRS84 geometry and properties, the same for every `crs` and format); `PUT`, `PATCH` and
   `DELETE` with `If-Match` answer `412 Precondition Failed` when the feature was changed in the
@@ -292,6 +300,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   QGIS sends it; before, changing attributes or geometries in QGIS failed with 400.
 - GeoServices REST: errors with a status (e.g. 503/504 of network searches) carry it as `code` instead of
   always `999`; the response stays HTTP 200 as in ArcGIS.
+- GeoJson GetMap: `layers` per GET (`layers=0,1,2`, as in the specification) failed; `-id` hid the other layers of
+  the group of the layer too (`-0` hid layer 1 of the same group).
 - Editing (GeoServices REST `updateFeatures`, `deleteFeatures`, `applyEdits` and GeoJson services): updates and
   deletes only touch objects the layer shows; an object id outside the definition query of the layer is an error
   (404). Before, a user who may edit a filtered layer could change or delete any object of its feature class.

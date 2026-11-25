@@ -8,6 +8,8 @@ public static class RequestProperties
     public const string QueryFeatures = "query";
     public const string GetLegend = "legend";
     public const string EditFeatures = "features";
+    public const string GetLayers = "layers";
+    public const string Identify = "identify";
 }
 
 //[JsonPolymorphic(TypeDiscriminatorPropertyName = "name")]
@@ -58,5 +60,28 @@ public class GetLegendRequestProperties : SupportedRequest
     {
         Name = RequestProperties.GetLegend;
     }
+}
+
+public class GetLayersRequestProperties : SupportedRequest
+{
+    public GetLayersRequestProperties()
+    {
+        Name = RequestProperties.GetLayers;
+    }
+}
+
+public class IdentifyRequestProperties : SupportedRequest
+{
+    public IdentifyRequestProperties()
+    {
+        Name = RequestProperties.Identify;
+    }
+
+    public int MaxFeaturesLimit { get; set; }
+}
+
+/// <summary>A request a newer server offers that this client doesn't know (yet)</summary>
+public class OtherRequestProperties : SupportedRequest
+{
 }
 

@@ -87,6 +87,85 @@ internal static class QueryCollectionExtensions
         return request;
     }
 
+    /// <summary>
+    /// An identify from the url (GET .../identify), case-insensitive: geometry (x,y or a GeoJSON geometry), crs,
+    /// layerOption (visible, top, all), layers, tolerance, mapExtent (minx,miny,maxx,maxy), imageWidth, imageHeight,
+    /// dpi, returnGeometry, outCRS, limit
+    /// </summary>
+    static public IdentifyRequest ToIdentifyRequest(this IQueryCollection query)
+    {
+        string? Value(string name) => query[name].ToString() is string text && !String.IsNullOrWhiteSpace(text) ? text.Trim() : null;
+
+        int? Integer(string name)
+            => Value(name) is string text
+                ? int.TryParse(text, out var value) && value >= 0
+                    ? value
+                    : throw new MapServerException($"Invalid value for the parameter {name}: {text}")
+                : null;
+
+        var request = new IdentifyRequest()
+        {
+            Geometry = Value("geometry") is string geometry ? GeometryOf(geometry) : null,
+            CRS = Crs(Value("crs"), "crs"),
+            LayerOption = Value("layerOption") ?? "visible",
+            Layers = Value("layers")?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries),
+            Tolerance = Integer("tolerance") ?? 3,
+            MapExtent = Value("mapExtent") is string extent ? BBoxOf(extent, "mapExtent") : null,
+            ImageWidth = Integer("imageWidth") ?? 0,
+            ImageHeight = Integer("imageHeight") ?? 0,
+            Dpi = Integer("dpi"),
+            OutCRS = Crs(Value("outCRS") ?? Value("out-crs"), "outCRS"),
+            Limit = Integer("limit")
+        };
+        if (Value("returnGeometry") is string returnGeometry)
+        {
+            request.ReturnGeometry = Enum.TryParse<GeometryResult>(returnGeometry, true, out var value) && Enum.IsDefined(value)
+                ? value
+                : throw new MapServerException($"Invalid value for the parameter returnGeometry: {returnGeometry} ({String.Join(", ", Enum.GetNames<GeometryResult>())})");
+        }
+
+        return request;
+    }
+
+    /// <summary>x,y or a GeoJSON geometry</summary>
+    private static Geometry GeometryOf(string text)
+    {
+        if (!text.StartsWith("{"))
+        {
+            var xy = text.Split(',', StringSplitOptions.TrimEntries);
+            if (xy.Length != 2
+                || !double.TryParse(xy[0], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var x)
+                || !double.TryParse(xy[1], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var y))
+            {
+                throw new MapServerException($"Invalid geometry: {text} (x,y or a GeoJSON geometry)");
+            }
+            return new Geometry()
+            {
+                Type = GeometryType.Point,
+                Coordinates = JsonElementOf($"[{x.ToString(System.Globalization.CultureInfo.InvariantCulture)},{y.ToString(System.Globalization.CultureInfo.InvariantCulture)}]")
+            };
+        }
+
+        try
+        {
+            return gView.GeoJsonService.GeoJsonSerializer.Deserialize<Geometry>(text)
+                ?? throw new MapServerException("Invalid geometry");
+        }
+        catch (JsonException ex)
+        {
+            throw new MapServerException($"Invalid geometry: {ex.Message}");
+        }
+    }
+
+    private static BBox BBoxOf(string text, string name)
+    {
+        var parts = text.Split(',', StringSplitOptions.TrimEntries);
+        var values = parts.Select(n => double.TryParse(n, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var v) ? v : double.NaN).ToArray();
+        return values.Length == 4 && values.All(double.IsFinite)
+            ? BBox.FromArray(values)
+            : throw new MapServerException($"Invalid {name}: {text} (minx,miny,maxx,maxy)");
+    }
+
     private static CoordinateReferenceSystem? Crs(string? value, string name)
         => value switch
         {

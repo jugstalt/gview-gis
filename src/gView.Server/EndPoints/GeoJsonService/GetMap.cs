@@ -124,32 +124,43 @@ public class GetMap : BaseApiEndpoint
             });
 
     /// <summary>
-    /// The visibility of the layers from the request: null = the defaults of the service, ids = exactly these
-    /// (a group shows all its layers), +id/-id = add to/remove from the defaults
+    /// The visibility of the layers from the request, set on the copies of the layers the renderer passes to
+    /// BeforeRenderLayers (never on the layers of the service map: they are shared between requests)
     /// </summary>
     private static void SetLayerVisibility(IServiceMap sender, List<ILayer> layers, string[]? layerIds)
     {
-        var visibilityPattern = layerIds!.GetVisibilityPattern();  // null = defaults
-        if (visibilityPattern == MapLayerVisibilityPattern.Defaults)
+        if (layerIds!.GetVisibilityPattern() == MapLayerVisibilityPattern.Defaults)  // null = defaults
         {
             return;
         }
 
         foreach (var layer in layers)
         {
-            var tocElement = sender.TOC?.GetTocElementByLayerId(layer.ID);
-            var layerVisibility = tocElement != null
-                ? layerIds!.LayerOrParentIsInArray(tocElement) // if group is shown -> all layers in group are shown...
-                : layerIds!.ContainsId(layer.ID);
-
-            layer.Visible = (visibilityPattern, layerVisibility) switch
-            {
-                (_, MapLayerVisibility.Visible) => true,
-                (_, MapLayerVisibility.Include) => true,
-                (_, MapLayerVisibility.Exclude) => false,
-                (MapLayerVisibilityPattern.Normal, MapLayerVisibility.Invisible) => false,
-                _ => layer.Visible
-            };
+            layer.Visible = IsVisible(sender, layer, layerIds);
         }
+    }
+
+    /// <summary>
+    /// Whether a layer is visible with the layer ids of a request, without changing it: null = the defaults of the
+    /// service, ids = exactly these (a group shows all its layers), +id/-id = add to/remove from the defaults
+    /// </summary>
+    internal static bool IsVisible(IServiceMap map, ILayer layer, string[]? layerIds)
+    {
+        var visibilityPattern = layerIds!.GetVisibilityPattern();  // null = defaults
+        if (visibilityPattern == MapLayerVisibilityPattern.Defaults)
+        {
+            return layer.Visible;
+        }
+
+        var layerVisibility = layerIds!.LayerOrParentIsInArray(layer, map.TOC?.GetTOCElement(layer));  // if group is shown -> all layers in group are shown...
+
+        return (visibilityPattern, layerVisibility) switch
+        {
+            (_, MapLayerVisibility.Visible) => true,
+            (_, MapLayerVisibility.Include) => true,
+            (_, MapLayerVisibility.Exclude) => false,
+            (MapLayerVisibilityPattern.Normal, MapLayerVisibility.Invisible) => false,
+            _ => layer.Visible
+        };
     }
 }

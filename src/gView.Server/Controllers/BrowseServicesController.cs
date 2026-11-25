@@ -251,6 +251,25 @@ public class BrowseServicesController : BaseController
                 Limit = 10
             },
             "feature" => new EditFeaturesRequest(),
+            "layers" => new GetLayersRequest()
+            {
+                CRS = CoordinateReferenceSystem.CreateByName(serviceMap.Display.SpatialReference.Name)
+            },
+            "identify" => new IdentifyRequest()
+            {
+                // the center of the service as point, the full extent as the map of the client
+                Geometry = new Geometry()
+                {
+                    Type = gView.GeoJsonService.DTOs.GeometryType.Point,
+                    Coordinates = System.Text.Json.JsonDocument.Parse(
+                        $"[{((bounds.MinX + bounds.MaxX) / 2).ToString(System.Globalization.CultureInfo.InvariantCulture)},{((bounds.MinY + bounds.MaxY) / 2).ToString(System.Globalization.CultureInfo.InvariantCulture)}]").RootElement.Clone()
+                },
+                CRS = CoordinateReferenceSystem.CreateByName(serviceMap.Display.SpatialReference.Name),
+                MapExtent = BBox.FromArray([bounds.MinX, bounds.MinY, bounds.MaxX, bounds.MaxY]),
+                ImageWidth = 800,
+                ImageHeight = 600,
+                Limit = 10
+            },
             _ => throw new Exception($"Invalid request: {request}")
         };
 
@@ -387,6 +406,21 @@ public class BrowseServicesController : BaseController
                 Offset = form.ParseOrDefault<int?>("Offset")
             },
             "feature" => new EditFeaturesRequest(),
+            "identify" => new IdentifyRequest()
+            {
+                Geometry = form.AsObjectOrDefault("Geometry", (value) => GeoJsonSerializer.Deserialize<Geometry>(value)),
+                CRS = form.AsObjectOrDefault("CRS", (value) => CoordinateReferenceSystem.CreateByName(value)),
+                LayerOption = form["LayerOption"].ToString() is string layerOption && layerOption.Length > 0 ? layerOption : "visible",
+                Layers = form.AsArrayOrDefault<string>("Layers"),
+                Tolerance = form.ParseOrDefault<int?>("Tolerance") ?? 3,
+                MapExtent = form.AsObjectOrDefault("MapExtent", (value) => BBox.FromArray(value.Split(',').Select(n => n.ToDouble()).ToArray())),
+                ImageWidth = form.ParseOrDefault<int?>("ImageWidth") ?? 0,
+                ImageHeight = form.ParseOrDefault<int?>("ImageHeight") ?? 0,
+                Dpi = form.ParseOrDefault<double?>("Dpi"),
+                ReturnGeometry = form.AsEnumValue<GeometryResult>("ReturnGeometry"),
+                OutCRS = form.AsObjectOrDefault("OutCRS", (value) => CoordinateReferenceSystem.CreateByName(value)),
+                Limit = form.ParseOrDefault<int?>("Limit")
+            },
             _ => throw new Exception($"Invalid request: {request}")
         };
 

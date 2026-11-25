@@ -121,6 +121,13 @@ public class GetServiceCapabilities : BaseApiEndpoint
                     Id = layer.ID.ToString(),
                     ParentId = parentLayerId?.ToString(),
                     Name = tocElement.Name,
+                    LayerType = layer switch
+                    {
+                        IGroupLayer => "GroupLayer",
+                        IFeatureLayer => "FeatureLayer",
+                        _ when layer.Class is IRasterClass => "RasterLayer",
+                        _ => "Layer"
+                    },
                     DefaultVisibility = accessTypes.HasFlag(AccessTypes.Map) ? tocElement.LayerVisible : null,
                     MaxScaleDenominator = accessTypes.HasFlag(AccessTypes.Map) ? layer.MaximumScale : null,
                     MinScaleDenominator = accessTypes.HasFlag(AccessTypes.Map) ? layer.MinimumScale : null,
@@ -181,8 +188,22 @@ public class GetServiceCapabilities : BaseApiEndpoint
                 HttpMethods = ["GET", "POST"]
             };
         }
+        if (accessTypes != AccessTypes.None)
+        {
+            yield return new GetLayersRequestProperties()
+            {
+                Url = $"{url}/layers",
+                HttpMethods = ["GET"]
+            };
+        }
         if (accessTypes.HasFlag(AccessTypes.Query))
         {
+            yield return new IdentifyRequestProperties()
+            {
+                Url = $"{url}/identify",
+                HttpMethods = ["GET", "POST"],
+                MaxFeaturesLimit = map.MapServiceProperties.MaxRecordCount
+            };
             yield return new GetFeaturesRequestProperties()
             {
                 Url = $"{url}/query/{{layerId}}",

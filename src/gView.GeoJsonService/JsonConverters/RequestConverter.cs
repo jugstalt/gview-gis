@@ -34,6 +34,10 @@ public class RequestConverter : JsonConverter<BaseRequest>
                     => JsonSerializer.Deserialize<GetFeaturesRequest>(rootElement.GetRawText(), options),
                 RequestTypes.EditFeatures
                     => JsonSerializer.Deserialize<EditFeaturesRequest>(rootElement.GetRawText(), options),
+                RequestTypes.GetLayers
+                    => JsonSerializer.Deserialize<GetLayersRequest>(rootElement.GetRawText(), options),
+                RequestTypes.Identify
+                    => JsonSerializer.Deserialize<IdentifyRequest>(rootElement.GetRawText(), options),
                 _ => throw new JsonException("Unknown request type")
             };
         }
@@ -77,6 +81,10 @@ public class ResponseConverter : JsonConverter<BaseResponse>
                     => JsonSerializer.Deserialize<GetFeaturesIdsOnlyResponse>(rootElement.GetRawText(), options),
                 ResponseType.FeaturesDistinct
                     => JsonSerializer.Deserialize<GetFeaturesDistinctResponse>(rootElement.GetRawText(), options),
+                ResponseType.Layers
+                    => JsonSerializer.Deserialize<GetLayersResponse>(rootElement.GetRawText(), options),
+                ResponseType.Identify
+                    => JsonSerializer.Deserialize<IdentifyResponse>(rootElement.GetRawText(), options),
                 ResponseType.Error
                     => JsonSerializer.Deserialize<ErrorResponse>(rootElement.GetRawText(), options),
                 _ => throw new JsonException("Unknown response type")
@@ -116,8 +124,13 @@ public class SupportedRequestConverter : JsonConverter<SupportedRequest>
                     => JsonSerializer.Deserialize<GetLegendRequestProperties>(rootElement.GetRawText(), options),
                 RequestProperties.EditFeatures
                     => JsonSerializer.Deserialize<EditFeaturesRequestProperties>(rootElement.GetRawText(), options),
+                RequestProperties.GetLayers
+                    => JsonSerializer.Deserialize<GetLayersRequestProperties>(rootElement.GetRawText(), options),
+                RequestProperties.Identify
+                    => JsonSerializer.Deserialize<IdentifyRequestProperties>(rootElement.GetRawText(), options),
 
-                _ => throw new JsonException("Unknown response type")
+                // a request of a newer server: kept, so the rest of the capabilities can be read
+                _ => JsonSerializer.Deserialize<OtherRequestProperties>(rootElement.GetRawText(), options)
             };
         }
     }

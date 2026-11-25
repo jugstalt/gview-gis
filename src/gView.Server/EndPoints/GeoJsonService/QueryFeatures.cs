@@ -297,42 +297,12 @@ public class QueryFeatures : BaseApiEndpoint
                                         continue;  // slow-count fallback: only the number of features matters
                                     }
 
-                                    var geoJsonFeature = new gView.GeoJsonService.DTOs.Feature();
-
-                                    #region Shape
-
-                                    if (queryRequest.ReturnGeometry == GeometryResult.None)
-                                    {
-                                        feature.Shape = null;  // do not geometry
-                                    }
-                                    else if (transform)
+                                    if (transform && queryRequest.ReturnGeometry != GeometryResult.None)
                                     {
                                         feature.Shape = geoTransfromer.Transform2D(feature.Shape) as IGeometry;
                                     }
-                                    if (queryRequest.ReturnGeometry == GeometryResult.BBox)
-                                    {
-                                        feature.Shape = feature.Shape?.Envelope;
-                                    }
 
-                                    geoJsonFeature.Geometry = feature.Shape?.ToGeoJsonGeometry();
-                                    geoJsonFeature.BBox = feature.Shape?.Envelope.ToBBox();
-
-                                    #endregion
-
-                                    #region Properties
-
-                                    foreach (var @field in feature.Fields)
-                                    {
-                                        if (@field.Name == objectIdFieldName)
-                                        {
-                                            geoJsonFeature.Oid = @field.Value;
-                                        }
-
-                                        geoJsonFeature.Properties[@field.Name] = @field.Value == DBNull.Value ? null : @field.Value;
-                                    }
-
-                                    #endregion
-
+                                    var geoJsonFeature = feature.ToGeoJsonFeature(objectIdFieldName, queryRequest.ReturnGeometry);
                                     geoJsonFeatures.Add(geoJsonFeature);
                                 }
                             }

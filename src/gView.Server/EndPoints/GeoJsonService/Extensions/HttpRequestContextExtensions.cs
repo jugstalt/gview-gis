@@ -5,6 +5,7 @@ using gView.Framework.Core.Exceptions;
 using gView.GeoJsonService;
 using Microsoft.AspNetCore.Http;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -20,6 +21,10 @@ internal static class HttpRequestContextExtensions
             {
                 // the query has its own url parameters (where, filter, bbox, lists, ...)
                 return (T)(object)httpContext.Request.Query.ToGetFeaturesRequest();
+            }
+            if (typeof(T) == typeof(gView.GeoJsonService.DTOs.IdentifyRequest))
+            {
+                return (T)(object)httpContext.Request.Query.ToIdentifyRequest();
             }
 
             T model = Activator.CreateInstance<T>();
@@ -78,6 +83,10 @@ internal static class HttpRequestContextExtensions
             Type t when t == typeof(bool?) => String.IsNullOrEmpty(parameter) ? null : bool.Parse(parameter),
 
             Type t when t.IsEnum => Enum.Parse(t, parameter, true),
+
+            // lists are comma separated, e.g. layers=0,1,2
+            Type t when t == typeof(string[]) || t == typeof(IEnumerable<string>)
+                => parameter.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries),
             _ => parameter.ParseToObject(type)
         };
 }

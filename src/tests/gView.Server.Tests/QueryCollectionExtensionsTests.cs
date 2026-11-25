@@ -82,4 +82,46 @@ public class QueryCollectionExtensionsTests
     {
         Assert.Throws<MapServerException>(() => Request(queryString));
     }
+
+    [Fact]
+    public void Identify_PointAndMap()
+    {
+        var request = new QueryCollection(Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(
+            "?geometry=10.5,47.25&crs=4326&mapExtent=10,47,11,48&imageWidth=800&imageHeight=600&layers=-0,%2B2&layerOption=top&tolerance=5&returnGeometry=bbox&limit=3"))
+            .ToIdentifyRequest();
+
+        Assert.Equal(gView.GeoJsonService.DTOs.GeometryType.Point, request.Geometry!.Type);
+        Assert.Equal("[10.5,47.25]", request.Geometry.Coordinates!.ToString());
+        Assert.Equal("EPSG:4326", request.CRS!.Properties["name"]);
+        Assert.Equal(11, request.MapExtent!.MaxX);
+        Assert.Equal((800, 600), (request.ImageWidth, request.ImageHeight));
+        Assert.Equal(["-0", "+2"], request.Layers);
+        Assert.Equal("top", request.LayerOption);
+        Assert.Equal(5, request.Tolerance);
+        Assert.Equal(GeometryResult.BBox, request.ReturnGeometry);
+        Assert.Equal(3, request.Limit);
+    }
+
+    [Fact]
+    public void Identify_GeoJsonGeometry()
+    {
+        var geometry = """{"type":"LineString","coordinates":[[1,2],[3,4]]}""";
+        var request = new QueryCollection(Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(
+            $"?geometry={Uri.EscapeDataString(geometry)}")).ToIdentifyRequest();
+
+        Assert.Equal(gView.GeoJsonService.DTOs.GeometryType.LineString, request.Geometry!.Type);
+        Assert.Equal("visible", request.LayerOption);
+        Assert.Equal(3, request.Tolerance);
+    }
+
+    [Theory]
+    [InlineData("?geometry=1")]
+    [InlineData("?geometry={x")]
+    [InlineData("?mapExtent=1,2,3")]
+    [InlineData("?imageWidth=-5")]
+    public void Identify_Invalid_IsBadRequest(string queryString)
+    {
+        Assert.Throws<MapServerException>(() =>
+            new QueryCollection(Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(queryString)).ToIdentifyRequest());
+    }
 }

@@ -9,4 +9,6 @@ public class RequestTypes
     public const string GetLegend = "GetLegend";
     public const string GetFeatures = "GetFeatures";
     public const string EditFeatures = "EditFeatures";
+    public const string GetLayers = "GetLayers";
+    public const string Identify = "Identify";
 }

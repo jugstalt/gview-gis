@@ -10,4 +10,6 @@ public class ResponseType
     public const string FeaturesIdsOnly = "FeaturesIdsOnlyResponse";
     public const string FeaturesDistinct = "FeaturesDistinct";
     public const string Error = "ErrorResponse";
+    public const string Layers = "GetLayersResponse";
+    public const string Identify = "IdentifyResponse";
 }
