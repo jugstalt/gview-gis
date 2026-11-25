@@ -12,14 +12,33 @@ namespace gView.Interoperability.Extensions.Rendering;
 /// </summary>
 public class MapImageRequest
 {
+    /// <summary>The CRS of <see cref="BBox"/> and the image; null keeps the CRS of the map</summary>
     public ISpatialReference SpatialReference { get; set; }
     public IEnvelope BBox { get; set; }
     public int Width { get; set; }
     public int Height { get; set; }
     public double Dpi { get; set; } = 96.0;
     public bool Transparent { get; set; }
-    public ArgbColor BackgroundColor { get; set; } = ArgbColor.White;
+
+    /// <summary>
+    /// Transparent images only: draw on a background with alpha 0 instead of keying out white afterwards,
+    /// so antialiased edges stay smooth (PNG)
+    /// </summary>
+    public bool AlphaBackground { get; set; }
+
+    /// <summary>The background of opaque images; null keeps the background of the map</summary>
+    public ArgbColor? BackgroundColor { get; set; } = ArgbColor.White;
     public ImageFormat Format { get; set; } = ImageFormat.Png;
+
+    /// <summary>Rotation of the map in degrees (0 = north up)</summary>
+    public double Rotation { get; set; }
+
+    /// <summary>
+    /// true (WMS, OGC API Maps): the image shows exactly <see cref="BBox"/>, a different aspect ratio
+    /// distorts the image. false (GeoServices export): the map extent follows the aspect ratio of the
+    /// image, the extent actually drawn is <c>map.Display.Envelope</c> afterwards.
+    /// </summary>
+    public bool FitToBBox { get; set; } = true;
 
     /// <summary>
     /// Optional: set layer visibility, renderers, ... before the layers are drawn
@@ -28,32 +47,49 @@ public class MapImageRequest
 }
 
 /// <summary>
-/// Renders the image of a service map. Shared by WMS GetMap and OGC API - Maps.
+/// Renders the image of a service map. Shared by WMS GetMap, OGC API - Maps and GeoServices REST export.
 /// </summary>
 public static class MapImageRenderer
 {
     /// <returns>the encoded image or null, if nothing was rendered</returns>
     async public static Task<byte[]> RenderImageAsync(this IServiceMap map, MapImageRequest request)
     {
-        map.Display.SpatialReference = request.SpatialReference;
+        if (request.SpatialReference is not null)
+        {
+            map.Display.SpatialReference = request.SpatialReference;
+        }
 
         map.Display.Dpi = request.Dpi;
         map.Display.ImageWidth = request.Width;
         map.Display.ImageHeight = request.Height;
         map.ResizeImageSizeToMapServiceLimits();
 
-        map.Display.Limit = request.BBox;
+        if (request.FitToBBox)
+        {
+            map.Display.Limit = request.BBox;
+        }
+        if (request.Rotation != 0.0)
+        {
+            map.Display.DisplayTransformation.DisplayRotation = request.Rotation;
+        }
         map.Display.ZoomTo(request.BBox);
 
         if (request.Transparent)
         {
             map.Display.MakeTransparent = true;
             map.Display.TransparentColor = ArgbColor.White;
+            if (request.AlphaBackground)
+            {
+                map.Display.BackgroundColor = ArgbColor.Transparent;
+            }
         }
         else
         {
             map.Display.MakeTransparent = false;
-            map.Display.BackgroundColor = request.BackgroundColor;
+            if (request.BackgroundColor.HasValue)
+            {
+                map.Display.BackgroundColor = request.BackgroundColor.Value;
+            }
         }
 
         if (request.BeforeRenderLayers != null)
@@ -66,6 +102,14 @@ public static class MapImageRenderer
         if (map.MapImage == null)
         {
             return null;
+        }
+
+        if (!request.FitToBBox)
+        {
+            var image = new MemoryStream();
+            return await map.SaveImage(image, request.Format) >= 0
+                ? image.ToArray()
+                : null;
         }
 
         //

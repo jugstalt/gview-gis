@@ -350,6 +350,8 @@ public class Startup
                     policy.WithOrigins(securityOptions.CorsAllowedOrigins.ToArray());
                 }
                 policy.AllowAnyMethod().AllowAnyHeader();
+                // OGC API Part 4: browser clients read the entity tag (If-Match) and the url of a new feature
+                policy.WithExposedHeaders("ETag", "Location");
             }));
 
         app.UseStaticFiles();

@@ -41,7 +41,7 @@ public class SecurityLimitsTests
     [Fact]
     public void ServiceLimiter_LimitsPerClientIp()
     {
-        using var limiter = SecurityLimitsExtensions.CreateServiceLimiter(3);
+        using var limiter = ServiceRateLimiter.Create(3);
 
         for (int i = 0; i < 3; i++)
         {
@@ -55,7 +55,7 @@ public class SecurityLimitsTests
     [Fact]
     public void ServiceLimiter_DoesNotLimitAdminPages()
     {
-        using var limiter = SecurityLimitsExtensions.CreateServiceLimiter(1);
+        using var limiter = ServiceRateLimiter.Create(1);
 
         for (int i = 0; i < 5; i++)
         {

@@ -82,12 +82,12 @@ internal static class OpenApiDocumentBuilder
             }
             if (statements.HasFlag(EditStatements.UPDATE))
             {
-                itemPath["put"] = Edit($"replace{id}Feature", collection.Title, "Replace a feature (missing properties are set to null)", [Ref("featureId")], true, "204", "Replaced");
-                itemPath["patch"] = Edit($"update{id}Feature", collection.Title, "Update the properties/geometry of a feature (JSON merge patch)", [Ref("featureId")], true, "204", "Updated");
+                itemPath["put"] = Edit($"replace{id}Feature", collection.Title, "Replace a feature (missing properties are set to null)", [Ref("featureId")], true, "204", "Replaced", ifMatch: true);
+                itemPath["patch"] = Edit($"update{id}Feature", collection.Title, "Update the properties/geometry of a feature (JSON merge patch)", [Ref("featureId")], true, "204", "Updated", ifMatch: true);
             }
             if (statements.HasFlag(EditStatements.DELETE))
             {
-                itemPath["delete"] = Edit($"delete{id}Feature", collection.Title, "Delete a feature", [Ref("featureId")], false, "204", "Deleted");
+                itemPath["delete"] = Edit($"delete{id}Feature", collection.Title, "Delete a feature", [Ref("featureId")], false, "204", "Deleted", ifMatch: true);
             }
 
             #endregion
@@ -117,16 +117,30 @@ internal static class OpenApiDocumentBuilder
 
     #region Paths
 
-    private static JsonObject Edit(string operationId, string tag, string summary, JsonArray parameters, bool withBody, string successCode, string successDescription)
+    private static JsonObject Edit(string operationId, string tag, string summary, JsonArray parameters, bool withBody, string successCode, string successDescription, bool ifMatch = false)
     {
-        parameters.Add(new JsonObject()
+        if (withBody)
         {
-            ["name"] = "Content-Crs",
-            ["in"] = "header",
-            ["description"] = "The CRS of the geometry in the body, e.g. <http://www.opengis.net/def/crs/EPSG/0/31256>. Default: CRS84",
-            ["required"] = false,
-            ["schema"] = new JsonObject() { ["type"] = "string" }
-        });
+            parameters.Add(new JsonObject()
+            {
+                ["name"] = "Content-Crs",
+                ["in"] = "header",
+                ["description"] = "The CRS of the geometry in the body, e.g. <http://www.opengis.net/def/crs/EPSG/0/31256>. Default: CRS84",
+                ["required"] = false,
+                ["schema"] = new JsonObject() { ["type"] = "string" }
+            });
+        }
+        if (ifMatch)
+        {
+            parameters.Add(new JsonObject()
+            {
+                ["name"] = "If-Match",
+                ["in"] = "header",
+                ["description"] = "The ETag of the feature from GET .../items/{featureId}: the feature is only changed, if it was not changed in the meantime (otherwise 412)",
+                ["required"] = false,
+                ["schema"] = new JsonObject() { ["type"] = "string" }
+            });
+        }
 
         var operation = new JsonObject()
         {
@@ -143,6 +157,11 @@ internal static class OpenApiDocumentBuilder
                 ["500"] = Error("A server error occurred")
             }
         };
+
+        if (ifMatch)
+        {
+            ((JsonObject)operation["responses"]!)["412"] = Error("The feature was changed in the meantime (If-Match)");
+        }
 
         if (withBody)
         {

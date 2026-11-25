@@ -222,6 +222,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   (shown to signed in users without a gView role) and `Links` (footer links, replace the default
   documentation and GitHub links). `CustomTiles` have a `Visibility`: `admin` (default, as before),
   `user` or `public`. See [Configuration of gView.WebApps](https://docs.gviewonline.com/en/setup/config-webapps.html#config-webapps-home).
+- OGC API - Features Part 4: optimistic locking. `GET .../items/{featureId}` returns an `ETag`
+  (hash of id, CRS84 geometry and properties, the same for every `crs` and format); `PUT`, `PATCH` and
+  `DELETE` with `If-Match` answer `412 Precondition Failed` when the feature was changed in the
+  meantime. Without `If-Match` nothing changes. CORS exposes `ETag` and `Location`.
 
 ## Changed
 
@@ -253,6 +257,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   and `GeometryEngineOptions.LabelMaxAlternatives` (`GVIEW_LABEL_MAX_ALTERNATIVES`, default 32): a smaller distance
   places more labels in dense maps but needs more label engine checks, a larger one is faster.
 - Tile service metadata: `renderTilesOnTheFly` can be set in the metadata editor (YAML).
+- OGC API: the Swagger UI of the API page (`/api?f=html`) is served locally (`lib/swagger-ui`)
+  instead of from the jsdelivr CDN, so it works without internet access.
+- GeoServices REST `export`: renders with the shared `MapImageRenderer` of WMS and OGC API Maps
+  (same size limits, rotation, transparency); the extent still follows the aspect ratio of the image.
 
 ## Fixed
 
@@ -302,7 +310,9 @@ gView Server hardening for internet-facing installations, see
     answer to `security:manage:allowed-networks` (default loopback and the private networks,
     `"*"` = everywhere, with OIDC only if configured), others get a 404. Startup warning if the
     admin networks are restricted but no proxies are configured. ⚠ Admin access from outside
-    needs an entry.
+    needs an entry. The read only pages of `/browseservices` (service list, capabilities,
+    service interfaces, GeoJSON preview) stay public, they are the service browser for clients;
+    they still apply the access rights of each service.
   - CORS only for the services (`security:cors:allowed-origins`), never for admin and login pages.
 - Cookies and CSRF: auth cookie `SameSite=Lax`; state changing requests to Manage and BrowseServices
   sent with cookies need an antiforgery token (sent by `site.js` for every jQuery request, Carto
@@ -323,7 +333,8 @@ gView Server hardening for internet-facing installations, see
   category `gView.Server.Security`.
 - Limits:
   - WFS `GetFeature` returns at most the `MaxRecordCount` of the service, also without
-    `MAXFEATURES` ⚠; `Features2GML` wrote one feature more than the limit.
+    `MAXFEATURES` ⚠; `Features2GML` wrote one feature more than the limit. A `MaxRecordCount`
+    of 0 means "not set" (default 1000), there is no "unlimited" value ⚠.
   - Vector tile glyphs are cached per resolved installed font instead of per requested font
     stack, so any number of font stacks cannot fill the disk.
   - Request bodies up to 50 MB for Kestrel, IIS and forms (`security:max-request-body-mb`).

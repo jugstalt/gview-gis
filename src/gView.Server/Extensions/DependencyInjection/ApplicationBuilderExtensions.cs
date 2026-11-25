@@ -2,6 +2,7 @@
 using gView.Server.AppCode;
 using gView.Server.Middleware.Authentication;
 using gView.Server.Models;
+using gView.Server.Services.Security;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
@@ -67,5 +68,13 @@ static public class ApplicationBuilderExtensions
         return builder;
     }
 
-    
+    static public IApplicationBuilder UseSecurityLimits(this IApplicationBuilder app, SecurityOptions options)
+    {
+        if (options.RateLimitEnabled)
+        {
+            app.UseRateLimiter();
+        }
+
+        return app;
+    }
 }

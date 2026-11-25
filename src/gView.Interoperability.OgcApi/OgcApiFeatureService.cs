@@ -194,6 +194,9 @@ public sealed partial class OgcApiFeatureService
         }
 
         var feature = await FeatureQuery.QueryItemAsync(Map, collection, featureId, crs);
+        var eTag = FeatureETag.Compute(crs.IsCrs84
+            ? feature
+            : await FeatureQuery.QueryItemAsync(Map, collection, featureId, CrsReference.Crs84));
 
         string itemUrl = ItemUrl(collectionId, featureId);
         var crsParameters = crs.IsCrs84 ? [] : new List<KeyValuePair<string, string>>() { new("crs", crs.Uri) };
@@ -205,7 +208,7 @@ public sealed partial class OgcApiFeatureService
             new Link(CollectionUrl(collectionId).WithFormat("json"), OgcApiRelations.Collection, OgcApiMediaTypes.Json, "The collection")
         };
 
-        return new ItemResult(collection, feature, crs, links, crs.HasNorthingFirst(crs.ToSpatialReference()));
+        return new ItemResult(collection, feature, crs, links, crs.HasNorthingFirst(crs.ToSpatialReference()), eTag);
     }
 
     #region Helper

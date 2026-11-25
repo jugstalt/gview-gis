@@ -58,13 +58,14 @@ public sealed class ItemsResult
 /// </summary>
 public sealed class ItemResult
 {
-    internal ItemResult(OgcCollectionLayer collection, OgcFeature feature, CrsReference crs, List<Link> links, bool swapAxes)
+    internal ItemResult(OgcCollectionLayer collection, OgcFeature feature, CrsReference crs, List<Link> links, bool swapAxes, FeatureETag eTag)
     {
         Collection = collection;
         Feature = feature;
         Crs = crs;
         Links = links;
         SwapAxes = swapAxes;
+        ETag = eTag;
     }
 
     public OgcCollectionLayer Collection { get; }
@@ -72,6 +73,9 @@ public sealed class ItemResult
     public CrsReference Crs { get; }
     public List<Link> Links { get; }
     public bool SwapAxes { get; }
+
+    /// <summary>The entity tag of the feature (the same for every CRS and format)</summary>
+    public FeatureETag ETag { get; }
 
     public byte[] ToGeoJson()
     {

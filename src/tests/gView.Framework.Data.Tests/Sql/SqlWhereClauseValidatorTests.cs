@@ -1,7 +1,7 @@
 using gView.Framework.Data.Extensions;
 using gView.Framework.Data.Sql;
 
-namespace gView.Framework.Tests.Data;
+namespace gView.Framework.Data.Tests.Sql;
 
 [Collection(SqlWhereClauseValidatorCollection.Name)]
 public class SqlWhereClauseValidatorTests

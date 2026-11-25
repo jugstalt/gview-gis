@@ -7,7 +7,7 @@ using gView.Framework.Core.MapServer;
 
 namespace gView.Framework.Core.Tests.Extensions;
 
-public class ServiceRequestContextErrorExtensionsTests
+public class ServiceRequestContextExtensionsTests
 {
     [Fact]
     public async Task LogServiceException_InternalException_LogsDetailsAndReturnsGenericText()

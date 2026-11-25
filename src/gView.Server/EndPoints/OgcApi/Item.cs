@@ -32,6 +32,7 @@ public class Item : OgcApiBaseEndpoint
             async request =>
             {
                 var item = await request.Service.GetItemAsync(collectionId, featureId, request.Parameters);
+                httpContext.Response.Headers.ETag = item.ETag.Value;  // Part 4: optimistic locking with If-Match
 
                 return request.Format == OgcApiFormat.Html
                     ? Html(request, item.Collection.Title, HtmlRenderer.Item(item, request.Service), item.Crs)

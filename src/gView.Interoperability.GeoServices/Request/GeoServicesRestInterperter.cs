@@ -155,90 +155,44 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
             //Console.WriteLine(_exportMap.BBox);
             //Console.WriteLine(_exportMap.Size);
 
+            if (!Enum.TryParse<ImageFormat>(_exportMap.ImageFormat, true, out ImageFormat imageFormat))
+            {
+                throw new MapServerException("Unsuported image format: " + _exportMap.ImageFormat);
+            }
+
+            var iFormat = imageFormat.ToGraphicsEngineImageFormat();
+            var size = _exportMap.Size.ToSize();
+            var bbox = _exportMap.BBox.ToBBox();
+
             using (var serviceMap = await context.CreateServiceMapInstance())
             {
-                #region SpatialReference
-
-                if (!String.IsNullOrWhiteSpace(_exportMap.BBoxSRef))
+                // shared with WMS and OGC API Maps: size limits of the service, rotation, transparency;
+                // unlike WMS the extent follows the aspect ratio of the image (FitToBBox = false),
+                // the extent actually drawn is returned (Display.Envelope)
+                var image = await serviceMap.RenderImageAsync(new MapImageRequest()
                 {
-                    serviceMap.Display.SpatialReference = SRef(_exportMap.BBoxSRef);
-                }
+                    SpatialReference = String.IsNullOrWhiteSpace(_exportMap.BBoxSRef) ? null : SRef(_exportMap.BBoxSRef),
+                    BBox = new Envelope(bbox[0], bbox[1], bbox[2], bbox[3]),
+                    Width = size[0],
+                    Height = size[1],
+                    Dpi = _exportMap.Dpi,
+                    Rotation = _exportMap.Rotation,
+                    Transparent = _exportMap.Transparent,
+                    // PNG: no background rectangle, otherwise PNG32 with antialiasing looks frayed
+                    AlphaBackground = iFormat == GraphicsEngine.ImageFormat.Png,
+                    BackgroundColor = null,
+                    Format = iFormat,
+                    FitToBBox = false,
+                    BeforeRenderLayers = ServiceMap_BeforeRenderLayers
+                });
 
-                #endregion
-
-                #region Display
-
-                serviceMap.Display.Dpi = _exportMap.Dpi;
-                //serviceMap.ScaleSymbolFactor = (float)_exportMap.Dpi / 96f;
-
-                var size = _exportMap.Size.ToSize();
-                serviceMap.Display.ImageWidth = size[0];
-                serviceMap.Display.ImageHeight = size[1];
-
-                serviceMap.ResizeImageSizeToMapServiceLimits();
-
-                if (_exportMap.Rotation != 0.0)
-                {
-                    serviceMap.Display.DisplayTransformation.DisplayRotation = _exportMap.Rotation;
-                }
-
-                var bbox = _exportMap.BBox.ToBBox();
-
-                serviceMap.Display.ZoomTo(new Envelope(bbox[0], bbox[1], bbox[2], bbox[3]));
-
-                #endregion
-
-                #region ImageFormat / Transparency
-
-                if (!Enum.TryParse<ImageFormat>(_exportMap.ImageFormat, true, out ImageFormat imageFormat))
-                {
-                    throw new MapServerException("Unsuported image format: " + _exportMap.ImageFormat);
-                }
-
-                var iFormat = imageFormat.ToGraphicsEngineImageFormat();
-
-                if (_exportMap.Transparent)
-                {
-                    serviceMap.Display.MakeTransparent = true;
-                    serviceMap.Display.TransparentColor = GraphicsEngine.ArgbColor.White;
-                }
-                else
-                {
-                    serviceMap.Display.MakeTransparent = false;
-                }
-
-                if (serviceMap.Display.MakeTransparent && iFormat == GraphicsEngine.ImageFormat.Png)
-                {
-                    // Beim Png sollt dann beim zeichnen keine Hintergrund Rectangle gemacht werden
-                    // Darum Farbe mit A=0
-                    // Sonst schaut das Bild beim PNG32 und Antialiasing immer zerrupft aus...
-                    serviceMap.Display.BackgroundColor = GraphicsEngine.ArgbColor.Transparent;
-                }
-
-                #endregion
-
-                serviceMap.BeforeRenderLayers += ServiceMap_BeforeRenderLayers;
-                await serviceMap.Render();
-
-                if (serviceMap.MapImage != null)
+                if (image != null)
                 {
                     if (_exportMap.OutputFormat?.ToLower() == "image")
                     {
                         context.ServiceRequest.Succeeded = true;
-
-                        MemoryStream ms = new MemoryStream();
-                        serviceMap.MapImage.Save(ms, iFormat);
-
                         context.ServiceRequest.ResponseContentType = _exportMap.GetContentType();
-                        context.ServiceRequest.Response = ms.ToArray();
-
-                        // debug
-                        //string fileName = serviceMap.Name
-                        //    .Replace("/", "_")
-                        //    .Replace(",", "_") + "_" + System.Guid.NewGuid().ToString("N") + "." + iFormat.ToString().ToLower();
-
-                        //string path = (_mapServer.OutputPath + @"/" + fileName).ToPlatformPath();
-                        //await serviceMap.SaveImage(path, iFormat);
+                        context.ServiceRequest.Response = image;
                     }
                     else
                     {
@@ -247,7 +201,7 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
                            $"{serviceMapName}_{System.Guid.NewGuid():N}.{iFormat.ToString().ToLower()}";
 
                         string path = ($"{_mapServer.OutputPath}/{fileName}").ToPlatformPath();
-                        await serviceMap.SaveImage(path, iFormat);
+                        await File.WriteAllBytesAsync(path, image);
 
                         context.ServiceRequest.Succeeded = true;
                         context.ServiceRequest.Response = new JsonExportResponseDTO()

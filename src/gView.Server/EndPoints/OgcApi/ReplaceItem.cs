@@ -36,7 +36,8 @@ public class ReplaceItem : OgcApiBaseEndpoint
                     collectionId,
                     featureId,
                     await request.ReadBodyAsync(),
-                    httpContext.Request.Headers["Content-Crs"].ToString());
+                    httpContext.Request.Headers["Content-Crs"].ToString(),
+                    httpContext.Request.Headers.IfMatch.ToString());
 
                 return Results.NoContent();
             },

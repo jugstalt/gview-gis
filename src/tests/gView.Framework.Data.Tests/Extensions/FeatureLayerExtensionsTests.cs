@@ -7,7 +7,7 @@ using gView.Framework.Core.Symbology;
 using gView.Framework.Data;
 using gView.Framework.Data.Extensions;
 
-namespace gView.Framework.Tests.Data;
+namespace gView.Framework.Data.Tests.Extensions;
 
 public class FeatureLayerExtensionsTests
 {

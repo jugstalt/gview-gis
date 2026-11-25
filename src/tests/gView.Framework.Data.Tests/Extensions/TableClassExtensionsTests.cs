@@ -1,6 +1,6 @@
 using gView.Framework.Data.Extensions;
 
-namespace gView.Framework.Tests.Data;
+namespace gView.Framework.Data.Tests.Extensions;
 
 public class TableClassExtensionsTests
 {

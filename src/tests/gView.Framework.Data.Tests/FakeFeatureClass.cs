@@ -4,7 +4,7 @@ using gView.Framework.Core.Data.Filters;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Data;
 
-namespace gView.Framework.Tests.Data;
+namespace gView.Framework.Data.Tests;
 
 /// <summary>
 /// Feature class with fields only, for tests of request checks against the table schema.

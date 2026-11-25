@@ -57,10 +57,11 @@ public sealed partial class OgcApiFeatureService
     /// <summary>
     /// PUT: replaces the feature. Properties missing in the body are set to null.
     /// </summary>
-    public async Task ReplaceItemAsync(string collectionId, string featureId, string body, string? contentCrs)
+    /// <param name="ifMatch">the <c>If-Match</c> header: the feature is only replaced, if it still has one of these entity tags (412 otherwise)</param>
+    public async Task ReplaceItemAsync(string collectionId, string featureId, string body, string? contentCrs, string? ifMatch = null)
     {
         var (collection, editService) = EditContext(collectionId, Framework.Editor.Core.EditStatements.UPDATE);
-        int oid = await ExistingObjectId(collection, featureId);
+        int oid = await ExistingObjectId(collection, featureId, ifMatch);
         var geoJsonFeature = ReadFeature(collection, body, contentCrs, out int srs);
 
         var feature = new Feature() { OID = oid };
@@ -76,10 +77,11 @@ public sealed partial class OgcApiFeatureService
     /// <summary>
     /// PATCH (JSON merge patch): only the properties and the geometry in the body are changed
     /// </summary>
-    public async Task UpdateItemAsync(string collectionId, string featureId, string body, string? contentCrs)
+    /// <param name="ifMatch">the <c>If-Match</c> header: the feature is only changed, if it still has one of these entity tags (412 otherwise)</param>
+    public async Task UpdateItemAsync(string collectionId, string featureId, string body, string? contentCrs, string? ifMatch = null)
     {
         var (collection, editService) = EditContext(collectionId, Framework.Editor.Core.EditStatements.UPDATE);
-        int oid = await ExistingObjectId(collection, featureId);
+        int oid = await ExistingObjectId(collection, featureId, ifMatch);
         var geoJsonFeature = ReadFeature(collection, body, contentCrs, out int srs);
 
         var feature = new Feature() { OID = oid };
@@ -100,10 +102,11 @@ public sealed partial class OgcApiFeatureService
         await ExecuteAsync(editService, session => editService.Update(features, session));
     }
 
-    public async Task DeleteItemAsync(string collectionId, string featureId)
+    /// <param name="ifMatch">the <c>If-Match</c> header: the feature is only deleted, if it still has one of these entity tags (412 otherwise)</param>
+    public async Task DeleteItemAsync(string collectionId, string featureId, string? ifMatch = null)
     {
         var (collection, editService) = EditContext(collectionId, Framework.Editor.Core.EditStatements.DELETE);
-        int oid = await ExistingObjectId(collection, featureId);
+        int oid = await ExistingObjectId(collection, featureId, ifMatch);
 
         await ExecuteAsync(editService, session => editService.Delete(oid, session));
     }
@@ -132,10 +135,20 @@ public sealed partial class OgcApiFeatureService
         return (collection, editService);
     }
 
-    private async Task<int> ExistingObjectId(OgcCollectionLayer collection, string featureId)
+    /// <summary>
+    /// The object id of the feature to change. With an <c>If-Match</c> header the feature must still
+    /// have one of its entity tags (optimistic locking). The check runs right before the edit, but
+    /// not in the same transaction: a change in between by another client is not detected.
+    /// </summary>
+    private async Task<int> ExistingObjectId(OgcCollectionLayer collection, string featureId, string? ifMatch)
     {
         // throws 404, if the feature doesn't exist (or is outside the layer filter)
         var existing = await FeatureQuery.QueryItemAsync(Map, collection, featureId, CrsReference.Crs84);
+
+        if (!FeatureETag.Compute(existing).MatchesIfMatch(ifMatch))
+        {
+            throw new OgcApiException(412, "PreconditionFailed", $"The feature '{featureId}' has been changed in the meantime (If-Match)");
+        }
 
         return Convert.ToInt32(existing.Id, CultureInfo.InvariantCulture);
     }

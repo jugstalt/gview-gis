@@ -3,6 +3,7 @@ using gView.Framework.NetworkModel.Query;
 using gView.Pipe.Abstraction;
 using gView.Pipe.Abstraction.Data;
 using gView.Pipe.Abstraction.Nodes;
+using gView.Pipe.Plugins.Gis.Extensions;
 using Microsoft.Extensions.Logging;
 using SpatialNET.Network;
 using System.ComponentModel.DataAnnotations;
@@ -189,7 +190,7 @@ public sealed class NetworkTraceNode : IPipeNode<NetworkTraceParameters>
             sources = string.Join(",", references);
         }
 
-        var result = Run(log, graph, "feeders", Request(parameters) with { Sources = Empty(sources), Branches = Empty(parameters.Branches), OpenEdges = parameters.OpenLines }, cancellationToken);
+        var result = Run(log, graph, "feeders", Request(parameters) with { Sources = sources.TrimmedOrNull(), Branches = parameters.Branches.TrimmedOrNull(), OpenEdges = parameters.OpenLines }, cancellationToken);
         var outputTypes = string.IsNullOrWhiteSpace(parameters.OutputTypes)
             ? null
             : EdgeTypeNames(graph, parameters.OutputTypes);
@@ -218,7 +219,7 @@ public sealed class NetworkTraceNode : IPipeNode<NetworkTraceParameters>
                 log.Progress(() =>
                 {
                     var left = TimeSpan.FromMilliseconds(watch.ElapsedMilliseconds / (double)done * (items.Count - done));
-                    return $"Trace {done:N0}/{items.Count:N0} ({100.0 * done / items.Count:0}%): {found.Count:N0} edge(s) found, {Duration(watch.Elapsed)} so far, about {Duration(left)} left";
+                    return $"Trace {done:N0}/{items.Count:N0} ({100.0 * done / items.Count:0}%): {found.Count:N0} edge(s) found, {watch.Elapsed.ToDurationText()} so far, about {left.ToDurationText()} left";
                 });
             }
             var start = NodeReference(context, log, items[i], i, parameters);
@@ -250,7 +251,7 @@ public sealed class NetworkTraceNode : IPipeNode<NetworkTraceParameters>
                 found.Add(new FoundEdge(edge, "Edge", double.IsFinite(cost) ? cost : 0, null, null, start));
             }
         }
-        log.Info($"Trace: {items.Count:N0} item(s), {found.Count:N0} edge(s) found in {Duration(watch.Elapsed)}");
+        log.Info($"Trace: {items.Count:N0} item(s), {found.Count:N0} edge(s) found in {watch.Elapsed.ToDurationText()}");
         return ToItems(graph, found, parameters);
     }
 
@@ -259,7 +260,7 @@ public sealed class NetworkTraceNode : IPipeNode<NetworkTraceParameters>
 
     static private List<PipeItem> ToItems(FileNetworkGraph graph, IEnumerable<FoundEdge> edges, NetworkTraceParameters parameters)
     {
-        var srs = Epsg(graph.Metadata.Srs);
+        var srs = graph.Metadata.Srs.ToEpsgCode();
         var groups = parameters.GroupParts
             ? edges.GroupBy(e => (e.Edge.Layer, e.Edge.Oid, e.Source, e.Branch, e.Start))
                    .Select(g => g.OrderBy(e => e.Cost).ToList())
@@ -339,13 +340,13 @@ public sealed class NetworkTraceNode : IPipeNode<NetworkTraceParameters>
 
     static private NetworkQueryRequest Request(NetworkTraceParameters parameters) => new()
     {
-        Tier = Empty(parameters.Tier),
-        Filter = Empty(parameters.Filter),
-        Block = Empty(parameters.Block),
-        Unblock = Empty(parameters.Unblock),
-        Disable = Empty(parameters.Disable),
+        Tier = parameters.Tier.TrimmedOrNull(),
+        Filter = parameters.Filter.TrimmedOrNull(),
+        Block = parameters.Block.TrimmedOrNull(),
+        Unblock = parameters.Unblock.TrimmedOrNull(),
+        Disable = parameters.Disable.TrimmedOrNull(),
         StopAtSources = parameters.StopAtSources,
-        Weight = Empty(parameters.Weight),
+        Weight = parameters.Weight.TrimmedOrNull(),
         MaxCost = parameters.MaxCost > 0 ? parameters.MaxCost : null,
         WithEdges = true,
     };
@@ -415,16 +416,6 @@ public sealed class NetworkTraceNode : IPipeNode<NetworkTraceParameters>
         return slash >= 0 && int.TryParse(label[(slash + 1)..], NumberStyles.Integer, CultureInfo.InvariantCulture, out var part) ? part : 0;
     }
 
-    static private int? Epsg(string? srs)
-    {
-        if (string.IsNullOrEmpty(srs))
-        {
-            return null;
-        }
-        var code = srs[(srs.LastIndexOf(':') + 1)..];
-        return int.TryParse(code, NumberStyles.Integer, CultureInfo.InvariantCulture, out var epsg) ? epsg : null;
-    }
-
     /// <summary>gView's object ids are int: as int, Write Features and expressions read them like those of Read Features.</summary>
     static private JsonNode ObjectId(long oid) => oid is >= int.MinValue and <= int.MaxValue ? JsonValue.Create((int)oid) : JsonValue.Create(oid);
 
@@ -468,11 +459,6 @@ public sealed class NetworkTraceNode : IPipeNode<NetworkTraceParameters>
         return target;
     }
 
-    static private string Duration(TimeSpan time)
-        => time.TotalHours >= 1 ? $"{(int)time.TotalHours} h {time.Minutes} min"
-         : time.TotalMinutes >= 1 ? $"{(int)time.TotalMinutes} min {time.Seconds} s"
-         : $"{time.TotalSeconds:0.#} s";
-
     /// <summary>
     /// The log of a run, which is the live output in the editor: progress at most every 2 seconds (the run log keeps about
     /// 1,000 lines) and the first 20 warnings, then only their number.
@@ -514,8 +500,6 @@ public sealed class NetworkTraceNode : IPipeNode<NetworkTraceParameters>
         public void Finish(string message)
             => logger.LogInformation("{Message}", _warnings > MaxWarnings ? $"{message}, {_warnings:N0} warning(s)" : message);
     }
-
-    static private string? Empty(string? text) => string.IsNullOrWhiteSpace(text) ? null : text.Trim();
 
     static private PipeException TooMany(NetworkTraceParameters parameters)
         => new($"The result has more than {parameters.MaxItems} items (Max items); split the run, e.g. with Sources from items, or raise Max items");

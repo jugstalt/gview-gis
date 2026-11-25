@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace gView.Framework.Core.Extensions;
 
-public static class ServiceRequestContextErrorExtensions
+public static class ServiceRequestContextExtensions
 {
     extension(IServiceRequestContext context)
     {

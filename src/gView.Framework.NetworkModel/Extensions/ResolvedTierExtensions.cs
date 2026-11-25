@@ -2,7 +2,7 @@ using gView.Framework.NetworkModel.Config;
 
 namespace gView.Framework.NetworkModel.Extensions;
 
-internal static class NetworkTierConfigExtensions
+internal static class ResolvedTierExtensions
 {
     /// <summary>The tier of that name (ignoring case and surrounding white space); null when there is none.</summary>
     public static ResolvedTier? FindTier(this IEnumerable<ResolvedTier> tiers, string? name)

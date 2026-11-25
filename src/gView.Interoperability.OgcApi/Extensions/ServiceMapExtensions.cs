@@ -3,7 +3,6 @@ using gView.Framework.Core.Data;
 using gView.Framework.Core.UI;
 using gView.Interoperability.OGC;
 using gView.Interoperability.OgcApi.Features;
-using System.Globalization;
 
 namespace gView.Interoperability.OgcApi.Extensions;
 
@@ -149,12 +148,9 @@ internal static class ServiceMapExtensions
 
         foreach (var code in codes)
         {
-            if (code is not null
-                && code.StartsWith("EPSG:", StringComparison.OrdinalIgnoreCase)
-                && int.TryParse(code.Substring(5), NumberStyles.None, CultureInfo.InvariantCulture, out int epsgCode)
-                && epsgCode > 0)
+            if (CrsReference.TryParse(code, out var crs) && !crs.IsCrs84)
             {
-                yield return epsgCode;
+                yield return crs.EpsgCode;
             }
         }
     }

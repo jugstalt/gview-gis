@@ -32,7 +32,7 @@ public class DeleteItem : OgcApiBaseEndpoint
             ) => HandleSecureAsync(httpContext, mapServiceManager, loginManager, logger, folder, service, OgcApiOperations.DeleteItem,
             async request =>
             {
-                await request.Service.DeleteItemAsync(collectionId, featureId);
+                await request.Service.DeleteItemAsync(collectionId, featureId, httpContext.Request.Headers.IfMatch.ToString());
 
                 return Results.NoContent();
             },

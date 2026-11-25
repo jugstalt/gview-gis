@@ -8,6 +8,9 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.IIS;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -118,6 +121,27 @@ static public class ServiceCollectionExtensions
                 // This lambda determines whether user consent for non-essential cookies is needed for a given request.
                 options.CheckConsentNeeded = context => true;
                 options.MinimumSameSitePolicy = SameSiteMode.None;
+            });
+        }
+
+        return services;
+    }
+
+    /// <summary>
+    /// Request body size and the optional rate limit of the services (see <see cref="SecurityOptions"/>).
+    /// </summary>
+    static public IServiceCollection AddSecurityLimits(this IServiceCollection services, SecurityOptions options)
+    {
+        services.Configure<KestrelServerOptions>(o => o.Limits.MaxRequestBodySize = options.MaxRequestBodyBytes);
+        services.Configure<IISServerOptions>(o => o.MaxRequestBodySize = options.MaxRequestBodyBytes);
+        services.Configure<FormOptions>(o => o.MultipartBodyLengthLimit = options.MaxRequestBodyBytes ?? long.MaxValue);
+
+        if (options.RateLimitEnabled)
+        {
+            services.AddRateLimiter(limiter =>
+            {
+                limiter.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+                limiter.GlobalLimiter = ServiceRateLimiter.Create(options.RateLimitRequestsPerMinute);
             });
         }
 
