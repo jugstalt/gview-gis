@@ -71,7 +71,7 @@ internal static class OpenApiDocumentBuilder
 
             var itemsPath = Get($"get{id}Features", collection.Title, $"Features of '{collection.Title}'", itemsParameters, GeoJsonOrHtml("featureCollectionGeoJSON"));
             var itemPath = Get($"get{id}Feature", collection.Title, $"A feature of '{collection.Title}'",
-                [Ref("featureId"), Ref("crs"), Ref("f")], GeoJsonOrHtml("featureGeoJSON", notFound: true));
+                [Ref("featureId"), Ref("crs"), Ref("f")], WithETag(GeoJsonOrHtml("featureGeoJSON", notFound: true)));
 
             #region Part 4
 
@@ -210,6 +210,21 @@ internal static class OpenApiDocumentBuilder
             [OgcApiMediaTypes.GeoJson] = new JsonObject() { ["schema"] = SchemaRef(schema) },
             [OgcApiMediaTypes.Html] = new JsonObject() { ["schema"] = new JsonObject() { ["type"] = "string" } }
         }, notFound);
+
+    private static JsonObject WithETag(JsonObject responses)
+    {
+        // the strong ETag of a feature (the same for every crs), sent back as If-Match when editing it
+        ((JsonObject)responses["200"]!)["headers"] = new JsonObject()
+        {
+            ["ETag"] = new JsonObject()
+            {
+                ["description"] = "The version of the feature, for If-Match when replacing, updating or deleting it",
+                ["schema"] = new JsonObject() { ["type"] = "string" }
+            }
+        };
+
+        return responses;
+    }
 
     private static JsonObject OpenApiOrHtml()
         => Responses(new JsonObject()

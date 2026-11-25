@@ -225,7 +225,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - OGC API - Features Part 4: optimistic locking. `GET .../items/{featureId}` returns an `ETag`
   (hash of id, CRS84 geometry and properties, the same for every `crs` and format); `PUT`, `PATCH` and
   `DELETE` with `If-Match` answer `412 Precondition Failed` when the feature was changed in the
-  meantime. Without `If-Match` nothing changes. CORS exposes `ETag` and `Location`.
+  meantime. Without `If-Match` nothing changes. CORS exposes `ETag` and `Location`. The OpenAPI document
+  names the `ETag` header of the feature response.
 
 ## Changed
 
@@ -275,6 +276,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   geometry and attributes of the result, the description and the forms no longer wait for a search slot, and the
   wait for a slot is limited (503). Networks built by an older version answer "rebuild network" instead of an
   internal error. Reloading a service opens its network again.
+- Network REST: results with few nodes but many edges (e.g. `feeders` of the whole network: ~9.000 sources,
+  ~1 million edges, ~900 MB JSON) are cut at `Network:MaxResultNodes` too (`exceededLimit`); before only the
+  nodes counted.
+- Network build: helper nodes that round to the same tolerance cell get the id of their exact location
+  instead of a counter, so their ids no longer depend on how many came before them (stable between builds).
+- OGC API - Features Part 4: `PATCH` accepts a JSON merge patch without `"type": "Feature"` (RFC 7396), as
+  QGIS sends it; before, changing attributes or geometries in QGIS failed with 400.
 - Carto: select boxes in dialogs opened from another dialog (e.g. `Order by ...`, `Label Style ...`
   and `Set Value Field ...` of the renderers) opened behind the dialog.
 - Tile service: tiles rendered on the fly (vector and raster) failed with "file used by another process" /

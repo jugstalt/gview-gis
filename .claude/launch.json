@@ -2,6 +2,21 @@
   "version": "0.0.1",
   "configurations": [
     {
+      "name": "server",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": [
+        "run",
+        "--project",
+        "src/gView.Server/gView.Server.csproj",
+        "--no-build",
+        "--launch-profile",
+        "https"
+      ],
+      "port": 44330,
+      "url": "http://localhost:44330",
+      "autoPort": false
+    },
+    {
       "name": "webapps",
       "runtimeExecutable": "dotnet",
       "runtimeArgs": [

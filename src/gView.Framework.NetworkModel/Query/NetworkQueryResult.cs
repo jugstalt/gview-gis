@@ -153,11 +153,12 @@ public sealed class NetworkQueryResult
 
     /// <summary>
     /// Keeps the first <paramref name="maxNodes"/> nodes, of the rest violations, and the first <paramref name="maxNodes"/>
-    /// edges; marks <see cref="ExceededLimit"/>. The limit applies to the result, not to the search itself.
+    /// edges; marks <see cref="ExceededLimit"/>. Too many edges alone cut the result too (feeders: few sources, all edges).
+    /// The limit applies to the result, not to the search itself.
     /// </summary>
     public void Truncate(int maxNodes)
     {
-        if (maxNodes <= 0 || Nodes.Count + Violations.Count <= maxNodes)
+        if (maxNodes <= 0 || (Nodes.Count + Violations.Count <= maxNodes && Edges.Count <= maxNodes))
         {
             return;
         }

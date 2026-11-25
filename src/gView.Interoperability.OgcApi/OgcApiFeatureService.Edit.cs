@@ -82,7 +82,7 @@ public sealed partial class OgcApiFeatureService
     {
         var (collection, editService) = EditContext(collectionId, Framework.Editor.Core.EditStatements.UPDATE);
         int oid = await ExistingObjectId(collection, featureId, ifMatch);
-        var geoJsonFeature = ReadFeature(collection, body, contentCrs, out int srs);
+        var geoJsonFeature = ReadFeature(collection, body, contentCrs, out int srs, mergePatch: true);
 
         var feature = new Feature() { OID = oid };
         if (geoJsonFeature.HasGeometry)
@@ -153,7 +153,7 @@ public sealed partial class OgcApiFeatureService
         return Convert.ToInt32(existing.Id, CultureInfo.InvariantCulture);
     }
 
-    private GeoJsonFeature ReadFeature(OgcCollectionLayer collection, string body, string? contentCrs, out int srs)
+    private GeoJsonFeature ReadFeature(OgcCollectionLayer collection, string body, string? contentCrs, out int srs, bool mergePatch = false)
     {
         var crs = CrsReference.Crs84;
         if (!String.IsNullOrWhiteSpace(contentCrs))
@@ -166,7 +166,7 @@ public sealed partial class OgcApiFeatureService
         }
 
         srs = crs.EpsgCode;
-        return GeoJsonReader.ReadFeature(body, crs.HasNorthingFirst(crs.ToSpatialReference()));
+        return GeoJsonReader.ReadFeature(body, crs.HasNorthingFirst(crs.ToSpatialReference()), mergePatch);
     }
 
     /// <summary>

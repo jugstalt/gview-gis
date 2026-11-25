@@ -58,19 +58,29 @@ public sealed class NetworkIds : INetworkIdFactory<long, long, FeatureRef>
 
     public long NewHelperNode(Coordinate location, int typeId)
     {
-        // the location rounded to the tolerance grid and the type, hashed into the 51 free bits; two helper nodes may round
-        // to the same cell (a chain of ends wider than the tolerance), then the next salt is taken
-        long ix = (long)Math.Round(location.X / _tolerance);
-        long iy = (long)Math.Round(location.Y / _tolerance);
-        for (long salt = 0; ; salt++)
+        // the location rounded to the tolerance grid and the type, hashed into the 51 free bits
+        long id = HelperId(Cell(location.X, _tolerance), Cell(location.Y, _tolerance), typeId, 0);
+        if (_helperIds.Add(id))
         {
-            long id = HelperId(ix, iy, typeId, salt);
+            return id;
+        }
+
+        // two helper nodes may round to the same cell (a chain of ends wider than the tolerance): the others get the id of
+        // their exact location (a grid 1024 times finer), so their ids don't depend on how many came before them; only
+        // which one of them keeps the cell id follows the order of the builder's calls
+        double fine = _tolerance / 1024.0;
+        long fx = Cell(location.X, fine), fy = Cell(location.Y, fine);
+        for (long salt = 1; ; salt++)
+        {
+            id = HelperId(fx, fy, typeId, salt);
             if (_helperIds.Add(id))
             {
                 return id;
             }
         }
     }
+
+    private static long Cell(double value, double size) => (long)Math.Round(value / size);
 
     private static long HelperId(long ix, long iy, int typeId, long salt)
     {

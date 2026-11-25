@@ -60,6 +60,23 @@ public class NetworkIdsTests
     }
 
     [Fact]
+    public void NewHelperNode_SameCellThreeTimes_LaterIdsDontDependOnTheOrder()
+    {
+        // three ends inside one tolerance cell: the first keeps the cell id, the others get the id of their exact location
+        Coordinate a = new(5, 5), b = new(5.002, 5), c = new(5, 5.003);
+
+        var abc = new NetworkIds(0.01);
+        long a1 = abc.NewHelperNode(a, 0), b1 = abc.NewHelperNode(b, 0), c1 = abc.NewHelperNode(c, 0);
+        var acb = new NetworkIds(0.01);
+        long a2 = acb.NewHelperNode(a, 0), c2 = acb.NewHelperNode(c, 0), b2 = acb.NewHelperNode(b, 0);
+
+        Assert.Equal(a1, a2);
+        Assert.Equal(b1, b2);
+        Assert.Equal(c1, c2);
+        Assert.Equal(3, new[] { a1, b1, c1 }.Distinct().Count());
+    }
+
+    [Fact]
     public void NewEdge_UsesFeatureAndPart()
     {
         var id = new NetworkIds(0.01).NewEdge(new FeatureRef(2, 77), 4, 9);

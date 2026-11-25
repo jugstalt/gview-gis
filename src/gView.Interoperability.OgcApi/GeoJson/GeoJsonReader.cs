@@ -26,7 +26,8 @@ internal sealed class GeoJsonFeature
 /// </summary>
 internal static class GeoJsonReader
 {
-    public static GeoJsonFeature ReadFeature(string json, bool swapAxes)
+    /// <param name="mergePatch">a JSON merge patch (PATCH, RFC 7396): only the members to change, "type" may be missing</param>
+    public static GeoJsonFeature ReadFeature(string json, bool swapAxes, bool mergePatch = false)
     {
         JsonDocument document;
         try
@@ -41,10 +42,10 @@ internal static class GeoJsonReader
         using (document)
         {
             var root = document.RootElement;
+            bool hasType = root.ValueKind == JsonValueKind.Object && root.TryGetProperty("type", out _);
             if (root.ValueKind != JsonValueKind.Object
-                || !root.TryGetProperty("type", out var type)
-                || type.ValueKind != JsonValueKind.String
-                || type.GetString() != "Feature")
+                || (hasType || !mergePatch)
+                   && (!root.TryGetProperty("type", out var type) || type.ValueKind != JsonValueKind.String || type.GetString() != "Feature"))
             {
                 throw OgcApiException.BadRequest("The body must be a GeoJSON Feature");
             }

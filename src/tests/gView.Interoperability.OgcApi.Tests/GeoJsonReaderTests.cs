@@ -44,6 +44,25 @@ public class GeoJsonReaderTests
     }
 
     [Fact]
+    public void ReadFeature_MergePatchWithoutType_IsRead()
+    {
+        // QGIS sends a PATCH body without "type" (JSON merge patch, RFC 7396)
+        var feature = GeoJsonReader.ReadFeature("""{"properties":{"a":"x"}}""", false, mergePatch: true);
+
+        Assert.False(feature.HasGeometry);
+        Assert.Equal("x", feature.Properties!["a"].GetString());
+    }
+
+    [Theory]
+    [InlineData("""{"properties":{"a":1}}""", false)]
+    [InlineData("""{"type":"Point","properties":{"a":1}}""", true)]
+    [InlineData("""[]""", true)]
+    public void ReadFeature_NoFeature_IsBadRequest(string json, bool mergePatch)
+    {
+        Assert.Throws<OgcApiException>(() => GeoJsonReader.ReadFeature(json, false, mergePatch));
+    }
+
+    [Fact]
     public void ReadFeature_NullGeometry_HasGeometryTrue()
     {
         var feature = GeoJsonReader.ReadFeature("""{"type":"Feature","geometry":null,"properties":null}""", false);
