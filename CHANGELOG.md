@@ -283,6 +283,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   instead of a counter, so their ids no longer depend on how many came before them (stable between builds).
 - OGC API - Features Part 4: `PATCH` accepts a JSON merge patch without `"type": "Feature"` (RFC 7396), as
   QGIS sends it; before, changing attributes or geometries in QGIS failed with 400.
+- GeoServices REST: errors with a status (e.g. 503/504 of network searches) carry it as `code` instead of
+  always `999`; the response stays HTTP 200 as in ArcGIS.
+- Pipe Network Trace node: the source and branch ids (`sourceOid`, `branchOid` and the id fields) are also
+  found for layers with blanks in their names (e.g. `Geoschematischer Hausanschluss`).
 - Carto: select boxes in dialogs opened from another dialog (e.g. `Order by ...`, `Label Style ...`
   and `Set Value Field ...` of the renderers) opened behind the dialog.
 - Tile service: tiles rendered on the fly (vector and raster) failed with "file used by another process" /
@@ -415,7 +419,9 @@ gView Server hardening for internet-facing installations, see
   - New page **Two-factor login** (sidebar, `Manage/TwoFactor`): set up with QR code (QRCoder,
     rendered on the server, no CDN) or manual key, confirm with a code, 10 recovery codes shown
     once (copy/download); new recovery codes, new device, disable (only `optional`). Setting up,
-    replacing and disabling end all other sessions of the admin (new security stamp).
+    replacing and disabling end all other sessions of the admin (new security stamp). The setup
+    has 10 minutes to scan the QR code and confirm a code, and "sign out everywhere" or a new
+    password ends a running setup.
   - `required`: admins without a second factor set it up right after the password; existing
     sessions of admins without one end.
   - Stored in `<user>.2fa` next to `<user>.lgn`: secret encrypted with the server certificate

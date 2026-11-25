@@ -1796,7 +1796,8 @@ public partial class GeoServicesRestController : BaseController
                 {
                     return Result(new JsonErrorDTO()
                     {
-                        Error = new JsonErrorDTO.ErrorDef() { Code = 999, Message = mse.Message }
+                        // the status of the exception (e.g. 503, 504 of network searches), the response stays 200 like ArcGIS
+                        Error = new JsonErrorDTO.ErrorDef() { Code = mse.StatusCode ?? 999, Message = mse.Message }
                     });
                 }
                 catch (Exception ex)

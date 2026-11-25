@@ -23,7 +23,8 @@ namespace gView.Server.Services.Security.TwoFactor;
 public class TwoFactorService
 {
     public static readonly TimeSpan PendingLifetime = TimeSpan.FromMinutes(5);
-    public static readonly TimeSpan SetupLifetime = TimeSpan.FromMinutes(15);
+    /// <summary>Time to scan the QR code and confirm a code; the setup token is also bound to the security stamp.</summary>
+    public static readonly TimeSpan SetupLifetime = TimeSpan.FromMinutes(10);
     public const int MaxPendingFailures = 5;
 
     private const string PendingPrefix = "2fa-pending";
@@ -158,7 +159,8 @@ public class TwoFactorService
 
     /// <summary>
     /// A new secret for the authenticator app. Nothing is stored: the secret travels
-    /// in the encrypted setup token until the admin confirms it with a code.
+    /// in the encrypted setup token until the admin confirms it with a code. The token is bound to
+    /// the user's security stamp: "sign out everywhere" or a new password ends a running setup.
     /// </summary>
     /// <param name="existingSetupToken">continue a setup (e.g. after a wrong code): same secret,
     /// the admin has already scanned the QR code</param>
@@ -173,7 +175,9 @@ public class TwoFactorService
         var secret = Totp.NewSecret();
         var expires = UtcNow().Add(SetupLifetime).Ticks;
 
-        return CreateSetup(username, host, secret, Protect($"{SetupPrefix}|{username}|{Totp.ToBase32(secret)}|{expires}"));
+        var stamp = LoginStamp.Current(_store.Folder, username) ?? "";
+
+        return CreateSetup(username, host, secret, Protect($"{SetupPrefix}|{username}|{Totp.ToBase32(secret)}|{expires}|{stamp}"));
     }
 
     private TwoFactorSetup CreateSetup(string username, string host, byte[] secret, string token)
@@ -195,10 +199,11 @@ public class TwoFactorService
 
     private (byte[] secret, long expires)? ReadSetupToken(string username, string setupToken)
     {
-        var parts = Unprotect(setupToken, SetupPrefix, 4);
+        var parts = Unprotect(setupToken, SetupPrefix, 5);
         if (parts is null
             || !String.Equals(username, parts[1], StringComparison.OrdinalIgnoreCase)
-            || !long.TryParse(parts[3], out long expires) || expires < UtcNow().Ticks)
+            || !long.TryParse(parts[3], out long expires) || expires < UtcNow().Ticks
+            || parts[4] != (LoginStamp.Current(_store.Folder, username) ?? ""))
         {
             return null;
         }

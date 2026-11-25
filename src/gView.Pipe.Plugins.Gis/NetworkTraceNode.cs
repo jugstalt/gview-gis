@@ -201,7 +201,7 @@ public sealed class NetworkTraceNode : IPipeNode<NetworkTraceParameters>
         var edges = result.Edges
             .Where(e => e.Kind != "Boundary")
             .Where(e => outputTypes?.Contains(e.Type) ?? !(branchTypes?.Contains(e.Type) ?? false))
-            .Select(e => new FoundEdge(e, e.Kind, e.Cost ?? 0, e.Source, e.Branch, null));
+            .Select(e => new FoundEdge(e, e.Cost ?? 0, new NetworkSupply(e.Kind, new NodeLabels(e.Source), new NodeLabels(e.Branch)), null));
         return ToItems(graph, edges, parameters);
     }
 
@@ -248,21 +248,21 @@ public sealed class NetworkTraceNode : IPipeNode<NetworkTraceParameters>
             foreach (var edge in result.Edges.Where(e => e.Kind != "Boundary" && (outputTypes?.Contains(e.Type) ?? true)))
             {
                 var cost = Math.Min(costs.GetValueOrDefault(edge.From, double.PositiveInfinity), costs.GetValueOrDefault(edge.To, double.PositiveInfinity));
-                found.Add(new FoundEdge(edge, "Edge", double.IsFinite(cost) ? cost : 0, null, null, start));
+                found.Add(new FoundEdge(edge, double.IsFinite(cost) ? cost : 0, null, start));
             }
         }
         log.Info($"Trace: {items.Count:N0} item(s), {found.Count:N0} edge(s) found in {watch.Elapsed.ToDurationText()}");
         return ToItems(graph, found, parameters);
     }
 
-    /// <summary>An edge of a result with what the node knows about it.</summary>
-    private sealed record FoundEdge(NetworkResultEdge Edge, string Kind, double Cost, string? Source, string? Branch, string? Start);
+    /// <summary>An edge of a result with what the node knows about it: what feeds it (Feeders) or where the trace started.</summary>
+    private sealed record FoundEdge(NetworkResultEdge Edge, double Cost, NetworkSupply? Supply, string? Start);
 
     static private List<PipeItem> ToItems(FileNetworkGraph graph, IEnumerable<FoundEdge> edges, NetworkTraceParameters parameters)
     {
         var srs = graph.Metadata.Srs.ToEpsgCode();
         var groups = parameters.GroupParts
-            ? edges.GroupBy(e => (e.Edge.Layer, e.Edge.Oid, e.Source, e.Branch, e.Start))
+            ? edges.GroupBy(e => (e.Edge.Layer, e.Edge.Oid, e.Supply?.Sources, e.Supply?.Branches, e.Start))
                    .Select(g => g.OrderBy(e => e.Cost).ToList())
             : edges.Select(e => new List<FoundEdge> { e });
 
@@ -282,25 +282,26 @@ public sealed class NetworkTraceNode : IPipeNode<NetworkTraceParameters>
                 properties["edgeId"] = edge.Id;
             }
             properties["type"] = edge.Type;
-            var kind = parts.Any(p => p.Kind == "Multiple") ? "Multiple" : parts.All(p => p.Kind == "Open") ? "Open" : "Edge";
+            var kind = SupplyKind.Of(parts.Select(p => p.Supply?.Kind ?? SupplyKind.Edge));
             properties["kind"] = kind;
             if (first.Start is not null)
             {
                 properties["start"] = first.Start;
             }
-            if (first.Source is not null)
+            var supply = first.Supply is { Sources.Text: not null } fed ? fed with { Kind = kind } : null;
+            if (supply is not null)
             {
-                properties["source"] = first.Source;
-                properties["sourceOid"] = OidOf(first.Source);
-                properties["branch"] = first.Branch;
-                properties["branchOid"] = OidOf(first.Branch);
+                properties["source"] = supply.Sources.Text;
+                properties["sourceOid"] = supply.Sources.FirstOid;
+                properties["branch"] = supply.Branches.Text;
+                properties["branchOid"] = supply.Branches.FirstOid;
             }
             properties["cost"] = Math.Round(first.Cost, 3);
             properties["length"] = Math.Round(parts.Sum(p => p.Edge.Length), 3);
             properties["parts"] = parts.Count;
-            if (first.Source is not null && HasOutputFields(parameters))
+            if (supply is not null && HasOutputFields(parameters))
             {
-                properties = OutputFields(parameters, properties, kind, first.Source, first.Branch);
+                properties = OutputFields(parameters, properties, supply);
             }
 
             output.Add(new PipeItem(new JsonObject
@@ -390,26 +391,6 @@ public sealed class NetworkTraceNode : IPipeNode<NetworkTraceParameters>
             .ToHashSet();
     }
 
-    /// <summary>The OID of the first Layer#OID of a label list ("Transformer#4711 Transformer#4712" → 4711).</summary>
-    static private long? OidOf(string? labels)
-    {
-        var first = labels?.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
-        int hash = first?.LastIndexOf('#') ?? -1;
-        return hash >= 0 && long.TryParse(first![(hash + 1)..], NumberStyles.Integer, CultureInfo.InvariantCulture, out var oid) ? oid : null;
-    }
-
-    /// <summary>The OIDs of a label list as text, in its order ("Transformer#4711 Transformer#4712" → "4711,4712").</summary>
-    static private string? OidsOf(string? labels)
-    {
-        var oids = (labels ?? "").Split(' ', StringSplitOptions.RemoveEmptyEntries)
-            .Select(OidOf)
-            .OfType<long>()
-            .Distinct()
-            .Select(oid => oid.ToString(CultureInfo.InvariantCulture))
-            .ToList();
-        return oids.Count == 0 ? null : string.Join(",", oids);
-    }
-
     static private int PartOf(string label)
     {
         int slash = label.LastIndexOf('/');
@@ -428,16 +409,16 @@ public sealed class NetworkTraceNode : IPipeNode<NetworkTraceParameters>
     /// The fields named in the parameters: ids of the (cheapest) source and branch, the kind, and their classes (id modulo
     /// Classes; Multiple class and Open class for those kinds). With Only the output fields nothing else.
     /// </summary>
-    static private JsonObject OutputFields(NetworkTraceParameters parameters, JsonObject properties, string kind, string? sources, string? branches)
+    static private JsonObject OutputFields(NetworkTraceParameters parameters, JsonObject properties, NetworkSupply supply)
     {
-        var sourceOid = OidOf(sources);
-        var branchOid = OidOf(branches);
+        var sourceOid = supply.Sources.FirstOid;
+        var branchOid = supply.Branches.FirstOid;
         var target = parameters.OnlyOutputFields ? new JsonObject() : properties;
         var classes = Math.Max(1, parameters.Classes);
-        int? fixedClass = kind switch
+        int? fixedClass = supply.Kind switch
         {
-            "Open" => parameters.OpenClass,
-            "Multiple" => parameters.MultipleClass,
+            SupplyKind.Open => parameters.OpenClass,
+            SupplyKind.Multiple => parameters.MultipleClass,
             _ => null
         };
         JsonNode? Class(long? oid) => fixedClass is int value ? value : oid is long id ? ObjectId(id % classes) : null;
@@ -451,9 +432,9 @@ public sealed class NetworkTraceNode : IPipeNode<NetworkTraceParameters>
         }
         Set(parameters.SourceIdField, sourceOid is long source ? ObjectId(source) : null);
         Set(parameters.BranchIdField, branchOid is long branch ? ObjectId(branch) : null);
-        Set(parameters.SourceIdsField, OidsOf(sources));
-        Set(parameters.BranchIdsField, OidsOf(branches));
-        Set(parameters.KindField, kind);
+        Set(parameters.SourceIdsField, supply.Sources.OidsText);
+        Set(parameters.BranchIdsField, supply.Branches.OidsText);
+        Set(parameters.KindField, supply.Kind);
         Set(parameters.SourceClassField, Class(sourceOid));
         Set(parameters.BranchClassField, Class(branchOid));
         return target;

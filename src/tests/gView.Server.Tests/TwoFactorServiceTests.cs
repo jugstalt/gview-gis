@@ -103,6 +103,16 @@ public class TwoFactorServiceTests : IDisposable
     }
 
     [Fact]
+    public void ConfirmSetup_AfterSignOutEverywhere_Throws()
+    {
+        var service = Service();
+        var setup = service.BeginSetup("admin", "host");
+        LoginStamp.Renew(_folder, "admin");
+
+        Assert.Throws<MapServerException>(() => service.ConfirmSetup("admin", setup.SetupToken, CodeFor(setup.Secret), "ip"));
+    }
+
+    [Fact]
     public void ConfirmSetup_TokenOfOtherUser_Throws()
     {
         var service = Service();
