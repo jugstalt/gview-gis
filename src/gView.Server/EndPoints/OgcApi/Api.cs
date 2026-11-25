@@ -31,7 +31,10 @@ public class Api : OgcApiBaseEndpoint
             request =>
             {
                 return Task.FromResult(request.Format == OgcApiFormat.Html
-                    ? Html(request, "API", HtmlRenderer.SwaggerUi($"{request.Service.ApiUrl}?f=json", request.Service.ServiceUrl))
+                    ? Html(request, "API", HtmlRenderer.SwaggerUi(
+                        $"{request.Service.ApiUrl}?f=json",
+                        request.Service.ServiceUrl,
+                        $"{httpContext.Request.PathBase.Value?.TrimEnd('/')}/lib/swagger-ui"))
                     : Json(request.Service.GetOpenApiDocument(), OgcApiMediaTypes.OpenApiJson));
             });
 }

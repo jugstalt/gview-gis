@@ -217,17 +217,19 @@ public static class HtmlRenderer
     }
 
     /// <summary>
-    /// Swagger UI (from a CDN) for the API definition
+    /// Swagger UI for the API definition. The swagger-ui-dist files are served locally
+    /// from <paramref name="swaggerUiLibUrl"/> (no CDN)
     /// </summary>
-    public static string SwaggerUi(string apiJsonUrl, string serviceUrl)
+    public static string SwaggerUi(string apiJsonUrl, string serviceUrl, string swaggerUiLibUrl)
     {
+        // swagger-ui-dist version of the local files; bumped when the files are replaced (cache busting)
         const string swaggerUiVersion = "5.17.14";
 
         var sb = new StringBuilder();
         AppendBreadcrumb(sb, (serviceUrl, "Landing page"));
-        sb.Append($"<link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/swagger-ui-dist@{swaggerUiVersion}/swagger-ui.css' />");
+        sb.Append($"<link rel='stylesheet' href='{E(swaggerUiLibUrl)}/swagger-ui.css?{swaggerUiVersion}' />");
         sb.Append("<div id='swagger-ui' class='ogc-swagger'></div>");
-        sb.Append($"<script src='https://cdn.jsdelivr.net/npm/swagger-ui-dist@{swaggerUiVersion}/swagger-ui-bundle.js'></script>");
+        sb.Append($"<script src='{E(swaggerUiLibUrl)}/swagger-ui-bundle.js?{swaggerUiVersion}'></script>");
         sb.Append($"<script>window.addEventListener('load', function() {{ SwaggerUIBundle({{ url: '{JsString(apiJsonUrl)}', dom_id: '#swagger-ui' }}); }});</script>");
 
         return sb.ToString();
