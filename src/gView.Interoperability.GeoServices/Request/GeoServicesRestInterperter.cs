@@ -1437,6 +1437,7 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
                 }
 
                 editService.PrepareUpdates(features);
+                await editService.CheckObjectsInLayer(features.Select(f => f.OID));  // only objects the layer shows
 
                 if (!await editService.Update(features))
                 {
@@ -1467,7 +1468,9 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
             {
                 var editService = CreateEditService(serviceMap, editRequest.LayerId, EditStatements.DELETE);
 
-                var objectIds = editRequest.ObjectIds.Split(',').Select(s => int.Parse(s));
+                var objectIds = editRequest.ObjectIds.Split(',').Select(s => int.Parse(s)).ToList();
+                await editService.CheckObjectsInLayer(objectIds);  // only objects the layer shows
+
                 foreach (int objectId in objectIds)
                 {
                     if (!await editService.Delete(objectId))
@@ -1738,6 +1741,7 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
 
             var updateFeatures = GetFeatures(editService.FeatureClass, updates);
             editService.PrepareUpdates(updateFeatures);
+            await editService.CheckObjectsInLayer(updateFeatures.Select(f => f.OID));  // only objects the layer shows
 
             if (!await UpdateFeatures(updateFeatures))
             {
@@ -1767,6 +1771,7 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
         if (hasDeletes)
         {
             editService.CheckStatement(EditStatements.DELETE);
+            await editService.CheckObjectsInLayer(deleteObjectIds);  // only objects the layer shows
 
             var deleteResults = new List<JsonFeatureServerResponseDTO.JsonResponse>(deleteObjectIds.Count);
 

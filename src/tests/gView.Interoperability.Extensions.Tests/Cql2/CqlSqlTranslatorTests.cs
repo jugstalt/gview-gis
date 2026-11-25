@@ -1,8 +1,8 @@
 using gView.Framework.Core.Data;
 using gView.Framework.Data;
-using gView.Interoperability.OgcApi.Cql2;
+using gView.Interoperability.Extensions.Cql2;
 
-namespace gView.Interoperability.OgcApi.Tests;
+namespace gView.Interoperability.Extensions.Tests.Cql2;
 
 public class CqlSqlTranslatorTests
 {
@@ -74,7 +74,7 @@ public class CqlSqlTranslatorTests
     [InlineData("CREATED > DATE('2024-01-01')")]
     public void Translate_DateOrBoolean_UnknownDialect_ThrowsBadRequest(string cql)
     {
-        var ex = Assert.Throws<OgcApiException>(() => ToSql(cql, SqlDialect.Unknown));
+        var ex = Assert.Throws<CqlException>(() => ToSql(cql, SqlDialect.Unknown));
 
         Assert.Equal(400, ex.StatusCode);
     }
@@ -91,7 +91,7 @@ public class CqlSqlTranslatorTests
     [InlineData("1 IS NULL")]
     public void Translate_InvalidOrMistypedFilter_ThrowsBadRequest(string cql)
     {
-        var ex = Assert.Throws<OgcApiException>(() => ToSql(cql));
+        var ex = Assert.Throws<CqlException>(() => ToSql(cql));
 
         Assert.Equal(400, ex.StatusCode);
     }

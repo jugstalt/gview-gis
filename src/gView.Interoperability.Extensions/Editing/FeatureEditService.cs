@@ -1,3 +1,6 @@
+using gView.Framework.Data.Filters;
+using gView.Framework.Core.Data.Cursors;
+using System;
 using gView.Framework.Core.Carto;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Exceptions;
@@ -25,6 +28,7 @@ public class FeatureEditService
     private readonly GeometryType _geometryType;
     private readonly ISpatialReference _defaultSpatialReference;
     private readonly IDatumTransformations _datumTransformations;
+    private readonly string _layerFilter;
 
     public FeatureEditService(
                 int layerId,
@@ -34,7 +38,8 @@ public class FeatureEditService
                 GeometryType geometryType = GeometryType.Unknown,
                 ISpatialReference defaultSpatialReference = null,
                 IDatumTransformations datumTransformations = null,
-                string statementsError = null)
+                string statementsError = null,
+                string layerFilter = null)
     {
         _layerId = layerId;
         FeatureClass = featureClass;
@@ -44,6 +49,7 @@ public class FeatureEditService
         _defaultSpatialReference = defaultSpatialReference;
         _datumTransformations = datumTransformations;
         _statementsError = statementsError;
+        _layerFilter = String.IsNullOrWhiteSpace(layerFilter) ? null : layerFilter;
     }
 
     /// <summary>
@@ -62,7 +68,28 @@ public class FeatureEditService
             GetGeometryType(serviceMap, featureClass),
             serviceMap.LayerDefaultSpatialReference,
             serviceMap.Display?.DatumTransformations,
-            statementsError);
+            statementsError,
+            LayerFilter(serviceMap, layerId, useTOC));
+    }
+
+    /// <summary>
+    /// The definition query of the layer (of all its map layers, combined with AND), or null
+    /// </summary>
+    private static string LayerFilter(IServiceMap serviceMap, int layerId, bool useTOC)
+    {
+        var whereClauses = MapServerHelper.FindMapLayers(serviceMap, useTOC, layerId.ToString())
+            .OfType<IFeatureLayer>()
+            .Select(l => l.FilterQuery?.WhereClause)
+            .Where(w => !String.IsNullOrWhiteSpace(w))
+            .Distinct()
+            .ToList();
+
+        return whereClauses.Count switch
+        {
+            0 => null,
+            1 => whereClauses[0],
+            _ => String.Join(" AND ", whereClauses.Select(w => $"({w})"))
+        };
     }
 
     public IFeatureClass FeatureClass { get; }
@@ -114,6 +141,58 @@ public class FeatureEditService
         if (!statements.HasFlag(statement))
         {
             throw new MapServerException($"Editoperation {statement} not allowed for layer with id={layerId}");
+        }
+    }
+
+    #endregion
+
+    #region Layer filter
+
+    /// <summary>
+    /// The definition query of the layer, null if the layer shows the whole feature class
+    /// </summary>
+    public string LayerFilterWhereClause => _layerFilter;
+
+    /// <summary>
+    /// Updates and deletes may only touch objects the layer shows: an object id outside the definition query
+    /// of the layer (or not existing) is an error (404), even if the feature class has it. Otherwise a user who
+    /// may edit a filtered layer could change or delete any object of the feature class.
+    /// </summary>
+    public async Task CheckObjectsInLayer(IEnumerable<int> objectIds)
+    {
+        var ids = objectIds.Where(id => id > 0).Distinct().ToList();
+        if (_layerFilter == null || ids.Count == 0)
+        {
+            return;
+        }
+        if (String.IsNullOrEmpty(FeatureClass.IDFieldName))
+        {
+            throw new MapServerException("Can't check the layer filter: the feature class has no object id field");
+        }
+
+        var found = new HashSet<int>();
+        foreach (var chunk in ids.Chunk(500))
+        {
+            var filter = new QueryFilter()
+            {
+                SubFields = FeatureClass.IDFieldName,
+                WhereClause = $"({_layerFilter}) AND {FeatureClass.IDFieldName} IN ({String.Join(",", chunk)})"
+            };
+
+            using (var cursor = await FeatureClass.Search(filter) as IFeatureCursor)
+            {
+                IFeature feature;
+                while (cursor != null && (feature = await cursor.NextFeature()) != null)
+                {
+                    found.Add(feature.OID);
+                }
+            }
+        }
+
+        var missing = ids.Where(id => !found.Contains(id)).ToList();
+        if (missing.Count > 0)
+        {
+            throw new MapServerException($"Object(s) not found in layer {_layerId}: {String.Join(", ", missing.Take(20))}{(missing.Count > 20 ? ", ..." : "")}", 404);
         }
     }
 

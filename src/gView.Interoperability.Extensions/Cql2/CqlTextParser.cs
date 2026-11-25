@@ -1,7 +1,13 @@
+#nullable enable
+
+using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 
-namespace gView.Interoperability.OgcApi.Cql2;
+
+namespace gView.Interoperability.Extensions.Cql2;
 
 /// <summary>
 /// Parses CQL2-Text (basic CQL2, advanced comparison operators LIKE/BETWEEN/IN,
@@ -419,6 +425,6 @@ public sealed class CqlTextParser
 
     #endregion
 
-    private static OgcApiException Error(string message)
-        => OgcApiException.BadRequest($"Invalid CQL2 filter: {message}");
+    private static CqlException Error(string message)
+        => new($"Invalid CQL2 filter: {message}");
 }

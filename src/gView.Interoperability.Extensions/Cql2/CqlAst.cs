@@ -1,4 +1,12 @@
-namespace gView.Interoperability.OgcApi.Cql2;
+#nullable enable
+
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Text;
+
+namespace gView.Interoperability.Extensions.Cql2;
 
 /// <summary>
 /// Boolean expressions of the CQL2 (basic + advanced comparison + case-insensitive comparison) syntax tree

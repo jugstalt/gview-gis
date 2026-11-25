@@ -12,6 +12,7 @@
     <ProjectReference Include="..\gView.Framework.Geometry\gView.Framework.Geometry.csproj" />
     <ProjectReference Include="..\gView.Framework\gView.Framework.csproj" />
     <ProjectReference Include="..\gView.Interoperability.OGC\gView.Interoperability.OGC.csproj" />
+    <ProjectReference Include="..\gView.Interoperability.Extensions\gView.Interoperability.Extensions.csproj" />
   </ItemGroup>
 
 </Project>

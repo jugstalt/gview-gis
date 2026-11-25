@@ -1,5 +1,6 @@
+using gView.Interoperability.Extensions.Extensions;
 using gView.Framework.Core.Data;
-using gView.Interoperability.OgcApi.Cql2;
+using gView.Interoperability.Extensions.Cql2;
 using gView.Interoperability.OgcApi.Extensions;
 using System.Globalization;
 

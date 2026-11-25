@@ -16,6 +16,12 @@ internal static class HttpRequestContextExtensions
     {
         if (httpContext.Request.Method.Equals("GET", StringComparison.OrdinalIgnoreCase))
         {
+            if (typeof(T) == typeof(gView.GeoJsonService.DTOs.GetFeaturesRequest))
+            {
+                // the query has its own url parameters (where, filter, bbox, lists, ...)
+                return (T)(object)httpContext.Request.Query.ToGetFeaturesRequest();
+            }
+
             T model = Activator.CreateInstance<T>();
 
             foreach (var propertyInfo in typeof(T).GetProperties())

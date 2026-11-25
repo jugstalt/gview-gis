@@ -133,7 +133,7 @@ public class BaseApiEndpoint : IApiEndpoint
         {
             logger.LogWarning("Handle GeoJson Service Request: {message}", mse.Message);
 
-            statusCode = 400;
+            statusCode = mse.StatusCode is >= 400 and < 500 ? mse.StatusCode.Value : 400;  // e.g. 404: object not in the layer
             result = new ErrorResponse()
             {
                 ErrorCode = statusCode.Value,
@@ -264,7 +264,7 @@ public class BaseApiEndpoint : IApiEndpoint
         {
             logger.LogWarning("Handle GeoJson Service Request: {message}", mse.Message);
 
-            statusCode = 400;
+            statusCode = mse.StatusCode is >= 400 and < 500 ? mse.StatusCode.Value : 400;  // e.g. 404: object not in the layer
             result = new ErrorResponse()
             {
                 ErrorCode = statusCode.Value,

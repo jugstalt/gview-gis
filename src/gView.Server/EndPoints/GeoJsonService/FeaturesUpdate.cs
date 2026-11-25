@@ -55,13 +55,15 @@ public class FeaturesUpdate : BaseApiEndpoint
                      }
 
                      editService.PrepareUpdates(features);
+                     await editService.CheckObjectsInLayer(features.Select(f => f.OID));  // only objects the layer shows
                      await editService.ExecuteAsync(session => editService.Update(features, session));
 
                      return new EditFeaturesResponse()
                      {
                          Succeeded = true,
                          Statement = Framework.Editor.Core.EditStatements.UPDATE.ToString(),
-                         Count = features.Count
+                         Count = features.Count,
+                         ObjectIds = features.Select(f => f.OID).ToArray()
                      };
                  });
 }

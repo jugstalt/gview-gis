@@ -1,6 +1,6 @@
 using gView.Framework.Core.Data;
 using gView.Framework.Data;
-using gView.Interoperability.OgcApi.Cql2;
+using gView.Interoperability.Extensions.Cql2;
 using gView.Interoperability.OgcApi.Features;
 
 namespace gView.Interoperability.OgcApi.Tests;

@@ -1,8 +1,14 @@
-using gView.Framework.Core.Data;
-using gView.Interoperability.OgcApi.Extensions;
-using System.Globalization;
+#nullable enable
 
-namespace gView.Interoperability.OgcApi.Cql2;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Text;
+using gView.Framework.Core.Data;
+using gView.Interoperability.Extensions.Extensions;
+
+namespace gView.Interoperability.Extensions.Cql2;
 
 /// <summary>
 /// Translates a CQL2 syntax tree into a SQL where clause for one data source.
@@ -224,9 +230,9 @@ public sealed class CqlSqlTranslator
 
     #endregion
 
-    private static OgcApiException UnsupportedByDataSource(string what)
-        => OgcApiException.BadRequest($"Invalid CQL2 filter: {what} values are not supported for this data source");
+    private static CqlException UnsupportedByDataSource(string what)
+        => new($"Invalid CQL2 filter: {what} values are not supported for this data source");
 
-    private static OgcApiException Error(string message)
-        => OgcApiException.BadRequest($"Invalid CQL2 filter: {message}");
+    private static CqlException Error(string message)
+        => new($"Invalid CQL2 filter: {message}");
 }

@@ -1,3 +1,4 @@
+using gView.Interoperability.Extensions.Extensions;
 using gView.Framework.Core.Data;
 
 namespace gView.Interoperability.OgcApi.Extensions;
@@ -8,23 +9,6 @@ internal static class FieldExtensions
         => field.type is FieldType.ID or FieldType.Shape or FieldType.GEOMETRY or FieldType.GEOGRAPHY
            || field.name == featureClass.IDFieldName
            || field.name == featureClass.ShapeFieldName;
-
-    public static bool IsStringType(this IField field)
-        => field.type is FieldType.String or FieldType.NString or FieldType.character;
-
-    public static bool IsIntegerType(this IField field)
-        => field.type is FieldType.integer or FieldType.smallinteger or FieldType.biginteger;
-
-    public static bool IsFloatingPointType(this IField field)
-        => field.type is FieldType.Float or FieldType.Double;
-
-    /// <summary>
-    /// Types that can be filtered. Date/boolean literals differ between the databases,
-    /// so these fields are only queryable if the SQL dialect of the data source is known.
-    /// </summary>
-    public static bool IsQueryableType(this IField field, SqlDialect dialect)
-        => field.IsStringType() || field.IsIntegerType() || field.IsFloatingPointType()
-           || (dialect != SqlDialect.Unknown && field.type is FieldType.Date or FieldType.boolean);
 
     /// <summary>
     /// JSON schema type and format of a field, used for queryables and the OpenAPI schemas

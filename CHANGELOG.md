@@ -222,6 +222,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   (shown to signed in users without a gView role) and `Links` (footer links, replace the default
   documentation and GitHub links). `CustomTiles` have a `Visibility`: `admin` (default, as before),
   `user` or `public`. See [Configuration of gView.WebApps](https://docs.gviewonline.com/en/setup/config-webapps.html#config-webapps-home).
+- GeoJson services, phase 1 (see [GeoJson Service](https://docs.gviewonline.com/en/spec/geojson_service/index.html)):
+  - Query: CQL2 filters (`"filter": { "cql2": ... }`, a string is CQL2-Text, an object CQL2-JSON; the CQL2 code of
+    OGC API, now shared in `gView.Interoperability.Extensions`, with a new CQL2-JSON parser). GET parameters `where`,
+    `filter` + `filter-lang`, `bbox` + `bbox-crs`, `outFields`, `outCRS`, `orderBy`, `objectIds`, `limit`, `offset`,
+    `command`, `returnGeometry`. `exceededLimit` in the feature collection tells whether there are more features.
+  - Edit responses carry `objectIds` (for inserts the new ids).
+  - GetMap is rendered by the shared `MapImageRenderer` (like GeoServices export); the response has `rotation`.
 - OGC API - Features Part 4: optimistic locking. `GET .../items/{featureId}` returns an `ETag`
   (hash of id, CRS84 geometry and properties, the same for every `crs` and format); `PUT`, `PATCH` and
   `DELETE` with `If-Match` answer `412 Precondition Failed` when the feature was changed in the
@@ -285,6 +292,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   QGIS sends it; before, changing attributes or geometries in QGIS failed with 400.
 - GeoServices REST: errors with a status (e.g. 503/504 of network searches) carry it as `code` instead of
   always `999`; the response stays HTTP 200 as in ArcGIS.
+- Editing (GeoServices REST `updateFeatures`, `deleteFeatures`, `applyEdits` and GeoJson services): updates and
+  deletes only touch objects the layer shows; an object id outside the definition query of the layer is an error
+  (404). Before, a user who may edit a filtered layer could change or delete any object of its feature class.
+  GeoJson errors keep the status of the error (e.g. 404) instead of always 400.
 - GeoJson services (`/geojsonservice/v1/...`):
   - Browse Services: the request forms (`BrowseServices/GeoJsonRequest`) failed with "invalid or missing antiforgery
     token" when the browser had cookies; the form now carries the token. Booleans and enums show their default

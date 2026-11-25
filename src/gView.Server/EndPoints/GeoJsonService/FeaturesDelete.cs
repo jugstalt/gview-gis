@@ -51,6 +51,8 @@ public class FeaturesDelete : BaseApiEndpoint
                          throw new MapServerException("No object ids to delete");
                      }
 
+                     await editService.CheckObjectsInLayer(objectIds);  // only objects the layer shows
+
                      // all or nothing, if the database supports edit sessions
                      await editService.ExecuteAsync(async session =>
                      {
@@ -68,7 +70,8 @@ public class FeaturesDelete : BaseApiEndpoint
                      {
                          Succeeded = true,
                          Statement = Framework.Editor.Core.EditStatements.DELETE.ToString(),
-                         Count = objectIds.Count
+                         Count = objectIds.Count,
+                         ObjectIds = objectIds.ToArray()
                      };
                  });
 }

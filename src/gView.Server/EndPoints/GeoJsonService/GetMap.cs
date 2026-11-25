@@ -1,4 +1,6 @@
-﻿using gView.Framework.Core.Carto;
+﻿#nullable enable
+
+using gView.Framework.Core.Carto;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Exceptions;
 using gView.Framework.Core.MapServer;
@@ -7,6 +9,7 @@ using gView.Framework.IO;
 using gView.GeoJsonService.DTOs;
 using gView.GraphicsEngine;
 using gView.Interoperability.Extensions;
+using gView.Interoperability.Extensions.Rendering;
 using gView.Server.AppCode.Extensions;
 using gView.Server.EndPoints.GeoJsonService.Extensions;
 using gView.Server.Services.MapServer;
@@ -47,168 +50,106 @@ public class GetMap : BaseApiEndpoint
             {
                 using var serviceMap = (await mapServiceManager.Instance.GetServiceMapAsync(mapService)).ThrowIfNull();
 
-                #region Display (ImageSize, DPI, Rotaion, Extent)
+                ImageSizeLimits.ThrowIfInvalidImageSize(mapRequest.Width, mapRequest.Height);
 
-                if (mapRequest.Width <= 0 || mapRequest.Height <= 0)
-                {
-                    throw new MapServerException($"Invalid image size ({mapRequest.Width},{mapRequest.Height})");
-                }
-
-                if (mapRequest.Dpi.HasValue)
-                {
-                    serviceMap.Display.Dpi = mapRequest.Dpi.Value;
-                }
-
-                serviceMap.Display.ImageWidth = mapRequest.Width;
-                serviceMap.Display.ImageHeight = mapRequest.Height;
-
-                serviceMap.ResizeImageSizeToMapServiceLimits();
-
-                serviceMap.Display.SpatialReference = mapRequest.CRS.ToSpatialReferenceOrDefault();
-                
-                serviceMap.Display.ZoomTo(mapRequest.BBox.ToEnvelope());
-
-                if (mapRequest.Rotation.HasValue && mapRequest.Rotation.Value != 0.0)
-                {
-                    serviceMap.Display.DisplayTransformation.DisplayRotation = mapRequest.Rotation.Value;
-                }
-
-                #endregion
-
-                #region ImageFormat / Transparency
-
-                var imageFormatString = mapRequest.Format.Split('/').Last().ToLowerInvariant();
-
+                var imageFormatString = (mapRequest.Format ?? "png").Split('/').Last().ToLowerInvariant();
                 if (!Enum.TryParse(imageFormatString switch
                     {
                         "jpg" => "jpeg",
                         _ => imageFormatString
                     },
-                    true, 
+                    true,
                     out ImageFormat imageFormat))
                 {
                     throw new MapServerException($"Unsuported image format: {mapRequest.Format}");
                 }
 
-                if (mapRequest.Transparent)
+                if (mapRequest.BBox is null)
                 {
-                    serviceMap.Display.MakeTransparent = true;
-                    serviceMap.Display.TransparentColor = ArgbColor.White;
-                }
-                else
-                {
-                    serviceMap.Display.MakeTransparent = false;
+                    throw new MapServerException("bbox is required");
                 }
 
-                if (serviceMap.Display.MakeTransparent && imageFormat == ImageFormat.Png)
+                // rendered like GeoServices export: the extent follows the aspect ratio of the image, the extent
+                // actually drawn is in the response; image size and dpi are limited by the service
+                var imageBytes = await serviceMap.RenderImageAsync(new MapImageRequest()
                 {
-                    // Beim Png sollt dann beim zeichnen keine Hintergrund Rectangle gemacht werden
-                    // Darum Farbe mit A=0
-                    // Sonst schaut das Bild beim PNG32 und Antialiasing immer zerrupft aus...
-                    serviceMap.Display.BackgroundColor = ArgbColor.Transparent;
-                }
-
-                #endregion
-
-                #region Layers
-
-                serviceMap.BeforeRenderLayers += (
-                        IServiceMap sender,
-                        IServiceRequestContext context,
-                        List<ILayer> layers) =>
-                {
-                    var layerIds = mapRequest.Layers?.ToArray();
-
-                    #region Layer Visibility
-
-                    var visibilityPattern = layerIds.GetVisibilityPattern();
-
-                    if (visibilityPattern != MapLayerVisibilityPattern.Defaults)  // defaults: dont change visibilty, use map defautls
-                    {
-
-
-                        foreach (var layer in layers)
-                        {
-                            var tocElement = sender.TOC?.GetTocElementByLayerId(layer.ID);
-                            var layerVisibility = tocElement != null
-                                ? layerIds.LayerOrParentIsInArray(tocElement) // if group is shown -> all layers in group are shown...
-                                : layerIds.ContainsId(layer.ID);
-
-                            layer.Visible = (visibilityPattern, layerVisibility) switch
-                            {
-                                (_, MapLayerVisibility.Visible) => true,
-                                (_, MapLayerVisibility.Include) => true,
-                                (_, MapLayerVisibility.Exclude) => false,
-                                (MapLayerVisibilityPattern.Normal, MapLayerVisibility.Invisible) => false,
-                                _ => layer.Visible
-                            };
-                        }
-
-
-                    }
-
-                    #endregion
-
-                    #region ToDo: QueryDefs
-
-                    #endregion
-
-                    #region ToDo: DynamicLayers
-
-                    #endregion
-                };
-
-                #endregion
-
-                await serviceMap.Render();
+                    SpatialReference = mapRequest.CRS.ToSpatialReferenceOrDefault(),
+                    BBox = mapRequest.BBox.ToEnvelope(),
+                    Width = mapRequest.Width,
+                    Height = mapRequest.Height,
+                    Dpi = mapRequest.Dpi is > 0 ? mapRequest.Dpi.Value : ImageSizeLimits.DefaultDpi,
+                    Transparent = mapRequest.Transparent,
+                    AlphaBackground = imageFormat == ImageFormat.Png,
+                    BackgroundColor = null,  // opaque images keep the background of the map
+                    Format = imageFormat,
+                    Rotation = mapRequest.Rotation ?? 0.0,
+                    FitToBBox = false,
+                    BeforeRenderLayers = (sender, context, layers) => SetLayerVisibility(sender, layers, mapRequest.Layers?.ToArray())
+                }) ?? throw new MapServerException("No map image rendered");
 
                 string contentType = imageFormat.ToContentType();
 
                 if (mapRequest.ResponseFormat == MapReponseFormat.Image)
                 {
-                    using MemoryStream ms = new();
-                    await serviceMap.SaveImage(ms, imageFormat);
-                    return Results.File(ms.ToArray(), contentType);
+                    return Results.File(imageBytes, contentType);
                 }
-                else if (mapRequest.ResponseFormat == MapReponseFormat.Base64)
-                {
-                    using MemoryStream ms = new();
-                    await serviceMap.SaveImage(ms, imageFormat);
 
-                    return new GetMapResponse()
-                    {
-                        ImageBase64 = Convert.ToBase64String(ms.ToArray()),
-                        BBox = serviceMap.Display.Envelope.ToBBox(),
-                        CRS = serviceMap.Display.SpatialReference is not null
-                                ? CoordinateReferenceSystem.CreateByName(serviceMap.Display.SpatialReference.Name)
-                                : null,
-                        Width = serviceMap.Display.ImageWidth,
-                        Height = serviceMap.Display.ImageHeight,
-                        ScaleDenominator = serviceMap.Display.MapScale,
-                        ContentType = contentType
-                    };
+                var response = new GetMapResponse()
+                {
+                    BBox = serviceMap.Display.Envelope.ToBBox(),
+                    CRS = serviceMap.Display.SpatialReference is not null
+                            ? CoordinateReferenceSystem.CreateByName(serviceMap.Display.SpatialReference.Name)
+                            : null,
+                    Width = serviceMap.Display.ImageWidth,
+                    Height = serviceMap.Display.ImageHeight,
+                    ScaleDenominator = serviceMap.Display.MapScale,
+                    Rotation = mapRequest.Rotation is double rotation && rotation != 0.0 ? rotation : null,
+                    ContentType = contentType
+                };
+
+                if (mapRequest.ResponseFormat == MapReponseFormat.Base64)
+                {
+                    response.ImageBase64 = Convert.ToBase64String(imageBytes);
                 }
                 else
                 {
                     string serviceMapName = serviceMap.Name.Replace("/", "_").Replace(",", "_");
-                    string fileName =
-                       $"{serviceMapName}_{System.Guid.NewGuid():N}.{imageFormatString}";
+                    string fileName = $"{serviceMapName}_{System.Guid.NewGuid():N}.{imageFormatString}";
 
-                    string path = ($"{mapServiceManager.Instance.OutputPath}/{fileName}").ToPlatformPath();
-                    await serviceMap.SaveImage(path, imageFormat);
-
-                    return new GetMapResponse()
-                    {
-                        ImageUrl = $"{serviceRequestContext.ServiceRequest.OutputUrl}/{fileName}",
-                        BBox = serviceMap.Display.Envelope.ToBBox(),
-                        CRS = serviceMap.Display.SpatialReference is not null
-                                ? CoordinateReferenceSystem.CreateByName(serviceMap.Display.SpatialReference.Name)
-                                : null,
-                        Width = serviceMap.Display.ImageWidth,
-                        Height = serviceMap.Display.ImageHeight,
-                        ScaleDenominator = serviceMap.Display.MapScale,
-                        ContentType = contentType
-                    };
+                    await File.WriteAllBytesAsync(($"{mapServiceManager.Instance.OutputPath}/{fileName}").ToPlatformPath(), imageBytes);
+                    response.ImageUrl = $"{serviceRequestContext.ServiceRequest.OutputUrl}/{fileName}";
                 }
+
+                return response;
             });
+
+    /// <summary>
+    /// The visibility of the layers from the request: null = the defaults of the service, ids = exactly these
+    /// (a group shows all its layers), +id/-id = add to/remove from the defaults
+    /// </summary>
+    private static void SetLayerVisibility(IServiceMap sender, List<ILayer> layers, string[]? layerIds)
+    {
+        var visibilityPattern = layerIds!.GetVisibilityPattern();  // null = defaults
+        if (visibilityPattern == MapLayerVisibilityPattern.Defaults)
+        {
+            return;
+        }
+
+        foreach (var layer in layers)
+        {
+            var tocElement = sender.TOC?.GetTocElementByLayerId(layer.ID);
+            var layerVisibility = tocElement != null
+                ? layerIds!.LayerOrParentIsInArray(tocElement) // if group is shown -> all layers in group are shown...
+                : layerIds!.ContainsId(layer.ID);
+
+            layer.Visible = (visibilityPattern, layerVisibility) switch
+            {
+                (_, MapLayerVisibility.Visible) => true,
+                (_, MapLayerVisibility.Include) => true,
+                (_, MapLayerVisibility.Exclude) => false,
+                (MapLayerVisibilityPattern.Normal, MapLayerVisibility.Invisible) => false,
+                _ => layer.Visible
+            };
+        }
+    }
 }

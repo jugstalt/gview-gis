@@ -1,8 +1,9 @@
-﻿#nullable enable
+#nullable enable
 
 using gView.Framework.Common;
 using gView.Framework.Core.Exceptions;
 using gView.GeoJsonService.DTOs;
+using gView.Interoperability.Extensions.Cql2;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json;
@@ -37,6 +38,20 @@ static public class AttributeFilterExtensions
                 ? literal
                 : match.Value);
     }
+
+    /// <summary>
+    /// The CQL2 filter of the request: a string is CQL2-Text, an object CQL2-JSON; null without one.
+    /// </summary>
+    static public CqlPredicate? Cql2Predicate(this AttributeFilter filter)
+        => filter.Cql2 switch
+        {
+            null => null,
+            string text => CqlTextParser.Parse(text),
+            JsonElement { ValueKind: JsonValueKind.String } json => CqlTextParser.Parse(json.GetString()!),
+            JsonElement { ValueKind: JsonValueKind.Null } => null,
+            JsonElement json => CqlJsonParser.Parse(json),
+            _ => throw new MapServerException("Invalid cql2 filter: a CQL2-Text string or a CQL2-JSON object")
+        };
 
     private static string Literal(string name, object? value)
         => value switch

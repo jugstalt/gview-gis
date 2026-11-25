@@ -62,7 +62,9 @@ public class FeaturesInsert : BaseApiEndpoint
                      {
                          Succeeded = true,
                          Statement = Framework.Editor.Core.EditStatements.INSERT.ToString(),
-                         Count = features.Count
+                         Count = features.Count,
+                         // the database writes the new ids back (0, if it can't report them)
+                         ObjectIds = features.Select(f => f.OID).ToArray()
                      };
                  });
 }

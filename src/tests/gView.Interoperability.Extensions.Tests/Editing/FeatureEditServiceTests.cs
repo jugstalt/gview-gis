@@ -114,6 +114,59 @@ public class FeatureEditServiceTests : IDisposable
 
     #endregion
 
+    #region Layer filter
+
+    private static async Task<List<int>> InsertAsync(FeatureEditService service, params Feature[] features)
+    {
+        var list = features.Cast<IFeature>().ToList();
+        Assert.True(await service.Insert(list), service.LastErrorMessage());
+        return list.Select(f => f.OID).ToList();
+    }
+
+    [Fact]
+    public async Task CheckObjectsInLayer_ObjectOutsideTheLayerFilter_Is404()
+    {
+        var (dataset, fc) = await CreateAsync();
+        using (dataset)
+        {
+            var ids = await InsertAsync(Service(fc), Point(1, 1, "A"), Point(2, 2, "B"));
+            var service = new FeatureEditService(LayerId, fc, fc.Dataset.Database as IFeatureUpdater,
+                EditStatements.UPDATE | EditStatements.DELETE, layerFilter: "name = 'A'");
+
+            await service.CheckObjectsInLayer([ids[0]]);  // inside: ok
+
+            var ex = await Assert.ThrowsAsync<MapServerException>(() => service.CheckObjectsInLayer(ids));
+            Assert.Equal(404, ex.StatusCode);
+            Assert.Contains(ids[1].ToString(), ex.Message);
+        }
+    }
+
+    [Fact]
+    public async Task CheckObjectsInLayer_NotExistingObject_Is404()
+    {
+        var (dataset, fc) = await CreateAsync();
+        using (dataset)
+        {
+            await InsertAsync(Service(fc), Point(1, 1, "A"));
+            var service = new FeatureEditService(LayerId, fc, fc.Dataset.Database as IFeatureUpdater, EditStatements.DELETE, layerFilter: "name = 'A'");
+
+            var ex = await Assert.ThrowsAsync<MapServerException>(() => service.CheckObjectsInLayer([4711]));
+            Assert.Equal(404, ex.StatusCode);
+        }
+    }
+
+    [Fact]
+    public async Task CheckObjectsInLayer_WithoutLayerFilter_ChecksNothing()
+    {
+        var (dataset, fc) = await CreateAsync();
+        using (dataset)
+        {
+            await Service(fc).CheckObjectsInLayer([4711]);  // the database reports missing objects itself
+        }
+    }
+
+    #endregion
+
     #region Validation
 
     [Fact]

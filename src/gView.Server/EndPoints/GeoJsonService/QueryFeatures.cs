@@ -74,6 +74,9 @@ public class QueryFeatures : BaseApiEndpoint
                 string? requestWhereClause = queryRequest.Filter?
                             .WhereClauseWithResolveParameters();
 
+                // CQL2 (text or JSON): translated per table class, against its fields and SQL dialect
+                var cql2Predicate = queryRequest.Filter?.Cql2Predicate();
+
                 // object ids are numbers: anything else is a client error (400), not an internal one
                 var objectIds = queryRequest.ObjectIds?
                             .Where(oid => !String.IsNullOrWhiteSpace(oid))
@@ -88,6 +91,7 @@ public class QueryFeatures : BaseApiEndpoint
                 }
 
                 int featureCount = 0;
+                int pageSize = int.MaxValue;
                 var geoJsonFeatures = new List<gView.GeoJsonService.DTOs.Feature>();
                 string? objectIdFieldName = null;
                 ISpatialReference outSref = queryRequest.OutCRS.ToSpatialReferenceOrDefault();
@@ -95,6 +99,9 @@ public class QueryFeatures : BaseApiEndpoint
                 foreach (var tableClass in tableClasses)
                 {
                     requestWhereClause?.CheckWhereClauseForSqlInjection(tableClass);
+                    string? cql2WhereClause = cql2Predicate is not null
+                        ? tableClass.Cql2ToWhereClause(cql2Predicate)
+                        : null;
 
                     objectIdFieldName = tableClass.IDFieldName;
 
@@ -155,7 +162,8 @@ public class QueryFeatures : BaseApiEndpoint
 
                     #region Prepair Where Filter
 
-                    filter.WhereClause = requestWhereClause.AppendWhereClause(filterQuery)
+                    filter.WhereClause = requestWhereClause.AppendWhereClause(cql2WhereClause)
+                                                           .AppendWhereClause(filterQuery)
                                                            .AppendWhereClause(objectIdsWhereClause)
                                                            .OrTake("1=1");
 
@@ -221,11 +229,15 @@ public class QueryFeatures : BaseApiEndpoint
 
                     #region Limit/Begin/Order
 
-                    filter.Limit = queryRequest.Command == QueryCommand.CountOnly
+                    pageSize = queryRequest.Command == QueryCommand.CountOnly
                         ? int.MaxValue                                 // count queries always consider all matching features
                         : queryRequest.Limit.HasValue && queryRequest.Limit.Value > 0
                             ? Math.Min(queryRequest.Limit.Value, maxRecordCount)
                             : maxRecordCount;
+                    // select reads one more feature: it tells whether there are more (exceededLimit)
+                    filter.Limit = queryRequest.Command == QueryCommand.Select && pageSize < int.MaxValue
+                        ? pageSize + 1
+                        : pageSize;
 
                     filter.BeginRecord = queryRequest.Command == QueryCommand.CountOnly
                                 ? 1
@@ -360,10 +372,17 @@ public class QueryFeatures : BaseApiEndpoint
                     };
                 }
 
+                bool exceededLimit = geoJsonFeatures.Count > pageSize;
+                if (exceededLimit)
+                {
+                    geoJsonFeatures.RemoveRange(pageSize, geoJsonFeatures.Count - pageSize);
+                }
+
                 return new FeatureCollection()
                 {
                     CRS = CoordinateReferenceSystem.CreateByName(outSref.Name),
-                    Features = geoJsonFeatures
+                    Features = geoJsonFeatures,
+                    ExceededLimit = exceededLimit
                 };
             });
 }

@@ -1,6 +1,6 @@
-using gView.Interoperability.OgcApi.Cql2;
+using gView.Interoperability.Extensions.Cql2;
 
-namespace gView.Interoperability.OgcApi.Tests;
+namespace gView.Interoperability.Extensions.Tests.Cql2;
 
 public class CqlTextParserTests
 {
@@ -111,7 +111,7 @@ public class CqlTextParserTests
     [InlineData("AND = 1")]
     public void Parse_InvalidFilter_ThrowsBadRequest(string cql)
     {
-        var ex = Assert.Throws<OgcApiException>(() => CqlTextParser.Parse(cql));
+        var ex = Assert.Throws<CqlException>(() => CqlTextParser.Parse(cql));
 
         Assert.Equal(400, ex.StatusCode);
     }
