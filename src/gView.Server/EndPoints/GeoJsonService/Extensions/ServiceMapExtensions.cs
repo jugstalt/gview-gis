@@ -49,46 +49,4 @@ static public class ServiceMapExtensions
         }
         return classes;
     }
-
-    static public IFeatureClass GetFeatureClass(this IServiceMap serviceMap, int id)
-    {
-        string filterQuery;
-
-        var tableClasses = FindTableClass(serviceMap, id, out filterQuery);
-        if (tableClasses is null || tableClasses.Count == 0 || !(tableClasses[0] is IFeatureClass))
-        {
-            throw new Exception("FeatureService can only used with feature classes");
-        }
-        if (tableClasses.Count > 1)
-        {
-            throw new Exception("FeatureService can't be used with aggregated feature classes");
-        }
-        
-
-        var featureClass = (IFeatureClass)tableClasses[0];
-
-        return featureClass;
-    }
-
-    static public IServiceMap CheckEditableStatement(this IServiceMap serviceMap, int id, EditStatements statement)
-    {
-        var editModule = serviceMap.GetModule<gView.Plugins.Modules.EditorModule>();
-        if (editModule == null)
-        {
-            throw new MapServerException("No editor module available for service");
-        }
-
-        var editLayer = editModule.GetEditLayer(id);
-        if (editLayer == null)
-        {
-            throw new MapServerException($"No editable layer found with id={id}");
-        }
-
-        if (!editLayer.Statements.HasFlag(statement))
-        {
-            throw new MapServerException("Editoperation {statement} not allowed for layer with id={id}");
-        }
-
-        return serviceMap;
-    }
 }

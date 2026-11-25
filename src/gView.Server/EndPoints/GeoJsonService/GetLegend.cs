@@ -1,6 +1,7 @@
 ﻿using gView.Framework.Core.Data;
 using gView.Framework.Core.Exceptions;
 using gView.GeoJsonService.DTOs;
+using gView.Interoperability.Extensions.Rendering;
 using gView.Server.AppCode.Extensions;
 using gView.Server.Services.MapServer;
 using gView.Server.Services.Security;
@@ -23,10 +24,13 @@ public class GetLegend : BaseApiEndpoint
                     $"{Routes.Base}/{Routes.GetServices}/{{service}}/{Routes.GetLegend}"
                 ],
                 Handler,
-                HttpMethod.Get
+                HttpMethod.Get | HttpMethod.Post
             )
     {
     }
+
+    /// <summary>Max. width and height of a legend symbol in pixels.</summary>
+    public const int MaxSymbolSize = 1024;
 
     private static Delegate Handler => (
                 HttpContext httpContext,
@@ -38,9 +42,11 @@ public class GetLegend : BaseApiEndpoint
             ) => HandleSecureAsync<GetLegendRequest>(httpContext, mapServiceManager, loginManagerService, logger, folder, service,
                 async (serviceRequestContext, mapService, identity, legendRequest) =>
                 {
-                    if (legendRequest.Width <= 0 || legendRequest.Height <= 0)
+                    // a legend symbol is small: a huge size would render a huge image per legend item
+                    if (legendRequest.Width <= 0 || legendRequest.Height <= 0
+                        || legendRequest.Width > MaxSymbolSize || legendRequest.Height > MaxSymbolSize)
                     {
-                        throw new MapServerException($"Invalid legend size ({legendRequest.Width},{legendRequest.Height})");
+                        throw new MapServerException($"Invalid legend size ({legendRequest.Width},{legendRequest.Height}): 1 to {MaxSymbolSize} pixels");
                     }
 
                     var legendLayers = new List<LegendLayer>();
@@ -48,7 +54,8 @@ public class GetLegend : BaseApiEndpoint
 
                     if (legendRequest.Dpi.HasValue && legendRequest.Dpi.Value > 0)
                     {
-                        serviceMap.Display.Dpi = legendRequest.Dpi.Value;
+                        serviceMap.Display.Dpi = Math.Min(legendRequest.Dpi.Value,
+                            ImageSizeLimits.EffectiveMaxDpi(serviceMap.MapServiceProperties?.MaxDpi ?? 0));
                     }
 
                     foreach (var layer in serviceMap.MapElements.Where(l => l is ILayer).Select(l => (ILayer)l))

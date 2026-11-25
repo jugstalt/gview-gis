@@ -178,7 +178,7 @@ public class GetServiceCapabilities : BaseApiEndpoint
             yield return new GetLegendRequestProperties()
             {
                 Url = $"{url}/legend",
-                HttpMethods = ["GET"]
+                HttpMethods = ["GET", "POST"]
             };
         }
         if (accessTypes.HasFlag(AccessTypes.Query))

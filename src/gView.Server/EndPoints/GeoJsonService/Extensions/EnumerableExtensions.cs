@@ -206,8 +206,9 @@ internal static class EnumerableExtensions
     {
         var feature = new Feature();
 
+        // the object id of the request (before, the empty id of the new feature was taken: every update failed)
         feature.OID = geoJsonFeature.Oid != null
-                        ? Convert.ToInt32(feature.OID) 
+                        ? geoJsonFeature.Oid.ToObjectId()
                         : 0;
         feature.Shape = geoJsonFeature.Geometry?.ToGeometry();
 
@@ -274,53 +275,6 @@ internal static class EnumerableExtensions
         }
 
         return feature;
-    }
-
-    static public void GeometryMakeValid(this IEnumerable<IFeature> features, IServiceMap map, IFeatureClass featureClass)
-    {
-        if (features == null || features.Count() == 0)
-        {
-            return;
-        }
-
-        if (map.GetGeometryType(featureClass) == GeometryType.Polygon)
-        {
-            foreach (var feature in features)
-            {
-                var polygon = feature.Shape as IPolygon;
-
-                if (polygon == null)
-                {
-                    continue;
-                }
-
-                var sRef = polygon.Srs.HasValue && !polygon.Srs.Equals(featureClass.SpatialReference?.EpsgCode) ?
-                    SpatialReference.FromID($"epsg:{polygon.Srs.Value}") :
-                    featureClass.SpatialReference ?? map.LayerDefaultSpatialReference;
-
-                if (sRef != null)
-                {
-                    feature.Shape.Clean(CleanGemetryMethods.IdentNeighbors | CleanGemetryMethods.ZeroParts);
-                }
-            }
-        }
-    }
-
-    static public GeometryType GetGeometryType(this IServiceMap map, IFeatureClass featureClass)
-    {
-        if (featureClass.GeometryType != GeometryType.Unknown)
-        {
-            return featureClass.GeometryType;
-        }
-
-        var layer = map.MapElements.Where(e => e.Class == featureClass).FirstOrDefault() as IFeatureLayer;
-
-        if (layer != null)
-        {
-            return layer.LayerGeometryType;
-        }
-
-        return GeometryType.Unknown;
     }
 
     #endregion

@@ -544,12 +544,17 @@ static internal class HtmlExtensions
         return sb.ToString();
     }
 
+    private static string Encode(string text) => System.Net.WebUtility.HtmlEncode(text ?? String.Empty);
+
+    /// <param name="antiforgeryToken">the request token of the page: the controller checks it on POST
+    /// (<see cref="AntiforgeryForCookieAuthAttribute"/>), without it the form only works without cookies</param>
     static public string GeoJsonObjectToInputForm(
                 this object obj,
                 string id,
                 string request,
                 string title = "",
-                string[] httpMethods = null)
+                string[] httpMethods = null,
+                string antiforgeryToken = null)
     {
         if (obj == null)
         {
@@ -563,8 +568,12 @@ static internal class HtmlExtensions
         sb.Append("<div class='html-body'>");
         sb.Append("<form method='post'>");
 
-        sb.Append($"<input type='hidden' name='_id' value='{id}' />");
-        sb.Append($"<input type='hidden' name='_request' value='{request}' />");
+        if (!String.IsNullOrEmpty(antiforgeryToken))
+        {
+            sb.Append($"<input type='hidden' name='__RequestVerificationToken' value='{Encode(antiforgeryToken)}' />");
+        }
+        sb.Append($"<input type='hidden' name='_id' value='{Encode(id)}' />");
+        sb.Append($"<input type='hidden' name='_request' value='{Encode(request)}' />");
 
         sb.Append("<table>");
 
@@ -578,7 +587,7 @@ static internal class HtmlExtensions
 
                 if (name == "Type")
                 {
-                    sb.Append($"<tr><td><h3>{value}</h3></td><td><h3>{title}</h3></td></tr>");
+                    sb.Append($"<tr><td><h3>{Encode(value?.ToString())}</h3></td><td><h3>{Encode(title)}</h3></td></tr>");
                     continue;
                 }
 
@@ -620,34 +629,38 @@ static internal class HtmlExtensions
                 }
                 sb.Append("</td><td class='input'>");
 
+                string text = Encode(value?.ToString());
+
                 if (propertyInfo.PropertyType.Equals(typeof(bool)))
                 {
-                    sb.Append($"<select name='{name}' style='min-width:auto;'><option value='false'>False</option><option value='true'>True</option></select>");
+                    // the current value is selected (e.g. Transparent = true of GetMap)
+                    bool isTrue = value is true;
+                    sb.Append($"<select name='{name}' style='min-width:auto;'><option value='false'{(isTrue ? "" : " selected")}>False</option><option value='true'{(isTrue ? " selected" : "")}>True</option></select>");
                 }
                 else
                 {
                     switch (inputType)
                     {
                         case FormInputAttribute.InputTypes.TextBox:
-                            sb.Append($"<textarea rows='3' name='{name}'>{(value?.ToString() ?? String.Empty)}</textarea>");
+                            sb.Append($"<textarea rows='3' name='{name}'>{text}</textarea>");
                             break;
                         case FormInputAttribute.InputTypes.TextBox10:
-                            sb.Append($"<textarea rows='10' name='{name}'>{(value?.ToString() ?? String.Empty)}</textarea>");
+                            sb.Append($"<textarea rows='10' name='{name}'>{text}</textarea>");
                             break;
                         case FormInputAttribute.InputTypes.Hidden:
-                            sb.Append($"<input type='hidden' name='{name}' value='{(value?.ToString() ?? String.Empty)}'>");
+                            sb.Append($"<input type='hidden' name='{name}' value='{text}'>");
                             break;
                         case FormInputAttribute.InputTypes.Password:
-                            sb.Append($"<input name='{name}' type='password' value='{(value?.ToString() ?? String.Empty)}'>");
+                            sb.Append($"<input name='{name}' type='password' value='{text}'>");
                             break;
                         case FormInputAttribute.InputTypes.Integer:
-                            sb.Append($"<input name='{name}' type='number' value='{(value?.ToString() ?? String.Empty)}'>");
+                            sb.Append($"<input name='{name}' type='number' value='{text}'>");
                             break;
                         case FormInputAttribute.InputTypes.Float:
-                            sb.Append($"<input name='{name}' type='number' step='.001' value='{(value?.ToString() ?? String.Empty)}'>");
+                            sb.Append($"<input name='{name}' type='number' step='.001' value='{text}'>");
                             break;
                         case FormInputAttribute.InputTypes.Double:
-                            sb.Append($"<input name='{name}' type='number' step='.00000001' value='{(value?.ToString() ?? String.Empty)}'>");
+                            sb.Append($"<input name='{name}' type='number' step='.00000001' value='{text}'>");
                             break;
                         default:
                             if (propertyInfo.PropertyType.IsEnum)
@@ -655,13 +668,13 @@ static internal class HtmlExtensions
                                 sb.Append($"<select name='{name}' style='min-width:auto;'>");
                                 foreach (var enumValue in Enum.GetValues(propertyInfo.PropertyType))
                                 {
-                                    sb.Append($"<option value='{enumValue}'>{enumValue}</option>");
+                                    sb.Append($"<option value='{enumValue}'{(enumValue.Equals(value) ? " selected" : "")}>{enumValue}</option>");
                                 }
                                 sb.Append("</select>");
                             }
                             else
                             {
-                                sb.Append($"<input name='{name}' value='{(value?.ToString() ?? String.Empty)}'>");
+                                sb.Append($"<input name='{name}' value='{text}'>");
                             }
                             break;
                     }

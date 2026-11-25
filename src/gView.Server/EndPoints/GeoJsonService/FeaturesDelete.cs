@@ -1,6 +1,7 @@
 ﻿using gView.Framework.Core.Exceptions;
 using gView.Framework.Core.FDB;
 using gView.GeoJsonService.DTOs;
+using gView.Interoperability.Extensions.Editing;
 using gView.Server.AppCode.Extensions;
 using gView.Server.EndPoints.GeoJsonService.Extensions;
 using gView.Server.Services.MapServer;
@@ -41,29 +42,33 @@ public class FeaturesDelete : BaseApiEndpoint
                  {
                      using var serviceMap = (await mapServerService.Instance.GetServiceMapAsync(mapService)).ThrowIfNull();
 
-                     var featureClass = serviceMap.CheckEditableStatement(id, Framework.Editor.Core.EditStatements.DELETE).GetFeatureClass(id);
+                     var editService = FeatureEditService.Create(serviceMap, id);
+                     editService.CheckStatement(Framework.Editor.Core.EditStatements.DELETE);
 
-                     var dataset = featureClass.Dataset;
-                     var database = dataset?.Database as IFeatureUpdater;
-                     if (database == null)
+                     var objectIds = (editRequest.ObjectIds ?? []).Select(o => o.ToObjectId()).Distinct().ToList();
+                     if (objectIds.Count == 0)
                      {
-                         throw new MapServerException("Featureclass is not editable");
+                         throw new MapServerException("No object ids to delete");
                      }
 
-                     var objectIds = editRequest.ObjectIds?.Select(o => Convert.ToInt32(o));
-                     foreach (int objectId in objectIds)
+                     // all or nothing, if the database supports edit sessions
+                     await editService.ExecuteAsync(async session =>
                      {
-                         if (!await database.Delete(featureClass, objectId))
+                         foreach (var objectId in objectIds)
                          {
-                             throw new Exception(database.LastErrorMessage);
+                             if (!await editService.Delete(objectId, session))
+                             {
+                                 return false;
+                             }
                          }
-                     }
+                         return true;
+                     });
 
                      return new EditFeaturesResponse()
                      {
                          Succeeded = true,
                          Statement = Framework.Editor.Core.EditStatements.DELETE.ToString(),
-                         Count = objectIds.Count()
+                         Count = objectIds.Count
                      };
                  });
 }

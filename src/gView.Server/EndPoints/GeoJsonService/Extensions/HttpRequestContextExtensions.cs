@@ -23,24 +23,16 @@ internal static class HttpRequestContextExtensions
                 string? parameter = httpContext.Request.Query[propertyInfo.Name];
                 if (!String.IsNullOrEmpty(parameter))
                 {
-                    object? val = propertyInfo.PropertyType switch
+                    object? val;
+                    try
                     {
-                        Type t when t == typeof(int) => int.Parse(parameter),
-                        Type t when t == typeof(float) => parameter.ToFloat(),
-                        Type t when t == typeof(double) => parameter.ToDouble(),
-                        Type t when t == typeof(long) => long.Parse(parameter),
-                        Type t when t == typeof(bool) => bool.Parse(parameter),
-                        Type t when t == typeof(string) => parameter,
-
-                        Type t when t == typeof(int?) => String.IsNullOrEmpty(parameter) ? null : int.Parse(parameter),
-                        Type t when t == typeof(float?) => String.IsNullOrEmpty(parameter) ? null : parameter.ToFloat(),
-                        Type t when t == typeof(double?) => String.IsNullOrEmpty(parameter) ? null : parameter.ToDouble(),
-                        Type t when t == typeof(long?) => String.IsNullOrEmpty(parameter) ? null : long.Parse(parameter),
-                        Type t when t == typeof(bool?) => String.IsNullOrEmpty(parameter) ? null : bool.Parse(parameter),
-
-                        Type t when t.IsEnum => Enum.Parse(t, parameter, true),
-                        _ => parameter.ParseToObject(propertyInfo.PropertyType)
-                    };
+                        val = ParseParameter(parameter, propertyInfo.PropertyType);
+                    }
+                    catch (Exception ex) when (ex is not MapServerException)
+                    {
+                        // a client error (400) that names the parameter, not an internal one
+                        throw new MapServerException($"Invalid value for the parameter {propertyInfo.Name}: {parameter}");
+                    }
 
                     propertyInfo.SetValue(model, val);
                 }
@@ -62,4 +54,24 @@ internal static class HttpRequestContextExtensions
             throw new MapServerException($"Parse Error: {ex.Message}");
         }
     }
+
+    private static object? ParseParameter(string parameter, Type type)
+        => type switch
+        {
+            Type t when t == typeof(int) => int.Parse(parameter),
+            Type t when t == typeof(float) => parameter.ToFloat(),
+            Type t when t == typeof(double) => parameter.ToDouble(),
+            Type t when t == typeof(long) => long.Parse(parameter),
+            Type t when t == typeof(bool) => bool.Parse(parameter),
+            Type t when t == typeof(string) => parameter,
+
+            Type t when t == typeof(int?) => String.IsNullOrEmpty(parameter) ? null : int.Parse(parameter),
+            Type t when t == typeof(float?) => String.IsNullOrEmpty(parameter) ? null : parameter.ToFloat(),
+            Type t when t == typeof(double?) => String.IsNullOrEmpty(parameter) ? null : parameter.ToDouble(),
+            Type t when t == typeof(long?) => String.IsNullOrEmpty(parameter) ? null : long.Parse(parameter),
+            Type t when t == typeof(bool?) => String.IsNullOrEmpty(parameter) ? null : bool.Parse(parameter),
+
+            Type t when t.IsEnum => Enum.Parse(t, parameter, true),
+            _ => parameter.ParseToObject(type)
+        };
 }

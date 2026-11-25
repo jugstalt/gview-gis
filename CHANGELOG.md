@@ -285,6 +285,20 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   QGIS sends it; before, changing attributes or geometries in QGIS failed with 400.
 - GeoServices REST: errors with a status (e.g. 503/504 of network searches) carry it as `code` instead of
   always `999`; the response stays HTTP 200 as in ArcGIS.
+- GeoJson services (`/geojsonservice/v1/...`):
+  - Browse Services: the request forms (`BrowseServices/GeoJsonRequest`) failed with "invalid or missing antiforgery
+    token" when the browser had cookies; the form now carries the token. Booleans and enums show their default
+    (e.g. `Transparent` of GetMap) instead of the first option, and the values are HTML encoded.
+  - Features: `PUT` (update) never worked (the object id of the feature was not taken); inserts, updates and deletes
+    run through the shared `FeatureEditService` in one edit session (all or nothing, if the database supports it),
+    polygons are made valid, a delete without or with invalid object ids answers 400 instead of 500.
+  - Query: where clause parameters as in the specification (`@value1` with the key `value1`; keys with `@` still
+    work), numbers and booleans as literals, string literals and unknown names untouched; a spatial filter with only
+    `bbox` was always rejected ("Set either geometry or bbox"); `objectIds` together with a spatial filter are no
+    longer ignored; `distinct` with a spatial filter is an error instead of being ignored; invalid object ids and GET
+    parameters answer 400.
+  - Legend: `POST` is allowed (as specified and in the capabilities); the symbol size is limited to 1024 pixels and
+    the dpi to the max dpi of the service.
 - Pipe Network Trace node: the source and branch ids (`sourceOid`, `branchOid` and the id fields) are also
   found for layers with blanks in their names (e.g. `Geoschematischer Hausanschluss`).
 - Carto: select boxes in dialogs opened from another dialog (e.g. `Order by ...`, `Label Style ...`

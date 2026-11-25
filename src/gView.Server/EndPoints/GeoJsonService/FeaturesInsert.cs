@@ -2,6 +2,7 @@
 using gView.Framework.Core.FDB;
 using gView.Framework.Geometry;
 using gView.GeoJsonService.DTOs;
+using gView.Interoperability.Extensions.Editing;
 using gView.Server.AppCode.Extensions;
 using gView.Server.EndPoints.GeoJsonService.Extensions;
 using gView.Server.Services.MapServer;
@@ -9,7 +10,6 @@ using gView.Server.Services.Security;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using MongoDB.Bson;
 using System;
 using System.Linq;
 
@@ -43,44 +43,26 @@ public class FeaturesInsert : BaseApiEndpoint
                  {
                      using var serviceMap = (await mapServerService.Instance.GetServiceMapAsync(mapService)).ThrowIfNull();
 
-                     var featureClass = serviceMap.CheckEditableStatement(id, Framework.Editor.Core.EditStatements.INSERT).GetFeatureClass(id);
+                     var editService = FeatureEditService.Create(serviceMap, id);
+                     editService.CheckStatement(Framework.Editor.Core.EditStatements.INSERT);
 
-                     var dataset = featureClass.Dataset;
-                     var database = dataset?.Database as IFeatureUpdater;
-                     if (database == null)
-                     {
-                         throw new MapServerException("Featureclass is not editable");
-                     }
-
-                     var geoJsonFeatureSref = editRequest.CRS.ToSpatialReferenceOrDefault();
-
-                     var features = editRequest.Features.GetFeatrues(featureClass, geoJsonFeatureSref, serviceMap.Display?.DatumTransformations);
-                     if (features.Count() == 0)
+                     // materialized once: preparing (projection, make valid) and inserting work on the same features
+                     var features = (editRequest.Features ?? [])
+                         .GetFeatrues(editService.FeatureClass, editRequest.CRS.ToSpatialReferenceOrDefault(), serviceMap.Display?.DatumTransformations)
+                         .ToList();
+                     if (features.Count == 0)
                      {
                          throw new MapServerException("No features to add");
                      }
 
-                     if (features.Count(f => f.OID > 0) > 0)
-                     {
-                         throw new MapServerException("Can't insert features with existing ObjectId");
-                     }
-
-                     if (features.Count(f => f.Shape is null) > 0)
-                     {
-                         throw new MapServerException("Insert features without geometry are not allowed");
-                     }
-                     features.GeometryMakeValid(serviceMap, featureClass);
-
-                     if (!await database.Insert(featureClass, features.ToList()))
-                     {
-                         throw new MapServerException(database.LastErrorMessage);
-                     }
+                     editService.PrepareInserts(features);
+                     await editService.ExecuteAsync(session => editService.Insert(features, session));
 
                      return new EditFeaturesResponse()
                      {
                          Succeeded = true,
                          Statement = Framework.Editor.Core.EditStatements.INSERT.ToString(),
-                         Count = features.Count()
+                         Count = features.Count
                      };
                  });
 }

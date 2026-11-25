@@ -1,6 +1,7 @@
 ﻿using gView.Framework.Core.Exceptions;
 using gView.Framework.Core.FDB;
 using gView.GeoJsonService.DTOs;
+using gView.Interoperability.Extensions.Editing;
 using gView.Server.AppCode.Extensions;
 using gView.Server.EndPoints.GeoJsonService.Extensions;
 using gView.Server.Services.MapServer;
@@ -41,40 +42,26 @@ public class FeaturesUpdate : BaseApiEndpoint
                  {
                      using var serviceMap = (await mapServerService.Instance.GetServiceMapAsync(mapService)).ThrowIfNull();
 
-                     var featureClass = serviceMap.CheckEditableStatement(id, Framework.Editor.Core.EditStatements.UPDATE).GetFeatureClass(id);
+                     var editService = FeatureEditService.Create(serviceMap, id);
+                     editService.CheckStatement(Framework.Editor.Core.EditStatements.UPDATE);
 
-                     var dataset = featureClass.Dataset;
-                     var database = dataset?.Database as IFeatureUpdater;
-                     if (database == null)
-                     {
-                         throw new MapServerException("Featureclass is not editable");
-                     }
-
-                     var geoJsonFeatureSref = editRequest.CRS.ToSpatialReferenceOrDefault();
-
-                     var features = editRequest.Features.GetFeatrues(featureClass, geoJsonFeatureSref, serviceMap.Display?.DatumTransformations);
-                     if (features.Count() == 0)
+                     // materialized once: preparing (projection, make valid) and updating work on the same features
+                     var features = (editRequest.Features ?? [])
+                         .GetFeatrues(editService.FeatureClass, editRequest.CRS.ToSpatialReferenceOrDefault(), serviceMap.Display?.DatumTransformations)
+                         .ToList();
+                     if (features.Count == 0)
                      {
                          throw new MapServerException("No features to update");
                      }
 
-                     if (features.Count(f => f.OID <= 0) > 0)
-                     {
-                         throw new MapServerException("Can't update features without existing ObjectId");
-                     }
-
-                     features.GeometryMakeValid(serviceMap, featureClass);
-
-                     if (!await database.Update(featureClass, features.ToList()))
-                     {
-                         throw new MapServerException(database.LastErrorMessage);
-                     }
+                     editService.PrepareUpdates(features);
+                     await editService.ExecuteAsync(session => editService.Update(features, session));
 
                      return new EditFeaturesResponse()
                      {
                          Succeeded = true,
                          Statement = Framework.Editor.Core.EditStatements.UPDATE.ToString(),
-                         Count = features.Count()
+                         Count = features.Count
                      };
                  });
 }

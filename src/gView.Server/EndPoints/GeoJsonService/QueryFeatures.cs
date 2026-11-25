@@ -74,6 +74,19 @@ public class QueryFeatures : BaseApiEndpoint
                 string? requestWhereClause = queryRequest.Filter?
                             .WhereClauseWithResolveParameters();
 
+                // object ids are numbers: anything else is a client error (400), not an internal one
+                var objectIds = queryRequest.ObjectIds?
+                            .Where(oid => !String.IsNullOrWhiteSpace(oid))
+                            .Select(oid => int.TryParse(oid.Trim(), out var value)
+                                ? value
+                                : throw new MapServerException($"Invalid object id '{oid}': object ids are integers"))
+                            .ToList();
+
+                if (queryRequest.Command == QueryCommand.Distinct && queryRequest.SpatialFilter is not null)
+                {
+                    throw new MapServerException("DISTINCT can't be combined with a spatial filter");
+                }
+
                 int featureCount = 0;
                 var geoJsonFeatures = new List<gView.GeoJsonService.DTOs.Feature>();
                 string? objectIdFieldName = null;
@@ -88,6 +101,7 @@ public class QueryFeatures : BaseApiEndpoint
                     #region Filter
 
                     IQueryFilter? filter;
+                    string? objectIdsWhereClause = null;
 
                     if (queryRequest.SpatialFilter is not null)
                     {
@@ -118,21 +132,32 @@ public class QueryFeatures : BaseApiEndpoint
                         queryRequest.OutFields = queryRequest.OutFields.ProjectNamesAndCheckIfFieldsExists(tableClass).ToArray();
                         filter = new DistinctFilter(queryRequest.OutFields.First());
                     }
-                    else if (queryRequest.ObjectIds?.Any() == true)
+                    else if (objectIds?.Count > 0)
                     {
-                        filter = new RowIDFilter(tableClass.IDFieldName,
-                            queryRequest.ObjectIds.Select(id => int.Parse(id)).ToList());
+                        filter = new RowIDFilter(tableClass.IDFieldName, objectIds);
                     }
                     else
                     {
                         filter = new QueryFilter();
                     }
 
+                    // object ids together with a spatial filter or DISTINCT: as a where clause (before, they were ignored)
+                    if (objectIds?.Count > 0 && filter is not RowIDFilter)
+                    {
+                        if (String.IsNullOrEmpty(tableClass.IDFieldName))
+                        {
+                            throw new MapServerException("Can't query object ids: the table has no object id field");
+                        }
+                        objectIdsWhereClause = $"{tableClass.IDFieldName} in ({String.Join(",", objectIds)})";
+                    }
+
                     #endregion
 
                     #region Prepair Where Filter
 
-                    filter.WhereClause = requestWhereClause.AppendWhereClause(filterQuery).OrTake("1=1");
+                    filter.WhereClause = requestWhereClause.AppendWhereClause(filterQuery)
+                                                           .AppendWhereClause(objectIdsWhereClause)
+                                                           .OrTake("1=1");
 
                     #endregion
 

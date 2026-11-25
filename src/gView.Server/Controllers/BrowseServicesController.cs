@@ -1,4 +1,5 @@
-﻿using gView.Framework.Common;
+﻿using Microsoft.AspNetCore.Antiforgery;
+using gView.Framework.Common;
 using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Exceptions;
@@ -263,7 +264,8 @@ public class BrowseServicesController : BaseController
                                                     .FirstOrDefault()
                                                     .Name
                                         : "",
-                                    supportedRequests.HttpMethods
+                                    supportedRequests.HttpMethods,
+                                    HttpContext.RequestServices.GetRequiredService<IAntiforgery>().GetAndStoreTokens(HttpContext).RequestToken
                                     );
         return View("_htmlbody");
     });

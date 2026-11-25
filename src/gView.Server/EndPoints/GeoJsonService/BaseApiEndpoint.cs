@@ -123,7 +123,7 @@ public class BaseApiEndpoint : IApiEndpoint
                 await mapService.CheckAccess(serviceRequestContext);
             }
 
-            result = action(serviceRequestContext, mapService, identity).GetAwaiter().GetResult();
+            result = await action(serviceRequestContext, mapService, identity);
         }
         catch (MapServerAuthException)
         {
