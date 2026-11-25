@@ -194,6 +194,12 @@ public class GetServiceCapabilities : BaseApiEndpoint
         }
         if (accessTypes.HasFlag(AccessTypes.Query))
         {
+            yield return new FindRequestProperties()
+            {
+                Url = $"{url}/find",
+                HttpMethods = ["GET", "POST"],
+                MaxFeaturesLimit = map.MapServiceProperties.MaxRecordCount
+            };
             yield return new IdentifyRequestProperties()
             {
                 Url = $"{url}/identify",

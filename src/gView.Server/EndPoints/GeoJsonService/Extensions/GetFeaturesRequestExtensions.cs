@@ -94,8 +94,7 @@ internal static partial class GetFeaturesRequestExtensions
     private static IField Field(ITableClass tableClass, string? name, string parameter)
         => String.IsNullOrWhiteSpace(name)
             ? throw new MapServerException($"{parameter}: a field is required")
-            : (tableClass.Fields?.FindField(name.Trim())  // like the other field names of a query: case-insensitive
-               ?? tableClass.Fields?.ToEnumerable().FirstOrDefault(f => f.name.Equals(name.Trim(), StringComparison.OrdinalIgnoreCase)))
+            : tableClass.FieldByName(name)  // like the other field names of a query: by name, case-insensitive
               is IField field && field.type is not (FieldType.Shape or FieldType.GEOMETRY or FieldType.GEOGRAPHY or FieldType.binary)
                 ? field
                 : throw new MapServerException($"{parameter}: unknown field '{name}'");

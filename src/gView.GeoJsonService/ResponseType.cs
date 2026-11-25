@@ -14,4 +14,5 @@ public class ResponseType
     public const string Identify = "IdentifyResponse";
     public const string FeaturesStatistics = "FeaturesStatisticsResponse";
     public const string EditFeaturesBatch = "ApplyEditsResponse";
+    public const string Find = "FindResponse";
 }

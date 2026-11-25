@@ -22,6 +22,10 @@ internal static class HttpRequestContextExtensions
                 // the query has its own url parameters (where, filter, bbox, lists, ...)
                 return (T)(object)httpContext.Request.Query.ToGetFeaturesRequest();
             }
+            if (typeof(T) == typeof(gView.GeoJsonService.DTOs.FindRequest))
+            {
+                return (T)(object)httpContext.Request.Query.ToFindRequest();
+            }
             if (typeof(T) == typeof(gView.GeoJsonService.DTOs.IdentifyRequest))
             {
                 return (T)(object)httpContext.Request.Query.ToIdentifyRequest();

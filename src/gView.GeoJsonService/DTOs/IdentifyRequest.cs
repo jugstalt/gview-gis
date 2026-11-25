@@ -32,4 +32,10 @@ public class IdentifyRequest : BaseRequest
 
     /// <summary>Max. features per layer (default and maximum: the max. record count of the service)</summary>
     public int? Limit { get; set; }
+
+    /// <summary>Generalize lines and polygons: vertices closer than this (in units of the output CRS) are dropped</summary>
+    public double? MaxAllowableOffset { get; set; }
+
+    /// <summary>Round the coordinates of the result to this number of decimal places</summary>
+    public int? GeometryPrecision { get; set; }
 }

@@ -59,6 +59,8 @@ internal static class QueryCollectionExtensions
             }).ToArray(),
             GroupBy = List("groupBy"),
             Having = Value("having"),
+            MaxAllowableOffset = Number(query, "maxAllowableOffset"),
+            GeometryPrecision = Integer("geometryPrecision"),
         };
 
         var where = Value("where");
@@ -124,7 +126,9 @@ internal static class QueryCollectionExtensions
             ImageHeight = Integer("imageHeight") ?? 0,
             Dpi = Integer("dpi"),
             OutCRS = Crs(Value("outCRS") ?? Value("out-crs"), "outCRS"),
-            Limit = Integer("limit")
+            Limit = Integer("limit"),
+            MaxAllowableOffset = Number(query, "maxAllowableOffset"),
+            GeometryPrecision = Integer("geometryPrecision")
         };
         if (Value("returnGeometry") is string returnGeometry)
         {
@@ -133,6 +137,41 @@ internal static class QueryCollectionExtensions
                 : throw new MapServerException($"Invalid value for the parameter returnGeometry: {returnGeometry} ({String.Join(", ", Enum.GetNames<GeometryResult>())})");
         }
 
+        return request;
+    }
+
+    /// <summary>
+    /// A find from the url (GET .../find), case-insensitive: searchText, searchFields, layers, contains (true/false),
+    /// returnGeometry, outCRS, limit, maxAllowableOffset, geometryPrecision
+    /// </summary>
+    static public FindRequest ToFindRequest(this IQueryCollection query)
+    {
+        string? Value(string name) => query[name].ToString() is string text && !String.IsNullOrWhiteSpace(text) ? text.Trim() : null;
+        string[]? List(string name) => Value(name)?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        int? Integer(string name)
+            => Value(name) is string text
+                ? int.TryParse(text, out var value) && value >= 0 ? value : throw new MapServerException($"Invalid value for the parameter {name}: {text}")
+                : null;
+
+        var request = new FindRequest()
+        {
+            SearchText = Value("searchText") ?? "",
+            SearchFields = List("searchFields"),
+            Layers = List("layers"),
+            Contains = Value("contains") is string contains
+                ? bool.TryParse(contains, out var value) ? value : throw new MapServerException($"Invalid value for the parameter contains: {contains}")
+                : true,
+            OutCRS = Crs(Value("outCRS") ?? Value("out-crs"), "outCRS"),
+            Limit = Integer("limit"),
+            MaxAllowableOffset = Number(query, "maxAllowableOffset"),
+            GeometryPrecision = Integer("geometryPrecision")
+        };
+        if (Value("returnGeometry") is string returnGeometry)
+        {
+            request.ReturnGeometry = Enum.TryParse<GeometryResult>(returnGeometry, true, out var geometryValue) && Enum.IsDefined(geometryValue)
+                ? geometryValue
+                : throw new MapServerException($"Invalid value for the parameter returnGeometry: {returnGeometry}");
+        }
         return request;
     }
 
@@ -174,6 +213,13 @@ internal static class QueryCollectionExtensions
             ? BBox.FromArray(values)
             : throw new MapServerException($"Invalid {name}: {text} (minx,miny,maxx,maxy)");
     }
+
+    private static double? Number(IQueryCollection query, string name)
+        => query[name].ToString() is string text && !String.IsNullOrWhiteSpace(text)
+            ? double.TryParse(text.Trim(), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var value) && value >= 0
+                ? value
+                : throw new MapServerException($"Invalid value for the parameter {name}: {text}")
+            : null;
 
     private static CoordinateReferenceSystem? Crs(string? value, string name)
         => value switch

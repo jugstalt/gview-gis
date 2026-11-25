@@ -22,6 +22,8 @@ internal class Routes
     public const string GetLayers = "layers";
     public const string Identify = "identify";
     public const string ApplyEdits = "applyEdits";
+    public const string Find = "find";
+    public const string Api = "api";
 }
 
 internal class RouteBuilder

@@ -40,6 +40,8 @@ public class RequestConverter : JsonConverter<BaseRequest>
                     => JsonSerializer.Deserialize<IdentifyRequest>(rootElement.GetRawText(), options),
                 RequestTypes.ApplyEdits
                     => JsonSerializer.Deserialize<ApplyEditsRequest>(rootElement.GetRawText(), options),
+                RequestTypes.Find
+                    => JsonSerializer.Deserialize<FindRequest>(rootElement.GetRawText(), options),
                 _ => throw new JsonException("Unknown request type")
             };
         }
@@ -91,6 +93,8 @@ public class ResponseConverter : JsonConverter<BaseResponse>
                     => JsonSerializer.Deserialize<GetFeaturesStatisticsResponse>(rootElement.GetRawText(), options),
                 ResponseType.EditFeaturesBatch
                     => JsonSerializer.Deserialize<ApplyEditsResponse>(rootElement.GetRawText(), options),
+                ResponseType.Find
+                    => JsonSerializer.Deserialize<FindResponse>(rootElement.GetRawText(), options),
                 ResponseType.Error
                     => JsonSerializer.Deserialize<ErrorResponse>(rootElement.GetRawText(), options),
                 _ => throw new JsonException("Unknown response type")
@@ -136,6 +140,8 @@ public class SupportedRequestConverter : JsonConverter<SupportedRequest>
                     => JsonSerializer.Deserialize<IdentifyRequestProperties>(rootElement.GetRawText(), options),
                 RequestProperties.ApplyEdits
                     => JsonSerializer.Deserialize<ApplyEditsRequestProperties>(rootElement.GetRawText(), options),
+                RequestProperties.Find
+                    => JsonSerializer.Deserialize<FindRequestProperties>(rootElement.GetRawText(), options),
 
                 // a request of a newer server: kept, so the rest of the capabilities can be read
                 _ => JsonSerializer.Deserialize<OtherRequestProperties>(rootElement.GetRawText(), options)

@@ -494,36 +494,19 @@ static internal class HtmlExtensions
 
         if (obj is GetServiceCapabilitiesResponse capabilities)
         {
-            sb.Append("<div>");
-            foreach (var supportedRequest in capabilities.SupportedRequests ?? [])
+            // all requests of the service, with their parameters and schemas, to try out: the API description (Scalar)
+            var serviceUrl = capabilities.SupportedRequests?
+                .Select(r => r.Url)
+                .Where(url => url.IndexOf(mapService.Fullname) >= 0)
+                .Select(url => url.Substring(0, url.LastIndexOf(mapService.Fullname) + mapService.Fullname.Length))
+                .FirstOrDefault();
+            if (serviceUrl is not null)
             {
-                if (supportedRequest.Url.IndexOf(mapService.Fullname) < 0
-                    || supportedRequest.Name == RequestProperties.ApplyEdits)  // nested edits: no form, a JSON body (see the specification)
-                {
-                    continue;
-                }
-
-                var url = supportedRequest.Url.Substring(
-                                supportedRequest.Url.LastIndexOf(mapService.Fullname) + mapService.Fullname.Length + 1);
-
-                if (url.Contains("{layerId}"))
-                {
-                    sb.Append("<div>");
-                    foreach (var layer in capabilities.Layers?
-                                                      .Where(l => l.SuportedOperations?
-                                                                   .Contains(supportedRequest.Name) == true) ?? [])
-                    {
-                        sb.Append(Link($"{supportedRequest.Name} {layer.Name}",
-                                       $"./../GeoJsonRequest?id={mapService.Fullname}&request={url.Replace("{layerId}", layer.Id)}"));
-                    }
-                    sb.Append("</div>");
-                }
-                else
-                {
-                    sb.Append(Link(supportedRequest.Name, $"./../GeoJsonRequest?id={mapService.Fullname}&request={url}"));
-                }
+                sb.Append("<div>");
+                sb.Append(Link("API: all requests to try out", $"{serviceUrl}/api?f=html"));
+                sb.Append(Link("OpenAPI (JSON)", $"{serviceUrl}/api?f=json"));
+                sb.Append("</div>");
             }
-            sb.Append("</div>");
         }
 
         sb.Append($"<h4>Response: {(requestTimeSpan.HasValue ? $"{(int)requestTimeSpan.Value.TotalMilliseconds} ms" : "")}</h4>");

@@ -216,21 +216,18 @@ public static class HtmlRenderer
         return sb.ToString();
     }
 
-    /// <summary>
-    /// Swagger UI for the API definition. The swagger-ui-dist files are served locally
-    /// from <paramref name="swaggerUiLibUrl"/> (no CDN)
-    /// </summary>
-    public static string SwaggerUi(string apiJsonUrl, string serviceUrl, string swaggerUiLibUrl)
+    /// <summary>The API description with Scalar, served locally from wwwroot/lib/scalar (like the GeoJson services)</summary>
+    public static string ApiReference(string apiJsonUrl, string serviceUrl, string scalarLibUrl)
     {
-        // swagger-ui-dist version of the local files; bumped when the files are replaced (cache busting)
-        const string swaggerUiVersion = "5.17.14";
+        // @scalar/api-reference version of the local file; bumped when the file is replaced (cache busting)
+        const string scalarVersion = "1.84.0";
 
         var sb = new StringBuilder();
         AppendBreadcrumb(sb, (serviceUrl, "Landing page"));
-        sb.Append($"<link rel='stylesheet' href='{E(swaggerUiLibUrl)}/swagger-ui.css?{swaggerUiVersion}' />");
-        sb.Append("<div id='swagger-ui' class='ogc-swagger'></div>");
-        sb.Append($"<script src='{E(swaggerUiLibUrl)}/swagger-ui-bundle.js?{swaggerUiVersion}'></script>");
-        sb.Append($"<script>window.addEventListener('load', function() {{ SwaggerUIBundle({{ url: '{JsString(apiJsonUrl)}', dom_id: '#swagger-ui' }}); }});</script>");
+        // not id='api-reference': the Scalar bundle mounts itself there, a second time next to createApiReference
+        sb.Append("<div id='ogc-api-reference' class='ogc-api-reference'></div>");
+        sb.Append($"<script src='{E(scalarLibUrl)}/standalone.js?{scalarVersion}'></script>");
+        sb.Append($"<script>Scalar.createApiReference('#ogc-api-reference', {{ url: '{JsString(apiJsonUrl)}', hideClientButton: true, withDefaultFonts: false, showDeveloperTools: 'never', telemetry: false }});</script>");
 
         return sb.ToString();
     }

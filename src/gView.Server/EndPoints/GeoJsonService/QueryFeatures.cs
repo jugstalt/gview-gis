@@ -332,7 +332,8 @@ public class QueryFeatures : BaseApiEndpoint
                                         feature.Shape = geoTransfromer.Transform2D(feature.Shape) as IGeometry;
                                     }
 
-                                    var geoJsonFeature = feature.ToGeoJsonFeature(objectIdFieldName, queryRequest.ReturnGeometry);
+                                    var geoJsonFeature = feature.ToGeoJsonFeature(objectIdFieldName, queryRequest.ReturnGeometry,
+                                        new GeometryOptions(queryRequest.MaxAllowableOffset, queryRequest.GeometryPrecision));
                                     geoJsonFeatures.Add(geoJsonFeature);
                                 }
                             }

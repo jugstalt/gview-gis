@@ -18,6 +18,12 @@ public class GetFeaturesRequest : BaseRequest
     public int? Limit { get; set; } // Optional limit for the number of features to return
     public int? Offset { get; set; } // Optional offset for pagination
 
+    /// <summary>Generalize lines and polygons: vertices closer than this (in units of the output CRS) are dropped</summary>
+    public double? MaxAllowableOffset { get; set; }
+
+    /// <summary>Round the coordinates of the result to this number of decimal places</summary>
+    public int? GeometryPrecision { get; set; }
+
     // command "statistics"
 
     /// <summary>The statistics (command statistics)</summary>

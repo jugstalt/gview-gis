@@ -324,7 +324,7 @@ table.table.kv td:first-child { width: 200px; color: var(--muted); white-space: 
 .ogc-map { max-width: 100%; border: 1px solid var(--border); border-radius: var(--radius); background: #fff; }
 .ogc-pager { display: flex; gap: 8px; margin: 0 0 8px; }
 .ogc-pager .btn { text-decoration: none; }
-.ogc-swagger { background: #fff; border-radius: var(--radius); }
+.ogc-api-reference { border-radius: var(--radius); overflow: hidden; }
 
 /* ======================================================================== login */
 .gview-login-panel { max-width: 380px; margin: 8vh auto; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 28px; box-shadow: var(--shadow); }

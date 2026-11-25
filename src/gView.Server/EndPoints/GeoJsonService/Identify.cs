@@ -139,7 +139,8 @@ public class Identify : BaseApiEndpoint
                  IFeature feature;
                  while (cursor is not null && (feature = await cursor.NextFeature()) is not null)
                  {
-                     features.Add(feature.ToGeoJsonFeature(featureClass.IDFieldName, request.ReturnGeometry));
+                     features.Add(feature.ToGeoJsonFeature(featureClass.IDFieldName, request.ReturnGeometry,
+                         new GeometryOptions(request.MaxAllowableOffset, request.GeometryPrecision)));
                  }
              }
 

@@ -60,7 +60,10 @@ public enum GeometryResult
 {
     None,
     Geometry,
-    BBox
+    BBox,
+
+    /// <summary>A point: inside a polygon, at half the length of a line</summary>
+    Centroid
 }
 
 public enum MapReponseFormat

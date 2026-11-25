@@ -42,6 +42,7 @@ public class GeoJsonServiceRequestInterpreter : IServiceRequestInterpreter
                 break;
             case "query":
             case "identify":
+            case "find":
                 accessTypes |= AccessTypes.Query;
                 break;
             case "legend":

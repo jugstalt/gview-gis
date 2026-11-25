@@ -245,6 +245,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     an optional `version` per update/delete is checked first (412). The version is the ETag of OGC API - Features
     (`OgcApiFeatureService.FeatureETagAsync`), so both APIs lock with the same value; the response has the new ids
     and versions.
+- GeoJson services, phase 4:
+  - `.../api`: an OpenAPI 3.1 description of the service with the operations the user has the rights for; the
+    schemas come from the request/response classes. `?f=html` shows it with Scalar (served locally, `lib/scalar`),
+    to read and try out every request. Browse Services links it ("API") instead of the request forms only.
+  - GetMap: `layerDefs` (an extra filter per layer, where clause or CQL2, on top of the definition query) and
+    `highlight` (object ids per layer, drawn on top). Invalid filters answer 400 before rendering.
+  - Query, identify, find: `returnGeometry=centroid` (a point inside polygons, at half the length of lines),
+    `maxAllowableOffset` (generalized geometries) and `geometryPrecision` (rounded coordinates).
+  - `.../find`: searches a text in the text fields of several layers (case-insensitive, contains or exact), only
+    in the features each layer shows; needs the right query.
 - OGC API - Features Part 4: optimistic locking. `GET .../items/{featureId}` returns an `ETag`
   (hash of id, CRS84 geometry and properties, the same for every `crs` and format); `PUT`, `PATCH` and
   `DELETE` with `If-Match` answer `412 Precondition Failed` when the feature was changed in the
@@ -281,8 +291,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   and `GeometryEngineOptions.LabelMaxAlternatives` (`GVIEW_LABEL_MAX_ALTERNATIVES`, default 32): a smaller distance
   places more labels in dense maps but needs more label engine checks, a larger one is faster.
 - Tile service metadata: `renderTilesOnTheFly` can be set in the metadata editor (YAML).
-- OGC API: the Swagger UI of the API page (`/api?f=html`) is served locally (`lib/swagger-ui`)
-  instead of from the jsdelivr CDN, so it works without internet access.
+- OGC API: the API page (`/api?f=html`) shows the OpenAPI document with Scalar instead of Swagger UI, served
+  locally (`lib/scalar`, no CDN, works without internet access; developer tools and telemetry off). `lib/swagger-ui`
+  is removed.
 - GeoServices REST `export`: renders with the shared `MapImageRenderer` of WMS and OGC API Maps
   (same size limits, rotation, transparency); the extent still follows the aspect ratio of the image.
 
@@ -313,6 +324,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - GeoJson services: `.../query/{layerId}` and `.../features/{layerId}` needed no right besides the access to the
   GeoJson interface (the layer id was taken as operation): a user with only the right map could query and edit.
   Now query needs query, features/applyEdits need edit. Also in v8.
+- GeoJson query: CQL2 filters found fields only by their alias, so a field with an alias was rejected by its name
+  (e.g. `GISKEY`); statistics fields took a matching alias before the name. Both now go by the field name.
 - GeoJson query: `orderBy`/`orderByFields` with `DESC` (`EW DESC`) were rejected as unknown field names.
 - Editing: updates and deletes of object ids that don't exist answer 404 (GeoServices, GeoJson); before, they reported
   success.

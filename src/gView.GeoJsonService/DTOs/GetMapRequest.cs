@@ -13,6 +13,12 @@ public class GetMapRequest : BaseRequest
     public double? Rotation { get; set; }
     public float? Dpi { get; set; }
     public MapReponseFormat ResponseFormat { get; set; } = MapReponseFormat.Url;
+
+    /// <summary>An extra filter per layer id (SQL whereClause or cql2), on top of the definition query of the layer</summary>
+    public IDictionary<string, AttributeFilter>? LayerDefs { get; set; }
+
+    /// <summary>Object ids to highlight per layer id, drawn on top of the map</summary>
+    public IDictionary<string, int[]>? Highlight { get; set; }
 }
 
 

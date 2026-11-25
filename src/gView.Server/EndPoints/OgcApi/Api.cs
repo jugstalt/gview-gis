@@ -31,10 +31,10 @@ public class Api : OgcApiBaseEndpoint
             request =>
             {
                 return Task.FromResult(request.Format == OgcApiFormat.Html
-                    ? Html(request, "API", HtmlRenderer.SwaggerUi(
-                        $"{request.Service.ApiUrl}?f=json",
+                    ? Html(request, "API", HtmlRenderer.ApiReference(
+                        "api?f=json",  // relative: the page is .../api, works behind proxies and other ports
                         request.Service.ServiceUrl,
-                        $"{httpContext.Request.PathBase.Value?.TrimEnd('/')}/lib/swagger-ui"))
+                        $"{httpContext.Request.PathBase.Value?.TrimEnd('/')}/lib/scalar"))
                     : Json(request.Service.GetOpenApiDocument(), OgcApiMediaTypes.OpenApiJson));
             });
 }
