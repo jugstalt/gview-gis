@@ -221,7 +221,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - WebApps start page: config section `Home` with `Title`, `WelcomeText`, `LogoUrl`, `NoAccessText`
   (shown to signed in users without a gView role) and `Links` (footer links, replace the default
   documentation and GitHub links). `CustomTiles` have a `Visibility`: `admin` (default, as before),
-  `user` or `public`. See [Configuration of gView.WebApps](https://docs.webgiscloud.com/gview/en/setup/config-webapps.html#config-webapps-home).
+  `user` or `public`. See [Configuration of gView.WebApps](https://docs.gviewonline.com/en/setup/config-webapps.html#config-webapps-home).
 
 ## Changed
 
@@ -276,7 +276,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## Security
 
 gView Server hardening for internet-facing installations, see
-[Security gView.Server](https://docs.webgiscloud.com/gview/en/setup/security-server.html).
+[Security gView.Server](https://docs.gviewonline.com/en/setup/security-server.html).
 **Breaking changes are marked (⚠).**
 
 - First admin: a first login no longer creates the admin (anyone could take over a fresh
