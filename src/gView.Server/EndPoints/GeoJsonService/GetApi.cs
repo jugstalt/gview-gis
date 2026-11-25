@@ -54,7 +54,10 @@ public class GetApi : BaseApiEndpoint
          }
 
          var accessTypes = await mapService.GetAccessTypes(identity);
-         return Results.Text(GeoJsonServiceOpenApi.Build(serviceUrl, mapService.Name, accessTypes).ToJsonString(new System.Text.Json.JsonSerializerOptions { WriteIndented = true }),
+         // examples with the extent, crs and layers of the service, so a request can be sent right away
+         using var serviceMap = await mapServerService.Instance.GetServiceMapAsync(service, folder);
+         var example = serviceMap is null ? null : ServiceExample.From(serviceMap);
+         return Results.Text(GeoJsonServiceOpenApi.Build(serviceUrl, mapService.Name, accessTypes, example).ToJsonString(new System.Text.Json.JsonSerializerOptions { WriteIndented = true }),
                              "application/vnd.oai.openapi+json;version=3.1", Encoding.UTF8);
      });
 }

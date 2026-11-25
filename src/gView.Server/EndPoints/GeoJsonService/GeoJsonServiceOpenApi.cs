@@ -19,13 +19,18 @@ namespace gView.Server.EndPoints.GeoJsonService;
 /// </summary>
 internal static class GeoJsonServiceOpenApi
 {
-    private static readonly JsonSerializerOptions SchemaOptions = new(JsonSerializerDefaults.Web)
+    // not JsonSerializerDefaults.Web: it allows numbers as strings, the schema then says "string or number" and
+    // clients (Scalar) fill in "" - the service reads numbers strictly
+    private static readonly JsonSerializerOptions SchemaOptions = new()
     {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
         Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
         TypeInfoResolver = new DefaultJsonTypeInfoResolver()
     };
 
-    public static JsonObject Build(string serviceUrl, string title, AccessTypes accessTypes)
+    /// <param name="example">values of the service for the examples (extent, crs, layers); without, no examples</param>
+    public static JsonObject Build(string serviceUrl, string title, AccessTypes accessTypes, ServiceExample? example = null)
     {
         var schemas = new JsonObject();
         var paths = new JsonObject();
@@ -41,13 +46,16 @@ internal static class GeoJsonServiceOpenApi
         }
 
         JsonObject Operation<TRequest, TResponse>(string summary, string tag, (string name, string description)[] queryParameters, bool post, bool pathLayerId = false)
+            where TRequest : BaseRequest, new()
         {
             var path = new JsonObject();
             var parameters = new JsonArray();
             if (pathLayerId)
             {
-                parameters.Add(Parameter("layerId", "path", "The id of the layer (see capabilities)", "integer", required: true));
+                parameters.Add(Parameter("layerId", "path", "The id of the layer (see capabilities)", "integer", required: true,
+                                         example: example?.QueryLayerId));
             }
+            var body = example is null ? null : ExampleOf<TRequest>(example);
 
             var get = new JsonObject
             {
@@ -58,7 +66,7 @@ internal static class GeoJsonServiceOpenApi
             };
             foreach (var (name, description) in queryParameters)
             {
-                ((JsonArray)get["parameters"]!).Add(Parameter(name, "query", description, "string"));
+                ((JsonArray)get["parameters"]!).Add(Parameter(name, "query", description, "string", example: QueryExample(body, name)));
             }
             if (queryParameters.Length > 0 || !post)
             {
@@ -75,7 +83,7 @@ internal static class GeoJsonServiceOpenApi
                     ["requestBody"] = new JsonObject
                     {
                         ["required"] = true,
-                        ["content"] = new JsonObject { ["application/json"] = new JsonObject { ["schema"] = Ref<TRequest>() } }
+                        ["content"] = new JsonObject { ["application/json"] = Content(Ref<TRequest>(), body) }
                     },
                     ["responses"] = Responses(Ref<TResponse>())
                 };
@@ -137,7 +145,7 @@ internal static class GeoJsonServiceOpenApi
                     ["requestBody"] = new JsonObject
                     {
                         ["required"] = true,
-                        ["content"] = new JsonObject { ["application/json"] = new JsonObject { ["schema"] = Ref<EditFeaturesRequest>() } }
+                        ["content"] = new JsonObject { ["application/json"] = Content(Ref<EditFeaturesRequest>(), null) }
                     },
                     ["responses"] = Responses(Ref<EditFeaturesResponse>())
                 };
@@ -175,7 +183,108 @@ internal static class GeoJsonServiceOpenApi
     {
         var schema = JsonSchemaExporter.GetJsonSchemaAsNode(SchemaOptions, type, new JsonSchemaExporterOptions() { TreatNullObliviousAsNonNullable = true });
         RebaseRefs(schema, $"#/components/schemas/{name}");
+
+        // requests and responses carry their kind in "type" (e.g. GetMap): the service needs exactly this value
+        if ((typeof(BaseRequest).IsAssignableFrom(type) || typeof(BaseResponse).IsAssignableFrom(type))
+            && !type.IsAbstract && type.GetConstructor(Type.EmptyTypes) is not null
+            && type.GetProperty("Type")?.GetValue(Activator.CreateInstance(type)) is string typeValue
+            && schema["properties"]?["type"] is JsonObject typeSchema)
+        {
+            typeSchema["type"] = "string";
+            typeSchema["const"] = typeValue;
+            typeSchema["default"] = typeValue;
+        }
         return schema;
+    }
+
+    private static JsonObject Content(JsonObject schema, object? example)
+    {
+        var content = new JsonObject { ["schema"] = schema };
+        if (example is not null)
+        {
+            content["example"] = JsonSerializer.SerializeToNode(example, example.GetType(), SchemaOptions);
+        }
+        return content;
+    }
+
+    /// <summary>
+    /// A request that can be sent right away, like the request forms of Browse Services: the full extent and crs of the
+    /// map, the layers shown by default, the queryable layers, the center of the map for identify
+    /// </summary>
+    internal static BaseRequest ExampleOf<TRequest>(ServiceExample example) where TRequest : BaseRequest, new()
+    {
+        var crs = example.CrsObject;
+        BaseRequest request = new TRequest();
+        switch (request)
+        {
+            case GetMapRequest map:
+                map.Layers = example.VisibleLayers;
+                map.BBox = example.Extent!;
+                map.CRS = crs;
+                map.Width = 800;
+                map.Height = 600;
+                map.Dpi = 96;
+                map.Format = "png";
+                map.Transparent = true;
+                break;
+            case GetLegendRequest legend:
+                legend.Dpi = 96;
+                break;
+            case GetFeaturesRequest query:
+                query.OutFields = ["*"];
+                query.ReturnGeometry = GeometryResult.Geometry;
+                query.OutCRS = crs;
+                query.Limit = 10;
+                break;
+            case IdentifyRequest identify:
+                identify.Geometry = example.Center is null ? null : new Geometry { Type = GeometryType.Point, Coordinates = example.Center };
+                identify.CRS = crs;
+                identify.Layers = example.FeatureLayers;
+                identify.LayerOption = "all";
+                identify.MapExtent = example.Extent;
+                identify.ImageWidth = 800;
+                identify.ImageHeight = 600;
+                identify.OutCRS = crs;
+                identify.Limit = 10;
+                break;
+            case FindRequest find:
+                find.SearchText = "a";
+                find.Layers = example.FeatureLayers;
+                find.ReturnGeometry = GeometryResult.Centroid;
+                find.OutCRS = crs;
+                find.Limit = 10;
+                break;
+            case GetServiceCapabilitiesRequest capabilities:
+                capabilities.CRS = crs;
+                break;
+            case GetLayersRequest layers:
+                layers.CRS = crs;
+                break;
+        }
+        return request;
+    }
+
+    /// <summary>The value of a GET parameter from the example request: bbox as "minx,miny,maxx,maxy", crs as name, arrays comma separated</summary>
+    private static string? QueryExample(BaseRequest? example, string parameter)
+    {
+        if (example is null)
+        {
+            return null;
+        }
+        var node = JsonSerializer.SerializeToNode(example, example.GetType(), SchemaOptions) as JsonObject;
+        var value = node?.FirstOrDefault(p => p.Key.Equals(parameter, StringComparison.OrdinalIgnoreCase)).Value;
+        return value switch
+        {
+            null => null,
+            JsonObject crs when crs["properties"]?["name"] is JsonValue name => name.ToString(),
+            JsonObject bbox when bbox["minX"] is not null
+                => string.Join(",", new[] { "minX", "minY", "maxX", "maxY" }.Select(k => bbox[k]!.ToJsonString())),
+            JsonObject geometry when geometry["coordinates"] is JsonArray xy && xy.Count == 2 => $"{xy[0]!.ToJsonString()},{xy[1]!.ToJsonString()}",
+            JsonObject => null,
+            JsonArray array => array.Count == 0 ? null : string.Join(",", array.Select(a => a is JsonValue v && v.TryGetValue<string>(out var text) ? text : a?.ToJsonString())),
+            JsonValue v when v.TryGetValue<string>(out var text) => text,
+            _ => value.ToJsonString()
+        };
     }
 
     /// <summary>
@@ -207,8 +316,9 @@ internal static class GeoJsonServiceOpenApi
         }
     }
 
-    private static JsonObject Parameter(string name, string @in, string description, string type, bool required = false)
-        => new()
+    private static JsonObject Parameter(string name, string @in, string description, string type, bool required = false, string? example = null)
+    {
+        var parameter = new JsonObject
         {
             ["name"] = name,
             ["in"] = @in,
@@ -216,6 +326,12 @@ internal static class GeoJsonServiceOpenApi
             ["required"] = required,
             ["schema"] = new JsonObject { ["type"] = type }
         };
+        if (!string.IsNullOrEmpty(example))
+        {
+            parameter["example"] = example;
+        }
+        return parameter;
+    }
 
     private static JsonObject Responses(JsonObject schema)
         => new()

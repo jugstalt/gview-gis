@@ -248,7 +248,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - GeoJson services, phase 4:
   - `.../api`: an OpenAPI 3.1 description of the service with the operations the user has the rights for; the
     schemas come from the request/response classes. `?f=html` shows it with Scalar (served locally, `lib/scalar`),
-    to read and try out every request. Browse Services links it ("API") instead of the request forms only.
+    to read and try out every request. The examples are filled with values of the service (full extent and CRS of
+    the map, the layers visible by default, the first queryable layer, the map center for identify), so a request can
+    be sent right away, as with the request forms of Browse Services; `type` is a constant of each request schema and
+    numbers are typed as numbers (Scalar filled in empty strings before). Browse Services links it ("API").
   - GetMap: `layerDefs` (an extra filter per layer, where clause or CQL2, on top of the definition query) and
     `highlight` (object ids per layer, drawn on top). Invalid filters answer 400 before rendering.
   - Query, identify, find: `returnGeometry=centroid` (a point inside polygons, at half the length of lines),
@@ -292,7 +295,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   places more labels in dense maps but needs more label engine checks, a larger one is faster.
 - Tile service metadata: `renderTilesOnTheFly` can be set in the metadata editor (YAML).
 - OGC API: the API page (`/api?f=html`) shows the OpenAPI document with Scalar instead of Swagger UI, served
-  locally (`lib/scalar`, no CDN, works without internet access; developer tools and telemetry off). `lib/swagger-ui`
+  locally (`lib/scalar`, no CDN, works without internet access; developer tools, AI agent and telemetry off). `lib/swagger-ui`
   is removed.
 - GeoServices REST `export`: renders with the shared `MapImageRenderer` of WMS and OGC API Maps
   (same size limits, rotation, transparency); the extent still follows the aspect ratio of the image.

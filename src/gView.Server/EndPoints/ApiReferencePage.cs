@@ -27,7 +27,7 @@ internal static class ApiReferencePage
               <div id="app"></div>
               <script src="{{WebUtility.HtmlEncode(libUrl)}}/scalar/standalone.js?{{ScalarVersion}}"></script>
               <script>
-                Scalar.createApiReference('#app', { url: '{{JsString(specUrl)}}', hideClientButton: true, withDefaultFonts: false, showDeveloperTools: 'never', telemetry: false });
+                Scalar.createApiReference('#app', { url: '{{JsString(specUrl)}}', hideClientButton: true, withDefaultFonts: false, showDeveloperTools: 'never', telemetry: false, agent: { disabled: true } });
               </script>
             </body>
             </html>

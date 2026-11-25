@@ -62,6 +62,42 @@ public class GeoJsonServiceOpenApiTests
     }
 
     [Fact]
+    public void Build_TypeIsConstant_NumbersAreNumbers()
+    {
+        var api = GeoJsonServiceOpenApi.Build("https://server/x", "x", AccessTypes.Map);
+        var getMap = api["components"]!["schemas"]!["GetMapRequest"]!["properties"]!;
+
+        Assert.Equal("GetMap", getMap["type"]!["const"]!.GetValue<string>());
+        Assert.Equal("integer", getMap["width"]!["type"]!.GetValue<string>());
+        Assert.DoesNotContain("string", getMap["bBox"]!.ToJsonString());
+    }
+
+    [Fact]
+    public void Build_ExamplesFromTheService()
+    {
+        var example = new ServiceExample("EPSG:31256", new gView.GeoJsonService.DTOs.BBox { MinX = 1, MinY = 2, MaxX = 3, MaxY = 4 }, ["0", "2"], ["2"]);
+        var api = GeoJsonServiceOpenApi.Build("https://server/x", "x", AccessTypes.Map | AccessTypes.Query, example);
+
+        var body = api["paths"]!["/map"]!["post"]!["requestBody"]!["content"]!["application/json"]!["example"]!;
+        Assert.Equal("GetMap", body["type"]!.GetValue<string>());
+        Assert.Equal(["0", "2"], body["layers"]!.AsArray().Select(l => l!.GetValue<string>()));
+        Assert.Equal(3, body["bBox"]!["maxX"]!.GetValue<double>());
+        Assert.Equal("EPSG:31256", body["crs"]!["properties"]!["name"]!.GetValue<string>());
+        Assert.Equal(800, body["width"]!.GetValue<int>());
+
+        string? Get(string path, string name) => api["paths"]![path]!["get"]!["parameters"]!.AsArray()
+            .First(p => p!["name"]!.GetValue<string>() == name)!["example"]?.GetValue<string>();
+        Assert.Equal("1,2,3,4", Get("/map", "bbox"));
+        Assert.Equal("EPSG:31256", Get("/map", "crs"));
+        Assert.Equal("0,2", Get("/map", "layers"));
+        Assert.Equal("2", Get("/query/{layerId}", "layerId"));
+        Assert.Equal("2,3", Get("/identify", "geometry"));
+
+        // without a service: no examples
+        Assert.Null(GeoJsonServiceOpenApi.Build("https://server/x", "x", AccessTypes.Map)["paths"]!["/map"]!["post"]!["requestBody"]!["content"]!["application/json"]!["example"]);
+    }
+
+    [Fact]
     public void FindParameters()
     {
         var request = new QueryCollection(Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(

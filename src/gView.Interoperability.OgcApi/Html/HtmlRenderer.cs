@@ -227,7 +227,7 @@ public static class HtmlRenderer
         // not id='api-reference': the Scalar bundle mounts itself there, a second time next to createApiReference
         sb.Append("<div id='ogc-api-reference' class='ogc-api-reference'></div>");
         sb.Append($"<script src='{E(scalarLibUrl)}/standalone.js?{scalarVersion}'></script>");
-        sb.Append($"<script>Scalar.createApiReference('#ogc-api-reference', {{ url: '{JsString(apiJsonUrl)}', hideClientButton: true, withDefaultFonts: false, showDeveloperTools: 'never', telemetry: false }});</script>");
+        sb.Append($"<script>Scalar.createApiReference('#ogc-api-reference', {{ url: '{JsString(apiJsonUrl)}', hideClientButton: true, withDefaultFonts: false, showDeveloperTools: 'never', telemetry: false, agent: {{ disabled: true }} }});</script>");
 
         return sb.ToString();
     }
