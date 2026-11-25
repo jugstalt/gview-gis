@@ -191,6 +191,9 @@ input[type=checkbox] { accent-color: var(--accent); }
 .home-hero h1 { margin: 0 0 8px; font-size: 30px; font-weight: 600; letter-spacing: -.01em; }
 .home-hero p { margin: 0 0 6px; max-width: 620px; font-size: 15px; opacity: .85; }
 .home-hero-version { font-size: 13px; color: var(--muted); }
+.home-hero .home-hero-links { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 14px 0 0; font-size: 14px; opacity: 1; }
+.home-hero-links a { display: inline-flex; align-items: center; gap: 6px; }
+.home-hero-links .ico { width: 14px; height: 14px; }
 
 .quicklinks { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
 .quicklinks a { display: grid; grid-template-columns: 36px 1fr; grid-template-rows: auto auto; column-gap: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; color: var(--text); box-shadow: var(--shadow); }

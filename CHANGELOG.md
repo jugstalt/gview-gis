@@ -233,6 +233,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Carto/Explorer about dialog in the same look (contour lines instead of the background image); the
   LizardTech/MrSID credits are removed.
 - gView Server start page: the same hero with contour lines as the web apps start page (same product family).
+  The about page too, with links to the documentation and GitHub; the LizardTech/MrSID credits
+  (`_lics/credits.xml`) are removed.
 
 - Geometry: SpatialNET packages updated to 0.10.0-preview.6.
 - Polygon labels (`SimpleLabelRenderer`, `ChartLabelRenderer`): all polygons now take the SpatialNET path

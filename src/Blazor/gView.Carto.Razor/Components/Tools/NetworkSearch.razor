@@ -273,8 +273,14 @@
             {
                 bool canSelectFirst = _context.ProblemCategory is NetworkProblemCategory.Duplicates or NetworkProblemCategory.Merged;
                 string firstRole = _context.ProblemCategory == NetworkProblemCategory.Duplicates ? "dropped" : "merged";
-                <div style="max-height:45vh;overflow:auto;margin-top:6px">
-                    <Virtualize Items="ProblemIndexes(problems)" Context="index" ItemSize="24">
+                var listed = ProblemIndexes(problems);
+                <div style="font-size:0.75em;margin-top:6px;color:var(--mud-palette-text-secondary)">
+                    @(listed.Count == problems.Violations.Count
+                        ? $"{listed.Count:N0} problems, by legend row; hide a row (eye) to leave it out of the list"
+                        : $"{listed.Count:N0} of {problems.Violations.Count:N0} problems: hidden legend rows are left out")
+                </div>
+                <div style="max-height:45vh;overflow:auto;margin-top:2px">
+                    <Virtualize Items="listed" Context="index" ItemSize="24">
                         @{ var problem = problems.Violations[index]; var entry = _context.Legend?.ViolationEntry(index); }
                         <div style="display:flex;align-items:center;gap:4px;font-size:0.75em;border-top:1px solid var(--mud-palette-lines-default);padding:2px 0">
                             <span style="width:12px">@Swatch(entry)</span>
@@ -340,16 +346,25 @@
 
     #region Problems
 
-    private NetworkQueryResult? _problemsResult;
+    private NetworkResultLegend? _problemsLegend;
+    private string? _problemsHidden;
     private List<int> _problemIndexes = [];
 
-    /// <summary>The rows of the problems list (indexes into the violations), kept per result for the virtualized list.</summary>
+    /// <summary>
+    /// The rows of the problems list (indexes into the violations): the legend rows in their order, the hidden ones (eye)
+    /// left out; kept until the legend or what is hidden changes, for the virtualized list.
+    /// </summary>
     private List<int> ProblemIndexes(NetworkQueryResult result)
     {
-        if (!ReferenceEquals(result, _problemsResult))
+        var legend = _context?.Legend is NetworkResultLegend l && l.Result == result ? l : null;
+        var hidden = string.Join("\n", _context!.HiddenKeys.Order(StringComparer.Ordinal));
+        if (!ReferenceEquals(legend, _problemsLegend) || hidden != _problemsHidden || legend is null)
         {
-            _problemsResult = result;
-            _problemIndexes = Enumerable.Range(0, result.Violations.Count).ToList();
+            _problemsLegend = legend;
+            _problemsHidden = hidden;
+            _problemIndexes = legend is null
+                ? Enumerable.Range(0, result.Violations.Count).ToList()
+                : legend.Entries.Where(e => !_context.HiddenKeys.Contains(e.Key)).SelectMany(e => e.Violations).ToList();
         }
         return _problemIndexes;
     }
