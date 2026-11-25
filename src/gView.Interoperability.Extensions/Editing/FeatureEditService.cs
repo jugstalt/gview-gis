@@ -155,13 +155,14 @@ public class FeatureEditService
 
     /// <summary>
     /// Updates and deletes may only touch objects the layer shows: an object id outside the definition query
-    /// of the layer (or not existing) is an error (404), even if the feature class has it. Otherwise a user who
-    /// may edit a filtered layer could change or delete any object of the feature class.
+    /// of the layer, or one that doesn't exist, is an error (404), even if the feature class has it. Otherwise a user
+    /// who may edit a filtered layer could change or delete any object of the feature class, and an edit of a missing
+    /// object would report success (the databases don't report 0 changed rows).
     /// </summary>
     public async Task CheckObjectsInLayer(IEnumerable<int> objectIds)
     {
         var ids = objectIds.Where(id => id > 0).Distinct().ToList();
-        if (_layerFilter == null || ids.Count == 0)
+        if (ids.Count == 0)
         {
             return;
         }
@@ -176,7 +177,9 @@ public class FeatureEditService
             var filter = new QueryFilter()
             {
                 SubFields = FeatureClass.IDFieldName,
-                WhereClause = $"({_layerFilter}) AND {FeatureClass.IDFieldName} IN ({String.Join(",", chunk)})"
+                WhereClause = _layerFilter is null
+                    ? $"{FeatureClass.IDFieldName} IN ({String.Join(",", chunk)})"
+                    : $"({_layerFilter}) AND {FeatureClass.IDFieldName} IN ({String.Join(",", chunk)})"
             };
 
             using (var cursor = await FeatureClass.Search(filter) as IFeatureCursor)

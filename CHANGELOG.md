@@ -237,6 +237,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     `layerOption` visible (visible and in scale of the client's map), top or all; `layers` like GetMap (+id/-id).
   - Capabilities: `layers` and `identify` in `supportedRequests` (clients ignore requests they don't know), layer type
     of each layer.
+- GeoJson services, phase 3:
+  - Query command `statistics`: count, sum, min, max, avg, stddev, var with `groupBy`, `having` (a CQL2 filter on the
+    result rows, evaluated in memory by the new shared `CqlEvaluator`), `orderByFields`, `limit`/`offset`; the
+    statistics run in the database where possible (`IStatisticsTableClass`), else in memory, as for GeoServices.
+  - `.../applyEdits`: adds, updates and deletes of several layers in one transaction (all or nothing; one database);
+    an optional `version` per update/delete is checked first (412). The version is the ETag of OGC API - Features
+    (`OgcApiFeatureService.FeatureETagAsync`), so both APIs lock with the same value; the response has the new ids
+    and versions.
 - OGC API - Features Part 4: optimistic locking. `GET .../items/{featureId}` returns an `ETag`
   (hash of id, CRS84 geometry and properties, the same for every `crs` and format); `PUT`, `PATCH` and
   `DELETE` with `If-Match` answer `412 Precondition Failed` when the feature was changed in the
@@ -302,6 +310,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   always `999`; the response stays HTTP 200 as in ArcGIS.
 - GeoJson GetMap: `layers` per GET (`layers=0,1,2`, as in the specification) failed; `-id` hid the other layers of
   the group of the layer too (`-0` hid layer 1 of the same group).
+- GeoJson services: `.../query/{layerId}` and `.../features/{layerId}` needed no right besides the access to the
+  GeoJson interface (the layer id was taken as operation): a user with only the right map could query and edit.
+  Now query needs query, features/applyEdits need edit. Also in v8.
+- GeoJson query: `orderBy`/`orderByFields` with `DESC` (`EW DESC`) were rejected as unknown field names.
+- Editing: updates and deletes of object ids that don't exist answer 404 (GeoServices, GeoJson); before, they reported
+  success.
 - Editing (GeoServices REST `updateFeatures`, `deleteFeatures`, `applyEdits` and GeoJson services): updates and
   deletes only touch objects the layer shows; an object id outside the definition query of the layer is an error
   (404). Before, a user who may edit a filtered layer could change or delete any object of its feature class.

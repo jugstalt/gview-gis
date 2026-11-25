@@ -52,7 +52,8 @@ public enum QueryCommand
     Select,
     CountOnly,
     Distinct,
-    IdsOnly
+    IdsOnly,
+    Statistics
 }
 
 public enum GeometryResult

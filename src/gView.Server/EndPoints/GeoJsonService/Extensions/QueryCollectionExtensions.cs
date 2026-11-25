@@ -50,6 +50,15 @@ internal static class QueryCollectionExtensions
             ObjectIds = List("objectIds"),
             Limit = Integer("limit"),
             Offset = Integer("offset"),
+            // command=statistics: statistics=count:OBJECTID:n,sum:EW (type:field[:alias]), groupBy=LAND, having (CQL2-Text)
+            Statistics = List("statistics")?.Select(s => s.Split(':', StringSplitOptions.TrimEntries) switch
+            {
+                [var type, var field] => new StatisticRequest() { Type = type, Field = field },
+                [var type, var field, var alias] => new StatisticRequest() { Type = type, Field = field, Alias = alias },
+                _ => throw new MapServerException($"Invalid statistic '{s}': type:field[:alias], e.g. count:OBJECTID:n")
+            }).ToArray(),
+            GroupBy = List("groupBy"),
+            Having = Value("having"),
         };
 
         var where = Value("where");

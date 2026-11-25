@@ -11,4 +11,5 @@ public class RequestTypes
     public const string EditFeatures = "EditFeatures";
     public const string GetLayers = "GetLayers";
     public const string Identify = "Identify";
+    public const string ApplyEdits = "ApplyEdits";
 }

@@ -112,6 +112,26 @@ public sealed partial class OgcApiFeatureService
         await ExecuteAsync(editService, session => editService.Delete(oid, session));
     }
 
+    /// <summary>
+    /// The entity tag of a feature (<c>ETag</c> of GET .../items/{featureId}), also the <c>version</c> of a feature in the
+    /// GeoJson services, so both APIs lock with the same value. Null if the layer has no features or the feature doesn't
+    /// exist (or is outside the layer filter).
+    /// </summary>
+    public async Task<string?> FeatureETagAsync(int layerId, int objectId)
+    {
+        try
+        {
+            var collection = GetFeatureCollectionLayer(OgcCollectionLayer.ToCollectionId(layerId));
+            var feature = await FeatureQuery.QueryItemAsync(Map, collection, objectId.ToString(CultureInfo.InvariantCulture), CrsReference.Crs84);
+
+            return FeatureETag.Compute(feature).Value;
+        }
+        catch (OgcApiException ex) when (ex.StatusCode == 404)
+        {
+            return null;
+        }
+    }
+
     #region Helper
 
     private (OgcCollectionLayer collection, FeatureEditService editService) EditContext(string collectionId, EditStatements statement)

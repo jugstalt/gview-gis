@@ -156,12 +156,16 @@ public class FeatureEditServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task CheckObjectsInLayer_WithoutLayerFilter_ChecksNothing()
+    public async Task CheckObjectsInLayer_WithoutLayerFilter_ChecksExistence()
     {
         var (dataset, fc) = await CreateAsync();
         using (dataset)
         {
-            await Service(fc).CheckObjectsInLayer([4711]);  // the database reports missing objects itself
+            var ids = await InsertAsync(Service(fc), Point(1, 1, "A"));
+
+            await Service(fc).CheckObjectsInLayer(ids);
+            var ex = await Assert.ThrowsAsync<MapServerException>(() => Service(fc).CheckObjectsInLayer([4711]));  // the databases report no missing rows
+            Assert.Equal(404, ex.StatusCode);
         }
     }
 

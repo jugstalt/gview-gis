@@ -156,6 +156,7 @@ internal static class EnumerableExtensions
             if (fieldName == "*")
             {
                 yield return fieldName;
+                continue;
             }
 
             var field = tableFields.FirstOrDefault(f => f.name == fieldName)
@@ -168,6 +169,32 @@ internal static class EnumerableExtensions
 
             yield return field.name;
         }
+    }
+
+    /// <summary>
+    /// The order by clause of a query: field [ASC|DESC], comma separated or as list; only fields of the table
+    /// (before, "NAME DESC" was taken as a field name and rejected)
+    /// </summary>
+    static public string OrderByClause(this IEnumerable<string> orderByFields, ITableClass tableClass)
+    {
+        var parts = new List<string>();
+        foreach (var orderBy in orderByFields.SelectMany(o => o.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)))
+        {
+            var tokens = orderBy.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            bool descending = tokens.Length == 2 && tokens[1].Equals("DESC", StringComparison.OrdinalIgnoreCase);
+            if (tokens.Length is 0 or > 2 || tokens.Length == 2 && !descending && !tokens[1].Equals("ASC", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new MapServerException($"Invalid orderBy: {orderBy} (field [ASC|DESC])");
+            }
+
+            var field = new[] { tokens[0] }.ProjectNamesAndCheckIfFieldsExists(tableClass).First();
+            if (field == "*")
+            {
+                throw new MapServerException("Invalid orderBy: *");
+            }
+            parts.Add(descending ? $"{field} DESC" : field);
+        }
+        return String.Join(",", parts);
     }
 
     #region Features

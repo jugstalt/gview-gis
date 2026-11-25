@@ -90,6 +90,17 @@ public class QueryFeatures : BaseApiEndpoint
                     throw new MapServerException("DISTINCT can't be combined with a spatial filter");
                 }
 
+                // statistics: one table (the rows of several tables can't be aggregated together); having is a CQL2
+                // filter on the result rows, applied here
+                GetFeaturesStatisticsResponse? statisticsResponse = null;
+                var having = queryRequest.Command == QueryCommand.Statistics
+                    ? AttributeFilterExtensions.Cql2PredicateOf(queryRequest.Having)
+                    : null;
+                if (queryRequest.Command == QueryCommand.Statistics && tableClasses.Count != 1)
+                {
+                    throw new MapServerException("Statistics can't be used with aggregated tables");
+                }
+
                 int featureCount = 0;
                 int pageSize = int.MaxValue;
                 var geoJsonFeatures = new List<gView.GeoJsonService.DTOs.Feature>();
@@ -203,6 +214,10 @@ public class QueryFeatures : BaseApiEndpoint
                             throw new MapServerException("Geometry is not supported with DISTINCT.");
                         }
                     }
+                    else if (queryRequest.Command == QueryCommand.Statistics)
+                    {
+                        // the statistics name their fields
+                    }
                     else
                     {
                         var outFields = queryRequest.OutFields
@@ -245,8 +260,8 @@ public class QueryFeatures : BaseApiEndpoint
                                     ? queryRequest.Offset.Value + 1
                                     : 1;  // Start is 1 by IQueryFilter definition
 
-                    filter.OrderBy = queryRequest.OrderByFields is not null
-                                ? String.Join(",", queryRequest.OrderByFields.ProjectNamesAndCheckIfFieldsExists(tableClass))
+                    filter.OrderBy = queryRequest.OrderByFields is not null && queryRequest.Command != QueryCommand.Statistics  // statistics order their rows
+                                ? queryRequest.OrderByFields.OrderByClause(tableClass)
                                 : "";
 
                     #endregion
@@ -277,6 +292,21 @@ public class QueryFeatures : BaseApiEndpoint
                             }
 
                             #endregion
+                        }
+
+                        if (queryRequest.Command == QueryCommand.Statistics)
+                        {
+                            int statisticsLimit = queryRequest.Limit is > 0
+                                ? (maxRecordCount > 0 ? Math.Min(queryRequest.Limit.Value, maxRecordCount) : queryRequest.Limit.Value)
+                                : Math.Max(0, maxRecordCount);
+                            var statisticsQuery = queryRequest.ToStatisticsQuery(tableClass, statisticsLimit, withHaving: having is not null);
+
+                            var statisticsResult = tableClass is IStatisticsTableClass statisticsTableClass
+                                ? await statisticsTableClass.ExecuteStatistics(filter, statisticsQuery)
+                                : await gView.Framework.Data.Statistics.StatisticsAggregator.ExecuteAsync(tableClass, filter, statisticsQuery);
+
+                            statisticsResponse = statisticsResult.ToStatisticsResponse(having, queryRequest.Offset ?? 0, statisticsLimit);
+                            continue;
                         }
 
                         #region Query
@@ -312,6 +342,10 @@ public class QueryFeatures : BaseApiEndpoint
                     }
                 }
 
+                if (queryRequest.Command == QueryCommand.Statistics)
+                {
+                    return statisticsResponse!;
+                }
                 if (queryRequest.Command == QueryCommand.CountOnly)
                 {
                     return new GetFeaturesCountOnlyResponse() { Count = featureCount };

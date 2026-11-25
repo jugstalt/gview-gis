@@ -10,6 +10,7 @@ public static class RequestProperties
     public const string EditFeatures = "features";
     public const string GetLayers = "layers";
     public const string Identify = "identify";
+    public const string ApplyEdits = "applyEdits";
 }
 
 //[JsonPolymorphic(TypeDiscriminatorPropertyName = "name")]
@@ -78,6 +79,14 @@ public class IdentifyRequestProperties : SupportedRequest
     }
 
     public int MaxFeaturesLimit { get; set; }
+}
+
+public class ApplyEditsRequestProperties : SupportedRequest
+{
+    public ApplyEditsRequestProperties()
+    {
+        Name = RequestProperties.ApplyEdits;
+    }
 }
 
 /// <summary>A request a newer server offers that this client doesn't know (yet)</summary>

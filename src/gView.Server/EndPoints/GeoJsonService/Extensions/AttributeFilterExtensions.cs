@@ -42,8 +42,11 @@ static public class AttributeFilterExtensions
     /// <summary>
     /// The CQL2 filter of the request: a string is CQL2-Text, an object CQL2-JSON; null without one.
     /// </summary>
-    static public CqlPredicate? Cql2Predicate(this AttributeFilter filter)
-        => filter.Cql2 switch
+    static public CqlPredicate? Cql2Predicate(this AttributeFilter filter) => Cql2PredicateOf(filter.Cql2);
+
+    /// <summary>A CQL2 filter of a request (filter, having): a string is CQL2-Text, an object CQL2-JSON; null without one.</summary>
+    static public CqlPredicate? Cql2PredicateOf(object? cql2)
+        => cql2 switch
         {
             null => null,
             string text => CqlTextParser.Parse(text),

@@ -25,14 +25,10 @@ internal static class FieldExtensions
             Domain = await field.Domain.ToPropertyDomainAsync()
         };
 
+        property.Type = field.type.ToPropertyType();
         if (field.type == FieldType.ID)
         {
-            property.Type = PropertyType.Integer;
             property.IsPrimaryKey = true;
-        }
-        else if (Enum.TryParse(field.type.ToString(), true, out PropertyType propertyType))
-        {
-            property.Type = propertyType;
         }
 
         return property;

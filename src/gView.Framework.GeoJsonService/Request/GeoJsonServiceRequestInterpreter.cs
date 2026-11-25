@@ -48,6 +48,7 @@ public class GeoJsonServiceRequestInterpreter : IServiceRequestInterpreter
                 accessTypes |= AccessTypes.Map;
                 break;
             case "features":
+            case "applyedits":
                 accessTypes |= AccessTypes.Edit;
                 break;
         }

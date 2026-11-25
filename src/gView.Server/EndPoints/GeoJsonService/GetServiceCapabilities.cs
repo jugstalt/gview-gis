@@ -149,14 +149,10 @@ public class GetServiceCapabilities : BaseApiEndpoint
                                 };
 
 
+                                layerProperty.Type = f.type.ToPropertyType();
                                 if (f.type == FieldType.ID)
                                 {
-                                    layerProperty.Type = PropertyType.Integer;
                                     layerProperty.IsPrimaryKey = true;
-                                }
-                                else if (Enum.TryParse(f.type.ToString(), true, out PropertyType propertyType))
-                                {
-                                    layerProperty.Type = propertyType;
                                 }
 
                                 return layerProperty;
@@ -217,6 +213,11 @@ public class GetServiceCapabilities : BaseApiEndpoint
             {
                 Url = $"{url}/features/{{layerId}}",
                 HttpMethods = ["POST", "PUT", "DELETE"],
+            };
+            yield return new ApplyEditsRequestProperties()
+            {
+                Url = $"{url}/applyEdits",
+                HttpMethods = ["POST"],
             };
         }
     }

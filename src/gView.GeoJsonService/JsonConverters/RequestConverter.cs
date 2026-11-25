@@ -38,6 +38,8 @@ public class RequestConverter : JsonConverter<BaseRequest>
                     => JsonSerializer.Deserialize<GetLayersRequest>(rootElement.GetRawText(), options),
                 RequestTypes.Identify
                     => JsonSerializer.Deserialize<IdentifyRequest>(rootElement.GetRawText(), options),
+                RequestTypes.ApplyEdits
+                    => JsonSerializer.Deserialize<ApplyEditsRequest>(rootElement.GetRawText(), options),
                 _ => throw new JsonException("Unknown request type")
             };
         }
@@ -85,6 +87,10 @@ public class ResponseConverter : JsonConverter<BaseResponse>
                     => JsonSerializer.Deserialize<GetLayersResponse>(rootElement.GetRawText(), options),
                 ResponseType.Identify
                     => JsonSerializer.Deserialize<IdentifyResponse>(rootElement.GetRawText(), options),
+                ResponseType.FeaturesStatistics
+                    => JsonSerializer.Deserialize<GetFeaturesStatisticsResponse>(rootElement.GetRawText(), options),
+                ResponseType.EditFeaturesBatch
+                    => JsonSerializer.Deserialize<ApplyEditsResponse>(rootElement.GetRawText(), options),
                 ResponseType.Error
                     => JsonSerializer.Deserialize<ErrorResponse>(rootElement.GetRawText(), options),
                 _ => throw new JsonException("Unknown response type")
@@ -128,6 +134,8 @@ public class SupportedRequestConverter : JsonConverter<SupportedRequest>
                     => JsonSerializer.Deserialize<GetLayersRequestProperties>(rootElement.GetRawText(), options),
                 RequestProperties.Identify
                     => JsonSerializer.Deserialize<IdentifyRequestProperties>(rootElement.GetRawText(), options),
+                RequestProperties.ApplyEdits
+                    => JsonSerializer.Deserialize<ApplyEditsRequestProperties>(rootElement.GetRawText(), options),
 
                 // a request of a newer server: kept, so the rest of the capabilities can be read
                 _ => JsonSerializer.Deserialize<OtherRequestProperties>(rootElement.GetRawText(), options)

@@ -497,7 +497,8 @@ static internal class HtmlExtensions
             sb.Append("<div>");
             foreach (var supportedRequest in capabilities.SupportedRequests ?? [])
             {
-                if (supportedRequest.Url.IndexOf(mapService.Fullname) < 0)
+                if (supportedRequest.Url.IndexOf(mapService.Fullname) < 0
+                    || supportedRequest.Name == RequestProperties.ApplyEdits)  // nested edits: no form, a JSON body (see the specification)
                 {
                     continue;
                 }

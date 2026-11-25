@@ -78,6 +78,30 @@ public class BaseApiEndpoint : IApiEndpoint
         }
     }
 
+    /// <summary>
+    /// The operation of the url, which decides the right a user needs (map, query, edit): the last segment, or the one
+    /// before a layer id (.../query/3, .../features/3). Before, the layer id was taken: query and edit needed no right
+    /// beyond the access to the GeoJson interface.
+    /// </summary>
+    internal static string RequestMethod(HttpContext httpContext) => RequestMethod(httpContext.Request.Path.Value);
+
+    internal static string RequestMethod(string? path)
+    {
+        var segments = (path ?? "").Split('/', StringSplitOptions.RemoveEmptyEntries);
+        if (segments.Length == 0)
+        {
+            return "";
+        }
+
+        var method = segments[^1];
+        if (segments.Length > 1 && int.TryParse(method, out _))
+        {
+            method = segments[^2];
+        }
+
+        return method.ToLowerInvariant();
+    }
+
     async static protected Task<object> HandleSecureAsync(
                 HttpContext httpContext,
                 MapServiceManager mapServiceManager,
@@ -97,7 +121,7 @@ public class BaseApiEndpoint : IApiEndpoint
 
 
             ServiceRequest serviceRequest = ServiceRequest.CreateGerneral(
-                    method: httpContext.Request.Path.Value?.Split("/").Last().ToLowerInvariant(),
+                    method: RequestMethod(httpContext),
                     identity: identity);
 
             IMapService? mapService = null;
@@ -176,7 +200,7 @@ public class BaseApiEndpoint : IApiEndpoint
             T? model = await httpContext.GetModel<T>();
 
             ServiceRequest serviceRequest = ServiceRequest.CreateGerneral(
-                    method: httpContext.Request.Path.Value?.Split("/").Last().ToLowerInvariant(),
+                    method: RequestMethod(httpContext),
                     identity: identity);
 
             // todo: Folder specific settings?
