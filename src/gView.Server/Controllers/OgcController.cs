@@ -100,6 +100,11 @@ namespace gView.Server.Controllers
 
                 var response = serviceRequest.Response;
 
+                if (serviceRequest.ResponseStatusCode.HasValue)
+                {
+                    HttpContext.Response.StatusCode = serviceRequest.ResponseStatusCode.Value;
+                }
+
                 if (response is byte[])
                 {
                     return Result((byte[])response, serviceRequest.ResponseContentType);

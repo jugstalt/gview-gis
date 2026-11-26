@@ -54,6 +54,10 @@ namespace gView.Framework.Core.MapServer
 
         public string ResponseContentType = "";
         public DateTime? ResponseExpries = null;
+        /// <summary>
+        /// The HTTP status code of the response, null: 200 (e.g. WFS 2.0.0 exception reports)
+        /// </summary>
+        public int? ResponseStatusCode = null;
 
         public string OnlineResource = "";
         public string OutputUrl = "";

@@ -1,3 +1,4 @@
+using gView.Interoperability.Extensions.Features;
 using gView.GraphicsEngine;
 using gView.Interoperability.OgcApi.Maps;
 

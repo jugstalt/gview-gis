@@ -1,37 +1,81 @@
+#nullable enable
+
 using gView.Framework.Core.Geometry;
 using gView.Framework.Geometry;
+using System;
 using System.Globalization;
 
-namespace gView.Interoperability.OgcApi;
+namespace gView.Interoperability.Extensions.Features;
 
 /// <summary>
-/// A CRS as used by OGC API (Part 2: CRS by reference): either OGC CRS84 (lon/lat)
-/// or an EPSG code. Coordinates are always written in the axis order of the authority,
+/// How a CRS was written in a request. OGC API always uses the axis order of the authority,
+/// WFS uses x/y for the short "EPSG:xxxx" form (see <see cref="CrsReference.Notation"/>).
+/// </summary>
+public enum CrsNotation
+{
+    /// <summary>http://www.opengis.net/def/crs/EPSG/0/xxxx or .../OGC/1.3/CRS84</summary>
+    Uri,
+    /// <summary>EPSG:xxxx (or CRS84)</summary>
+    EpsgShort,
+    /// <summary>urn:ogc:def:crs:EPSG::xxxx (also urn:x-ogc:def:crs:EPSG:xxxx)</summary>
+    Urn,
+    /// <summary>http://www.opengis.net/gml/srs/epsg.xml#xxxx (GML 2 style, always x/y)</summary>
+    GmlSrsUrl
+}
+
+/// <summary>
+/// A CRS as used by OGC API (Part 2: CRS by reference) and WFS: either OGC CRS84 (lon/lat)
+/// or an EPSG code. OGC API writes coordinates in the axis order of the authority,
 /// e.g. lat/lon for EPSG:4326 but lon/lat for CRS84.
 /// </summary>
 public sealed class CrsReference : IEquatable<CrsReference>
 {
     public const string Crs84Uri = "http://www.opengis.net/def/crs/OGC/1.3/CRS84";
     private const string EpsgUriPrefix = "http://www.opengis.net/def/crs/EPSG/0/";
+    private const string GmlSrsUrlPrefix = "http://www.opengis.net/gml/srs/epsg.xml#";
 
-    private CrsReference(int epsgCode, bool isCrs84)
+    private CrsReference(int epsgCode, bool isCrs84, CrsNotation notation = CrsNotation.Uri)
     {
         EpsgCode = epsgCode;
         IsCrs84 = isCrs84;
+        Notation = notation;
     }
 
     public static CrsReference Crs84 { get; } = new CrsReference(4326, true);
 
-    public static CrsReference FromEpsg(int epsgCode) => new CrsReference(epsgCode, false);
+    public static CrsReference FromEpsg(int epsgCode, CrsNotation notation = CrsNotation.Uri)
+        => new CrsReference(epsgCode, false, notation);
 
     public int EpsgCode { get; }
 
     public bool IsCrs84 { get; }
 
+    /// <summary>
+    /// The notation of the request the CRS was parsed from. It does not take part in equality.
+    /// </summary>
+    public CrsNotation Notation { get; }
+
     public string Uri => IsCrs84 ? Crs84Uri : $"{EpsgUriPrefix}{EpsgCode}";
 
     public ISpatialReference ToSpatialReference()
         => SpatialReference.FromID($"epsg:{EpsgCode}");
+
+    /// <summary>
+    /// The same CRS in another notation (e.g. to echo the form of a request)
+    /// </summary>
+    public CrsReference WithNotation(CrsNotation notation)
+        => notation == Notation ? this : new CrsReference(EpsgCode, IsCrs84, notation);
+
+    /// <summary>
+    /// The CRS written in <see cref="Notation"/>
+    /// </summary>
+    public string Name => Notation switch
+    {
+        CrsNotation.EpsgShort => IsCrs84 ? "CRS84" : $"EPSG:{EpsgCode}",
+        CrsNotation.Urn => IsCrs84 ? "urn:ogc:def:crs:OGC:1.3:CRS84" : $"urn:ogc:def:crs:EPSG::{EpsgCode}",
+        CrsNotation.GmlSrsUrl => IsCrs84 ? Crs84Uri : $"{GmlSrsUrlPrefix}{EpsgCode}",
+        _ => Uri
+    };
 
     /// <summary>
     /// True, if the first axis of the CRS is northing/southing (e.g. EPSG:4326, EPSG:31256)
@@ -61,15 +105,27 @@ public sealed class CrsReference : IEquatable<CrsReference>
             ? "http://" + value.Substring("https://".Length)
             : value;
 
-        if (normalized.Equals(Crs84Uri, StringComparison.OrdinalIgnoreCase)
-            || normalized.Equals("OGC:CRS84", StringComparison.OrdinalIgnoreCase)
-            || normalized.Equals("CRS84", StringComparison.OrdinalIgnoreCase))
+        if (normalized.Equals(Crs84Uri, StringComparison.OrdinalIgnoreCase))
         {
             crs = Crs84;
             return true;
         }
+        if (normalized.Equals("OGC:CRS84", StringComparison.OrdinalIgnoreCase)
+            || normalized.Equals("CRS84", StringComparison.OrdinalIgnoreCase))
+        {
+            crs = Crs84.WithNotation(CrsNotation.EpsgShort);
+            return true;
+        }
+        if (normalized.StartsWith("urn:ogc:def:crs:OGC:", StringComparison.OrdinalIgnoreCase)
+            && normalized.EndsWith(":CRS84", StringComparison.OrdinalIgnoreCase))
+        {
+            crs = Crs84.WithNotation(CrsNotation.Urn);
+            return true;
+        }
 
         string? code = null;
+        var notation = CrsNotation.Uri;
+
         if (normalized.StartsWith(EpsgUriPrefix, StringComparison.OrdinalIgnoreCase))
         {
             code = normalized.Substring(EpsgUriPrefix.Length);
@@ -77,13 +133,26 @@ public sealed class CrsReference : IEquatable<CrsReference>
         else if (normalized.StartsWith("EPSG:", StringComparison.OrdinalIgnoreCase))
         {
             code = normalized.Substring("EPSG:".Length);
+            notation = CrsNotation.EpsgShort;
+        }
+        else if (normalized.StartsWith(GmlSrsUrlPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            code = normalized.Substring(GmlSrsUrlPrefix.Length);
+            notation = CrsNotation.GmlSrsUrl;
+        }
+        else if (normalized.StartsWith("urn:ogc:def:crs:EPSG:", StringComparison.OrdinalIgnoreCase)
+                 || normalized.StartsWith("urn:x-ogc:def:crs:EPSG:", StringComparison.OrdinalIgnoreCase))
+        {
+            // urn:ogc:def:crs:EPSG::4326, urn:ogc:def:crs:EPSG:6.6:4326, urn:x-ogc:def:crs:EPSG:4326
+            code = normalized.Substring(normalized.LastIndexOf(':') + 1);
+            notation = CrsNotation.Urn;
         }
 
         if (code is not null
             && int.TryParse(code, NumberStyles.None, CultureInfo.InvariantCulture, out int epsgCode)
             && epsgCode > 0)
         {
-            crs = FromEpsg(epsgCode);
+            crs = FromEpsg(epsgCode, notation);
             return true;
         }
 

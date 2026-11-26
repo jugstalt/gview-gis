@@ -1,5 +1,6 @@
 #nullable enable
 
+using gView.Interoperability.Extensions.Features;
 using gView.Framework.Core.Extensions;
 using gView.Endpoints.Abstractions;
 using gView.Framework.Common;

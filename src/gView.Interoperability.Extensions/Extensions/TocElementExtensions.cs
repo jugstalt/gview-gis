@@ -1,7 +1,8 @@
 using gView.Framework.Core.Data;
 using gView.Framework.Core.UI;
+using System.Linq;
 
-namespace gView.Interoperability.OgcApi.Extensions;
+namespace gView.Interoperability.Extensions.Extensions;
 
 internal static class TocElementExtensions
 {

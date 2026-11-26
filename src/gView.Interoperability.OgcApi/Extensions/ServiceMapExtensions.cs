@@ -2,7 +2,7 @@ using gView.Framework.Core.Carto;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.UI;
 using gView.Interoperability.OGC;
-using gView.Interoperability.OgcApi.Features;
+using gView.Interoperability.Extensions;
 
 namespace gView.Interoperability.OgcApi.Extensions;
 
@@ -11,54 +11,6 @@ internal static class ServiceMapExtensions
     private static readonly Guid WfsExportMetadataGuid = new Guid("A2342AC5-9FD6-47a4-A25A-F684C375C895");
 
     private static readonly Guid WmsExportMetadataGuid = new Guid("0F6317BC-38FD-41d3-8E1A-82AB1873C526");
-
-    /// <summary>
-    /// Every visible TOC layer element with exactly one feature or raster layer becomes a collection.
-    /// Layers inside checkbox-style group layers are hidden (same rule as the GeoJsonService).
-    /// </summary>
-    public static IEnumerable<OgcCollectionLayer> OgcCollectionLayers(this IServiceMap map)
-    {
-        if (map?.TOC?.Elements is null)
-        {
-            yield break;
-        }
-
-        foreach (var tocElement in map.TOC.Elements)
-        {
-            if (tocElement is null
-                || tocElement.ElementType != TocElementType.Layer
-                || tocElement.Layers is null
-                || tocElement.Layers.Count != 1
-                || tocElement.IsHiddenForServices())
-            {
-                continue;
-            }
-
-            var layer = tocElement.Layers[0];
-            string title = String.IsNullOrWhiteSpace(tocElement.Name) ? layer.Title : tocElement.Name;
-
-            if (layer is IFeatureLayer featureLayer
-                && featureLayer.Class is IFeatureClass featureClass)
-            {
-                yield return new OgcCollectionLayer(
-                    featureLayer,
-                    title,
-                    map.GetLayerDescription(featureLayer.ID),
-                    featureClass.Envelope,
-                    featureClass.SpatialReference ?? map.LayerDefaultSpatialReference);
-            }
-            else if (layer is IRasterLayer rasterLayer
-                     && rasterLayer.Class is IRasterClass rasterClass)
-            {
-                yield return new OgcCollectionLayer(
-                    rasterLayer,
-                    title,
-                    map.GetLayerDescription(rasterLayer.ID),
-                    rasterClass.Polygon?.Envelope,
-                    rasterClass.SpatialReference ?? map.LayerDefaultSpatialReference);
-            }
-        }
-    }
 
     public static OgcCollectionLayer GetOgcCollectionLayer(this IServiceMap map, string collectionId)
         => map.OgcCollectionLayers().FirstOrDefault(c => c.Id == collectionId)

@@ -5,11 +5,6 @@ namespace gView.Interoperability.OgcApi.Extensions;
 
 internal static class FieldExtensions
 {
-    public static bool IsIdOrGeometryField(this IField field, IFeatureClass featureClass)
-        => field.type is FieldType.ID or FieldType.Shape or FieldType.GEOMETRY or FieldType.GEOGRAPHY
-           || field.name == featureClass.IDFieldName
-           || field.name == featureClass.ShapeFieldName;
-
     /// <summary>
     /// JSON schema type and format of a field, used for queryables and the OpenAPI schemas
     /// </summary>

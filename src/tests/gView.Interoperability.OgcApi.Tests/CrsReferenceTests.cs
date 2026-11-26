@@ -1,3 +1,5 @@
+using gView.Interoperability.Extensions.Features;
+
 namespace gView.Interoperability.OgcApi.Tests;
 
 public class CrsReferenceTests
@@ -50,5 +52,31 @@ public class CrsReferenceTests
     {
         Assert.NotEqual(CrsReference.Crs84, CrsReference.FromEpsg(4326));
         Assert.Equal(CrsReference.FromEpsg(4326), CrsReference.FromEpsg(4326));
+    }
+
+    [Theory]
+    [InlineData("urn:ogc:def:crs:EPSG::31256", 31256, CrsNotation.Urn, "urn:ogc:def:crs:EPSG::31256")]
+    [InlineData("urn:ogc:def:crs:EPSG:6.6:4326", 4326, CrsNotation.Urn, "urn:ogc:def:crs:EPSG::4326")]
+    [InlineData("urn:x-ogc:def:crs:EPSG:3857", 3857, CrsNotation.Urn, "urn:ogc:def:crs:EPSG::3857")]
+    [InlineData("EPSG:3857", 3857, CrsNotation.EpsgShort, "EPSG:3857")]
+    [InlineData("http://www.opengis.net/gml/srs/epsg.xml#4326", 4326, CrsNotation.GmlSrsUrl, "http://www.opengis.net/gml/srs/epsg.xml#4326")]
+    [InlineData("http://www.opengis.net/def/crs/EPSG/0/4326", 4326, CrsNotation.Uri, "http://www.opengis.net/def/crs/EPSG/0/4326")]
+    public void TryParse_KeepsNotation(string value, int epsgCode, CrsNotation notation, string name)
+    {
+        Assert.True(CrsReference.TryParse(value, out var crs));
+
+        Assert.Equal(epsgCode, crs.EpsgCode);
+        Assert.Equal(notation, crs.Notation);
+        Assert.Equal(name, crs.Name);
+        Assert.Equal(CrsReference.FromEpsg(epsgCode), crs);  // the notation is no part of equality
+    }
+
+    [Fact]
+    public void TryParse_UrnCrs84()
+    {
+        Assert.True(CrsReference.TryParse("urn:ogc:def:crs:OGC:1.3:CRS84", out var crs));
+
+        Assert.True(crs.IsCrs84);
+        Assert.Equal(CrsReference.Crs84, crs);
     }
 }

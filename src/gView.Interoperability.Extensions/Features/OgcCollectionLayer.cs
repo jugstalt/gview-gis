@@ -1,12 +1,15 @@
+#nullable enable
+
 using gView.Interoperability.Extensions.Extensions;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Geometry;
-using gView.Interoperability.OgcApi.Extensions;
+using System.Collections.Generic;
+using System.Linq;
 
-namespace gView.Interoperability.OgcApi.Features;
+namespace gView.Interoperability.Extensions.Features;
 
 /// <summary>
-/// A layer of a map service exposed as OGC API collection ("c{layerId}").
+/// A layer of a map service exposed as OGC API collection and WFS feature type ("c{layerId}").
 /// Feature layers have items and a map, raster layers only a map.
 /// </summary>
 public sealed class OgcCollectionLayer

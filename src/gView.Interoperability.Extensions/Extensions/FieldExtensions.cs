@@ -23,4 +23,12 @@ public static class FieldExtensions
     public static bool IsQueryableType(this IField field, SqlDialect dialect)
         => field.IsStringType() || field.IsIntegerType() || field.IsFloatingPointType()
            || (dialect != SqlDialect.Unknown && field.type is FieldType.Date or FieldType.boolean);
+
+    /// <summary>
+    /// The object id and the geometry are not written as (attribute) properties
+    /// </summary>
+    public static bool IsIdOrGeometryField(this IField field, IFeatureClass featureClass)
+        => field.type is FieldType.ID or FieldType.Shape or FieldType.GEOMETRY or FieldType.GEOGRAPHY
+           || field.name == featureClass.IDFieldName
+           || field.name == featureClass.ShapeFieldName;
 }

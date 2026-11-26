@@ -293,6 +293,31 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Changed
 
+- WFS rebuilt (phase 1 of the WFS modernization): WFS 2.0.0 is new and the primary version (link on the service
+  page), 1.1.0 and 1.0.0 stay. All three versions use the same feature pipeline as OGC API Features (shared
+  `FeatureReader`, `CrsReference`, `OgcCollectionLayer` in `gView.Interoperability.Extensions`), so the feature
+  types are the feature collections of the OGC API (`gv:c{layerId}`, only visible layers outside checkbox group
+  layers, without the object id as attribute).
+  - GML is written with an XmlWriter as valid GML 2.1.2 (1.0.0), 3.1.1 (1.1.0) or 3.2 (2.0.0): lines and polygons
+    as MultiLineString/MultiPolygon (GML 2) or MultiCurve/MultiSurface (GML 3) with closed rings and holes grouped
+    by outer ring, `gml:pos`/`gml:posList` in GML 3, `gml:id` for every GML 3.2 geometry, values in invariant
+    culture and ISO dates, null values omitted. DescribeFeatureType writes the matching XSD (geometry property
+    named after the shape field, typed properties). 2.0.0 offers GML 3.2, 3.1.1 and 2.1.2, 1.1.0 GML 3.1.1 and 2.1.2.
+  - CRS and axis order: without SRSNAME the features come in the advertised default CRS (the CRS of the map).
+    WFS 1.0.0 is always x/y; 1.1.0 and 2.0.0 use x/y for `EPSG:xxxx` and the axis order of the authority for
+    `urn:ogc:def:crs:EPSG::xxxx` and `http://www.opengis.net/def/crs/EPSG/0/xxxx` (e.g. lat/lon for EPSG:4326,
+    north first for EPSG:31256). The srsName of the response echoes the notation of the request; DefaultSRS/
+    DefaultCRS and OtherSRS are written as URN in 1.1.0/2.0.0. The same rule applies to `BBOX` (new for KVP, with
+    an optional CRS as 5th value).
+  - Requests: KVP parameters are URL decoded and case insensitive (a `FILTER` per GET works now), `TYPENAMES`,
+    `COUNT`/`MAXFEATURES`, `STARTINDEX` (single feature type), `SRSNAME`, `OUTPUTFORMAT`; POST XML for all three
+    versions; GetCapabilities negotiates the version (`ACCEPTVERSIONS`, default 2.0.0).
+  - Errors are OWS exception reports (`ServiceExceptionReport` for 1.0.0) with exceptionCode and locator, for
+    2.0.0 with HTTP status 400/404/501/500; internal errors only with the generic message and error id.
+  - GetFeature responses are no longer logged as a whole (only the request); about 5 times faster for 2000 features.
+  - Not yet (next phases): FES 2.0 filters (`fes:` namespace, `ValueReference`, `ResourceId`), `RESULTTYPE=hits`
+    and `numberMatched`, `PROPERTYNAME`, KVP `SORTBY`, GeoJSON output, stored queries; the test map still uses
+    WFS 1.1.0 with its own axis handling.
 - gView Server UI navigation: one way to the services instead of three. The start page and the sidebar
   show `Services` (formerly Browse Services) and `Manage`; the catalogs GeoServices REST and OGC API are
   a row of endpoint links with copy buttons on the start page. A click on a service in the list opens
@@ -350,6 +375,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Fixed
 
+- WFS: type names as advertised in the 1.1.0 capabilities (`wfs:c0`) returned an empty FeatureCollection, GetFeature
+  returned the geometries in the CRS of the data instead of the advertised DefaultSRS (also with SRSNAME in KVP
+  requests), GML 3 coordinates were written north first for `EPSG:xxxx`, and the content type `text/xml;
+  subtype=gml/...` is now sent as a valid media type (`subtype="gml/3.1.1"`). See the WFS entry under Changed.
 - WMS GetFeatureInfo: the features of `INFO_FORMAT=application/json` (and `application/vnd.ogc.gml`) had their
   geometries in the CRS of the data (e.g. MGI/Austria) instead of the CRS/SRS of the request (e.g. EPSG:3857).
   They are now projected into the request CRS; the GeoJSON FeatureCollection names it in a `crs` member (coordinates

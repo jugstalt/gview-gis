@@ -13,6 +13,8 @@ namespace gView.Interoperability.OGC
     [RegisterPlugIn("A2342AC5-9FD6-47a4-A25A-F684C375C895")]
     public class WFS_Export_Metadata : IMetadataProvider, IPropertyPage, IEpsgMetadata, IPropertyModel
     {
+        public static readonly Guid MetadataGuid = new Guid("A2342AC5-9FD6-47a4-A25A-F684C375C895");
+
         private Metadata _metadata = null;
         private IMap _map = null;
 
