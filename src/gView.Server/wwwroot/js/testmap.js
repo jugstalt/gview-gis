@@ -812,7 +812,11 @@
                                 if (b && b.length >= 4) {
                                     bbox = bbox ? [Math.min(bbox[0], b[0]), Math.min(bbox[1], b[1]), Math.max(bbox[2], b[2]), Math.max(bbox[3], b[3])] : b.slice(0, 4);
                                 }
-                                return { id: String(c.id), name: c.title || c.id, parentId: null, isGroup: false, visible: true, queryable: true };
+                                return {
+                                    id: String(c.id), name: c.title || c.id, parentId: null, isGroup: false, visible: true, queryable: true,
+                                    // the crs the items of this collection support (CRS84 is the default, not listed here)
+                                    crs: (c.crs || []).filter(function (u) { return !/CRS84$/i.test(u); }).map(normalizeCrs).filter(Boolean)
+                                };
                             });
 
                             // the maps of gView answer in EPSG:3857 and EPSG:4326 (see the OpenAPI document)
@@ -842,11 +846,15 @@
         },
 
         items: function (iface, layer, extent, crs, limit, op, signal) {
+            // the crs of the view only if the collection supports it, else CRS84 (the default) like a client
+            var viewCrs = (layer.crs || []).indexOf(crs) >= 0;
+            var params = viewCrs
+                ? { f: 'json', bbox: axisBbox(extent, crs), 'bbox-crs': crsUri(crs), crs: crsUri(crs), limit: limit }
+                : { f: 'json', bbox: bboxString(ol.proj.transformExtent(extent, crs, 'EPSG:4326'), 'EPSG:4326'), limit: limit };
+
             return send({
                 iface: iface.title, op: op, signal: signal, as: 'text',
-                url: withQuery(iface.url + '/collections/' + encodeURIComponent(layer.id) + '/items', {
-                    f: 'json', bbox: axisBbox(extent, crs), 'bbox-crs': crsUri(crs), crs: crsUri(crs), limit: limit
-                })
+                url: withQuery(iface.url + '/collections/' + encodeURIComponent(layer.id) + '/items', params)
             }).then(function (r) {
                 var json = JSON.parse(r.text || '{}');
                 if (!r.ok) { return { layer: layer.name, features: [], warning: json.detail || json.title || ('HTTP ' + r.status) }; }
@@ -855,7 +863,8 @@
                     more: (json.links || []).some(function (l) { return l.rel === 'next'; }),
                     features: (json.features || []).map(function (f) {
                         var g = f.geometry ? geoJson.readGeometry(f.geometry) : null;
-                        if (g && axisNorthFirst[crs]) { swapXY(g); }
+                        if (g && viewCrs && axisNorthFirst[crs]) { swapXY(g); }
+                        if (g && !viewCrs && crs !== 'EPSG:4326') { g.transform('EPSG:4326', crs); }   // CRS84: lon/lat
                         return { attributes: f.properties || {}, geometry: g };
                     })
                 };
