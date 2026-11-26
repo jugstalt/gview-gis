@@ -1,6 +1,7 @@
 ﻿using gView.Framework.Core.Data;
 using gView.Framework.Core.Exceptions;
 using gView.GeoJsonService.DTOs;
+using gView.Server.EndPoints.GeoJsonService.Extensions;
 using gView.Interoperability.Extensions.Rendering;
 using gView.Server.AppCode.Extensions;
 using gView.Server.Services.MapServer;
@@ -77,7 +78,7 @@ public class GetLegend : BaseApiEndpoint
                             {
                                 Id = layer.ID.ToString(),
                                 Name = tocElement.Name,
-                                LayerType = "",  // todo
+                                LayerType = layer.LayerTypeName(),
                                 MinScaleDenominator = layer.MinimumScale,
                                 MaxScaleDenominator = layer.MaximumScale
                             };

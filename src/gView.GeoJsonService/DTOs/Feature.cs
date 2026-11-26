@@ -2,6 +2,9 @@
 
 public class Feature
 {
+    /// <summary>Always "Feature" (GeoJSON, RFC 7946): clients such as Leaflet need it</summary>
+    public string Type { get; set; } = "Feature";
+
     public object? Oid { get; set; }
 
     /// <summary>applyEdits: the version (entity tag) the feature must still have to be changed</summary>

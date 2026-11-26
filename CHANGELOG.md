@@ -333,7 +333,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   deletes only touch objects the layer shows; an object id outside the definition query of the layer is an error
   (404). Before, a user who may edit a filtered layer could change or delete any object of its feature class.
   GeoJson errors keep the status of the error (e.g. 404) instead of always 400.
-- GeoJson services (`/geojsonservice/v1/...`):
+- GeoJson services (`/geojsonservice/v1/...`), found while checking the specification:
+  - Features carry `"type": "Feature"` (GeoJSON, RFC 7946); without it clients such as Leaflet did not take them as
+    features.
+  - Capabilities: the layer operations are `supportedOperations` as specified (were written `suportedOperations`). ⚠
+    Clients that read the misspelled name have to use `supportedOperations`.
+  - Legend: `layerType` of each layer was always empty.
+  - Query on a layer id that doesn't exist answers 404, on a layer without a table (e.g. a group layer) 400; before,
+    both returned an empty feature collection.
+  - Missing rights and token errors are an `ErrorResponse` like all other errors: HTTP 403, or HTTP 401 with
+    `errorCode` 499 (token required) or 498 (invalid token). Before, they came as HTTP 200 with the error object of
+    GeoServices REST (`{ "error": { "code": ... } }`). ⚠
   - Rights: `.../query/{layerId}` and `.../features/{layerId}` needed no right besides the access to the GeoJson
     interface (the layer id was taken as operation): a user with only the right map could query and edit. Now query
     needs query, features/applyEdits need edit. Also in v8.

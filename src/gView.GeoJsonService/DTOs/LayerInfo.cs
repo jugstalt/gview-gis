@@ -10,7 +10,7 @@ public class LayerInfo
     public double? MinScaleDenominator { get; set; }
     public double? MaxScaleDenominator { get; set; }
     public IEnumerable<LayerStyle>? Styles { get; set; }
-    public IEnumerable<string>? SuportedOperations { get; set; }
+    public IEnumerable<string>? SupportedOperations { get; set; }
     public IEnumerable<LayerProperty>? Properties { get; set; }
     
 }

@@ -121,13 +121,7 @@ public class GetServiceCapabilities : BaseApiEndpoint
                     Id = layer.ID.ToString(),
                     ParentId = parentLayerId?.ToString(),
                     Name = tocElement.Name,
-                    LayerType = layer switch
-                    {
-                        IGroupLayer => "GroupLayer",
-                        IFeatureLayer => "FeatureLayer",
-                        _ when layer.Class is IRasterClass => "RasterLayer",
-                        _ => "Layer"
-                    },
+                    LayerType = layer.LayerTypeName(),
                     DefaultVisibility = accessTypes.HasFlag(AccessTypes.Map) ? tocElement.LayerVisible : null,
                     MaxScaleDenominator = accessTypes.HasFlag(AccessTypes.Map) ? layer.MaximumScale : null,
                     MinScaleDenominator = accessTypes.HasFlag(AccessTypes.Map) ? layer.MinimumScale : null,
@@ -136,7 +130,7 @@ public class GetServiceCapabilities : BaseApiEndpoint
                 if (layer is IFeatureLayer featureLayer)
                 {
                     layerInfo.GeometryType = featureLayer.LayerGeometryType.ToString();
-                    layerInfo.SuportedOperations = SupportedLayerOperations(map, featureLayer, accessTypes);
+                    layerInfo.SupportedOperations = SupportedLayerOperations(map, featureLayer, accessTypes);
                     layerInfo.Properties = accessTypes.HasFlag(AccessTypes.Query) || accessTypes.HasFlag(AccessTypes.Edit)
                         ? featureLayer.Fields?.ToEnumerable()
                             .Where(f => f.type != FieldType.Shape)

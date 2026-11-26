@@ -57,18 +57,12 @@ public class QueryFeatures : BaseApiEndpoint
                 string filterQuery;
 
                 var tableClasses = serviceMap.FindTableClass(id, out filterQuery);
-                if (tableClasses is null)
+                if (tableClasses is null || tableClasses.Count == 0)
                 {
-                    throw new MapServerException($"Can't find any tableclass with layer {id}");
-                }
-                //if (tableClasses.Count > 1)
-                //{
-                //    throw new MapServerException("FeatureService can't be used with aggregated feature classes");
-                //}
-
-                if (tableClasses is null)
-                {
-                    throw new MapServerException($"Layer with id {id} is not queryable");
+                    // before, an unknown layer or a group layer answered an empty feature collection
+                    throw serviceMap.MapElements.Any(e => e.ID == id)
+                        ? new MapServerException($"Layer {id} is not queryable", 400)
+                        : new MapServerException($"Unknown layer {id}", 404);
                 }
 
                 string? requestWhereClause = queryRequest.Filter?

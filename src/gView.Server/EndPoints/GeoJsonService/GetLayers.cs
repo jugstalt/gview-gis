@@ -95,13 +95,7 @@ public class GetLayers : BaseApiEndpoint
             Id = layer.ID.ToString(),
             ParentId = layer.GroupLayer?.ID.ToString(),
             Name = tocElement?.Name ?? layer.Title,
-            LayerType = layer switch
-            {
-                IGroupLayer => "GroupLayer",
-                IFeatureLayer => "FeatureLayer",
-                _ when layer.Class is IRasterClass => "RasterLayer",
-                _ => "Layer"
-            },
+            LayerType = layer.LayerTypeName(),
             DefaultVisibility = mapAccess ? tocElement?.LayerVisible : null,
             MinScaleDenominator = mapAccess ? layer.MinimumScale : null,
             MaxScaleDenominator = mapAccess ? layer.MaximumScale : null,
