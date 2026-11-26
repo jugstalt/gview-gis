@@ -480,9 +480,9 @@
         identifyResults: function (r) {
             if (/json/.test(r.entry.contentType)) {
                 var json = JSON.parse(r.text);
-                // no highlight: the geometries of GetFeatureInfo (json) are in the crs of the data, not of the request
+                // GetFeatureInfo (json) geometries are in the crs of the request (x/y)
                 var features = (json.features || []).map(function (f) {
-                    return { attributes: f.properties || {}, geometry: null };
+                    return { attributes: f.properties || {}, geometry: f.geometry ? geoJson.readGeometry(f.geometry) : null };
                 });
                 return [{ layer: 'Features', features: features }];
             }

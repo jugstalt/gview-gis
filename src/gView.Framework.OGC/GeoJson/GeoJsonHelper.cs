@@ -56,9 +56,25 @@ namespace gView.Framework.OGC.GeoJson
 
         public static string ToGeoJson(IEnumerable<IFeature> features)
         {
+            return ToGeoJson(features, null);
+        }
+
+        /// <summary>
+        /// FeatureCollection with a named crs member (eg. "EPSG:3857") when <paramref name="crsName"/> is set.
+        /// Coordinates are written as they are (x/y, GeoJSON axis order).
+        /// </summary>
+        public static string ToGeoJson(IEnumerable<IFeature> features, string crsName)
+        {
             StringBuilder sb = new StringBuilder();
 
-            sb.Append(@"{""type"":""FeatureCollection"",""features"":[");
+            sb.Append(@"{""type"":""FeatureCollection""");
+            if (!String.IsNullOrWhiteSpace(crsName))
+            {
+                sb.Append(@",""crs"":{""type"":""name"",""properties"":{""name"":");
+                sb.Append(JsonSerializer.Serialize(crsName));
+                sb.Append("}}");
+            }
+            sb.Append(@",""features"":[");
 
             sb.Append(ToGeoJsonFeatures(features));
 

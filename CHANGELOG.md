@@ -339,6 +339,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Fixed
 
+- WMS GetFeatureInfo: the features of `INFO_FORMAT=application/json` (and `application/vnd.ogc.gml`) had their
+  geometries in the CRS of the data (e.g. MGI/Austria) instead of the CRS/SRS of the request (e.g. EPSG:3857).
+  They are now projected into the request CRS; the GeoJSON FeatureCollection names it in a `crs` member (coordinates
+  stay x/y, also for WMS 1.3.0 EPSG:4326) and GML uses it as `srsName`. The content types of `text/plain` and GML
+  GetFeatureInfo responses were swapped (`text/plain` came as `application/vnd.ogc.gml` and GML as `text/html`).
+  The admin test map highlights WMS identify results again.
 - Raster layers: the layer opacity was drawn inverted since the Skia 3.x update (`RenderRasterLayer` drew with
   `1 - Opacity/100`), so a raster layer with Opacity 100 % (no transparency) was invisible. This hit every raster
   source of a GL style map (`OnMapLoadedEventHook`/`VtcRasterLayer` sets `raster-opacity` × 100), e.g. a hillshade

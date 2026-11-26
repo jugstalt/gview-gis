@@ -798,10 +798,10 @@ namespace gView.Interoperability.OGC
                     tol = (180.0 * tol / Math.PI) / 6370000.0;
                 }
 
-                SpatialFilter filter = new SpatialFilter();
-                filter.Geometry = new Envelope(x - tol, y - tol, x + tol, y + tol);
-                filter.FilterSpatialReference = sRef;
-                filter.SubFields = "*";
+                SpatialFilter filter = CreateFeatureInfoFilter(
+                    new Envelope(x - tol, y - tol, x + tol, y + tol),
+                    sRef,
+                    map.Display?.DatumTransformations);
 
                 // Get Layers
                 List<ILayer> queryLayers = new List<ILayer>();
@@ -847,7 +847,7 @@ namespace gView.Interoperability.OGC
                 }
 
                 string contentType;
-                GetFeatureResponse(features, response, parameters.InfoFormat, parameters.InfoFormatXsl, out contentType);
+                GetFeatureResponse(features, response, parameters.InfoFormat, parameters.InfoFormatXsl, sRef, out contentType);
 
                 return (response.ToString(), contentType);
             }
@@ -1222,7 +1222,25 @@ namespace gView.Interoperability.OGC
             return envelope;
         }
 
-        private void GetFeatureResponse(List<FeatureType> features, StringBuilder sb, WMSInfoFormat format, string formatXsl, out string contentType)
+        /// <summary>
+        /// Spatial filter for GetFeatureInfo: the query envelope is given in the request CRS and the
+        /// features come back projected into the request CRS (not in the CRS of the data).
+        /// </summary>
+        internal static SpatialFilter CreateFeatureInfoFilter(IEnvelope queryEnvelope, ISpatialReference requestSRef, IDatumTransformations datumTransformations)
+        {
+            SpatialFilter filter = new SpatialFilter();
+            filter.Geometry = queryEnvelope;
+            filter.FilterSpatialReference = requestSRef;
+            filter.SubFields = "*";
+            if (requestSRef != null)
+            {
+                filter.SetFeatureSpatialReference(requestSRef, datumTransformations);
+            }
+
+            return filter;
+        }
+
+        private void GetFeatureResponse(List<FeatureType> features, StringBuilder sb, WMSInfoFormat format, string formatXsl, ISpatialReference requestSRef, out string contentType)
         {
             contentType = String.Empty;
 
@@ -1237,15 +1255,15 @@ namespace gView.Interoperability.OGC
                     contentType = "text/xml";
                     break;
                 case WMSInfoFormat.gml:
-                    GetFeatureResponseGML(features, sb);
-                    contentType = "text/html";
+                    GetFeatureResponseGML(features, sb, requestSRef);
+                    contentType = "application/vnd.ogc.gml";
                     break;
                 case WMSInfoFormat.text:
                     GetFeatureResponseText(features, sb);
-                    contentType = "application/vnd.ogc.gml";
+                    contentType = "text/plain";
                     break;
                 case WMSInfoFormat.geojson:
-                    GetFeatureResponseGeoJson(features, sb);
+                    GetFeatureResponseGeoJson(features, sb, requestSRef);
                     contentType = "application/json";
                     break;
                 case WMSInfoFormat.xsl:
@@ -1407,7 +1425,7 @@ namespace gView.Interoperability.OGC
              * */
         }
 
-        private void GetFeatureResponseGML(List<FeatureType> features, StringBuilder sb)
+        internal static void GetFeatureResponseGML(List<FeatureType> features, StringBuilder sb, ISpatialReference requestSRef)
         {
             sb.Append(@"<?xml version=""1.0"" encoding=""UTF-8"" ?>
 <wfs:FeatureCollection
@@ -1427,7 +1445,8 @@ namespace gView.Interoperability.OGC
                     feature.FeatureClass,
                     feature.Id,
                     sb,
-                    (feature.FeatureClass.SpatialReference != null) ? feature.FeatureClass.SpatialReference.Name : String.Empty,
+                    // features are already projected into the request CRS (see CreateFeatureInfoFilter)
+                    requestSRef?.Name ?? feature.FeatureClass.SpatialReference?.Name ?? String.Empty,
                     null, GmlVersion.v1);
             }
 
@@ -1467,12 +1486,13 @@ namespace gView.Interoperability.OGC
             }
         }
 
-        private void GetFeatureResponseGeoJson(List<FeatureType> features, StringBuilder sb)
+        internal static void GetFeatureResponseGeoJson(List<FeatureType> features, StringBuilder sb, ISpatialReference requestSRef)
         {
-            sb.Append(GeoJsonHelper.ToGeoJson(features.Select(f => f.Feature)));
+            // GeoJSON is always x/y (easting/longitude first), independent of the WMS 1.3.0 axis order
+            sb.Append(GeoJsonHelper.ToGeoJson(features.Select(f => f.Feature), requestSRef?.Name));
         }
 
-        private class FeatureType
+        internal class FeatureType
         {
             public string Id;
             public IFeatureClass FeatureClass;
