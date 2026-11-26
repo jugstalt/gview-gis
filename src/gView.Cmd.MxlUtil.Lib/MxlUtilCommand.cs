@@ -6,7 +6,6 @@ using gView.Cmd.MxlUtil.Lib.Exceptions;
 using gView.Cmd.MxlUtil.Lib.Untilities;
 using gView.Cmd.MxlUtil.Lib.Utilities;
 using gView.Framework.Core.Common;
-using Mapbox.Vector.Tile;
 using Microsoft.SqlServer.Management.SqlParser.SqlCodeDom;
 using System.Xml;
 

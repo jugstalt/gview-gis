@@ -1,4 +1,5 @@
 ﻿using gView.Framework.Cartography;
+using gView.Framework.Cartography.Extensions;
 using gView.Framework.Core.Carto;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Geometry;
@@ -18,7 +19,7 @@ namespace gView.Framework.Cartography.LayerRenderers
         private ICancelTracker _cancelTracker;
         private InterpolationMethod _interpolMethod = InterpolationMethod.Fast;
         private FilterImplementations _filter = FilterImplementations.Default;
-        private float _transparency = 0.0f;
+        private float _opacity = 1.0f;  // 0..1 for drawing
         private GraphicsEngine.ArgbColor _transColor = GraphicsEngine.ArgbColor.Transparent;
 
         public RenderRasterLayer(
@@ -41,7 +42,7 @@ namespace gView.Framework.Cartography.LayerRenderers
             if (rootLayer != null)
             {
                 _interpolMethod = rootLayer.InterpolationMethod;
-                _transparency = rootLayer.Opacity / 100f;
+                _opacity = rootLayer.Opacity.ToDrawingOpacity();
                 _transColor = rootLayer.TransparentColor;
                 _filter = rootLayer.FilterImplementation;
             }
@@ -217,13 +218,12 @@ namespace gView.Framework.Cartography.LayerRenderers
 
                     //var comQual = gr.CompositingQuality;
                     //gr.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
-                    float opaque = 1.0f - _transparency;
-
+                    
                     canvas.DrawBitmap(
                                   _nodataFilteredBitmap ?? _filteredBitmap ?? paintContext.Bitmap,
                                   points,
                                   sourceRect,
-                                  opacity: opaque);
+                                  opacity: _opacity);
 
                     _mapRenderer?.FireRefreshMapView(DrawPhase.Geography);
                 }

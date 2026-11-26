@@ -720,26 +720,6 @@ Copyright © Microsoft Corporation. All rights reserved.
 License available at https://docs.microsoft.com/sql/relational-databases/server-management-objects-smo/smo-license-terms
 
 
-License notice for GeoJSON.Net (v1.2.19)
-------------------------------------
-
-https://github.com/GeoJSON-Net/GeoJSON.Net.git
-
-https://github.com/GeoJSON-Net/GeoJSON.Net
-
-Copyright © Joerg Battermann, Matt Hunt, Xavier Fischer and Contributors, 2014 - 2019
-
-Licensed under MIT
-
-Available at https://licenses.nuget.org/MIT
-
-
-License notice for mapbox-vector-tile (v5.0.2)
-------------------------------------
-
-https://github.com/bertt/mapbox-vector-tile-cs at 886604c34ebd2083b0ae2729b010be25187d3818
-
-
 License notice for Newtonsoft.Json (v13.0.4)
 ------------------------------------
 
@@ -754,24 +734,12 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-License notice for protobuf-net (v3.2.30)
+License notice for SpatialNET.IO (v0.10.0-preview.9)
 ------------------------------------
 
-https://github.com/protobuf-net/protobuf-net at 02c5dfe7c99ac8550830662ce2b9bc6e1301a493
+https://github.com/jugstalt/SpatialNET.Core at ec4f9857f4c50ae3feec8bd4da2a7e4047d98443
 
-See https://github.com/protobuf-net/protobuf-net
-
-Licensed under Apache-2.0
-
-Available at https://licenses.nuget.org/Apache-2.0
-
-
-License notice for protobuf-net.Core (v3.2.30)
-------------------------------------
-
-https://github.com/protobuf-net/protobuf-net at 02c5dfe7c99ac8550830662ce2b9bc6e1301a493
-
-See https://github.com/protobuf-net/protobuf-net
+Copyright © Jürgen Gstaltmaier
 
 Licensed under Apache-2.0
 
@@ -1729,18 +1697,6 @@ Available at https://licenses.nuget.org/BSD-3-Clause
 
 
 License notice for SpatialNET.Imp (v0.10.0-preview.9)
-------------------------------------
-
-https://github.com/jugstalt/SpatialNET.Core at ec4f9857f4c50ae3feec8bd4da2a7e4047d98443
-
-Copyright © Jürgen Gstaltmaier
-
-Licensed under Apache-2.0
-
-Available at https://licenses.nuget.org/Apache-2.0
-
-
-License notice for SpatialNET.IO (v0.10.0-preview.9)
 ------------------------------------
 
 https://github.com/jugstalt/SpatialNET.Core at ec4f9857f4c50ae3feec8bd4da2a7e4047d98443

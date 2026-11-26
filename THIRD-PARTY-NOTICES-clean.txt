@@ -400,28 +400,6 @@ License available at https://docs.microsoft.com/sql/relational-databases/server-
 
 
 Packages (1):
-  - GeoJSON.Net (v1.2.19)
-------------------------------------------------------------
-
-https://github.com/GeoJSON-Net/GeoJSON.Net.git
-
-https://github.com/GeoJSON-Net/GeoJSON.Net
-
-Copyright © Joerg Battermann, Matt Hunt, Xavier Fischer and Contributors, 2014 - 2019
-
-Licensed under MIT
-
-Available at https://licenses.nuget.org/MIT
-
-
-Packages (1):
-  - mapbox-vector-tile (v5.0.2)
-------------------------------------------------------------
-
-https://github.com/bertt/mapbox-vector-tile-cs at 886604c34ebd2083b0ae2729b010be25187d3818
-
-
-Packages (1):
   - Newtonsoft.Json (v13.0.4)
 ------------------------------------------------------------
 
@@ -434,20 +412,6 @@ Copyright © James Newton-King 2008
 Licensed under MIT
 
 Available at https://licenses.nuget.org/MIT
-
-
-Packages (2):
-  - protobuf-net (v3.2.30)
-  - protobuf-net.Core (v3.2.30)
-------------------------------------------------------------
-
-https://github.com/protobuf-net/protobuf-net at 02c5dfe7c99ac8550830662ce2b9bc6e1301a493
-
-See https://github.com/protobuf-net/protobuf-net
-
-Licensed under Apache-2.0
-
-Available at https://licenses.nuget.org/Apache-2.0
 
 
 Packages (14):

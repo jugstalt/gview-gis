@@ -1,6 +1,4 @@
-﻿using gView.DataSources.VectorTileCache.Extensions;
-using gView.DataSources.VectorTileCache.Json;
-using gView.Framework.Core.Data;
+﻿using gView.Framework.Core.Data;
 using gView.Framework.Core.Data.Filters;
 using System.Linq;
 using System.Threading.Tasks;
@@ -11,7 +9,7 @@ namespace gView.DataSources.VectorTileCache
     {
         private readonly FeatureClass _fc;
         private readonly FeatureCache _cache;
-        private readonly GeoJSON.Net.Feature.Feature[] _geoJsonFeatures;
+        private readonly VectorTileFeature[] _features;
         private int _pos = 0;
 
         public FeatureCursor(FeatureClass fc, IQueryFilter filter)
@@ -20,7 +18,7 @@ namespace gView.DataSources.VectorTileCache
             _fc = fc;
             _cache = filter?.DatasetCachingContext?.GetCache<FeatureCache>();
             
-            _geoJsonFeatures = _cache?[_fc.Name]?.ToArray();
+            _features = _cache?[_fc.Name]?.ToArray();
         }
 
         #region IFeatureCursor
@@ -32,27 +30,21 @@ namespace gView.DataSources.VectorTileCache
 
         public override Task<IFeature> NextFeature()
         {
-            if (_geoJsonFeatures == null || _geoJsonFeatures.Length <= _pos)
+            if (_features == null || _features.Length <= _pos)
             {
                 return Task.FromResult<IFeature>(null);
             }
 
-            var geoJsonFeature = _geoJsonFeatures[_pos++];
+            var vectorTileFeature = _features[_pos++];
 
             var feature = new Feature();
 
-            if (geoJsonFeature?.Properties != null)
+            foreach (var attribute in vectorTileFeature.Attributes)
             {
-                foreach (var propertyName in geoJsonFeature.Properties.Keys)
-                {
-                    feature.Fields.Add(new FieldValue(propertyName, geoJsonFeature.Properties[propertyName]));
-                }
+                feature.Fields.Add(new FieldValue(attribute.Key, attribute.Value.Value));
             }
 
-            if (geoJsonFeature.Geometry != null)
-            {
-                feature.Shape = geoJsonFeature.Geometry.ToGeometry();
-            }
+            feature.Shape = vectorTileFeature.Shape;
 
             // Filtering?
             // is managed in VtcFeatureRenderer...

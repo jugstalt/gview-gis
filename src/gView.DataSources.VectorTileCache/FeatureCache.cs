@@ -1,14 +1,10 @@
-﻿using GeoJSON.Net.Feature;
-using gView.Framework.Core.Carto;
+﻿using gView.Framework.Core.Carto;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Data.Abstraction;
 using gView.Framework.Geometry;
-using Mapbox.Vector.Tile;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.IO;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace gView.DataSources.VectorTileCache
@@ -18,7 +14,7 @@ namespace gView.DataSources.VectorTileCache
         private readonly Dataset _dataset;
         private readonly WebMercatorGrid _grid;
 
-        private ConcurrentDictionary<string, ConcurrentBag<Feature>> _features = new ConcurrentDictionary<string, ConcurrentBag<Feature>>();
+        private ConcurrentDictionary<string, ConcurrentBag<VectorTileFeature>> _features = new ConcurrentDictionary<string, ConcurrentBag<VectorTileFeature>>();
 
         public FeatureCache(Dataset dataset)
         {
@@ -69,7 +65,7 @@ namespace gView.DataSources.VectorTileCache
 
             foreach (var dsElement in await _dataset.Elements())
             {
-                _features.TryAdd(dsElement.Title, new ConcurrentBag<Feature>());
+                _features.TryAdd(dsElement.Title, new ConcurrentBag<VectorTileFeature>());
             }
 
             var url = _dataset.TileUrls[0];
@@ -99,18 +95,13 @@ namespace gView.DataSources.VectorTileCache
             {
                 var bytes = await DownloadTile(level, col, row, tileUrl);
 
-                var layerInfos = VectorTileParser.Parse(new MemoryStream(bytes));
-
-                foreach (var layerInfo in layerInfos)
+                foreach (var layer in MvtTileReader.Read(bytes, level, col, row))
                 {
-                    var fc = layerInfo.ToGeoJSON(col, row, level);
-                    if (fc.Features != null &&
-                        fc.Features.Count > 0 &&
-                        _features.ContainsKey(layerInfo.Name))
+                    if (_features.TryGetValue(layer.Key, out var bag))
                     {
-                        foreach (var feature in fc.Features)
+                        foreach (var feature in layer.Value)
                         {
-                            _features[layerInfo.Name].Add(feature);
+                            bag.Add(feature);
                         }
                     }
                 }
@@ -127,22 +118,8 @@ namespace gView.DataSources.VectorTileCache
 
         public int FeatureCount(string layername) => _features.ContainsKey(layername) ? _features[layername].Count : 0;
 
-        public string ToGeoJson(string layername)
-        {
-            return JsonSerializer.Serialize(
-                new { type = "FeatureCollection", features = _features[layername] }
-                );
-        }
-
-        public IEnumerable<Feature> this[string layername]
-        {
-            get
-            {
-                var features = _features.ContainsKey(layername) ? _features[layername].ToArray() : new Feature[0];
-
-                return features;//.DistinctBy(f => f.Id);
-            }
-        }
+        internal IEnumerable<VectorTileFeature> this[string layername]
+            => _features.TryGetValue(layername, out var features) ? features.ToArray() : Array.Empty<VectorTileFeature>();
 
         #region IDisposable
 

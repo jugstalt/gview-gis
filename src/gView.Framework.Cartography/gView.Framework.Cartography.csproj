@@ -13,6 +13,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="gView.Framework.Cartography.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Remove="Framework\Carto\Extensions\**" />
     <EmbeddedResource Remove="Framework\Carto\Extensions\**" />
     <None Remove="Framework\Carto\Extensions\**" />

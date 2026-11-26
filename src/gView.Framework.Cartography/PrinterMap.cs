@@ -1,3 +1,4 @@
+using gView.Framework.Cartography.Extensions;
 using gView.Framework.Cartography.UI;
 using gView.Framework.Core.Carto;
 using gView.Framework.Core.Data;
@@ -286,7 +287,7 @@ namespace gView.Framework.Cartography
         private IRasterLayer _layer;
         private ICancelTracker _cancelTracker;
         private InterpolationMethod _interpolMethod = InterpolationMethod.Fast;
-        private float _transparency = 0.0f;
+        private float _opacity = 1.0f;  // 0..1 for drawing
         private GraphicsEngine.ArgbColor _transColor = GraphicsEngine.ArgbColor.Transparent;
 
         public RenderRasterLayerThreadPrint(Map map, IRasterLayer layer, IRasterLayer rootLayer, ICancelTracker cancelTracker)
@@ -297,7 +298,7 @@ namespace gView.Framework.Cartography
             if (rootLayer != null)
             {
                 _interpolMethod = rootLayer.InterpolationMethod;
-                _transparency = rootLayer.Opacity;
+                _opacity = rootLayer.Opacity.ToDrawingOpacity();
             }
         }
 
@@ -423,8 +424,7 @@ namespace gView.Framework.Cartography
                         catch { }
                     }
 
-                    float opaque = 1.0f - _transparency;
-                    canvas.DrawBitmap(paintContext.Bitmap, points, sourceRect, opacity: opaque);
+                    canvas.DrawBitmap(paintContext.Bitmap, points, sourceRect, opacity: _opacity);
                 }
             }
             catch (Exception /*ex*/)

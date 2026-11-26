@@ -278,6 +278,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   The about page too, with links to the documentation and GitHub; the LizardTech/MrSID credits
   (`_lics/credits.xml`) are removed.
 - Geometry: SpatialNET packages updated to 0.10.0-preview.9.
+- Vector Tile Cache data source (`gView.DataSources.VectorTileCache`): tiles are decoded with SpatialNET.IO
+  (`Mvt.Decode`, gzipped or not) instead of the `mapbox-vector-tile` package and its GeoJSON detour; the
+  WebMercator meters are converted to WGS84 directly into gView geometries (holes as `Hole`). Behaviour,
+  connection string and the GL style workflow (Explorer tool, MxlUtil) are unchanged. `mapbox-vector-tile`
+  and `GeoJSON.Net` are no longer dependencies.
 - Polygon labels (`SimpleLabelRenderer`, `ChartLabelRenderer`): all polygons now take the SpatialNET path
   that was only used for polygons with more than 12000 vertices before (the limit where Clipper and the ring
   raster became too slow or crashed). The label point is found first (`FastPolygonLabel`) and the polygon is only
@@ -306,6 +311,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   deployed apps, and SpatialNET 0.10.0-preview.9).
 
 ## Fixed
+
+- Raster layers: the layer opacity was drawn inverted since the Skia 3.x update (`RenderRasterLayer` drew with
+  `1 - Opacity/100`), so a raster layer with Opacity 100 % (no transparency) was invisible. This hit every raster
+  source of a GL style map (`OnMapLoadedEventHook`/`VtcRasterLayer` sets `raster-opacity` × 100), e.g. a hillshade
+  basemap. Opacity is now drawn as set in the layer settings (100 % = opaque, 0 = not set = opaque); the print
+  renderer (`PrinterMap`) does the same.
+- Carto: the layer settings dialog did not open for raster sources of a GL style map (`VtcRasterLayer` had no
+  parameterless constructor for the dialog's working copy, the error was swallowed). Its raster settings
+  (interpolation, opacity, transparent color, filter) are now used when drawing; an opacity set there wins over the
+  style's `raster-opacity`.
 
 - Network build with `separateTiers`: points of different tiers that a line end connects to (e.g. a transformer
   of MS that is a source of NS and an NS box at its place) are merged by the TOC also with `nodeConflicts` =
