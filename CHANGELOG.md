@@ -433,6 +433,16 @@ gView Server hardening for internet-facing installations, see
   sessions and tokens of the user. Admin sessions last 8 hours instead of 24
   (`security:manage:session-hours`) and are renewed while active. ⚠ Tokens issued before this
   version are invalid: users log in again, clients request a new token.
+- Bearer tokens: an expired or invalid token issued by gView (`Authorization: Bearer …`) is rejected as *Invalid
+  Token (498)* in every interface, as url tokens already were; before, the request silently ran as anonymous, so a
+  client didn't notice its token had expired (public services) or got "forbidden" instead of a reason to renew it.
+  GeoServices REST answers HTTP 200 with `error.code` 498 (as ArcGIS), the GeoJson service HTTP 401 with `errorCode`
+  498, OGC API HTTP 401. Bearer tokens of other issuers or no JWT (e.g. set by a proxy) are still ignored, with a
+  warning in the log. ⚠ Clients with an expired token have to request a new one also for public services.
+- OGC API: token errors and missing rights from the authentication (also invalid url tokens) are its exception
+  JSON with HTTP 401 (`WWW-Authenticate`) or 403; before, HTTP 200 with the error object of GeoServices REST.
+- GeoJson service `.../token`: errors (unknown client, server error) are answered with HTTP status 400/500 instead
+  of 200.
 - Url tokens: work again (`UrlTokenAuthenticationMiddleware` never set the user), are stored
   hashed (`sha256$`, plain text tokens are hashed on first use), listed as `token-name~(hidden)`
   and shown only once after create/recycle. A wrong url token is an *Invalid Token (498)*.

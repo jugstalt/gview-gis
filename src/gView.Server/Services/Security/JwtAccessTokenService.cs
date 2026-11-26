@@ -63,6 +63,27 @@ public class JwtAccessTokenService
         return tokenHandler.WriteToken(securityToken);
     }
 
+    /// <summary>
+    /// A JWT issued by this server (issuer "Jwt:Issuer", default gview-server), read without validating it. Such a token
+    /// that fails validation (expired, wrong signature e.g. after a new server certificate) is rejected with 498;
+    /// other bearer tokens (other issuer, no JWT, e.g. set by a proxy) are not gView's business and are ignored.
+    /// </summary>
+    public bool IsIssuedByThisServer(string token) => IsIssuedBy(token, _issuer);
+
+    internal static bool IsIssuedBy(string token, string issuer)
+    {
+        try
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            return tokenHandler.CanReadToken(token)
+                && issuer.Equals(tokenHandler.ReadJwtToken(token).Issuer, StringComparison.Ordinal);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
     public ClaimsPrincipal ValidateToken(string token)
     {
         if (_memoryCache.TryGetValue(token, out ClaimsPrincipal cachedPrincipal))

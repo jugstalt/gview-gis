@@ -1,4 +1,5 @@
-﻿using gView.Server.AppCode.Extensions;
+﻿using gView.Framework.Core.Exceptions;
+using gView.Server.AppCode.Extensions;
 using gView.Server.Services.Security;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -39,9 +40,17 @@ public class JwtTokenAuthenticationMiddleware
                 {
                     context.User = _jwtTokenService.ValidateToken(token);
                 }
+                catch (SecurityTokenException ste) when (_jwtTokenService.IsIssuedByThisServer(token))
+                {
+                    // a gView token that is expired or no longer valid: 498, so the client fetches a new one
+                    // (before, the request silently ran as anonymous)
+                    _logger.LogWarning("Tokenvalidation: {message} ({reason})", ste.Message, ste.InnerException?.GetType().Name);
+                    throw new InvalidTokenException();
+                }
                 catch (SecurityTokenException ste)
                 {
-                    _logger.LogWarning("Tokenvalidation: {message}", ste.Message);
+                    // a bearer token of someone else (other issuer, no JWT): ignored, the request runs without it
+                    _logger.LogWarning("Tokenvalidation, foreign bearer token ignored: {message}", ste.Message);
                 }
             }
         }

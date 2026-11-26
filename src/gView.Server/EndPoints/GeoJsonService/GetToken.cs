@@ -1,5 +1,6 @@
 ﻿using gView.Framework.Core.Extensions;
 using gView.Framework.Core.Exceptions;
+using gView.GeoJsonService;
 using gView.GeoJsonService.DTOs;
 using gView.Server.Services.Security;
 using Microsoft.AspNetCore.Builder;
@@ -37,7 +38,8 @@ public class GetToken : BaseApiEndpoint
                     loginManagerService, jwtTokenService, configuration, logger, clientId, clientSecret, expireMinutes
                 );
 
-    static internal object HandleTokenRequest(
+    // errors with their HTTP status like all GeoJson service errors (before always 200)
+    static internal IResult HandleTokenRequest(
                 LoginManager loginManagerService,
                 JwtAccessTokenService jwtTokenService,
                 IConfiguration configuration,
@@ -66,32 +68,32 @@ public class GetToken : BaseApiEndpoint
                 throw new MapServerException("unknown clientId or clientSecret");
             }
 
-            return new GetTokenResponse
+            return Results.Json(new GetTokenResponse
             {
                 access_token = jwtTokenService.GenerateToken(authToken),
                 expires_in = expireMinutes * 60
-            };
+            });
         }
         catch (MapServerException mse)
         {
             logger.LogWarning("Handle Token Request {clientId}: {message}", clientId, mse.Message);
 
-            return new ErrorResponse()
+            return Results.Json(new ErrorResponse()
             {
                 ErrorCode = 400,
                 ErrorMessage = mse.Message
-            };
+            }, GeoJsonSerializer.JsonSerializerOptions, statusCode: 400);
         }
         catch (Exception ex)
         {
             string errorId = ExceptionExtensions.NewErrorId();
             logger.LogError(ex, "Handle Token Request {clientId} (error-id {errorId}): {message}", clientId, errorId, ex.Message);
 
-            return new ErrorResponse()
+            return Results.Json(new ErrorResponse()
             {
                 ErrorCode = 500,
                 ErrorMessage = ExceptionExtensions.InternalErrorMessage(errorId)
-            };
+            }, GeoJsonSerializer.JsonSerializerOptions, statusCode: 500);
         }
     }
 }

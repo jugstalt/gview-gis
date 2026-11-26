@@ -2,6 +2,8 @@
 using gView.GeoJsonService;
 using gView.Interoperability.GeoServices.Rest.DTOs;
 using gView.Server.AppCode;
+using gView.Server.EndPoints.OgcApi;
+using Microsoft.Extensions.Logging;
 using gView.Server.Services.Security;
 using Microsoft.AspNetCore.Http;
 using System;
@@ -12,12 +14,15 @@ namespace gView.Server.Middleware.Authentication;
 public class AuthenticationExceptionMiddleware
 {
     private readonly RequestDelegate _next;
+    private readonly ILogger<AuthenticationExceptionMiddleware> _logger;
 
     public AuthenticationExceptionMiddleware(
-                RequestDelegate next
+                RequestDelegate next,
+                ILogger<AuthenticationExceptionMiddleware> logger
         )
     {
         _next = next;
+        _logger = logger;
     }
 
     public async Task InvokeAsync(HttpContext context)
@@ -25,6 +30,16 @@ public class AuthenticationExceptionMiddleware
         try
         {
             await _next(context);
+        }
+        catch (MapServerAuthException mae) when (IsOgcApi(context))
+        {
+            // OGC API: 401 (token required/invalid, with WWW-Authenticate) or 403 as its exception JSON,
+            // like the errors of its endpoints; before, HTTP 200 with the error object of GeoServices REST
+            if (mae is InvalidTokenException)
+            {
+                context.Response.Cookies.Delete(Globals.AuthCookieName);
+            }
+            await OgcApiBaseEndpoint.ErrorResult(context, _logger, mae).ExecuteAsync(context);
         }
         catch (NotAuthorizedException nae) when (IsGeoJsonService(context))
         {
@@ -89,6 +104,9 @@ public class AuthenticationExceptionMiddleware
     /// The GeoJson service answers every error as its ErrorResponse with an HTTP status (specification
     /// "Error Handling"): 403 missing right, 401 with errorCode 499 (token required) or 498 (invalid token)
     /// </summary>
+    private static bool IsOgcApi(HttpContext context)
+        => context.Request.Path.StartsWithSegments($"/{EndPoints.OgcApi.Routes.Base}", StringComparison.OrdinalIgnoreCase);
+
     private static bool IsGeoJsonService(HttpContext context)
         => context.Request.Path.StartsWithSegments("/geojsonservice", StringComparison.OrdinalIgnoreCase);
 
