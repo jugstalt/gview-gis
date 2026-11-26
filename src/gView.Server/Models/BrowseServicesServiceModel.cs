@@ -27,5 +27,11 @@ namespace gView.Server.Models
 
         /// <summary>The user may open Manage (admin network, manage user)</summary>
         public bool CanManage { get; set; }
+
+        /// <summary>The user may open the test map of the service</summary>
+        public bool CanUseTestMap { get; set; }
+
+        /// <summary>EPSG code of the service map (display), 0 if unknown</summary>
+        public int Epsg { get; set; }
     }
 }

@@ -492,6 +492,54 @@ public class BrowseServicesController : BaseController
 
     public Task<IActionResult> Service(string id) => SecureMethodHandler(async (identity) =>
     {
+        var model = await CreateServiceModel(id, identity);
+
+        SetServiceCrumbs(model.MapService);
+
+        return View(model);
+    });
+
+    /// <summary>Test map of a service: drives its interfaces like a client and logs the requests (admins only)</summary>
+    public Task<IActionResult> TestMap(string id) => SecureMethodHandler(async (identity) =>
+    {
+        var model = await CreateServiceModel(id, identity);
+        if (!model.CanUseTestMap)
+        {
+            throw new NotAuthorizedException();
+        }
+
+        SetServiceCrumbs(model.MapService);
+        ViewData["Title"] = $"Test map: {model.MapService.Name}";
+
+        return View(new BrowseServicesTestMapModel()
+        {
+            Id = id,
+            ServiceName = model.MapService.Name,
+            Folder = model.MapService.Folder ?? "",
+            IsPublic = model.IsPublic,
+            Epsg = model.Epsg,
+            Interfaces = model.TestMapInterfaces().ToArray()
+        });
+    });
+
+    /// <summary>
+    /// proj4 definitions (and WMS 1.3.0 axis order) of EPSG codes for the test map, e.g. ?codes=31256,3857.
+    /// The same lookup the server uses when it reprojects, so the map and the services agree.
+    /// </summary>
+    [HttpGet]
+    public IActionResult TestMapProjections(string codes)
+    {
+        var authToken = _loginManagerService.GetAuthToken(this.Request);
+        if (!authToken.CanUseTestMap(Request.IsFromAdminNetwork()))
+        {
+            return StatusCode(403);
+        }
+
+        return Json(codes.ParseEpsgCodes().TestMapProjections());
+    }
+
+    private async Task<BrowseServicesServiceModel> CreateServiceModel(string id, Identity identity)
+    {
         var mapService = _mapServerService.Instance.GetMapService(id.ServiceName(), id.FolderName());
         if (mapService == null)
         {
@@ -535,19 +583,19 @@ public class BrowseServicesController : BaseController
         }
 
         int? layerCount = null;
+        int epsg = 0;
         try
         {
             using var serviceMap = await _mapServerService.Instance.GetServiceMapAsync(mapService);
             layerCount = serviceMap?.MapElements?.Count();
+            epsg = serviceMap?.Display?.SpatialReference?.EpsgCode ?? 0;
         }
         catch { }  // the page works without
 
         var authToken = _loginManagerService.GetAuthToken(this.Request);
         bool isFromAdminNetwork = Request.IsFromAdminNetwork();
 
-        SetServiceCrumbs(mapService);
-
-        return View(new BrowseServicesServiceModel()
+        return new BrowseServicesServiceModel()
         {
             Server = _urlHelperService.AppRootUrl(this.Request),
             OnlineResource = Request.Scheme + "://" + Request.Host + "/ogc?",
@@ -556,11 +604,13 @@ public class BrowseServicesController : BaseController
             GeoServiceTypes = geoServiceTypes,
             IsPublic = await mapService.HasAnyAccess(new Identity(String.Empty)),
             LayerCount = layerCount,
+            Epsg = epsg,
             RunningSinceUtc = mapService.RunningSinceUtc,
             IsPublisher = isFromAdminNetwork && (authToken.AuthType == AuthToken.AuthTypes.Manage || await mapService.HasPublishAccess(identity)),
-            CanManage = isFromAdminNetwork && authToken.IsManageUser
-        });
-    });
+            CanManage = isFromAdminNetwork && authToken.IsManageUser,
+            CanUseTestMap = authToken.CanUseTestMap(isFromAdminNetwork)
+        };
+    }
 
     [HttpPost]
     [AdminNetworkOnly]

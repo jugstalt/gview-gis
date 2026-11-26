@@ -6,6 +6,18 @@
       "provider": "cdnjs",
       "library": "monaco-editor@0.41.0",
       "destination": "wwwroot/lib/monaco-editor/"
+    },
+    {
+      "provider": "cdnjs",
+      "library": "openlayers@10.11.0",
+      "destination": "wwwroot/lib/openlayers/",
+      "files": [ "dist/ol.js", "ol.css" ]
+    },
+    {
+      "provider": "cdnjs",
+      "library": "proj4js@2.23.0",
+      "destination": "wwwroot/lib/proj4js/",
+      "files": [ "proj4.js" ]
     }
   ]
 }

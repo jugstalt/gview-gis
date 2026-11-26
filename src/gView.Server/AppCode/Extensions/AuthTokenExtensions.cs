@@ -72,6 +72,13 @@ static public class AuthTokenExtensions
                !(claimsPrincipal.Identity.IsAuthenticated == true && claimsPrincipal.StopAuthenticationPropagation());
     }
 
+    /// <summary>
+    /// The test map of a service: admins only for now (manage user from the admin network).
+    /// The one place to change when it is opened to everyone with access to the service.
+    /// </summary>
+    static public bool CanUseTestMap(this AuthToken authToken, bool isFromAdminNetwork)
+        => isFromAdminNetwork && authToken?.IsManageUser == true;
+
     static public bool StopAuthenticationPropagation(this ClaimsPrincipal claimsPrincipal)
     {
         return claimsPrincipal?

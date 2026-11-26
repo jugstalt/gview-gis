@@ -1,0 +1,116 @@
+@model BrowseServicesTestMapModel
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var config = new
+    {
+        id = Model.Id,
+        service = Model.ServiceName,
+        folder = Model.Folder,
+        isPublic = Model.IsPublic,
+        epsg = Model.Epsg,
+        interfaces = Model.Interfaces.Select(i => new { key = i.Key, title = i.Title, url = i.Url }),
+        projectionsUrl = Url.Action("TestMapProjections", "BrowseServices")
+    };
+}
+
+<link rel="stylesheet" href="~/lib/openlayers/ol.css" />
+
+<section class="tm-head">
+    <div class="tm-title">
+        <a class="tm-back" asp-action="Service" asp-route-id="@Model.Id" title="Back to the service">
+            <span class="ico ico-chevron tm-back-ico"></span>
+        </a>
+        <div>
+            <div class="hub-folder">/@(String.IsNullOrEmpty(Model.Folder) ? "" : Model.Folder + "/")</div>
+            <h1>@Model.ServiceName <span class="tm-sub">Test map</span></h1>
+        </div>
+        <span class="ogc-badge @(Model.IsPublic ? "hub-public" : "hub-secured")">@(Model.IsPublic ? "Public" : "Secured")</span>
+    </div>
+
+    @if (!Model.Interfaces.Any())
+    {
+        <p class="muted">None of the interfaces the test map can drive (WMS, GeoServices REST, GeoJson) is available for this service.</p>
+    }
+    else
+    {
+        <div class="tm-toolbar">
+            <div class="tm-seg" role="tablist" aria-label="Interface">
+                @foreach (var i in Model.Interfaces)
+                {
+                    <button type="button" role="tab" data-iface="@i.Key">@i.Title</button>
+                }
+            </div>
+            <label class="tm-field">CRS <select id="tm-crs"></select></label>
+            <button type="button" id="tm-full" class="btn" title="Zoom to the full extent from the capabilities">Full extent</button>
+            <button type="button" id="tm-initial" class="btn" title="Zoom to the initial extent of the map">Map extent</button>
+            <label class="tm-check" title="Send the requests without the login cookie: shows what anonymous clients get">
+                <input type="checkbox" id="tm-anonymous" /> Test as anonymous
+            </label>
+        </div>
+    }
+</section>
+
+@if (Model.Interfaces.Any())
+{
+    <div class="tm-grid">
+        <div class="tm-map-wrap">
+            <div id="tm-map" class="tm-map"></div>
+            <div id="tm-busy" class="tm-busy" hidden></div>
+            <div id="tm-message" class="tm-message" hidden></div>
+            <div id="tm-coords" class="tm-coords"></div>
+        </div>
+        <aside class="tm-side">
+            <div class="tm-side-tabs" role="tablist">
+                <button type="button" role="tab" data-side="layers" class="active">Layers</button>
+                <button type="button" role="tab" data-side="identify">Identify</button>
+            </div>
+            <div class="tm-side-panel" data-side="layers">
+                <div id="tm-layers" class="tm-layers"><p class="muted">Loading capabilities…</p></div>
+            </div>
+            <div class="tm-side-panel" data-side="identify" hidden>
+                <div id="tm-infoformat-row" class="tm-field-row" hidden>
+                    <label class="tm-field">INFO_FORMAT <select id="tm-infoformat"></select></label>
+                </div>
+                <div id="tm-identify" class="tm-identify"><p class="muted">Click on the map to identify features.</p></div>
+            </div>
+        </aside>
+    </div>
+
+    <section class="tm-log card">
+        <div class="tm-log-head">
+            <b>Requests</b> <span id="tm-log-count" class="muted"></span>
+            <span class="grow"></span>
+            <label class="tm-field">Show
+                <select id="tm-log-filter">
+                    <option value="">all</option>
+                    <option value="capabilities">capabilities</option>
+                    <option value="map">map</option>
+                    <option value="identify">identify</option>
+                </select>
+            </label>
+            <button type="button" id="tm-log-clear" class="btn">Clear</button>
+        </div>
+        <div class="tm-log-body">
+            <table class="tm-log-table">
+                <thead>
+                    <tr><th>Time</th><th>Interface</th><th>Operation</th><th>Method</th><th>Status</th><th class="num">Duration</th><th class="num">Size</th><th>Content type</th></tr>
+                </thead>
+                <tbody id="tm-log-rows"></tbody>
+            </table>
+            <p id="tm-log-empty" class="muted tm-log-empty">No requests yet.</p>
+        </div>
+        <div id="tm-log-detail" class="tm-log-detail" hidden></div>
+    </section>
+}
+
+@section Scripts {
+    @if (Model.Interfaces.Any())
+    {
+        <script type="application/json" id="tm-config">@Html.Raw(System.Text.Json.JsonSerializer.Serialize(config).Replace("<", "\\u003c"))</script>
+        <script src="~/lib/proj4js/proj4.js"></script>
+        <script src="~/lib/openlayers/dist/ol.js"></script>
+        <script src="~/js/testmap.js?@(gView.Framework.Common.SystemInfo.Version.ToString())"></script>
+    }
+}

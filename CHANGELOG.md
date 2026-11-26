@@ -264,6 +264,21 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   `DELETE` with `If-Match` answer `412 Precondition Failed` when the feature was changed in the
   meantime. Without `If-Match` nothing changes. CORS exposes `ETag` and `Location`. The OpenAPI document
   names the `ETag` header of the feature response.
+- gView Server UI: test map of a service for admins (`Test map` in the admin bar of the service page,
+  `/BrowseServices/TestMap/{folder@service}`). It drives one interface at a time like a client: WMS 1.3.0,
+  GeoServices REST (MapServer) or GeoJson. It reads the capabilities first (layer tree with checkboxes,
+  extents, CRS), then draws one map image per view and identifies on click (attribute tables per layer,
+  geometries highlighted; WMS with a choice of `INFO_FORMAT`, HTML/XML only as text).
+  - Starts in the CRS of the service, a selector offers the other CRS of the interface (reprojection test).
+    Start extent: the last one used, the initial extent, the full extent, the world.
+  - A new view aborts the running map request; a counter shows how long the server renders.
+  - Request log: time, interface, operation, method, status (also GeoServices errors with HTTP 200),
+    duration, size, content type; details with the parameters, a preview of the response, copy URL, copy as
+    curl (with a `<TOKEN>` placeholder for secured services, never the login) and open in a new tab.
+  - The requests use the login cookie; `Test as anonymous` sends them without it, to check what
+    anonymous clients get.
+  - OpenLayers 10.11 and proj4js 2.23 are served locally (libman), the CSP is unchanged; proj4
+    definitions come from the projection database of the server.
 
 ## Changed
 
