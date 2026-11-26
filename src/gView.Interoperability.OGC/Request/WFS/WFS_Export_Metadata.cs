@@ -82,6 +82,7 @@ namespace gView.Interoperability.OGC
                 {
                     _epsg = metadata._epsg;
                     _epsgCodes.AddRange(metadata._epsgCodes);
+                    NumberMatched = metadata.NumberMatched;
                 }
             }
 
@@ -93,6 +94,11 @@ namespace gView.Interoperability.OGC
             }
 
             public Metadata() { }
+
+            /// <summary>
+            /// WFS 2.0.0 GetFeature counts the matching features (numberMatched): true/false, empty: server default
+            /// </summary>
+            public bool? NumberMatched { get; set; }
 
             public string[] EPSGCodes
             {
@@ -147,12 +153,23 @@ namespace gView.Interoperability.OGC
                 {
                     SetDefaultEPSGCodes();
                 }
+
+                NumberMatched = (stream.Load("NumberMatched", "") as string)?.ToLowerInvariant() switch
+                {
+                    "true" => true,
+                    "false" => false,
+                    _ => null
+                };
             }
 
             public void Save(IPersistStream stream)
             {
                 XmlStreamStringArray epsg = new XmlStreamStringArray(_epsgCodes.ToArray());
                 stream.Save("EPSG_Codes", epsg);
+                if (NumberMatched.HasValue)
+                {
+                    stream.Save("NumberMatched", NumberMatched.Value ? "true" : "false");
+                }
             }
 
             #endregion
@@ -197,9 +214,19 @@ namespace gView.Interoperability.OGC
         public void SetPropertyModel(object propertyModel)
         {
             this.EpsgCodes = (propertyModel as Metadata)?.EPSGCodes;
+            if (_metadata != null && propertyModel is Metadata model)
+            {
+                _metadata.NumberMatched = model.NumberMatched;
+            }
         }
 
         #endregion
+
+        /// <summary>
+        /// Count the matching features of WFS 2.0.0 GetFeature (numberMatched), null: the server default
+        /// (mapserver-defaults:wfsNumberMatched)
+        /// </summary>
+        public bool? NumberMatched => _metadata?.NumberMatched;
 
         #region IEPSGMetadata
         public string[] EpsgCodes

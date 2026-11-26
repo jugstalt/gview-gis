@@ -155,9 +155,14 @@ namespace gView.Interoperability.OGC
         async private Task GetFeature(IServiceRequestContext context, WfsRequestParameters parameters, WfsVersion version)
         {
             using var map = await CreateServiceMap(context);
+            var featureTypes = new WfsFeatureTypes(map);
 
             string typeNamesLocator = version == WfsVersion.V200 ? "typeNames" : "typeName";
-            var collections = new WfsFeatureTypes(map).Resolve(parameters.TypeNames, typeNamesLocator, allIfEmpty: false);
+
+            var typeNames = parameters.TypeNames.Count == 0 && parameters.ResourceIds.Count > 0
+                ? parameters.ResourceIds.Select(FesFilterParser.ResourceIdTypeName).OfType<string>().Distinct().ToArray()  // RESOURCEID without TYPENAMES
+                : parameters.TypeNames;
+            var collections = featureTypes.Resolve(typeNames, typeNamesLocator, allIfEmpty: false);
             if (collections.Count == 0)
             {
                 throw WfsException.MissingParameterValue(typeNamesLocator);
@@ -166,31 +171,16 @@ namespace gView.Interoperability.OGC
             var format = WfsVersions.ParseGmlOutputFormat(parameters.OutputFormat, version)
                 ?? throw WfsException.InvalidParameterValue("outputFormat", $"Unsupported outputFormat {parameters.OutputFormat}");
 
-            if (parameters.ResultType is not null && !parameters.ResultType.Equals("results", StringComparison.OrdinalIgnoreCase))
+            bool hitsOnly = parameters.ResultType?.ToLowerInvariant() switch
             {
-                throw WfsException.OptionNotSupported("resultType", $"resultType {parameters.ResultType} is not supported");
-            }
-            if (parameters.StartIndex > 0 && collections.Count > 1)
-            {
-                throw WfsException.OptionNotSupported("startIndex", "startIndex is only supported for a single feature type");
-            }
+                null or "results" => false,
+                "hits" when version != WfsVersion.V100 => true,
+                _ => throw WfsException.InvalidParameterValue("resultType", $"Unsupported resultType {parameters.ResultType}")
+            };
 
-            #region Output CRS
-
-            CrsReference? outCrs;
-            if (parameters.SrsName is not null)
-            {
-                outCrs = ParseCrs(parameters.SrsName, "srsName");
-            }
-            else
-            {
-                outCrs = WfsFeatureTypes.DefaultCrs(map, collections[0], version);
-            }
-
-            var outSref = outCrs?.ToSpatialReference();
-            bool swapAxes = version.SwapAxes(outCrs, outSref);
-
-            #endregion
+            var outCrs = parameters.SrsName is not null
+                ? ParseCrs(parameters.SrsName, "srsName")
+                : WfsFeatureTypes.DefaultCrs(map, collections[0], version);
 
             #region Count
 
@@ -203,120 +193,54 @@ namespace gView.Interoperability.OGC
 
             #endregion
 
-            var featureSets = new List<WfsFeatureSet>();
-            int returned = 0;
+            var query = new WfsQuery(map, parameters, version, outCrs) { Context = context };
+            var result = await query.ExecuteAsync(
+                collections,
+                count,
+                countMatched: version == WfsVersion.V200 && NumberMatchedEnabled(map),
+                hitsOnly);
 
-            foreach (var collection in collections)
-            {
-                if (count > 0 && returned >= count)
-                {
-                    break;
-                }
-
-                var filter = CreateFilter(collection, parameters, version, outCrs, outSref);
-                filter.SetUserData("IServiceRequestContext", context);
-
-                var features = await FeatureReader.ReadListAsync(
-                    map, collection, filter, outSref,
-                    parameters.StartIndex,
-                    count > 0 ? count - returned : 0);
-
-                returned += features.Count;
-                featureSets.Add(new WfsFeatureSet(collection, features));
-            }
-
-            var writer = new WfsFeatureWriter(version, format, outCrs?.Name, swapAxes);
+            var writer = new WfsFeatureWriter(version, format, outCrs?.Name, version.SwapAxes(outCrs, query.OutSpatialReference));
             context.ServiceRequest.Response = writer.Write(
-                featureSets,
+                result,
+                hitsOnly,
                 DescribeFeatureTypeUrl(context.ServiceRequest, version, format, collections),
-                DateTime.UtcNow);
+                DateTime.UtcNow,
+                next: version == WfsVersion.V200 && result.HasMore && count > 0 && !hitsOnly
+                    ? PageUrl(context.ServiceRequest, parameters, parameters.StartIndex + count, count)
+                    : null,
+                previous: version == WfsVersion.V200 && parameters.StartIndex > 0 && count > 0 && !hitsOnly
+                    ? PageUrl(context.ServiceRequest, parameters, Math.Max(0, parameters.StartIndex - count), count)
+                    : null);
             context.ServiceRequest.ResponseContentType = WfsVersions.ContentType(format);
         }
 
-        #endregion
-
-        #region Filter
-
-        private IQueryFilter CreateFilter(OgcCollectionLayer collection, WfsRequestParameters parameters, WfsVersion version, CrsReference? outCrs, ISpatialReference? outSref)
-        {
-            var featureClass = collection.FeatureClass!;
-            IQueryFilter filter;
-
-            if (parameters.BBox is not null)
-            {
-                filter = BBoxFilter(parameters.BBox, version, outCrs, outSref);
-            }
-            else
-            {
-                try
-                {
-                    filter = Filter.FromWFS(featureClass, parameters.Filter, version == WfsVersion.V100 ? GmlVersion.v1 : GmlVersion.v3);
-                }
-                catch (Exception ex)
-                {
-                    throw WfsException.InvalidParameterValue("filter", $"Invalid filter: {ex.Message}");
-                }
-
-                if (filter is ISpatialFilter spatialFilter && spatialFilter.FilterSpatialReference is null)
-                {
-                    // filter geometries without srsName are in the CRS of the request
-                    spatialFilter.FilterSpatialReference = outSref ?? collection.SpatialReference;
-                }
-            }
-
-            try
-            {
-                Filter.AppendSortBy(featureClass, filter, parameters.SortBy);
-            }
-            catch (Exception ex)
-            {
-                throw WfsException.InvalidParameterValue("sortBy", $"Invalid sortBy: {ex.Message}");
-            }
-
-            // The where clause is generated by the filter parser from checked field names and literals
-            filter.WhereClause = FeatureReader.CombineWhereClauses(collection.FilterWhereClause, filter.WhereClause);
-
-            return filter;
-        }
+        /// <summary>
+        /// numberMatched for resultType=results: per service (WFS export metadata) or the server default
+        /// </summary>
+        private static bool NumberMatchedEnabled(IServiceMap map)
+            => (map.MetadataProvider(WFS_Export_Metadata.MetadataGuid) as WFS_Export_Metadata)?.NumberMatched
+               ?? WfsOptions.NumberMatchedDefault;
 
         /// <summary>
-        /// BBOX=minx,miny,maxx,maxy[,crs] in the axis order of the crs (default: the CRS of the request)
+        /// The KVP request with another STARTINDEX/COUNT, null for XML requests
         /// </summary>
-        internal static ISpatialFilter BBoxFilter(string bbox, WfsVersion version, CrsReference? defaultCrs, ISpatialReference? defaultSref)
+        internal static string? PageUrl(ServiceRequest serviceRequest, WfsRequestParameters parameters, int startIndex, int count)
         {
-            var parts = bbox.Split(',');
-            if (parts.Length < 4)
+            if (parameters.IsXmlRequest)
             {
-                throw WfsException.InvalidParameterValue("bbox", $"Invalid bbox: {bbox}");
+                return null;
             }
 
-            var values = new double[4];
-            for (int i = 0; i < 4; i++)
-            {
-                if (!Double.TryParse(parts[i].Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out values[i]))
-                {
-                    throw WfsException.InvalidParameterValue("bbox", $"Invalid bbox: {bbox}");
-                }
-            }
+            var items = parameters.KvpParameters
+                .Where(p => !p.Key.Equals("STARTINDEX", StringComparison.OrdinalIgnoreCase)
+                         && !p.Key.Equals("COUNT", StringComparison.OrdinalIgnoreCase)
+                         && !p.Key.Equals("MAXFEATURES", StringComparison.OrdinalIgnoreCase))
+                .Select(p => $"{Uri.EscapeDataString(p.Key)}={Uri.EscapeDataString(p.Value)}")
+                .Append($"STARTINDEX={startIndex.ToString(CultureInfo.InvariantCulture)}")
+                .Append($"COUNT={count.ToString(CultureInfo.InvariantCulture)}");
 
-            var crs = defaultCrs;
-            var sref = defaultSref;
-            if (parts.Length > 4)
-            {
-                crs = ParseCrs(String.Join(",", parts.Skip(4)).Trim(), "bbox");
-                sref = crs.ToSpatialReference();
-            }
-
-            var envelope = version.SwapAxes(crs, sref)
-                ? new Envelope(values[1], values[0], values[3], values[2])
-                : new Envelope(values[0], values[1], values[2], values[3]);
-
-            return new SpatialFilter()
-            {
-                Geometry = envelope,
-                FilterSpatialReference = sref,
-                SpatialRelation = spatialRelation.SpatialRelationIntersects
-            };
+            return $"{serviceRequest.OnlineResource}?{String.Join("&", items)}".Replace("??", "?");
         }
 
         #endregion

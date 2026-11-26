@@ -43,14 +43,21 @@ public class WfsFeatureWriter
     /// <param name="timeStamp">The timeStamp attribute (1.1.0, 2.0.0)</param>
     public byte[] Write(IReadOnlyList<WfsFeatureSet> featureSets, string? describeFeatureTypeUrl, DateTime timeStamp)
     {
+        var result = new WfsQueryResult();
+        result.FeatureSets.AddRange(featureSets);
+        return Write(result, false, describeFeatureTypeUrl, timeStamp, null, null);
+    }
+
+    /// <param name="hits">resultType=hits: numberMatched (2.0.0) or numberOfFeatures (1.1.0) without features</param>
+    /// <param name="next">The URL of the next page (2.0.0)</param>
+    /// <param name="previous">The URL of the previous page (2.0.0)</param>
+    public byte[] Write(WfsQueryResult result, bool hits, string? describeFeatureTypeUrl, DateTime timeStamp, string? next, string? previous)
+    {
         string wfs = _version.WfsNamespace;
         string gml = GmlGeometryWriter.NamespaceOf(_format);
 
-        int numberReturned = 0;
-        foreach (var set in featureSets)
-        {
-            numberReturned += set.Features.Count;
-        }
+        var featureSets = hits ? [] : result.FeatureSets;
+        int numberReturned = hits ? 0 : result.NumberReturned;
 
         using var ms = new MemoryStream();
         using (var w = XmlWriter.Create(ms, WfsXml.WriterSettings))
@@ -78,13 +85,21 @@ public class WfsFeatureWriter
             if (_version == WfsVersion.V200)
             {
                 w.WriteAttributeString("timeStamp", timeStampValue);
-                w.WriteAttributeString("numberMatched", "unknown");
+                w.WriteAttributeString("numberMatched", result.NumberMatched?.ToString(CultureInfo.InvariantCulture) ?? "unknown");
                 w.WriteAttributeString("numberReturned", numberReturned.ToString(CultureInfo.InvariantCulture));
+                if (!String.IsNullOrEmpty(next))
+                {
+                    w.WriteAttributeString("next", next);
+                }
+                if (!String.IsNullOrEmpty(previous))
+                {
+                    w.WriteAttributeString("previous", previous);
+                }
             }
             else if (_version == WfsVersion.V110)
             {
                 w.WriteAttributeString("timeStamp", timeStampValue);
-                w.WriteAttributeString("numberOfFeatures", numberReturned.ToString(CultureInfo.InvariantCulture));
+                w.WriteAttributeString("numberOfFeatures", (hits ? result.NumberMatched ?? 0 : numberReturned).ToString(CultureInfo.InvariantCulture));
             }
 
             if (_format == GmlFormat.Gml2)

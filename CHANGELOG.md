@@ -280,6 +280,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     100 or 1000 per layer, with a hint when more features are available.
   - Capabilities pointing to another host than the page (online resource) are shown in a notice; the
     requests go to this server unless `Use URLs as advertised` is checked.
+  - Who may use it: `security:test-map` in mapserver.json, `admin` (default: manage users from the admin
+    networks), `users` (also logged in users) or `all` (also anonymous visitors of public services);
+    always only for services the user has access to. `Test map` is next to `Explore` on the service page.
   - Starts in the CRS of the service, a selector offers the other CRS of the interface (reprojection test).
     Start extent: the last one used, the initial extent, the full extent, the world.
   - A new view aborts the running map request; a counter shows how long the server renders.
@@ -315,9 +318,27 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - Errors are OWS exception reports (`ServiceExceptionReport` for 1.0.0) with exceptionCode and locator, for
     2.0.0 with HTTP status 400/404/501/500; internal errors only with the generic message and error id.
   - GetFeature responses are no longer logged as a whole (only the request); about 5 times faster for 2000 features.
-  - Not yet (next phases): FES 2.0 filters (`fes:` namespace, `ValueReference`, `ResourceId`), `RESULTTYPE=hits`
-    and `numberMatched`, `PROPERTYNAME`, KVP `SORTBY`, GeoJSON output, stored queries; the test map still uses
-    WFS 1.1.0 with its own axis handling.
+  - Filters (phase 2): Filter Encoding 1.0/1.1 and FES 2.0 (`ogc:`, `fes:` or no namespace, `PropertyName` or
+    `ValueReference` with or without `gv:` prefix or path) are parsed into the CQL2 syntax tree of OGC API Features
+    and written as SQL by the same translator: comparison operators (with `matchCase="false"`), `PropertyIsLike`
+    with `wildCard`/`singleChar`/`escapeChar`, `PropertyIsBetween`, `PropertyIsNull`/`PropertyIsNil`, `And`/`Or`/`Not`;
+    literals are converted to the type of the property (a non-numeric literal for a numeric field is an
+    `InvalidParameterValue`), only queryable properties can be filtered (date/boolean fields only for data sources
+    with a known SQL dialect). Spatial operators `BBOX`, `Intersects`, `Within` (was handled as Contains) and
+    `Contains` with GML 2/3.1/3.2 geometries (Envelope/Box, Point, LineString, Polygon with holes, Multi*) are allowed
+    once, at the top level or in a top-level `And`; filter geometries follow the axis order rule of their srsName
+    (without srsName the CRS of the request). Other operators (temporal, functions, DWithin, ...) answer
+    `OptionNotSupported`. `ResourceId`, `GmlObjectId`, `FeatureId` and KVP `RESOURCEID`/`FEATUREID` (also without
+    `TYPENAMES`) select features by `c{layerId}.{objectId}`.
+  - `SORTBY` (KVP `NAME DESC,VALUE` or `NAME A`, XML `SortBy`) with the object id as last key for stable pages,
+    `PROPERTYNAME` (only the listed properties; the geometry only if listed).
+  - Paging and counting: `RESULTTYPE=hits` (1.1.0 `numberOfFeatures`, 2.0.0 `numberMatched`), `numberMatched` also
+    for results (a count query; switch off with `mapserver-defaults:wfsNumberMatched: false` in mapserver.json or per
+    service with `NumberMatched` in the WFS export metadata), `next`/`previous` links for KVP requests, `STARTINDEX`
+    across several feature types. The capabilities advertise the new operators, `hits`, `ImplementsResourceId` and
+    `ImplementsStandardFilter`.
+  - Not yet (next phases): GeoJSON output, stored queries (`GetFeatureById`); the test map still uses WFS 1.1.0 with
+    its own axis handling.
 - gView Server UI navigation: one way to the services instead of three. The start page and the sidebar
   show `Services` (formerly Browse Services) and `Manage`; the catalogs GeoServices REST and OGC API are
   a row of endpoint links with copy buttons on the start page. A click on a service in the list opens

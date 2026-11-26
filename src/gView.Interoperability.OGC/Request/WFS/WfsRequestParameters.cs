@@ -47,7 +47,35 @@ public class WfsRequestParameters
 
     public XmlNode? Filter { get; private set; }
 
-    public XmlNode? SortBy { get; private set; }
+    /// <summary>
+    /// SORTBY / fes:SortBy: property names (as in the request) and the sort direction
+    /// </summary>
+    public IReadOnlyList<(string Property, bool Descending)> SortBy { get; private set; } = [];
+
+    /// <summary>
+    /// PROPERTYNAME / wfs:PropertyName: the properties to return (empty: all)
+    /// </summary>
+    public IReadOnlyList<string> PropertyNames { get; private set; } = [];
+
+    /// <summary>
+    /// RESOURCEID (2.0.0) / FEATUREID (1.x): c{layerId}.{objectId}
+    /// </summary>
+    public IReadOnlyList<string> ResourceIds { get; private set; } = [];
+
+    /// <summary>
+    /// STOREDQUERY_ID (2.0.0)
+    /// </summary>
+    public string? StoredQueryId { get; private set; }
+
+    /// <summary>
+    /// The parameters of a stored query (KVP or wfs:Parameter), e.g. ID of GetFeatureById
+    /// </summary>
+    public IReadOnlyDictionary<string, string> StoredQueryParameters { get; private set; } = new Dictionary<string, string>();
+
+    /// <summary>
+    /// The decoded KVP parameters in request order (to build next/previous links), empty for XML requests
+    /// </summary>
+    public IReadOnlyList<KeyValuePair<string, string>> KvpParameters { get; private set; } = [];
 
     public bool IsXmlRequest { get; private set; }
 
@@ -91,10 +119,20 @@ public class WfsRequestParameters
             ResultType = NullIfEmpty(Get("RESULTTYPE")),
             Count = ParseCount(Get("COUNT", "MAXFEATURES"), "count"),
             StartIndex = ParseCount(Get("STARTINDEX"), "startIndex") ?? 0,
-            BBox = NullIfEmpty(Get("BBOX"))
+            BBox = NullIfEmpty(Get("BBOX")),
+            SortBy = ParseKvpSortBy(Get("SORTBY")),
+            PropertyNames = SplitTypeNames(Get("PROPERTYNAME")),
+            ResourceIds = SplitList(Get("RESOURCEID", "FEATUREID")),
+            StoredQueryId = NullIfEmpty(Get("STOREDQUERY_ID")),
+            StoredQueryParameters = kvp,
+            KvpParameters = ParseQueryStringOrdered(queryString)
         };
 
         var filter = NullIfEmpty(Get("FILTER"));
+        if (filter is not null && filter.StartsWith("(") && filter.EndsWith(")") && filter.IndexOf(")(", StringComparison.Ordinal) < 0)
+        {
+            filter = filter.Substring(1, filter.Length - 2);  // (<Filter>...</Filter>) of a single query
+        }
         if (filter is not null)
         {
             try
@@ -107,9 +145,9 @@ public class WfsRequestParameters
             }
         }
 
-        if (parameters.BBox is not null && parameters.Filter is not null)
+        if (new[] { parameters.BBox is not null, parameters.Filter is not null, parameters.ResourceIds.Count > 0 }.Count(b => b) > 1)
         {
-            throw WfsException.InvalidParameterValue("bbox", "BBOX and FILTER are mutually exclusive");
+            throw WfsException.InvalidParameterValue("bbox", "BBOX, FILTER and RESOURCEID are mutually exclusive");
         }
 
         return parameters;
@@ -159,6 +197,17 @@ public class WfsRequestParameters
                 parameters.Count = ParseCount(Attribute(root, "count") ?? Attribute(root, "maxFeatures") ?? Attribute(root, "maxfeatures"), "count");
                 parameters.StartIndex = ParseCount(Attribute(root, "startIndex"), "startIndex") ?? 0;
 
+                var storedQuery = Children(root, "StoredQuery").FirstOrDefault();
+                if (storedQuery is not null)
+                {
+                    parameters.StoredQueryId = Attribute(storedQuery, "id");
+                    parameters.StoredQueryParameters = Children(storedQuery, "Parameter")
+                        .Where(p => Attribute(p, "name") is not null)
+                        .GroupBy(p => Attribute(p, "name")!, StringComparer.OrdinalIgnoreCase)
+                        .ToDictionary(g => g.Key, g => g.First().InnerText.Trim(), StringComparer.OrdinalIgnoreCase);
+                    break;
+                }
+
                 var queries = Children(root, "Query").ToList();
                 if (queries.Count == 0)
                 {
@@ -173,7 +222,8 @@ public class WfsRequestParameters
                 parameters.TypeNames = SplitTypeNames(Attribute(query, "typeNames") ?? Attribute(query, "typeName"));
                 parameters.SrsName = Attribute(query, "srsName");
                 parameters.Filter = Children(query, "Filter").FirstOrDefault();
-                parameters.SortBy = Children(query, "SortBy").FirstOrDefault();
+                parameters.SortBy = ParseXmlSortBy(Children(query, "SortBy").FirstOrDefault());
+                parameters.PropertyNames = Children(query, "PropertyName").Select(p => p.InnerText.Trim()).Where(p => p.Length > 0).ToArray();
                 break;
         }
 
@@ -211,6 +261,65 @@ public class WfsRequestParameters
 
         return result;
     }
+
+    internal static List<KeyValuePair<string, string>> ParseQueryStringOrdered(string queryString)
+    {
+        var result = new List<KeyValuePair<string, string>>();
+        foreach (var part in (queryString ?? "").TrimStart('?').Split('&'))
+        {
+            if (String.IsNullOrEmpty(part))
+            {
+                continue;
+            }
+            int pos = part.IndexOf('=');
+            string name = UrlDecode(pos < 0 ? part : part.Substring(0, pos)).Trim();
+            if (name.Length > 0)
+            {
+                result.Add(new KeyValuePair<string, string>(name, pos < 0 ? "" : UrlDecode(part.Substring(pos + 1)).Trim()));
+            }
+        }
+        return result;
+    }
+
+    /// <summary>
+    /// SORTBY=NAME ASC,VALUE DESC (2.0.0) or NAME A,VALUE D (1.1.0, also NAME+A before URL decoding)
+    /// </summary>
+    private static (string, bool)[] ParseKvpSortBy(string? value)
+        => SplitList(value)
+            .Select(item =>
+            {
+                var tokens = item.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
+                if (tokens.Length == 0 || tokens.Length > 2)
+                {
+                    throw WfsException.InvalidParameterValue("sortBy", $"Invalid sortBy: {item}");
+                }
+                return (tokens[0], tokens.Length == 2 && ParseSortOrder(tokens[1]));
+            })
+            .ToArray();
+
+    private static (string, bool)[] ParseXmlSortBy(XmlNode? sortBy)
+        => sortBy is null
+            ? []
+            : Children(sortBy, "SortProperty")
+                .Select(sp =>
+                {
+                    var property = Children(sp, "ValueReference").Concat(Children(sp, "PropertyName")).FirstOrDefault()?.InnerText.Trim();
+                    if (String.IsNullOrEmpty(property))
+                    {
+                        throw WfsException.InvalidParameterValue("sortBy", "SortProperty without property");
+                    }
+                    var order = Children(sp, "SortOrder").FirstOrDefault()?.InnerText.Trim();
+                    return (property, !String.IsNullOrEmpty(order) && ParseSortOrder(order));
+                })
+                .ToArray();
+
+    private static bool ParseSortOrder(string order)
+        => order.ToUpperInvariant() switch
+        {
+            "ASC" or "A" => false,
+            "DESC" or "D" => true,
+            _ => throw WfsException.InvalidParameterValue("sortBy", $"Invalid sort order: {order}")
+        };
 
     private static string UrlDecode(string value)
     {

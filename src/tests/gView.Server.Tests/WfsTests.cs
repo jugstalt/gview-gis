@@ -19,10 +19,6 @@ namespace gView.Server.Tests;
 /// </summary>
 public class WfsTests
 {
-    // MGI / Austria GK East: a point in Lower Austria (~16.5° E, 48.3° N)
-    private const string DataCrs = "epsg:31256";
-    private const double DataX = 10000, DataY = 355000;
-
     private static readonly XNamespace Wfs2 = WfsVersions.Wfs2Namespace;
     private static readonly XNamespace Wfs1 = WfsVersions.Wfs1Namespace;
     private static readonly XNamespace Gv = WfsVersions.FeatureTypeNamespace;
@@ -206,30 +202,30 @@ public class WfsTests
     [Fact]
     public void BBox_UrnWgs84_IsLatLon()
     {
-        var filter = WFSRequest.BBoxFilter("48,14,49,15,urn:ogc:def:crs:EPSG::4326", WfsVersion.V200, null, null);
+        var condition = WfsQuery.BBoxCondition("48,14,49,15,urn:ogc:def:crs:EPSG::4326", WfsVersion.V200, null);
 
-        var envelope = (IEnvelope)filter.Geometry;
+        var envelope = (IEnvelope)condition.Geometry;
         Assert.Equal(14, envelope.MinX);
         Assert.Equal(48, envelope.MinY);
-        Assert.Equal(4326, filter.FilterSpatialReference.EpsgCode);
+        Assert.Equal(4326, condition.SpatialReference!.EpsgCode);
     }
 
     [Fact]
     public void BBox_ShortEpsg_IsXY()
     {
-        var filter = WFSRequest.BBoxFilter("14,48,15,49,EPSG:4326", WfsVersion.V110, null, null);
+        var condition = WfsQuery.BBoxCondition("14,48,15,49,EPSG:4326", WfsVersion.V110, null);
 
-        Assert.Equal(14, ((IEnvelope)filter.Geometry).MinX);
+        Assert.Equal(14, ((IEnvelope)condition.Geometry).MinX);
     }
 
     [Fact]
     public void BBox_WithoutCrs_UsesRequestCrs()
     {
         var crs = WFSRequest.ParseCrs("urn:ogc:def:crs:EPSG::3857", "srsName");
-        var filter = WFSRequest.BBoxFilter("1,2,3,4", WfsVersion.V200, crs, crs.ToSpatialReference());
+        var condition = WfsQuery.BBoxCondition("1,2,3,4", WfsVersion.V200, crs);
 
-        Assert.Equal(3857, filter.FilterSpatialReference.EpsgCode);
-        Assert.Equal(1, ((IEnvelope)filter.Geometry).MinX);
+        Assert.Equal(3857, condition.SpatialReference!.EpsgCode);
+        Assert.Equal(1, ((IEnvelope)condition.Geometry).MinX);
     }
 
     #endregion
@@ -418,76 +414,7 @@ public class WfsTests
                 double.Parse(parts[1], System.Globalization.CultureInfo.InvariantCulture));
     }
 
-    private static OgcCollectionLayer Collection()
-    {
-        var featureClass = new PointFeatureClass(SpatialReference.FromID(DataCrs)!, new Point(DataX, DataY));
-        var layer = new FeatureLayer(featureClass) { ID = 0 };
-
-        return new OgcCollectionLayer(layer, "Points", null, featureClass.Envelope, featureClass.SpatialReference);
-    }
-
-    /// <summary>A point data source that projects into <see cref="IQueryFilter.FeatureSpatialReference"/> like the real ones do.</summary>
-    private class PointFeatureClass(ISpatialReference sRef, IPoint point) : IFeatureClass
-    {
-        private readonly FieldCollection _fields = new FieldCollection(new IField[]
-        {
-            new Field("OBJECTID", FieldType.ID),
-            new Field("SHAPE", FieldType.Shape),
-            new Field("NAME", FieldType.String),
-            new Field("VALUE", FieldType.Double),
-            new Field("DATUM", FieldType.Date),
-            new Field("REMARK", FieldType.String)
-        });
-
-        public string Name => "points";
-        public string Aliasname => "points";
-        public IDataset Dataset => null!;
-        public IFieldCollection Fields => _fields;
-        public IField FindField(string name) => _fields.FindField(name);
-        public string IDFieldName => "OBJECTID";
-        public string ShapeFieldName => "SHAPE";
-        public IEnvelope Envelope => point.Envelope;
-        public bool HasZ => false;
-        public bool HasM => false;
-        public ISpatialReference SpatialReference => sRef;
-        public GeometryType GeometryType => GeometryType.Point;
-
-        public Task<ICursor> Search(IQueryFilter filter) => GetFeatures(filter).ContinueWith(t => (ICursor)t.Result);
-        public Task<ISelectionSet> Select(IQueryFilter filter) => throw new NotSupportedException();
-        public Task<int> CountFeatures() => Task.FromResult(1);
-        public Task<IFeatureCursor> GetFeatures(IQueryFilter filter) =>
-            Task.FromResult<IFeatureCursor>(new Cursor(sRef, filter.FeatureSpatialReference, filter.DatumTransformations, point));
-
-        private class Cursor : gView.Framework.Data.FeatureCursor
-        {
-            private IPoint? _point;
-
-            public Cursor(ISpatialReference fcSRef, ISpatialReference toSRef, IDatumTransformations datumTransformations, IPoint point)
-                : base(null, fcSRef, toSRef, datumTransformations)
-            {
-                _point = point;
-            }
-
-            public override Task<IFeature> NextFeature()
-            {
-                if (_point is null)
-                {
-                    return Task.FromResult<IFeature>(null!);
-                }
-
-                var feature = new DataFeature() { OID = 7, Shape = new Point(_point.X, _point.Y) };
-                feature.Fields.Add(new FieldValue("OBJECTID", 7));
-                feature.Fields.Add(new FieldValue("NAME", "Linz & Co"));
-                feature.Fields.Add(new FieldValue("VALUE", 1234.5));
-                feature.Fields.Add(new FieldValue("DATUM", new DateTime(2024, 5, 1, 12, 30, 0)));
-                feature.Fields.Add(new FieldValue("REMARK", DBNull.Value));
-                _point = null;
-
-                Transform(feature);
-                return Task.FromResult<IFeature>(feature);
-            }
-        }
-    }
+    private static OgcCollectionLayer Collection() => WfsTestData.Collection();
 
     #endregion
 }

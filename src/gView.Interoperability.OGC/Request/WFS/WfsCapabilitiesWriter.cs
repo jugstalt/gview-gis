@@ -147,6 +147,8 @@ public class WfsCapabilitiesWriter
         w.WriteStartElement("ogc", "Spatial_Operators", ogc);
         w.WriteElementString("ogc", "BBOX", ogc, "");
         w.WriteElementString("ogc", "Intersect", ogc, "");
+        w.WriteElementString("ogc", "Within", ogc, "");
+        w.WriteElementString("ogc", "Contains", ogc, "");
         w.WriteEndElement();
         w.WriteEndElement();
         w.WriteStartElement("ogc", "Scalar_Capabilities", ogc);
@@ -202,7 +204,7 @@ public class WfsCapabilitiesWriter
         }
         w.WriteEndElement();
         w.WriteStartElement("ogc", "SpatialOperators", ogc);
-        foreach (var op in new[] { "BBOX", "Intersects" })
+        foreach (var op in SpatialOperators)
         {
             w.WriteStartElement("ogc", "SpatialOperator", ogc);
             w.WriteAttributeString("name", op);
@@ -222,6 +224,7 @@ public class WfsCapabilitiesWriter
         w.WriteEndElement();  // Scalar_Capabilities
 
         w.WriteStartElement("ogc", "Id_Capabilities", ogc);
+        w.WriteElementString("ogc", "EID", ogc, "");
         w.WriteElementString("ogc", "FID", ogc, "");
         w.WriteEndElement();
 
@@ -264,9 +267,9 @@ public class WfsCapabilitiesWriter
             ("ImplementsQuery", true),
             ("ImplementsAdHocQuery", true),
             ("ImplementsFunctions", false),
-            ("ImplementsResourceId", false),
+            ("ImplementsResourceId", true),
             ("ImplementsMinStandardFilter", true),
-            ("ImplementsStandardFilter", false),
+            ("ImplementsStandardFilter", true),
             ("ImplementsMinSpatialFilter", true),
             ("ImplementsSpatialFilter", false),
             ("ImplementsMinTemporalFilter", false),
@@ -282,10 +285,16 @@ public class WfsCapabilitiesWriter
         }
         w.WriteEndElement();  // Conformance
 
+        w.WriteStartElement("fes", "Id_Capabilities", fes);
+        w.WriteStartElement("fes", "ResourceIdentifier", fes);
+        w.WriteAttributeString("name", "fes:ResourceId");
+        w.WriteEndElement();
+        w.WriteEndElement();
+
         w.WriteStartElement("fes", "Scalar_Capabilities", fes);
         w.WriteElementString("fes", "LogicalOperators", fes, "");
         w.WriteStartElement("fes", "ComparisonOperators", fes);
-        foreach (var op in new[] { "PropertyIsEqualTo", "PropertyIsNotEqualTo", "PropertyIsLessThan", "PropertyIsGreaterThan", "PropertyIsLessThanOrEqualTo", "PropertyIsGreaterThanOrEqualTo", "PropertyIsLike", "PropertyIsNull", "PropertyIsBetween" })
+        foreach (var op in new[] { "PropertyIsEqualTo", "PropertyIsNotEqualTo", "PropertyIsLessThan", "PropertyIsGreaterThan", "PropertyIsLessThanOrEqualTo", "PropertyIsGreaterThanOrEqualTo", "PropertyIsLike", "PropertyIsNull", "PropertyIsNil", "PropertyIsBetween" })
         {
             w.WriteStartElement("fes", "ComparisonOperator", fes);
             w.WriteAttributeString("name", op);
@@ -304,7 +313,7 @@ public class WfsCapabilitiesWriter
         }
         w.WriteEndElement();
         w.WriteStartElement("fes", "SpatialOperators", fes);
-        foreach (var op in new[] { "BBOX", "Intersects" })
+        foreach (var op in SpatialOperators)
         {
             w.WriteStartElement("fes", "SpatialOperator", fes);
             w.WriteAttributeString("name", op);
@@ -374,7 +383,7 @@ public class WfsCapabilitiesWriter
                     WriteParameter(w, ows, "outputFormat", _version.GmlFormats.Select(f => DescribeFeatureTypeFormat(_version, f)).ToArray());
                     break;
                 case "GetFeature":
-                    WriteParameter(w, ows, "resultType", "results");
+                    WriteParameter(w, ows, "resultType", "results", "hits");
                     WriteParameter(w, ows, "outputFormat", _version.GmlFormats.Select(f => _version.OutputFormatName(f)).ToArray());
                     break;
             }
@@ -489,6 +498,11 @@ public class WfsCapabilitiesWriter
     }
 
     #endregion
+
+    /// <summary>
+    /// Only one spatial operator per query, at the top level or in a top-level And (see <see cref="FesFilterParser"/>)
+    /// </summary>
+    private static readonly string[] SpatialOperators = ["BBOX", "Intersects", "Within", "Contains"];
 
     internal static string DescribeFeatureTypeFormat(WfsVersion version, GmlFormat format)
         => version == WfsVersion.V100 ? "XMLSCHEMA" : version.OutputFormatName(format);

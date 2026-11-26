@@ -28,6 +28,8 @@ public static class FeatureReader
     /// </summary>
     /// <param name="outSref">The CRS of the geometries (gView x/y order), null: the CRS of the data</param>
     /// <param name="take">The maximum number of features, 0 or less: no limit</param>
+    /// <param name="properties">The property fields to read, null: all <see cref="OgcCollectionLayer.PropertyFields"/></param>
+    /// <param name="includeGeometry">Read the geometry</param>
     /// <exception cref="ArgumentException">The collection has no feature class</exception>
     public static async IAsyncEnumerable<OgcFeature> ReadAsync(
                 IServiceMap? map,
@@ -36,11 +38,13 @@ public static class FeatureReader
                 ISpatialReference? outSref,
                 int offset,
                 int take,
+                IReadOnlyCollection<IField>? properties = null,
+                bool includeGeometry = true,
                 [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var featureClass = collection.FeatureClass
             ?? throw new ArgumentException($"Collection '{collection.Id}' has no features");
-        var propertyFields = collection.PropertyFields.ToList();
+        var propertyFields = (properties ?? collection.PropertyFields).ToList();
         var datumTransformations = map?.Display?.DatumTransformations;
 
         if (String.IsNullOrWhiteSpace(filter.WhereClause))
@@ -53,7 +57,7 @@ public static class FeatureReader
                 .Concat(propertyFields.Select(f => f.name))
                 .Where(n => !String.IsNullOrEmpty(n))
                 .Distinct());
-        if (!String.IsNullOrEmpty(featureClass.ShapeFieldName))
+        if (includeGeometry && !String.IsNullOrEmpty(featureClass.ShapeFieldName))
         {
             filter.AddField(featureClass.ShapeFieldName);
         }
@@ -133,9 +137,11 @@ public static class FeatureReader
 
                 var ogcFeature = new OgcFeature()
                 {
-                    Geometry = transformer is not null && feature.Shape is not null
-                        ? transformer.Transform2D(feature.Shape) as IGeometry
-                        : feature.Shape
+                    Geometry = !includeGeometry
+                        ? null
+                        : transformer is not null && feature.Shape is not null
+                            ? transformer.Transform2D(feature.Shape) as IGeometry
+                            : feature.Shape
                 };
 
                 foreach (var fieldValue in feature.Fields)
@@ -176,14 +182,53 @@ public static class FeatureReader
                 IQueryFilter filter,
                 ISpatialReference? outSref,
                 int offset,
-                int take)
+                int take,
+                IReadOnlyCollection<IField>? properties = null,
+                bool includeGeometry = true)
     {
         var result = new List<OgcFeature>();
-        await foreach (var feature in ReadAsync(map, collection, filter, outSref, offset, take))
+        await foreach (var feature in ReadAsync(map, collection, filter, outSref, offset, take, properties, includeGeometry))
         {
             result.Add(feature);
         }
         return result;
+    }
+
+    /// <summary>
+    /// Counts the features of a filter (the where clause must already contain the layer filter query):
+    /// a count query if the data source supports it, otherwise the ids are read.
+    /// </summary>
+    public static async System.Threading.Tasks.Task<int> CountAsync(OgcCollectionLayer collection, IQueryFilter filter)
+    {
+        var featureClass = collection.FeatureClass
+            ?? throw new ArgumentException($"Collection '{collection.Id}' has no features");
+
+        if (String.IsNullOrWhiteSpace(filter.WhereClause))
+        {
+            filter.WhereClause = "1=1";
+        }
+        filter.BeginRecord = 1;
+        filter.Limit = 0;
+        filter.OrderBy = "";
+
+        if (featureClass is ITableClass2 tableClass && !String.IsNullOrWhiteSpace(featureClass.IDFieldName))
+        {
+            filter.SubFields = featureClass.IDFieldName;
+            return await tableClass.ExecuteCount(filter);
+        }
+
+        filter.SubFields = !String.IsNullOrWhiteSpace(featureClass.IDFieldName) ? featureClass.IDFieldName : "*";
+
+        int count = 0;
+        using var cursor = await featureClass.GetFeatures(filter);
+        if (cursor is not null)
+        {
+            while (await cursor.NextFeature() != null)
+            {
+                count++;
+            }
+        }
+        return count;
     }
 
     /// <summary>
