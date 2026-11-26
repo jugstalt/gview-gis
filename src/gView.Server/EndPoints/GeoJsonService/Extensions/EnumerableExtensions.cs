@@ -210,6 +210,7 @@ internal static class EnumerableExtensions
         foreach (var geoJsonFeature in geoJsonFeatures)
         {
             var feature = geoJsonFeature.ToFeature(featureClass);
+            feature.Shape.CheckLatitudes(geoJsonFeaturesSRef, "features");
 
             if (feature.Shape is not null
                 && geoJsonFeaturesSRef is not null

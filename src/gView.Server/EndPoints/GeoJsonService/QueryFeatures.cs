@@ -135,6 +135,7 @@ public class QueryFeatures : BaseApiEndpoint
 
                         spatialFilter.FilterSpatialReference =
                              queryRequest.SpatialFilter.CRS.ToSpatialReferenceOrDefault();
+                        spatialFilter.Geometry.CheckLatitudes(spatialFilter.FilterSpatialReference, "spatialFilter");
                         spatialFilter.SpatialRelation = queryRequest.SpatialFilter.Operator.ToSpatialRelation();
 
                         filter = spatialFilter;

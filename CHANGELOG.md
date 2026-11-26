@@ -339,6 +339,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - Capabilities: the layer operations are `supportedOperations` as specified (were written `suportedOperations`). ⚠
     Clients that read the misspelled name have to use `supportedOperations`.
   - Legend: `layerType` of each layer was always empty.
+  - Coordinates: a latitude beyond ±90° in a geographic `crs` (e.g. projected coordinates sent as EPSG:4326) in a
+    spatial filter, identify or edit geometry is a 400 with the parameter and the range; before, the projection
+    failed with an internal error (500). Longitudes beyond ±180° stay allowed.
+  - `crs` as a bare EPSG code (`crs=4326`, `"name": "4326"`) works everywhere; map, layers and capabilities answered
+    "Can't create spatial reference system" before, query and identify already accepted it.
   - Query on a layer id that doesn't exist answers 404, on a layer without a table (e.g. a group layer) 400; before,
     both returned an empty feature collection.
   - Missing rights and token errors are an `ErrorResponse` like all other errors: HTTP 403, or HTTP 401 with

@@ -21,6 +21,10 @@ public class CoordinateReferenceSystem
             {
                 return $"EPSG:{name.Substring(name.LastIndexOf(":") + 1)}";
             }
+            else if (int.TryParse(name, out var code))  // "4326", as GET parameters of query and identify allow it
+            {
+                return $"EPSG:{code}";
+            }
             else if("urn:ogc:def:crs:OGC:1.3:CRS84".Equals(name, StringComparison.OrdinalIgnoreCase))
             {
                 return "EPSG:4326";

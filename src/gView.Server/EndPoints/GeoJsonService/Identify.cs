@@ -68,7 +68,8 @@ public class Identify : BaseApiEndpoint
          using var map = (await mapServerService.Instance.GetServiceMapAsync(mapService)).ThrowIfNull(service);
 
          var sRef = request.CRS.ToSpatialReferenceOrDefault();
-         var geometry = request.Geometry?.ToGeometry() ?? throw new MapServerException("geometry is required");
+         var geometry = (request.Geometry?.ToGeometry() ?? throw new MapServerException("geometry is required"))
+                            .CheckLatitudes(sRef, "geometry");
          var outSRef = request.OutCRS is not null ? request.OutCRS.ToSpatialReferenceOrDefault() : sRef;
 
          #region The map of the client: scale and tolerance
