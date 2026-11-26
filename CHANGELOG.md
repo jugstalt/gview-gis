@@ -339,6 +339,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - Capabilities: the layer operations are `supportedOperations` as specified (were written `suportedOperations`). ⚠
     Clients that read the misspelled name have to use `supportedOperations`.
   - Legend: `layerType` of each layer was always empty.
+  - GetMap with `format=jpg`: the content type is `image/jpeg` (was `image/jpg`, not a registered MIME type).
   - Coordinates: a latitude beyond ±90° in a geographic `crs` (e.g. projected coordinates sent as EPSG:4326) in a
     spatial filter, identify or edit geometry is a 400 with the parameter and the range; before, the projection
     failed with an internal error (500). Longitudes beyond ±180° stay allowed.

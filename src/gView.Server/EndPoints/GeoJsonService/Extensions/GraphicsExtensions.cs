@@ -11,7 +11,7 @@ static internal class GraphicsExtensions
         new Dictionary<ImageFormat, string>(
             Enum.GetValues<ImageFormat>()
                 .Select(f => f switch {
-                    ImageFormat.Jpeg => new KeyValuePair<ImageFormat, string>(f, $"image/jpg"),
+                    ImageFormat.Jpeg => new KeyValuePair<ImageFormat, string>(f, "image/jpeg"),  // the registered MIME type (was image/jpg)
                     _ => new KeyValuePair<ImageFormat, string>(f, $"image/{f.ToString().ToLowerInvariant()}")
                  })
             );
