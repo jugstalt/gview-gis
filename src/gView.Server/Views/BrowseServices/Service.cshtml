@@ -99,14 +99,14 @@
         </div>
         <div class="hub-actions">
             <a class="btn" asp-action="ServiceCapabilities" asp-route-id="@id"><span class="ico ico-search"></span>Explore</a>
-            @if (Model.CanManage || Model.IsPublisher || Model.CanUseTestMap)
+            @if (Model.CanUseTestMap)
+            {
+                <a class="btn" asp-action="TestMap" asp-route-id="@id"><span class="ico ico-map"></span>Test map</a>
+            }
+            @if (Model.CanManage || Model.IsPublisher)
             {
                 <div class="hub-admin">
                     <span class="hub-admin-label">Admin</span>
-                    @if (Model.CanUseTestMap)
-                    {
-                        <a class="btn" asp-action="TestMap" asp-route-id="@id"><span class="ico ico-map"></span>Test map</a>
-                    }
                     @if (Model.CanManage)
                     {
                         <a class="btn" href="@Url.Action("Index", "Manage")#service=@id"><span class="ico ico-shield"></span>Manage</a>

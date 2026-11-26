@@ -39,6 +39,7 @@ public class BrowseServicesController : BaseController
     private readonly LoginManager _loginManagerService;
     private readonly IConfiguration _configuration;
     private readonly HttpClient _httpClient;
+    private readonly SecurityOptions _securityOptions;
 
     public BrowseServicesController(
         MapServiceManager mapServerService,
@@ -47,7 +48,8 @@ public class BrowseServicesController : BaseController
         LoginManager loginManagerService,
         EncryptionCertificateService encryptionCertificateService,
         IConfiguration configuration,
-        HttpClient httpClient)
+        HttpClient httpClient,
+        SecurityOptions securityOptions)
         : base(mapServerService, loginManagerService, encryptionCertificateService)
     {
         _mapServerService = mapServerService;
@@ -56,6 +58,7 @@ public class BrowseServicesController : BaseController
         _loginManagerService = loginManagerService;
         _configuration = configuration;
         _httpClient = httpClient;
+        _securityOptions = securityOptions;
     }
 
     async public Task<IActionResult> Index(string folder, string serviceName = "", string errorMessage = "",
@@ -499,7 +502,7 @@ public class BrowseServicesController : BaseController
         return View(model);
     });
 
-    /// <summary>Test map of a service: drives its interfaces like a client and logs the requests (admins only)</summary>
+    /// <summary>Test map of a service: drives its interfaces like a client and logs the requests (security:test-map)</summary>
     public Task<IActionResult> TestMap(string id) => SecureMethodHandler(async (identity) =>
     {
         var model = await CreateServiceModel(id, identity);
@@ -530,7 +533,7 @@ public class BrowseServicesController : BaseController
     public IActionResult TestMapProjections(string codes)
     {
         var authToken = _loginManagerService.GetAuthToken(this.Request);
-        if (!authToken.CanUseTestMap(Request.IsFromAdminNetwork()))
+        if (!authToken.CanUseTestMap(Request.IsFromAdminNetwork(), _securityOptions.TestMap))
         {
             return StatusCode(403);
         }
@@ -608,7 +611,7 @@ public class BrowseServicesController : BaseController
             RunningSinceUtc = mapService.RunningSinceUtc,
             IsPublisher = isFromAdminNetwork && (authToken.AuthType == AuthToken.AuthTypes.Manage || await mapService.HasPublishAccess(identity)),
             CanManage = isFromAdminNetwork && authToken.IsManageUser,
-            CanUseTestMap = authToken.CanUseTestMap(isFromAdminNetwork)
+            CanUseTestMap = authToken.CanUseTestMap(isFromAdminNetwork, _securityOptions.TestMap)
         };
     }
 

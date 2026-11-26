@@ -1,4 +1,5 @@
-﻿using System;
+﻿using gView.Server.Services.Security;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
@@ -73,11 +74,17 @@ static public class AuthTokenExtensions
     }
 
     /// <summary>
-    /// The test map of a service: admins only for now (manage user from the admin network).
-    /// The one place to change when it is opened to everyone with access to the service.
+    /// The test map of a service (security:test-map). The access to the service itself is checked
+    /// separately: anonymous visitors (<see cref="TestMapAccess.All"/>) only reach public services.
     /// </summary>
-    static public bool CanUseTestMap(this AuthToken authToken, bool isFromAdminNetwork)
-        => isFromAdminNetwork && authToken?.IsManageUser == true;
+    static public bool CanUseTestMap(this AuthToken authToken, bool isFromAdminNetwork, TestMapAccess access = TestMapAccess.Admin)
+        => access switch
+        {
+            TestMapAccess.All => true,
+            TestMapAccess.Users => (isFromAdminNetwork && authToken?.IsManageUser == true)
+                                   || (authToken is not null && !authToken.IsAnonymous),
+            _ => isFromAdminNetwork && authToken?.IsManageUser == true
+        };
 
     static public bool StopAuthenticationPropagation(this ClaimsPrincipal claimsPrincipal)
     {

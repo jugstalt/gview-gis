@@ -31,7 +31,8 @@ namespace gView.Server.Services.Security;
 ///   "rate-limit": {
 ///     "enabled": false,                       // usually done by the reverse proxy
 ///     "requests-per-minute": 600              // per client ip, services only
-///   }
+///   },
+///   "test-map": "admin"                       // admin | users | all: who may open the test map of a service
 /// }
 /// </code>
 /// X-Forwarded-For/-Proto are only accepted from known proxies or networks.
@@ -93,6 +94,12 @@ public class SecurityOptions
     public int ManageSessionHours { get; init; } = 8;
 
     public const string DefaultTwoFactorIssuer = "gView Server";
+
+    /// <summary>
+    /// Who may open the test map of a service (always only for services the user has access to):
+    /// admin (default), users (also logged in users) or all (also anonymous visitors of public services).
+    /// </summary>
+    public TestMapAccess TestMap { get; init; } = TestMapAccess.Admin;
 
     /// <summary>
     /// Second factor (TOTP) of the admin form login: off, optional (default) or required.
@@ -198,6 +205,7 @@ public class SecurityOptions
             ManageTwoFactorIssuer = String.IsNullOrWhiteSpace(section["manage:two-factor-issuer"])
                 ? DefaultTwoFactorIssuer
                 : section["manage:two-factor-issuer"].Trim(),
+            TestMap = ParseTestMapAccess(section["test-map"]),
             ManageSessionHours = int.TryParse(section["manage:session-hours"], out int hours) && hours > 0 ? hours : 8,
             CorsAllowedOrigins = corsOrigins.Length == 0 || corsOrigins.Contains("*")
                 ? null
@@ -248,6 +256,15 @@ public class SecurityOptions
         }
     }
 
+    /// <summary>admin, users or all; anything else is admin (the safe default)</summary>
+    public static TestMapAccess ParseTestMapAccess(string value)
+        => (value?.Trim().ToLowerInvariant()) switch
+        {
+            "users" => TestMapAccess.Users,
+            "all" => TestMapAccess.All,
+            _ => TestMapAccess.Admin
+        };
+
     public static TwoFactorMode ParseTwoFactorMode(string value)
         => (value?.Trim().ToLowerInvariant()) switch
         {
@@ -291,4 +308,15 @@ public class SecurityOptions
         => bool.TryParse(value?.Trim(), out bool result) ? result : null;
 
     #endregion
+}
+
+/// <summary>Who may open the test map of a service (security:test-map)</summary>
+public enum TestMapAccess
+{
+    /// <summary>Manage users from the admin networks</summary>
+    Admin,
+    /// <summary>Also logged in users (token users, admins from anywhere)</summary>
+    Users,
+    /// <summary>Also anonymous visitors of public services</summary>
+    All
 }

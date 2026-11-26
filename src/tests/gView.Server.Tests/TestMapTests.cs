@@ -8,6 +8,8 @@ using gView.Server.AppCode;
 using gView.Server.AppCode.Extensions;
 using gView.Server.Extensions;
 using gView.Server.Models;
+using gView.Server.Services.Security;
+using Microsoft.Extensions.Configuration;
 
 namespace gView.Server.Tests;
 
@@ -57,6 +59,48 @@ public class TestMapTests
         Assert.False(tokenUser.CanUseTestMap(isFromAdminNetwork: true));
         Assert.False(AuthToken.Anonymous.CanUseTestMap(isFromAdminNetwork: true));
         Assert.False(((AuthToken)null!).CanUseTestMap(isFromAdminNetwork: true));
+    }
+
+    [Fact]
+    public void CanUseTestMap_Users_LoggedInUsersButNotAnonymous()
+    {
+        var tokenUser = new AuthToken("user", AuthToken.AuthTypes.Tokenuser, TimeSpan.FromMinutes(30));
+        var admin = new AuthToken("admin", AuthToken.AuthTypes.Manage, TimeSpan.FromMinutes(30));
+
+        Assert.True(tokenUser.CanUseTestMap(isFromAdminNetwork: false, TestMapAccess.Users));
+        Assert.True(admin.CanUseTestMap(isFromAdminNetwork: false, TestMapAccess.Users));
+        Assert.False(AuthToken.Anonymous.CanUseTestMap(isFromAdminNetwork: true, TestMapAccess.Users));
+        Assert.False(((AuthToken)null!).CanUseTestMap(isFromAdminNetwork: true, TestMapAccess.Users));
+    }
+
+    [Fact]
+    public void CanUseTestMap_All_AlsoAnonymous()
+    {
+        Assert.True(AuthToken.Anonymous.CanUseTestMap(isFromAdminNetwork: false, TestMapAccess.All));
+        Assert.True(((AuthToken)null!).CanUseTestMap(isFromAdminNetwork: false, TestMapAccess.All));
+    }
+
+    [Theory]
+    [InlineData(null, TestMapAccess.Admin)]
+    [InlineData("", TestMapAccess.Admin)]
+    [InlineData("admin", TestMapAccess.Admin)]
+    [InlineData(" Users ", TestMapAccess.Users)]
+    [InlineData("ALL", TestMapAccess.All)]
+    [InlineData("everyone", TestMapAccess.Admin)]   // invalid: the safe default
+    public void ParseTestMapAccess(string? value, TestMapAccess expected)
+    {
+        Assert.Equal(expected, SecurityOptions.ParseTestMapAccess(value!));
+    }
+
+    [Fact]
+    public void SecurityOptions_TestMapFromConfiguration()
+    {
+        var configuration = new Microsoft.Extensions.Configuration.ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?> { ["security:test-map"] = "users" })
+            .Build();
+
+        Assert.Equal(TestMapAccess.Users, SecurityOptions.FromConfiguration(configuration).TestMap);
+        Assert.Equal(TestMapAccess.Admin, SecurityOptions.FromConfiguration(new Microsoft.Extensions.Configuration.ConfigurationBuilder().Build()).TestMap);
     }
 
     #endregion
