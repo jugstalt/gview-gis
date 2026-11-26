@@ -337,8 +337,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     service with `NumberMatched` in the WFS export metadata), `next`/`previous` links for KVP requests, `STARTINDEX`
     across several feature types. The capabilities advertise the new operators, `hits`, `ImplementsResourceId` and
     `ImplementsStandardFilter`.
-  - Not yet (next phases): GeoJSON output, stored queries (`GetFeatureById`); the test map still uses WFS 1.1.0 with
-    its own axis handling.
+  - GeoJSON (phase 3): `OUTPUTFORMAT=application/json` (also `application/geo+json`, `json`, `geojson`) in all
+    versions, advertised for 1.1.0 and 2.0.0: a FeatureCollection with `numberMatched`, `numberReturned`, `timeStamp`,
+    next/previous `links` and feature ids `c{layerId}.{objectId}`; coordinates are always x/y (lon/lat), a `crs` member
+    names the CRS if it is not WGS84. The GeoJSON writer of OGC API Features moved to
+    `gView.Interoperability.Extensions` and is shared.
+  - Stored queries (2.0.0): `GetFeatureById` (`STOREDQUERY_ID=urn:ogc:def:query:OGC-WFS::GetFeatureById&ID=c0.12`
+    or `wfs:StoredQuery`) returns the feature without a collection (GML 3.2 or a GeoJSON Feature), `404 NotFound` if
+    there is none; `ListStoredQueries` and `DescribeStoredQueries` describe it. No own stored queries.
+  - Not yet: the test map still uses WFS 1.1.0 with its own axis handling (next phase).
 - gView Server UI navigation: one way to the services instead of three. The start page and the sidebar
   show `Services` (formerly Browse Services) and `Manage`; the catalogs GeoServices REST and OGC API are
   a row of endpoint links with copy buttons on the start page. A click on a service in the list opens

@@ -77,6 +77,15 @@ namespace gView.Interoperability.OGC
                         case "lockfeature":
                         case "getfeaturewithlock":
                         case "getgmlobject":
+                        case "liststoredqueries" when version == WfsVersion.V200:
+                            await ListStoredQueries(context);
+                            break;
+                        case "describestoredqueries" when version == WfsVersion.V200:
+                            context.ServiceRequest.Response = WfsStoredQueries.WriteDescriptions(
+                                parameters.StoredQueryId?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                                ?? [WfsStoredQueries.GetFeatureById]);
+                            context.ServiceRequest.ResponseContentType = "text/xml";
+                            break;
                         case "getpropertyvalue":
                         case "liststoredqueries":
                         case "describestoredqueries":
@@ -157,6 +166,12 @@ namespace gView.Interoperability.OGC
             using var map = await CreateServiceMap(context);
             var featureTypes = new WfsFeatureTypes(map);
 
+            if (version == WfsVersion.V200 && parameters.StoredQueryId is not null)
+            {
+                await GetFeatureById(context, map, featureTypes, parameters);
+                return;
+            }
+
             string typeNamesLocator = version == WfsVersion.V200 ? "typeNames" : "typeName";
 
             var typeNames = parameters.TypeNames.Count == 0 && parameters.ResourceIds.Count > 0
@@ -168,8 +183,11 @@ namespace gView.Interoperability.OGC
                 throw WfsException.MissingParameterValue(typeNamesLocator);
             }
 
-            var format = WfsVersions.ParseGmlOutputFormat(parameters.OutputFormat, version)
-                ?? throw WfsException.InvalidParameterValue("outputFormat", $"Unsupported outputFormat {parameters.OutputFormat}");
+            bool geoJson = WfsVersions.IsGeoJsonOutputFormat(parameters.OutputFormat);
+            var format = geoJson
+                ? version.DefaultGmlFormat
+                : WfsVersions.ParseGmlOutputFormat(parameters.OutputFormat, version)
+                  ?? throw WfsException.InvalidParameterValue("outputFormat", $"Unsupported outputFormat {parameters.OutputFormat}");
 
             bool hitsOnly = parameters.ResultType?.ToLowerInvariant() switch
             {
@@ -200,19 +218,86 @@ namespace gView.Interoperability.OGC
                 countMatched: version == WfsVersion.V200 && NumberMatchedEnabled(map),
                 hitsOnly);
 
+            string? next = version == WfsVersion.V200 && result.HasMore && count > 0 && !hitsOnly
+                ? PageUrl(context.ServiceRequest, parameters, parameters.StartIndex + count, count)
+                : null;
+            string? previous = version == WfsVersion.V200 && parameters.StartIndex > 0 && count > 0 && !hitsOnly
+                ? PageUrl(context.ServiceRequest, parameters, Math.Max(0, parameters.StartIndex - count), count)
+                : null;
+
+            if (geoJson)
+            {
+                context.ServiceRequest.Response = WfsGeoJsonWriter.Write(result, hitsOnly, outCrs, DateTime.UtcNow, next, previous);
+                context.ServiceRequest.ResponseContentType = WfsGeoJsonWriter.ContentType;
+                return;
+            }
+
             var writer = new WfsFeatureWriter(version, format, outCrs?.Name, version.SwapAxes(outCrs, query.OutSpatialReference));
             context.ServiceRequest.Response = writer.Write(
                 result,
                 hitsOnly,
                 DescribeFeatureTypeUrl(context.ServiceRequest, version, format, collections),
                 DateTime.UtcNow,
-                next: version == WfsVersion.V200 && result.HasMore && count > 0 && !hitsOnly
-                    ? PageUrl(context.ServiceRequest, parameters, parameters.StartIndex + count, count)
-                    : null,
-                previous: version == WfsVersion.V200 && parameters.StartIndex > 0 && count > 0 && !hitsOnly
-                    ? PageUrl(context.ServiceRequest, parameters, Math.Max(0, parameters.StartIndex - count), count)
-                    : null);
+                next,
+                previous);
             context.ServiceRequest.ResponseContentType = WfsVersions.ContentType(format);
+        }
+
+        /// <summary>
+        /// The stored query GetFeatureById (2.0.0): the single feature without a collection, 404 if there is none
+        /// </summary>
+        async private Task GetFeatureById(IServiceRequestContext context, IServiceMap map, WfsFeatureTypes featureTypes, WfsRequestParameters parameters)
+        {
+            if (!WfsStoredQueries.IsGetFeatureById(parameters.StoredQueryId))
+            {
+                throw WfsException.InvalidParameterValue("storedQuery_Id", $"Unknown stored query {parameters.StoredQueryId}");
+            }
+
+            string id = parameters.StoredQueryParameters.TryGetValue("ID", out var value) && !String.IsNullOrWhiteSpace(value)
+                ? value.Trim()
+                : throw WfsException.MissingParameterValue("ID");
+
+            var collection = FesFilterParser.ResourceIdTypeName(id) is { } typeName ? featureTypes.Find(typeName) : null;
+            if (collection is null)
+            {
+                throw new WfsException("NotFound", $"Feature {id} not found", "ID");
+            }
+
+            bool geoJson = WfsVersions.IsGeoJsonOutputFormat(parameters.OutputFormat);
+            var format = geoJson
+                ? GmlFormat.Gml32
+                : WfsVersions.ParseGmlOutputFormat(parameters.OutputFormat, WfsVersion.V200)
+                  ?? throw WfsException.InvalidParameterValue("outputFormat", $"Unsupported outputFormat {parameters.OutputFormat}");
+
+            var outCrs = parameters.SrsName is not null
+                ? ParseCrs(parameters.SrsName, "srsName")
+                : WfsFeatureTypes.DefaultCrs(map, collection, WfsVersion.V200);
+
+            var query = new WfsQuery(map, parameters.ForResourceId(id), WfsVersion.V200, outCrs) { Context = context };
+            var result = await query.ExecuteAsync([collection], 1, countMatched: false, hitsOnly: false);
+
+            var feature = result.FeatureSets.SelectMany(s => s.Features).FirstOrDefault()
+                ?? throw new WfsException("NotFound", $"Feature {id} not found", "ID");
+
+            if (geoJson)
+            {
+                context.ServiceRequest.Response = WfsGeoJsonWriter.WriteFeature(collection, feature, outCrs);
+                context.ServiceRequest.ResponseContentType = WfsGeoJsonWriter.ContentType;
+            }
+            else
+            {
+                context.ServiceRequest.Response = new WfsFeatureWriter(WfsVersion.V200, format, outCrs?.Name, WfsVersion.V200.SwapAxes(outCrs, query.OutSpatialReference))
+                    .WriteSingleFeature(collection, feature);
+                context.ServiceRequest.ResponseContentType = WfsVersions.ContentType(format);
+            }
+        }
+
+        async private Task ListStoredQueries(IServiceRequestContext context)
+        {
+            using var map = await CreateServiceMap(context);
+
+            context.ServiceRequest.Response = WfsStoredQueries.WriteList(new WfsFeatureTypes(map).All.Select(WfsFeatureTypes.QualifiedName));
+            context.ServiceRequest.ResponseContentType = "text/xml";
         }
 
         /// <summary>

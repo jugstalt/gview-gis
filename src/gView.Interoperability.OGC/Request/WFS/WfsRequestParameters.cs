@@ -184,6 +184,13 @@ public class WfsRequestParameters
                     .ToArray();
                 break;
 
+            case "DescribeStoredQueries":
+                {
+                    var ids = Children(root, "StoredQueryId").Select(i => i.InnerText.Trim()).Where(i => i.Length > 0).ToArray();
+                    parameters.StoredQueryId = ids.Length > 0 ? String.Join(",", ids) : null;
+                    break;
+                }
+
             case "DescribeFeatureType":
                 parameters.TypeNames = Children(root, "TypeName")
                     .SelectMany(t => SplitTypeNames(t.InnerText))
@@ -231,6 +238,20 @@ public class WfsRequestParameters
     }
 
     #endregion
+
+    /// <summary>
+    /// A copy of a GetFeature request that selects one resource id (GetFeatureById)
+    /// </summary>
+    internal WfsRequestParameters ForResourceId(string resourceId)
+        => new WfsRequestParameters()
+        {
+            Request = "GetFeature",
+            VersionString = VersionString,
+            SrsName = SrsName,
+            OutputFormat = OutputFormat,
+            ResourceIds = [resourceId],
+            IsXmlRequest = IsXmlRequest
+        };
 
     #region Helper
 

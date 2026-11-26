@@ -356,7 +356,7 @@ public class WfsCapabilitiesWriter
     {
         w.WriteStartElement("ows", "OperationsMetadata", ows);
 
-        foreach (var operation in new[] { "GetCapabilities", "DescribeFeatureType", "GetFeature" })
+        foreach (var operation in OwsOperations)
         {
             w.WriteStartElement("ows", "Operation", ows);
             w.WriteAttributeString("name", operation);
@@ -384,7 +384,7 @@ public class WfsCapabilitiesWriter
                     break;
                 case "GetFeature":
                     WriteParameter(w, ows, "resultType", "results", "hits");
-                    WriteParameter(w, ows, "outputFormat", _version.GmlFormats.Select(f => _version.OutputFormatName(f)).ToArray());
+                    WriteParameter(w, ows, "outputFormat", OutputFormats.ToArray());
                     break;
             }
 
@@ -479,9 +479,9 @@ public class WfsCapabilitiesWriter
             }
 
             w.WriteStartElement("wfs", "OutputFormats", wfs);
-            foreach (var format in _version.GmlFormats)
+            foreach (var format in OutputFormats)
             {
-                w.WriteElementString("wfs", "Format", wfs, _version.OutputFormatName(format));
+                w.WriteElementString("wfs", "Format", wfs, format);
             }
             w.WriteEndElement();
 
@@ -503,6 +503,20 @@ public class WfsCapabilitiesWriter
     /// Only one spatial operator per query, at the top level or in a top-level And (see <see cref="FesFilterParser"/>)
     /// </summary>
     private static readonly string[] SpatialOperators = ["BBOX", "Intersects", "Within", "Contains"];
+
+    /// <summary>
+    /// The GetFeature output formats: the GML versions and GeoJSON
+    /// </summary>
+    private System.Collections.Generic.IEnumerable<string> OutputFormats
+        => _version.GmlFormats.Select(f => _version.OutputFormatName(f)).Append(WfsVersions.GeoJsonOutputFormat);
+
+    /// <summary>
+    /// The operations in the OWS operations metadata (1.1.0, 2.0.0)
+    /// </summary>
+    private string[] OwsOperations
+        => _version == WfsVersion.V200
+            ? ["GetCapabilities", "DescribeFeatureType", "GetFeature", "ListStoredQueries", "DescribeStoredQueries"]
+            : ["GetCapabilities", "DescribeFeatureType", "GetFeature"];
 
     internal static string DescribeFeatureTypeFormat(WfsVersion version, GmlFormat format)
         => version == WfsVersion.V100 ? "XMLSCHEMA" : version.OutputFormatName(format);

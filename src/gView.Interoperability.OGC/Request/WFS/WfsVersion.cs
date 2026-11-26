@@ -112,6 +112,18 @@ public static class WfsVersions
     }
 
     /// <summary>
+    /// The outputFormat of GeoJSON as advertised in the capabilities
+    /// </summary>
+    public const string GeoJsonOutputFormat = "application/json";
+
+    /// <summary>
+    /// GeoJSON outputFormat values: application/json, application/geo+json, json, geojson (all versions)
+    /// </summary>
+    public static bool IsGeoJsonOutputFormat(string? outputFormat)
+        => outputFormat?.Replace(" ", "").Replace("\"", "").ToLowerInvariant() is
+            "application/json" or "application/geo+json" or "json" or "geojson" or "application/json;subtype=geojson";
+
+    /// <summary>
     /// Parses an outputFormat value. Null for formats that are not supported.
     /// </summary>
     public static GmlFormat? ParseGmlOutputFormat(string? outputFormat, WfsVersion version)

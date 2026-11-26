@@ -43,7 +43,7 @@ public sealed class ItemsResult
             }
             writer.WriteEndArray();
 
-            GeoJsonWriter.WriteLinks(writer, Links);
+            OgcGeoJsonWriter.WriteLinks(writer, Links);
             writer.WriteString("timeStamp", TimeStamp.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'", System.Globalization.CultureInfo.InvariantCulture));
             writer.WriteNumber("numberReturned", Page.Features.Count);
             writer.WriteEndObject();
@@ -82,7 +82,7 @@ public sealed class ItemResult
         using var ms = new MemoryStream();
         using (var writer = new Utf8JsonWriter(ms, GeoJsonWriter.WriterOptions))
         {
-            GeoJsonWriter.WriteFeature(writer, Feature, SwapAxes, Links);
+            OgcGeoJsonWriter.WriteFeature(writer, Feature, SwapAxes, Links);
         }
 
         return ms.ToArray();

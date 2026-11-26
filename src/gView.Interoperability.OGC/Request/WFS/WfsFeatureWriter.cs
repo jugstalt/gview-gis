@@ -129,13 +129,34 @@ public class WfsFeatureWriter
         return ms.ToArray();
     }
 
-    private void WriteFeature(XmlWriter w, GmlGeometryWriter geometryWriter, OgcCollectionLayer collection, OgcFeature feature)
+    /// <summary>
+    /// A single feature as XML document (GetFeatureById), the gml and gv namespaces declared on the feature
+    /// </summary>
+    public byte[] WriteSingleFeature(OgcCollectionLayer collection, OgcFeature feature)
+    {
+        using var ms = new MemoryStream();
+        using (var w = XmlWriter.Create(ms, WfsXml.WriterSettings))
+        {
+            var geometryWriter = new GmlGeometryWriter(w, _format, _swapAxes);
+
+            w.WriteStartDocument();
+            WriteFeature(w, geometryWriter, collection, feature, declareNamespaces: true);
+            w.WriteEndDocument();
+        }
+        return ms.ToArray();
+    }
+
+    private void WriteFeature(XmlWriter w, GmlGeometryWriter geometryWriter, OgcCollectionLayer collection, OgcFeature feature, bool declareNamespaces = false)
     {
         string gml = geometryWriter.Namespace;
         string gv = WfsVersions.FeatureTypeNamespace;
         string fid = $"{collection.Id}.{FormatValue(feature.Id) ?? "0"}";
 
         w.WriteStartElement(WfsVersions.FeatureTypePrefix, collection.Id, gv);
+        if (declareNamespaces)
+        {
+            w.WriteAttributeString("xmlns", "gml", null, gml);
+        }
         if (_format == GmlFormat.Gml2)
         {
             w.WriteAttributeString("fid", fid);

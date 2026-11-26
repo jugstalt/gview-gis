@@ -1,17 +1,20 @@
+#nullable enable
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using gView.Framework.Core.Geometry;
-using gView.Interoperability.OgcApi.Features;
-using gView.Interoperability.OgcApi.Models;
 using System.Globalization;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 
-namespace gView.Interoperability.OgcApi.GeoJson;
+namespace gView.Interoperability.Extensions.Features;
 
 /// <summary>
 /// Writes RFC 7946 GeoJSON. Unlike the GeoJsonService DTOs, polygons are grouped into
 /// outer rings with their holes (Polygon/MultiPolygon) and rings are always closed.
 /// </summary>
-internal static class GeoJsonWriter
+public static class GeoJsonWriter
 {
     /// <summary>
     /// Don't escape umlauts, apostrophes, ... (the output is JSON, never embedded in HTML)
@@ -21,7 +24,8 @@ internal static class GeoJsonWriter
         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
     };
 
-    public static void WriteFeature(Utf8JsonWriter writer, OgcFeature feature, bool swapAxes, IEnumerable<Link>? links = null)
+    /// <param name="writeMembers">Writes additional members of the feature object (e.g. links)</param>
+    public static void WriteFeature(Utf8JsonWriter writer, OgcFeature feature, bool swapAxes, Action<Utf8JsonWriter>? writeMembers = null)
     {
         writer.WriteStartObject();
         writer.WriteString("type", "Feature");
@@ -44,34 +48,9 @@ internal static class GeoJsonWriter
         }
         writer.WriteEndObject();
 
-        if (links is not null)
-        {
-            WriteLinks(writer, links);
-        }
+        writeMembers?.Invoke(writer);
 
         writer.WriteEndObject();
-    }
-
-    public static void WriteLinks(Utf8JsonWriter writer, IEnumerable<Link> links)
-    {
-        writer.WritePropertyName("links");
-        writer.WriteStartArray();
-        foreach (var link in links)
-        {
-            writer.WriteStartObject();
-            writer.WriteString("href", link.Href);
-            writer.WriteString("rel", link.Rel);
-            if (!String.IsNullOrEmpty(link.Type))
-            {
-                writer.WriteString("type", link.Type);
-            }
-            if (!String.IsNullOrEmpty(link.Title))
-            {
-                writer.WriteString("title", link.Title);
-            }
-            writer.WriteEndObject();
-        }
-        writer.WriteEndArray();
     }
 
     public static void WriteGeometry(Utf8JsonWriter writer, IGeometry? geometry, bool swapAxes)
