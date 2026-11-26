@@ -49,7 +49,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - PlugInManager: `PluginDirectory` sets the folder scanned for plugins (default: folder of the
   entry assembly); inside an isolated load context plugins are loaded into that context.
   `gView.Pipe.*.dll` are never scanned.
-
 - Vector tile cache (Mapbox Vector Tiles, MVT 2.1) for the grid of the tile service metadata
   ([ADR 0003](docs/adr/0003-vector-tile-cache.md)): any EPSG code and the metadata scales, not
   only WebMercator. New metadata options `supportMvt`, `mvtLayerAttributes` (extra fields per
@@ -251,7 +250,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     to read and try out every request. The examples are filled with values of the service (full extent and CRS of
     the map, the layers visible by default, the first queryable layer, the map center for identify), so a request can
     be sent right away, as with the request forms of Browse Services; `type` is a constant of each request schema and
-    numbers are typed as numbers (Scalar filled in empty strings before). Browse Services links it ("API").
+    numbers are typed as numbers (Scalar filled in empty strings before). The applyEdits example inserts one feature
+    (a point, line or small square at the map center) into the first layer that allows inserts. Browse Services links
+    it ("API").
   - GetMap: `layerDefs` (an extra filter per layer, where clause or CQL2, on top of the definition query) and
     `highlight` (object ids per layer, drawn on top). Invalid filters answer 400 before rendering.
   - Query, identify, find: `returnGeometry=centroid` (a point inside polygons, at half the length of lines),
@@ -276,8 +277,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - gView Server start page: the same hero with contour lines as the web apps start page (same product family).
   The about page too, with links to the documentation and GitHub; the LizardTech/MrSID credits
   (`_lics/credits.xml`) are removed.
-
-- Geometry: SpatialNET packages updated to 0.10.0-preview.6.
+- Geometry: SpatialNET packages updated to 0.10.0-preview.9.
 - Polygon labels (`SimpleLabelRenderer`, `ChartLabelRenderer`): all polygons now take the SpatialNET path
   that was only used for polygons with more than 12000 vertices before (the limit where Clipper and the ring
   raster became too slow or crashed). The label point is found first (`FastPolygonLabel`) and the polygon is only
@@ -299,6 +299,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   is removed.
 - GeoServices REST `export`: renders with the shared `MapImageRenderer` of WMS and OGC API Maps
   (same size limits, rotation, transparency); the extent still follows the aspect ratio of the image.
+- GeoJson services: responses write the bounding box as `bbox`, as in the specification (GetMap, features with
+  `returnGeometry=bbox`); before `bBox`. Requests accept both (names are case-insensitive). ⚠ Clients that read
+  `bBox` case-sensitively have to use `bbox`.
+- THIRD-PARTY-NOTICES regenerated (389 packages; new: the nuke build project `_build`, which is not part of the
+  deployed apps, and SpatialNET 0.10.0-preview.9).
 
 ## Fixed
 
@@ -322,14 +327,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   QGIS sends it; before, changing attributes or geometries in QGIS failed with 400.
 - GeoServices REST: errors with a status (e.g. 503/504 of network searches) carry it as `code` instead of
   always `999`; the response stays HTTP 200 as in ArcGIS.
-- GeoJson GetMap: `layers` per GET (`layers=0,1,2`, as in the specification) failed; `-id` hid the other layers of
-  the group of the layer too (`-0` hid layer 1 of the same group).
-- GeoJson services: `.../query/{layerId}` and `.../features/{layerId}` needed no right besides the access to the
-  GeoJson interface (the layer id was taken as operation): a user with only the right map could query and edit.
-  Now query needs query, features/applyEdits need edit. Also in v8.
-- GeoJson query: CQL2 filters found fields only by their alias, so a field with an alias was rejected by its name
-  (e.g. `GISKEY`); statistics fields took a matching alias before the name. Both now go by the field name.
-- GeoJson query: `orderBy`/`orderByFields` with `DESC` (`EW DESC`) were rejected as unknown field names.
 - Editing: updates and deletes of object ids that don't exist answer 404 (GeoServices, GeoJson); before, they reported
   success.
 - Editing (GeoServices REST `updateFeatures`, `deleteFeatures`, `applyEdits` and GeoJson services): updates and
@@ -337,6 +334,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   (404). Before, a user who may edit a filtered layer could change or delete any object of its feature class.
   GeoJson errors keep the status of the error (e.g. 404) instead of always 400.
 - GeoJson services (`/geojsonservice/v1/...`):
+  - Rights: `.../query/{layerId}` and `.../features/{layerId}` needed no right besides the access to the GeoJson
+    interface (the layer id was taken as operation): a user with only the right map could query and edit. Now query
+    needs query, features/applyEdits need edit. Also in v8.
+  - GetMap: `layers` per GET (`layers=0,1,2`, as in the specification) failed; `-id` hid the other layers of the
+    group of the layer too (`-0` hid layer 1 of the same group).
+  - Query: CQL2 filters found fields only by their alias, so a field with an alias was rejected by its name (e.g.
+    `GISKEY`); statistics fields took a matching alias before the name. Both now go by the field name.
+    `orderBy`/`orderByFields` with `DESC` (`EW DESC`) were rejected as unknown field names.
   - Browse Services: the request forms (`BrowseServices/GeoJsonRequest`) failed with "invalid or missing antiforgery
     token" when the browser had cookies; the form now carries the token. Booleans and enums show their default
     (e.g. `Transparent` of GetMap) instead of the first option, and the values are HTML encoded.

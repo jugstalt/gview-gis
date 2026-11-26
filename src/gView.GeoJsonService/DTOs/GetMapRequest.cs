@@ -4,6 +4,7 @@ public class GetMapRequest : BaseRequest
 {
     override public string Type { get; set; } = RequestTypes.GetMap;
     public IEnumerable<string> Layers { get; set; } = Array.Empty<string>();
+    [System.Text.Json.Serialization.JsonPropertyName("bbox")]
     public BBox BBox { get; set; } = default!;
     public CoordinateReferenceSystem? CRS { get; set; }
     public int Width { get; set; }

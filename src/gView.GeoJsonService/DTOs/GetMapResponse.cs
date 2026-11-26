@@ -5,6 +5,7 @@ public class GetMapResponse : BaseResponse
     override public string Type { get; set; } = ResponseType.Map;
     public string? ImageUrl { get; set; }
     public string? ImageBase64 { get; set; }
+    [System.Text.Json.Serialization.JsonPropertyName("bbox")]
     public BBox? BBox { get; set; }
     public CoordinateReferenceSystem? CRS { get; set; }
     public int Width { get; set; }

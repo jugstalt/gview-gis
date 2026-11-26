@@ -69,7 +69,7 @@ public class GeoJsonServiceOpenApiTests
 
         Assert.Equal("GetMap", getMap["type"]!["const"]!.GetValue<string>());
         Assert.Equal("integer", getMap["width"]!["type"]!.GetValue<string>());
-        Assert.DoesNotContain("string", getMap["bBox"]!.ToJsonString());
+        Assert.DoesNotContain("string", getMap["bbox"]!.ToJsonString());
     }
 
     [Fact]
@@ -81,7 +81,7 @@ public class GeoJsonServiceOpenApiTests
         var body = api["paths"]!["/map"]!["post"]!["requestBody"]!["content"]!["application/json"]!["example"]!;
         Assert.Equal("GetMap", body["type"]!.GetValue<string>());
         Assert.Equal(["0", "2"], body["layers"]!.AsArray().Select(l => l!.GetValue<string>()));
-        Assert.Equal(3, body["bBox"]!["maxX"]!.GetValue<double>());
+        Assert.Equal(3, body["bbox"]!["maxX"]!.GetValue<double>());
         Assert.Equal("EPSG:31256", body["crs"]!["properties"]!["name"]!.GetValue<string>());
         Assert.Equal(800, body["width"]!.GetValue<int>());
 
@@ -95,6 +95,23 @@ public class GeoJsonServiceOpenApiTests
 
         // without a service: no examples
         Assert.Null(GeoJsonServiceOpenApi.Build("https://server/x", "x", AccessTypes.Map)["paths"]!["/map"]!["post"]!["requestBody"]!["content"]!["application/json"]!["example"]);
+    }
+
+    [Fact]
+    public void Build_ApplyEditsExample_InsertsIntoTheEditLayer()
+    {
+        var example = new ServiceExample("EPSG:31256", new gView.GeoJsonService.DTOs.BBox { MinX = 0, MinY = 0, MaxX = 100, MaxY = 100 }, ["0"], ["0", "3"],
+            new ServiceExample.EditLayer("3", gView.Framework.Core.Geometry.GeometryType.Polygon));
+        var api = GeoJsonServiceOpenApi.Build("https://server/x", "x", AccessTypes.Edit, example);
+
+        var body = api["paths"]!["/applyEdits"]!["post"]!["requestBody"]!["content"]!["application/json"]!["example"]!;
+        Assert.Equal("ApplyEdits", body["type"]!.GetValue<string>());
+        var edits = body["edits"]![0]!;
+        Assert.Equal("3", edits["layerId"]!.GetValue<string>());
+        var geometry = edits["adds"]![0]!["geometry"]!;
+        Assert.Equal("Polygon", geometry["type"]!.GetValue<string>());
+        Assert.Equal(5, geometry["coordinates"]![0]!.AsArray().Count);  // closed square around the center
+        Assert.Equal(49.0, geometry["coordinates"]![0]![0]![0]!.GetValue<double>());
     }
 
     [Fact]

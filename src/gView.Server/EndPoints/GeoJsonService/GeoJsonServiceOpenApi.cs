@@ -25,7 +25,7 @@ internal static class GeoJsonServiceOpenApi
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
+        Converters = { new JsonStringEnumConverter<GeometryType>(), new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },  // GeoJSON types as in RFC 7946: Point, Polygon, ...
         TypeInfoResolver = new DefaultJsonTypeInfoResolver()
     };
 
@@ -152,7 +152,7 @@ internal static class GeoJsonServiceOpenApi
             }
             paths["/features/{layerId}"] = features;
             paths["/applyEdits"] = Operation<ApplyEditsRequest, ApplyEditsResponse>(
-                "Adds, updates and deletes of several layers in one transaction (versions: 412)", "Edit", [], post: true);
+                "Adds, updates and deletes of several layers in one transaction (versions: 412). The example inserts one feature!", "Edit", [], post: true);
         }
 
         schemas[nameof(ErrorResponse)] = Schema(typeof(ErrorResponse), nameof(ErrorResponse));
@@ -259,6 +259,18 @@ internal static class GeoJsonServiceOpenApi
                 break;
             case GetLayersRequest layers:
                 layers.CRS = crs;
+                break;
+            case ApplyEditsRequest applyEdits when example.InsertLayer is not null:
+                // inserts one feature: sending the example changes data (the user has the edit right)
+                applyEdits.CRS = crs;
+                applyEdits.Edits =
+                [
+                    new LayerEdits
+                    {
+                        LayerId = example.InsertLayer.Id,
+                        Adds = [new Feature { Geometry = example.GeometryAtCenter(example.InsertLayer.GeometryType) }]
+                    }
+                ];
                 break;
         }
         return request;

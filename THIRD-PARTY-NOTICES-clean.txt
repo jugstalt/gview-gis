@@ -32,7 +32,7 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-Packages (14):
+Packages (16):
   - Microsoft.Extensions.Configuration (v10.0.15)
   - Microsoft.Extensions.Configuration.Abstractions (v10.0.15)
   - Microsoft.Extensions.Configuration.Binder (v10.0.15)
@@ -47,6 +47,8 @@ Packages (14):
   - Microsoft.Extensions.Options.ConfigurationExtensions (v10.0.15)
   - Microsoft.Extensions.Primitives (v10.0.15)
   - Microsoft.Win32.SystemEvents (v10.0.15)
+  - System.Security.Cryptography.Pkcs (v10.0.15)
+  - System.Security.Cryptography.Xml (v10.0.15)
 ------------------------------------------------------------
 
 https://github.com/dotnet/dotnet at 8e0f8ed2312954727f8919d7d1c2f78b483b4ee7
@@ -320,7 +322,8 @@ Copyright © Microsoft Corporation.  All rights reserved.
 License available at http://go.microsoft.com/fwlink/?LinkId=329770
 
 
-Packages (5):
+Packages (6):
+  - Microsoft.Bcl.AsyncInterfaces (v8.0.0)
   - Microsoft.Extensions.Configuration (v8.0.0)
   - Microsoft.Extensions.Configuration.Binder (v8.0.0)
   - Microsoft.Extensions.FileProviders.Abstractions (v8.0.0)
@@ -368,15 +371,15 @@ Available at https://licenses.nuget.org/Apache-2.0
 
 
 Packages (6):
-  - SpatialNET.Core (v0.10.0-preview.8)
-  - SpatialNET.Extensions (v0.10.0-preview.8)
-  - SpatialNET.IO (v0.10.0-preview.8)
-  - SpatialNET.Imp (v0.10.0-preview.8)
-  - SpatialNET.Network (v0.10.0-preview.8)
-  - SpatialNET.Network.Building (v0.10.0-preview.8)
+  - SpatialNET.Core (v0.10.0-preview.9)
+  - SpatialNET.Extensions (v0.10.0-preview.9)
+  - SpatialNET.IO (v0.10.0-preview.9)
+  - SpatialNET.Imp (v0.10.0-preview.9)
+  - SpatialNET.Network (v0.10.0-preview.9)
+  - SpatialNET.Network.Building (v0.10.0-preview.9)
 ------------------------------------------------------------
 
-https://github.com/jugstalt/SpatialNET.Core at 5dd75b8efb17cf8ba497b30d57043c9f94940e4c
+https://github.com/jugstalt/SpatialNET.Core at ec4f9857f4c50ae3feec8bd4da2a7e4047d98443
 
 Copyright © Jürgen Gstaltmaier
 
@@ -695,8 +698,12 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-Packages (1):
+Packages (5):
+  - Microsoft.Build (v18.0.2)
   - Microsoft.Build.Framework (v18.0.2)
+  - Microsoft.Build.Tasks.Core (v18.0.2)
+  - Microsoft.Build.Utilities.Core (v18.0.2)
+  - Microsoft.NET.StringTools (v18.0.2)
 ------------------------------------------------------------
 
 https://github.com/dotnet/msbuild at 995a3dce41788caebf2b8ca6602a7431f08bfd06
@@ -1039,13 +1046,19 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-Packages (6):
+Packages (12):
+  - System.CodeDom (v9.0.0)
   - System.Composition (v9.0.0)
   - System.Composition.AttributedModel (v9.0.0)
   - System.Composition.Convention (v9.0.0)
   - System.Composition.Hosting (v9.0.0)
   - System.Composition.Runtime (v9.0.0)
   - System.Composition.TypedParts (v9.0.0)
+  - System.Configuration.ConfigurationManager (v9.0.0)
+  - System.Diagnostics.EventLog (v9.0.0)
+  - System.Formats.Nrbf (v9.0.0)
+  - System.Reflection.MetadataLoadContext (v9.0.0)
+  - System.Resources.Extensions (v9.0.0)
 ------------------------------------------------------------
 
 https://github.com/dotnet/runtime at 9d5a6a9aa463d6d10b0b0ba6d5982cc82f363dc3
@@ -1267,8 +1280,9 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-Packages (1):
+Packages (2):
   - Microsoft.Extensions.Configuration.EnvironmentVariables (v10.0.0)
+  - Microsoft.Extensions.DependencyModel (v10.0.0)
 ------------------------------------------------------------
 
 https://github.com/dotnet/dotnet at b0f34d51fccc69fd334253924abd8d6853fad7aa
@@ -1713,14 +1727,16 @@ Licensed under MIT
 Available at https://licenses.nuget.org/MIT
 
 
-Packages (7):
+Packages (9):
   - Microsoft.Extensions.DependencyInjection (v8.0.1)
+  - Microsoft.Extensions.DependencyInjection.Abstractions (v8.0.2)
   - Microsoft.Extensions.Diagnostics (v8.0.1)
   - Microsoft.Extensions.Diagnostics.Abstractions (v8.0.1)
   - Microsoft.Extensions.Hosting.Abstractions (v8.0.1)
   - Microsoft.Extensions.Http (v8.0.1)
   - Microsoft.Extensions.Logging (v8.0.1)
   - Microsoft.Extensions.Logging.Abstractions (v8.0.2)
+  - System.Memory.Data (v8.0.1)
 ------------------------------------------------------------
 
 https://github.com/dotnet/runtime at 81cabf2857a01351e5ab578947c7403a5b128ad1
@@ -1879,6 +1895,373 @@ Packages (1):
 https://github.com/xunit/xunit
 
 License available at https://raw.githubusercontent.com/xunit/xunit/master/license.txt
+
+
+Packages (5):
+  - NuGet.Common (v6.14.3)
+  - NuGet.Configuration (v6.14.3)
+  - NuGet.Frameworks (v6.14.3)
+  - NuGet.Packaging (v6.14.3)
+  - NuGet.Versioning (v6.14.3)
+------------------------------------------------------------
+
+https://github.com/NuGet/NuGet.Client at 13eeb32d62833984c9367f8f4e22a120ebc03b47
+
+https://aka.ms/nugetprj
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under Apache-2.0
+
+Available at https://licenses.nuget.org/Apache-2.0
+
+
+Packages (12):
+  - Nuke.Build (v10.1.0)
+  - Nuke.Build.Shared (v10.1.0)
+  - Nuke.Common (v10.1.0)
+  - Nuke.ProjectModel (v10.1.0)
+  - Nuke.SolutionModel (v10.1.0)
+  - Nuke.Tooling (v10.1.0)
+  - Nuke.Utilities (v10.1.0)
+  - Nuke.Utilities.IO.Compression (v10.1.0)
+  - Nuke.Utilities.IO.Globbing (v10.1.0)
+  - Nuke.Utilities.Net (v10.1.0)
+  - Nuke.Utilities.Text.Json (v10.1.0)
+  - Nuke.Utilities.Text.Yaml (v10.1.0)
+------------------------------------------------------------
+
+https://github.com/nuke-build/nuke at 8aaec258a7e00e5d98e013be025db1a42bc58d79
+
+https://nuke.build/
+
+Copyright 2025 Maintainers of NUKE
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+Packages (1):
+  - Azure.Core (v1.50.0)
+------------------------------------------------------------
+
+https://github.com/Azure/azure-sdk-for-net at 724366b17b92e657d2136d470077c769e89818c7
+
+https://github.com/Azure/azure-sdk-for-net/blob/Azure.Core_1.50.0/sdk/core/Azure.Core/README.md
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+Packages (1):
+  - Azure.Identity (v1.17.1)
+------------------------------------------------------------
+
+https://github.com/Azure/azure-sdk-for-net at f6aaf7f37262151b1df40b79d1a64dacc7c98021
+
+https://github.com/Azure/azure-sdk-for-net/blob/Azure.Identity_1.17.1/sdk/identity/Azure.Identity/README.md
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+Packages (1):
+  - Azure.Security.KeyVault.Certificates (v4.8.0)
+------------------------------------------------------------
+
+https://github.com/Azure/azure-sdk-for-net at 444d6e6d437aaada932a630bfe1a881a7f0f306f
+
+https://github.com/Azure/azure-sdk-for-net/blob/Azure.Security.KeyVault.Certificates_4.8.0/sdk/keyvault/Azure.Security.KeyVault.Certificates/README.md
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+Packages (1):
+  - Azure.Security.KeyVault.Keys (v4.8.0)
+------------------------------------------------------------
+
+https://github.com/Azure/azure-sdk-for-net at c8964dc0d3101c9f34157c3db99e169e784ee08c
+
+https://github.com/Azure/azure-sdk-for-net/blob/Azure.Security.KeyVault.Keys_4.8.0/sdk/keyvault/Azure.Security.KeyVault.Keys/README.md
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+Packages (1):
+  - Azure.Security.KeyVault.Secrets (v4.8.0)
+------------------------------------------------------------
+
+https://github.com/Azure/azure-sdk-for-net at 444d6e6d437aaada932a630bfe1a881a7f0f306f
+
+https://github.com/Azure/azure-sdk-for-net/blob/Azure.Security.KeyVault.Secrets_4.8.0/sdk/keyvault/Azure.Security.KeyVault.Secrets/README.md
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+Packages (1):
+  - Glob (v1.1.9)
+------------------------------------------------------------
+
+https://github.com/kthompson/glob
+
+https://github.com/kthompson/glob/
+
+License available at https://raw.githubusercontent.com/kthompson/glob/main/LICENSE
+
+
+Packages (1):
+  - JetBrains.Annotations (v2025.2.2)
+------------------------------------------------------------
+
+https://github.com/JetBrains/JetBrains.Annotations.git
+
+https://www.jetbrains.com/help/resharper/Code_Analysis__Code_Annotations.html
+
+Copyright (c) 2016-2025 JetBrains s.r.o.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+Packages (1):
+  - matkoch.Microsoft.VisualStudio.SolutionPersistence (v1.0.61)
+------------------------------------------------------------
+
+https://github.com/matkoch/vs-solutionpersistence at a0c6115915a085d2f1aee96367365feb303c0d1a
+
+Copyright © Microsoft Corporation and Matthias Koch. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+Packages (1):
+  - Microsoft.ApplicationInsights (v2.23.0)
+------------------------------------------------------------
+
+https://github.com/Microsoft/ApplicationInsights-dotnet at 2faa7e8b157a431daa2e71785d68abd5fa817b53
+
+https://go.microsoft.com/fwlink/?LinkId=392727
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+Packages (1):
+  - Microsoft.Build.Locator (v1.7.8)
+------------------------------------------------------------
+
+https://github.com/microsoft/MSBuildLocator at 6daa2be09c7dafe464b69e2565dbc889aebf6d22
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+Packages (1):
+  - Microsoft.Extensions.Logging.Abstractions (v8.0.3)
+------------------------------------------------------------
+
+https://github.com/dotnet/runtime at eba546b0f0d448e0176a2222548fd7a2fbf464c0
+
+https://dot.net/
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+Packages (2):
+  - Microsoft.Identity.Client (v4.78.0)
+  - Microsoft.Identity.Client.Extensions.Msal (v4.78.0)
+------------------------------------------------------------
+
+https://github.com/AzureAD/microsoft-authentication-library-for-dotnet at d6f9310e2f1073ad2db8ca3bf39827b9bcf26e06
+
+https://go.microsoft.com/fwlink/?linkid=844761
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+Packages (1):
+  - Namotion.Reflection (v3.4.3)
+------------------------------------------------------------
+
+https://github.com/RicoSuter/Namotion.Reflection.git at 5083a62db83c5501bd1f413b58fff8e543f4b328
+
+https://github.com/RicoSuter/Namotion.Reflection
+
+Copyright © Rico Suter, 2025
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+Packages (3):
+  - NJsonSchema (v11.5.2)
+  - NJsonSchema.Annotations (v11.5.2)
+  - NJsonSchema.NewtonsoftJson (v11.5.2)
+------------------------------------------------------------
+
+https://github.com/RicoSuter/NJsonSchema at e7d88bd8d43e9b0ad2db76eac3cde5f9b0a8dd38
+
+http://njsonschema.org/
+
+Copyright © Rico Suter, 2025
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+Packages (1):
+  - Octokit (v14.0.0)
+------------------------------------------------------------
+
+https://github.com/octokit/octokit.net at 7fa5b0fe4a18c9b981b21290c3ca9320b2d6415b
+
+Copyright GitHub 2017
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+Packages (1):
+  - Serilog (v4.3.0)
+------------------------------------------------------------
+
+https://github.com/serilog/serilog at 726e29c5b172aa8813285be1ad8cc728fd531eab
+
+https://serilog.net/
+
+Copyright © Serilog Contributors
+
+Licensed under Apache-2.0
+
+Available at https://licenses.nuget.org/Apache-2.0
+
+
+Packages (1):
+  - Serilog.Formatting.Compact (v3.0.0)
+------------------------------------------------------------
+
+https://github.com/serilog/serilog-formatting-compact at 8472ad8ccb97432ca7efbe78d8bc0eaf61db5356
+
+Licensed under Apache-2.0
+
+Available at https://licenses.nuget.org/Apache-2.0
+
+
+Packages (1):
+  - Serilog.Formatting.Compact.Reader (v4.0.0)
+------------------------------------------------------------
+
+https://github.com/serilog/serilog-formatting-compact-reader.git at e7885a10471676ad53baeecf4d5d27554feb090c
+
+https://github.com/serilog/serilog-formatting-compact-reader
+
+Licensed under Apache-2.0
+
+Available at https://licenses.nuget.org/Apache-2.0
+
+
+Packages (1):
+  - Serilog.Sinks.Console (v6.1.1)
+------------------------------------------------------------
+
+https://github.com/serilog/serilog-sinks-console at b3cb1f042f5636161b831fa8816d70d865a5eec4
+
+Licensed under Apache-2.0
+
+Available at https://licenses.nuget.org/Apache-2.0
+
+
+Packages (1):
+  - Serilog.Sinks.File (v7.0.0)
+------------------------------------------------------------
+
+https://github.com/serilog/serilog-sinks-file at 23c732a8658a0df2a5434fe69b0011800b14f0da
+
+Licensed under Apache-2.0
+
+Available at https://licenses.nuget.org/Apache-2.0
+
+
+Packages (1):
+  - SharpZipLib (v1.4.2)
+------------------------------------------------------------
+
+https://github.com/icsharpcode/SharpZipLib at 33f64eb0f28cdd2b084cb822fcc224c7c5aba553
+
+Copyright © 2000-2022 SharpZipLib Contributors
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+Packages (1):
+  - System.ClientModel (v1.8.0)
+------------------------------------------------------------
+
+https://github.com/Azure/azure-sdk-for-net at 033d7cea151a65b3c11037021403787d7e6e01a3
+
+https://github.com/Azure/azure-sdk-for-net/blob/System.ClientModel_1.8.0/sdk/core/System.ClientModel/README.md
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
+
+
+Packages (1):
+  - System.Security.Cryptography.ProtectedData (v9.0.6)
+------------------------------------------------------------
+
+https://github.com/dotnet/runtime at 3875b54e7b10b10606b105340199946d0b877754
+
+https://dot.net/
+
+Copyright © Microsoft Corporation. All rights reserved.
+
+Licensed under MIT
+
+Available at https://licenses.nuget.org/MIT
 
 
 Packages (4):

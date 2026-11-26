@@ -6,6 +6,7 @@ public class Feature
 
     /// <summary>applyEdits: the version (entity tag) the feature must still have to be changed</summary>
     public string? Version { get; set; }
+    [System.Text.Json.Serialization.JsonPropertyName("bbox")]
     public BBox? BBox { get; set; }
     public Geometry? Geometry { get; set; } // Keeping this Geometry property as it represents the geometry of the feature itself
     public IDictionary<string, object?> Properties { get; set; } = new Dictionary<string, object?>();
