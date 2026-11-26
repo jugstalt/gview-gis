@@ -1,7 +1,9 @@
-using gView.Framework.Core.MapServer;
+﻿using gView.Framework.Core.MapServer;
 using gView.Framework.GeoJsonService.Request;
 using gView.Interoperability.GeoServices.Request;
 using gView.Interoperability.OGC;
+using gView.Interoperability.OGC.Request.WMTS;
+using gView.Interoperability.OgcApi.Request;
 using gView.Server.AppCode;
 using gView.Server.AppCode.Extensions;
 using gView.Server.Extensions;
@@ -21,7 +23,10 @@ public class TestMapTests
         {
             new GeoJsonServiceRequestInterpreter(),
             new WMSRequest(),
-            new GeoServicesRestInterperter()
+            new GeoServicesRestInterperter(),
+            new OgcApiRequestInterpreter(),
+            new WFSRequest(),
+            new WMTSRequest()
         },
         GeoServiceTypes = new HashSet<string>(geoServiceTypes)
     };
@@ -63,10 +68,13 @@ public class TestMapTests
     {
         var interfaces = ServiceModel("webmerc", "MapServer").TestMapInterfaces().ToArray();
 
-        Assert.Equal(new[] { "wms", "geoservices", "geojsonservice" }, interfaces.Select(i => i.Key));
+        Assert.Equal(new[] { "wms", "wmts", "wfs", "ogcapi", "geoservices", "geojsonservice" }, interfaces.Select(i => i.Key));
         Assert.Equal("https://gview.example.com/geoservices/rest/services/webmerc/basis/MapServer/WmsServer", interfaces[0].Url);
-        Assert.Equal("https://gview.example.com/geoservices/rest/services/webmerc/basis/MapServer", interfaces[1].Url);
-        Assert.Equal("https://gview.example.com/geojsonservice/v1/services/webmerc/basis", interfaces[2].Url);
+        Assert.Equal("https://gview.example.com/ogc/webmerc@basis", interfaces[1].Url);
+        Assert.Equal("https://gview.example.com/ogc/webmerc@basis", interfaces[2].Url);
+        Assert.Equal("https://gview.example.com/ogcapi/webmerc/basis", interfaces[3].Url);
+        Assert.Equal("https://gview.example.com/geoservices/rest/services/webmerc/basis/MapServer", interfaces[4].Url);
+        Assert.Equal("https://gview.example.com/geojsonservice/v1/services/webmerc/basis", interfaces[5].Url);
     }
 
     [Fact]
@@ -75,6 +83,8 @@ public class TestMapTests
         var interfaces = ServiceModel("", "MapServer").TestMapInterfaces().ToArray();
 
         Assert.Equal("https://gview.example.com/geojsonservice/v1/services/basis", interfaces.Single(i => i.Key == "geojsonservice").Url);
+        Assert.Equal("https://gview.example.com/ogcapi/_/basis", interfaces.Single(i => i.Key == "ogcapi").Url);
+        Assert.Equal("https://gview.example.com/ogc/basis", interfaces.Single(i => i.Key == "wmts").Url);
     }
 
     [Fact]

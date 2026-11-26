@@ -193,11 +193,19 @@
     }
 
     function statusText(entry) {
+        if (entry.tiles) {
+            var counts = {};
+            entry.tiles.forEach(function (t) {
+                var key = t.state === 'pending' ? '…' : t.state === 'failed' ? 'failed' : String(t.status);
+                counts[key] = (counts[key] || 0) + 1;
+            });
+            return entry.tiles.length + ': ' + Object.keys(counts).map(function (k) { return counts[k] + '× ' + k; }).join(', ');
+        }
         switch (entry.state) {
             case 'pending': return '…';
             case 'aborted': return 'aborted';
             case 'failed': return 'failed';
-            default: return String(entry.status) + (entry.state === 'error' && entry.status === 200 ? ' (error)' : '');
+            default: return String(entry.status) + (entry.state === 'error' && entry.status === 200 ? ' (error)' : '') + (entry.warning ? ' ⚠' : '');
         }
     }
 
@@ -209,7 +217,7 @@
         var shown = log.filter(function (e) { return !filter || e.op === filter; });
         shown.forEach(function (e) {
             var tr = h('tr', {
-                className: 'tm-log-row tm-st-' + e.state + (e.id === selectedId ? ' selected' : ''),
+                className: 'tm-log-row tm-st-' + (e.warning && e.state === 'ok' ? 'warn' : e.state) + (e.id === selectedId ? ' selected' : ''),
                 onclick: function () { selectEntry(e.id); }
             }, [
                 h('td', { text: fmtTime(e.time) }),
@@ -262,7 +270,19 @@
         return rows;
     }
 
+    function tileTable(entry) {
+        return h('table', { className: 'tm-params tm-tiles' }, [h('tbody', null, entry.tiles.map(function (t) {
+            return h('tr', { className: 'tm-st-' + t.state }, [
+                h('th', { className: 'tm-status', text: t.state === 'pending' ? '…' : t.state === 'failed' ? 'failed' : String(t.status) }),
+                h('th', { text: fmtMs(t.ms) }),
+                h('th', { text: fmtSize(t.size) }),
+                h('td', null, [h('a', { href: t.url, target: '_blank', rel: 'noopener', text: t.url })])
+            ]);
+        }))]);
+    }
+
     function preview(entry) {
+        if (entry.tiles) { return tileTable(entry); }
         if (entry.state === 'pending') { return h('p', { className: 'muted', text: 'Waiting for the response…' }); }
         if (entry.state === 'aborted') { return h('p', { className: 'muted', text: 'Aborted by a newer request after ' + fmtMs(entry.ms) + '.' }); }
         if (entry.blob && entry.contentType.indexOf('image/') === 0) {
@@ -310,7 +330,10 @@
             h('span', { className: 'ogc-badge', text: entry.method }),
             h('span', { className: 'muted', text: statusText(entry) + ' · ' + fmtMs(entry.ms) + ' · ' + fmtSize(entry.size) })
         ]));
-        detail.appendChild(h('div', { className: 'tm-detail-url', text: entry.url }));
+        detail.appendChild(h('div', { className: 'tm-detail-url', text: entry.tiles ? (entry.url + '  (first tile of ' + entry.tiles.length + ')') : entry.url }));
+        if (entry.warning) {
+            detail.appendChild(h('p', { className: 'tm-warning', text: '⚠ ' + entry.warning }));
+        }
         if (!cfg.isPublic) {
             detail.appendChild(h('p', {
                 className: 'tm-hint',
@@ -340,6 +363,70 @@
         $('tm-log-detail').hidden = true;
         renderLog();
     });
+
+    /*
+     * Tiles: one log entry per view (state.tileGroup, reset on movestart) with all its tiles.
+     * Returns a callback the loader calls when the tile is done.
+     */
+    function logTile(ifaceTitle, url) {
+        var group = state.tileGroup;
+        if (!group) {
+            group = {
+                id: nextId++, time: new Date(), iface: ifaceTitle, op: 'tiles', method: 'GET', url: url,
+                anonymous: isAnonymous(), state: 'pending', status: null, ms: null, size: 0, contentType: '', tiles: []
+            };
+            state.tileGroup = group;
+            addEntry(group);
+        }
+        var tile = { url: url, state: 'pending', status: null, ms: null, size: null };
+        group.tiles.push(tile);
+        var started = performance.now();
+        updateEntry(group);
+
+        return function (status, size, contentType, failed) {
+            tile.ms = performance.now() - started;
+            tile.status = status;
+            tile.size = size;
+            tile.state = failed ? 'failed' : (status >= 200 && status < 300 ? 'ok' : 'error');
+            group.size = group.tiles.reduce(function (sum, t) { return sum + (t.size || 0); }, 0);
+            group.ms = Math.max.apply(null, group.tiles.map(function (t) { return t.ms || 0; }));
+            group.contentType = group.contentType || contentType || '';
+            group.state = group.tiles.some(function (t) { return t.state === 'pending'; }) ? 'pending'
+                : group.tiles.some(function (t) { return t.state !== 'ok'; }) ? 'error' : 'ok';
+            updateEntry(group);
+        };
+    }
+
+    // ---- absolute urls from capabilities with another host than this page
+
+    function asAdvertised() { return $('tm-asadvertised').checked; }
+
+    function noteOrigin(url) {
+        var origin;
+        try { origin = new URL(url, location.href).origin; } catch (e) { return; }
+        if (origin === location.origin || state.advertisedOrigin === origin) { return; }
+        state.advertisedOrigin = origin;
+        $('tm-notice-text').textContent = 'The capabilities point to ' + origin + ', another host than this page (' + location.origin + '): '
+            + 'check the online resource of the server. ' + (asAdvertised() ? 'The requests go to that host.' : 'The requests are sent to this server instead.');
+        $('tm-notice').hidden = false;
+    }
+
+    /* an url from the capabilities: rewritten to this host unless "Use URLs as advertised" */
+    function rewrite(url) {
+        noteOrigin(url);
+        if (asAdvertised()) { return url; }
+        try {
+            var u = new URL(url, location.href);
+            if (u.origin === location.origin) { return url; }
+            // keep the template braces of WMTS urls ({TileMatrix}, ...): URL would encode them
+            return location.origin + url.substring(u.origin.length);
+        } catch (e) { return url; }
+    }
+
+    function resetNotice() {
+        state.advertisedOrigin = null;
+        $('tm-notice').hidden = true;
+    }
 
     // ==================================================================== projections
 
@@ -650,6 +737,372 @@
         }
     };
 
+    // ---- query helpers -------------------------------------------------------
+
+    function normalizeCrs(crs) {
+        var value = String(crs || '').trim();
+        var m = /EPSG(?::|\/0\/|::)(\d+)$/i.exec(value);
+        if (m) { return 'EPSG:' + m[1]; }
+        if (/CRS84$/i.test(value)) { return 'EPSG:4326'; }
+        return null;
+    }
+
+    function crsUri(crs) {
+        return 'http://www.opengis.net/def/crs/EPSG/0/' + epsgNumber(crs);
+    }
+
+    /* bbox in the axis order of the crs (OGC API bbox-crs, WFS 1.1.0, WMS 1.3.0) */
+    function axisBbox(extent, crs) {
+        var e = axisNorthFirst[crs] ? [extent[1], extent[0], extent[3], extent[2]] : extent;
+        return bboxString(e, crs);
+    }
+
+    /* OGC API returns coordinates in the axis order of the crs: north first for EPSG:4326 */
+    function swapXY(geometry) {
+        if (geometry) {
+            geometry.applyTransform(function (input, output, dimension) {
+                var out = output || input;
+                var stride = dimension || 2;
+                for (var i = 0; i < input.length; i += stride) {
+                    var x = input[i];
+                    out[i] = input[i + 1];
+                    out[i + 1] = x;
+                }
+                return out;
+            });
+        }
+        return geometry;
+    }
+
+    function visibleLayers(caps) {
+        return caps.layers.filter(function (l) { return !l.isGroup && l.visible; });
+    }
+
+    /* small box around a click: tolerance in pixels */
+    function clickBox(click, pixels) {
+        var resolution = (click.extent[2] - click.extent[0]) / click.width;
+        var d = resolution * pixels;
+        return [click.coordinate[0] - d, click.coordinate[1] - d, click.coordinate[0] + d, click.coordinate[1] + d];
+    }
+
+    function queryLimit() { return parseInt($('tm-limit').value, 10) || 100; }
+
+    // ---- OGC API (Features, Maps) --------------------------------------------
+    adapters.ogcapi = {
+        capabilities: function (iface) {
+            return send({ iface: iface.title, op: 'capabilities', url: withQuery(iface.url, { f: 'json' }), as: 'text' })
+                .then(function (r) {
+                    var landing = JSON.parse(r.text || '{}');
+                    if (!r.ok) { throw new Error('landing page: ' + (landing.title || landing.detail || r.status)); }
+                    var links = landing.links || [];
+                    var self = links.filter(function (l) { return l.rel === 'self'; })[0];
+                    if (self) { noteOrigin(self.href); }
+                    var hasMap = links.some(function (l) { return /\/map$/.test(l.rel || ''); });
+
+                    return send({ iface: iface.title, op: 'capabilities', url: withQuery(iface.url + '/collections', { f: 'json' }), as: 'text' })
+                        .then(function (r2) {
+                            var json = JSON.parse(r2.text || '{}');
+                            if (!r2.ok) { throw new Error('collections: ' + (json.title || json.detail || r2.status)); }
+
+                            var crsList = [];
+                            var bbox = null;
+                            var layers = (json.collections || []).map(function (c) {
+                                (c.crs || []).map(normalizeCrs).forEach(function (code) { if (code && crsList.indexOf(code) < 0) { crsList.push(code); } });
+                                var b = c.extent && c.extent.spatial && c.extent.spatial.bbox && c.extent.spatial.bbox[0];
+                                if (b && b.length >= 4) {
+                                    bbox = bbox ? [Math.min(bbox[0], b[0]), Math.min(bbox[1], b[1]), Math.max(bbox[2], b[2]), Math.max(bbox[3], b[3])] : b.slice(0, 4);
+                                }
+                                return { id: String(c.id), name: c.title || c.id, parentId: null, isGroup: false, visible: true, queryable: true };
+                            });
+
+                            // the maps of gView answer in EPSG:3857 and EPSG:4326 (see the OpenAPI document)
+                            if (hasMap) { crsList = ['EPSG:3857', 'EPSG:4326']; }
+
+                            return ensureProjections(crsList).then(function () {
+                                return {
+                                    kind: hasMap ? 'image' : 'vector',
+                                    layers: layers,
+                                    crsList: crsList,
+                                    fullExtent: validExtent(bbox) ? { crs: 'EPSG:4326', extent: bbox } : null,
+                                    initialExtent: null
+                                };
+                            });
+                        });
+                });
+        },
+
+        mapRequest: function (iface, caps, extent, crs, width, height) {
+            return {
+                url: withQuery(iface.url + '/map', {
+                    f: 'png', bbox: axisBbox(extent, crs), 'bbox-crs': crsUri(crs), crs: crsUri(crs),
+                    width: width, height: height, transparent: 'true',
+                    collections: visibleLayers(caps).map(function (l) { return l.id; }).join(',')
+                })
+            };
+        },
+
+        items: function (iface, layer, extent, crs, limit, op, signal) {
+            return send({
+                iface: iface.title, op: op, signal: signal, as: 'text',
+                url: withQuery(iface.url + '/collections/' + encodeURIComponent(layer.id) + '/items', {
+                    f: 'json', bbox: axisBbox(extent, crs), 'bbox-crs': crsUri(crs), crs: crsUri(crs), limit: limit
+                })
+            }).then(function (r) {
+                var json = JSON.parse(r.text || '{}');
+                if (!r.ok) { return { layer: layer.name, features: [], warning: json.detail || json.title || ('HTTP ' + r.status) }; }
+                return {
+                    layer: layer.name,
+                    more: (json.links || []).some(function (l) { return l.rel === 'next'; }),
+                    features: (json.features || []).map(function (f) {
+                        var g = f.geometry ? geoJson.readGeometry(f.geometry) : null;
+                        if (g && axisNorthFirst[crs]) { swapXY(g); }
+                        return { attributes: f.properties || {}, geometry: g };
+                    })
+                };
+            });
+        },
+
+        identify: function (iface, caps, click) {
+            var self = this;
+            return Promise.all(visibleLayers(caps).map(function (l) {
+                return self.items(iface, l, clickBox(click, 3), click.crs, 10, 'identify');
+            })).then(function (groups) { return groups.filter(function (g) { return g.features.length || g.warning; }); });
+        },
+
+        loadFeatures: function (iface, caps, extent, crs, limit, signal) {
+            var self = this;
+            return Promise.all(visibleLayers(caps).map(function (l) { return self.items(iface, l, extent, crs, limit, 'features', signal); }));
+        },
+
+        queryExtent: function (iface, caps, extent, crs, limit) {
+            var self = this;
+            return Promise.all(visibleLayers(caps).map(function (l) { return self.items(iface, l, extent, crs, limit, 'query'); }));
+        }
+    };
+
+    // ---- WMTS 1.0.0 ------------------------------------------------------------
+    adapters.wmts = {
+        kind: 'tiles',
+        layerMode: 'radio',
+        capabilities: function (iface) {
+            return send({ iface: iface.title, op: 'capabilities', url: withQuery(iface.url, { SERVICE: 'WMTS', VERSION: '1.0.0', REQUEST: 'GetCapabilities' }), as: 'text' })
+                .then(function (r) {
+                    if (!r.ok) { throw new Error('GetCapabilities failed (' + r.status + ')'); }
+                    var error = /<ERROR>([^<]*)<\/ERROR>/i.exec(r.text || '');
+                    if (error) { throw new Error('WMTS: ' + error[1] + ' (the service has no tile cache)'); }
+
+                    var parsed = new ol.format.WMTSCapabilities().read(r.text);
+                    var contents = parsed.Contents || {};
+                    var sets = contents.TileMatrixSet || [];
+                    var codes = [];
+                    sets.forEach(function (s) {
+                        var code = normalizeCrs(s.SupportedCRS);
+                        if (code) {
+                            s.SupportedCRS = code;   // urn:ogc:def:crs:EPSG::31256 → EPSG:31256, the name OpenLayers knows
+                            if (codes.indexOf(code) < 0) { codes.push(code); }
+                        }
+                    });
+
+                    var layers = (contents.Layer || []).map(function (l, i) {
+                        var setId = l.TileMatrixSetLink && l.TileMatrixSetLink[0] && l.TileMatrixSetLink[0].TileMatrixSet;
+                        var set = sets.filter(function (s) { return s.Identifier === setId; })[0];
+                        return {
+                            id: l.Identifier, name: l.Title || l.Identifier, parentId: null, isGroup: false, visible: i === 0, queryable: false,
+                            matrixSet: setId, crs: set ? set.SupportedCRS : null,
+                            styles: (l.Style || []).map(function (st) { return st.Identifier; }),
+                            wgs84: l.WGS84BoundingBox
+                        };
+                    });
+                    if (!layers.length) { throw new Error('WMTS: the capabilities list no layers'); }
+
+                    return ensureProjections(codes).then(function () {
+                        // TopLeftCorner and the BoundingBox of the layers are in the axis order of the crs:
+                        // OpenLayers expects x/y here
+                        sets.forEach(function (s) {
+                            if (axisNorthFirst[s.SupportedCRS]) {
+                                (s.TileMatrix || []).forEach(function (m) { m.TopLeftCorner = [m.TopLeftCorner[1], m.TopLeftCorner[0]]; });
+                            }
+                        });
+                        (contents.Layer || []).forEach(function (l) {
+                            (l.BoundingBox || []).forEach(function (b) {
+                                var code = normalizeCrs(b.crs);
+                                if (code) { b.crs = code; }
+                                if (code && axisNorthFirst[code] && b.extent) { b.extent = [b.extent[1], b.extent[0], b.extent[3], b.extent[2]]; }
+                            });
+                        });
+                        var caps = { parsed: parsed, layers: layers, initialExtent: null };
+                        adapters.wmts.selectLayer(caps, layers[0]);
+                        return caps;
+                    });
+                });
+        },
+
+        /* one cache at a time: its grid decides the crs */
+        selectLayer: function (caps, layer) {
+            caps.layers.forEach(function (l) { l.visible = l === layer; });
+            caps.crsList = layer.crs ? [layer.crs] : [];
+            caps.styles = layer.styles;
+            caps.style = layer.styles.indexOf(caps.style) >= 0 ? caps.style : (layer.styles[0] || 'default');
+            caps.fullExtent = validExtent(layer.wgs84) ? { crs: 'EPSG:4326', extent: layer.wgs84 } : null;
+        },
+
+        createSource: function (iface, caps) {
+            var layer = caps.layers.filter(function (l) { return l.visible; })[0];
+            var options = ol.source.WMTS.optionsFromCapabilities(caps.parsed, { layer: layer.id, matrixSet: layer.matrixSet, style: caps.style });
+            if (!options) { throw new Error('WMTS: no tile matrix set for ' + layer.id); }
+            options.urls = (options.urls || []).map(rewrite);
+            options.tileLoadFunction = function (tile, src) {
+                var done = logTile(iface.title, src);
+                fetch(src, { credentials: isAnonymous() ? 'omit' : 'same-origin' })
+                    .then(function (response) {
+                        return response.blob().then(function (blob) {
+                            var type = (response.headers.get('content-type') || '').split(';')[0];
+                            done(response.status, blob.size, type, false);
+                            if (!response.ok || type.indexOf('image/') !== 0) { tile.setState(3); return; }   // TileState.ERROR
+                            var url = URL.createObjectURL(blob);
+                            var img = tile.getImage();
+                            img.onload = img.onerror = function () { URL.revokeObjectURL(url); };
+                            img.src = url;
+                        });
+                    })
+                    .catch(function () { done(null, null, '', true); tile.setState(3); });
+            };
+            return new ol.source.WMTS(options);
+        }
+    };
+
+    // ---- WFS 1.1.0 (GML) --------------------------------------------------------
+    adapters.wfs = {
+        kind: 'vector',
+        capabilities: function (iface) {
+            return send({ iface: iface.title, op: 'capabilities', url: withQuery(iface.url, { SERVICE: 'WFS', VERSION: '1.1.0', REQUEST: 'GetCapabilities' }), as: 'text' })
+                .then(function (r) {
+                    if (!r.ok) { throw new Error('GetCapabilities failed (' + r.status + ')'); }
+                    var xml = new DOMParser().parseFromString(r.text, 'application/xml');
+                    if (xml.getElementsByTagName('parsererror').length) { throw new Error('GetCapabilities: invalid XML'); }
+
+                    function first(node, name) { return node.getElementsByTagNameNS('*', name)[0]; }
+                    function text(node, name) { var n = first(node, name); return n ? n.textContent.trim() : ''; }
+
+                    var crsList = [];
+                    var bbox = null;
+                    var layers = Array.prototype.map.call(xml.getElementsByTagNameNS('*', 'FeatureType'), function (ft) {
+                        Array.prototype.forEach.call(ft.childNodes, function (n) {
+                            if (n.localName === 'DefaultSRS' || n.localName === 'OtherSRS' || n.localName === 'SRS') {
+                                var code = normalizeCrs(n.textContent);
+                                if (code && crsList.indexOf(code) < 0) { crsList.push(code); }
+                            }
+                        });
+                        var wgs = first(ft, 'WGS84BoundingBox');
+                        if (wgs) {
+                            var lo = text(wgs, 'LowerCorner').split(/\s+/).map(parseFloat), up = text(wgs, 'UpperCorner').split(/\s+/).map(parseFloat);
+                            var b = [lo[0], lo[1], up[0], up[1]];
+                            if (validExtent(b)) { bbox = bbox ? [Math.min(bbox[0], b[0]), Math.min(bbox[1], b[1]), Math.max(bbox[2], b[2]), Math.max(bbox[3], b[3])] : b; }
+                        }
+                        var name = text(ft, 'Name');
+                        return { id: name, name: (text(ft, 'Title') || name), parentId: null, isGroup: false, visible: true, queryable: true };
+                    });
+
+                    return ensureProjections(crsList).then(function () {
+                        return { layers: layers, crsList: crsList, fullExtent: bbox ? { crs: 'EPSG:4326', extent: bbox } : null, initialExtent: null };
+                    });
+                });
+        },
+
+        loadFeatures: function (iface, caps, extent, crs, limit, signal) {
+            return Promise.all(visibleLayers(caps).map(function (l) {
+                // the type name exactly as the capabilities advertise it, like a client
+                return send({
+                    iface: iface.title, op: 'features', signal: signal, as: 'text',
+                    url: withQuery(iface.url, {
+                        SERVICE: 'WFS', VERSION: '1.1.0', REQUEST: 'GetFeature', TYPENAME: l.id,
+                        SRSNAME: crs, BBOX: axisBbox(extent, crs) + ',' + crs, MAXFEATURES: limit
+                    })
+                }).then(function (r) {
+                    var text = r.text || '';
+                    if (!r.ok || !/FeatureCollection/.test(text)) {
+                        r.entry.warning = 'No FeatureCollection in the response';
+                        updateEntry(r.entry);
+                        return { layer: l.name, features: [], warning: r.entry.warning };
+                    }
+                    var srs = /srsName="([^"]+)"/.exec(text);
+                    var dataCrs = srs ? normalizeCrs(srs[1]) : crs;
+                    var olFeatures = [];
+                    try { olFeatures = new ol.format.GML2().readFeatures(text); } catch (e) { olFeatures = []; }
+
+                    return ensureProjections(dataCrs ? [dataCrs] : []).then(function () {
+                        var warning = null;
+                        if (dataCrs && dataCrs !== crs) {
+                            warning = 'Geometries in ' + dataCrs + ', requested ' + crs + ' (SRSNAME)';
+                            r.entry.warning = warning;
+                            updateEntry(r.entry);
+                        }
+                        return {
+                            layer: l.name,
+                            warning: warning,
+                            more: olFeatures.length >= limit,
+                            features: olFeatures.map(function (f) {
+                                var g = f.getGeometry();
+                                // gView writes the coordinates in the axis order of the crs (north first for EPSG:31256, 4326)
+                                if (g && dataCrs && axisNorthFirst[dataCrs]) { g = swapXY(g.clone()); }
+                                if (g && dataCrs && dataCrs !== crs && usable(dataCrs)) { g = g.clone().transform(dataCrs, crs); }
+                                var attributes = f.getProperties();
+                                delete attributes[f.getGeometryName()];
+                                delete attributes.boundedBy;
+                                return { attributes: attributes, geometry: g || null };
+                            })
+                        };
+                    });
+                });
+            }));
+        }
+    };
+
+    // ---- bbox queries of the image interfaces ("Features in extent") -----------
+    adapters.geoservices.queryExtent = function (iface, caps, extent, crs, limit) {
+        var sr = epsgNumber(crs);
+        return Promise.all(visibleLayers(caps).map(function (l) {
+            return send({
+                iface: iface.title, op: 'query', as: 'text',
+                url: withQuery(iface.url + '/' + encodeURIComponent(l.id) + '/query', {
+                    geometry: bboxString(extent, crs), geometryType: 'esriGeometryEnvelope', inSR: sr, outSR: sr,
+                    spatialRel: 'esriSpatialRelIntersects', outFields: '*', returnGeometry: 'true', resultRecordCount: limit, f: 'json'
+                })
+            }).then(function (r) {
+                var json = JSON.parse(r.text || '{}');
+                if (!r.ok || json.error) { return { layer: l.name, features: [], warning: (json.error && json.error.message) || ('HTTP ' + r.status) }; }
+                return {
+                    layer: l.name,
+                    more: !!json.exceededTransferLimit,
+                    features: (json.features || []).map(function (f) {
+                        return { attributes: f.attributes || {}, geometry: f.geometry ? esriJson.readGeometry(f.geometry) : null };
+                    })
+                };
+            });
+        }));
+    };
+
+    adapters.geojsonservice.queryExtent = function (iface, caps, extent, crs, limit) {
+        return Promise.all(visibleLayers(caps).map(function (l) {
+            return send({
+                iface: iface.title, op: 'query', as: 'text',
+                url: withQuery(iface.url + '/query/' + encodeURIComponent(l.id), {
+                    bbox: bboxString(extent, crs), 'bbox-crs': crs, outCRS: crs, returnGeometry: 'geometry', limit: limit
+                })
+            }).then(function (r) {
+                var json = JSON.parse(r.text || '{}');
+                if (!r.ok || json.type === 'ErrorResponse') { return { layer: l.name, features: [], warning: json.errorMessage || json.message || ('HTTP ' + r.status) }; }
+                return {
+                    layer: l.name,
+                    more: !!json.exceededLimit,
+                    features: (json.features || []).map(function (f) {
+                        return { attributes: f.properties || {}, geometry: f.geometry ? geoJson.readGeometry(f.geometry) : null };
+                    })
+                };
+            });
+        }));
+    };
+
     var geoJson = new ol.format.GeoJSON();
     var esriJson = new ol.format.EsriJSON();
 
@@ -660,13 +1113,38 @@
         caps: null,
         crs: null,
         controller: null, // AbortController of the running map request
+        vectorController: null,
+        vectorTimer: null,
+        tileGroup: null,  // log entry of the tiles of the current view
+        advertisedOrigin: null,
         pending: 0,
         busySince: null
     };
 
+    function adapter() { return adapters[state.iface.key]; }
+
+    /* image (one map image per view), tiles (WMTS) or vector (the features of each view) */
+    function kind() {
+        return (state.caps && state.caps.kind) || adapter().kind || 'image';
+    }
+
     // ==================================================================== map
 
     var imageLayer = new ol.layer.Image();
+    var tileLayer = new ol.layer.Tile();
+    var vectorSource = new ol.source.Vector();
+    var vectorLayer = new ol.layer.Vector({
+        source: vectorSource,
+        style: new ol.style.Style({
+            stroke: new ol.style.Stroke({ color: '#c2410c', width: 1.5 }),
+            fill: new ol.style.Fill({ color: 'rgba(234,88,12,.12)' }),
+            image: new ol.style.Circle({
+                radius: 4,
+                stroke: new ol.style.Stroke({ color: '#fff', width: 1 }),
+                fill: new ol.style.Fill({ color: '#ea580c' })
+            })
+        })
+    });
     var highlightSource = new ol.source.Vector();
     var highlightLayer = new ol.layer.Vector({
         source: highlightSource,
@@ -694,10 +1172,13 @@
 
     var map = new ol.Map({
         target: 'tm-map',
-        layers: [imageLayer, highlightLayer, clickLayer],
+        layers: [tileLayer, imageLayer, vectorLayer, highlightLayer, clickLayer],
         controls: ol.control.defaults.defaults({ attribution: false }).extend([new ol.control.ScaleLine()]),
         view: new ol.View({ projection: 'EPSG:4326', center: [0, 0], zoom: 2 })
     });
+
+    // for inspection in the browser console
+    window.gviewTestMap = { map: map, state: state };
 
     function mapSize() { return map.getSize() || [800, 600]; }
 
@@ -719,7 +1200,7 @@
         var busy = $('tm-busy');
         if (!state.busySince) { busy.hidden = true; return; }
         busy.hidden = false;
-        busy.textContent = 'Loading map… ' + Math.floor((performance.now() - state.busySince) / 1000) + ' s';
+        busy.textContent = (state.iface && state.caps && kind() === 'vector' ? 'Loading features… ' : 'Loading map… ') + Math.floor((performance.now() - state.busySince) / 1000) + ' s';
     }
     setInterval(updateBusy, 500);
 
@@ -780,7 +1261,63 @@
 
     function refreshMap() {
         if (!state.iface || !state.caps) { return; }
-        imageLayer.setSource(createImageSource());
+        var k = kind();
+        state.tileGroup = null;
+        imageLayer.setSource(k === 'image' ? createImageSource() : null);
+        vectorSource.clear();
+        if (k === 'tiles') {
+            try {
+                var source = adapter().createSource(state.iface, state.caps);
+                tileLayer.setSource(source);
+                // the cache has no tiles beyond its coarsest level: start there at most
+                var coarsest = source.getTileGrid().getResolutions()[0];
+                if (map.getView().getResolution() > coarsest) { map.getView().setResolution(coarsest); }
+            } catch (e) {
+                tileLayer.setSource(null);
+                showMessage(e.message);
+            }
+        } else {
+            tileLayer.setSource(null);
+        }
+        if (k === 'vector') { loadVector(); }
+    }
+
+    /* WFS, OGC API without maps: the features of the view, a new view aborts the running requests */
+    function loadVector() {
+        clearTimeout(state.vectorTimer);
+        state.vectorTimer = setTimeout(function () {
+            if (!state.iface || !state.caps || kind() !== 'vector') { return; }
+            if (state.vectorController) { state.vectorController.abort(); }
+            var controller = new AbortController();
+            state.vectorController = controller;
+            var iface = state.iface;
+
+            setBusy(1);
+            adapter().loadFeatures(iface, state.caps, currentExtent(), state.crs, queryLimit(), controller.signal)
+                .then(function (groups) {
+                    setBusy(-1);
+                    if (state.vectorController !== controller) { return; }
+                    vectorSource.clear();
+                    var total = 0, more = false, warnings = [];
+                    groups.forEach(function (g) {
+                        more = more || g.more;
+                        if (g.warning && warnings.indexOf(g.warning) < 0) { warnings.push(g.warning); }
+                        g.features.forEach(function (f) {
+                            if (!f.geometry) { return; }
+                            var feature = new ol.Feature(f.geometry);
+                            feature.set('tmLayer', g.layer);
+                            feature.set('tmAttributes', f.attributes);
+                            vectorSource.addFeature(feature);
+                            total++;
+                        });
+                    });
+                    showMessage(warnings.length ? warnings.join(' · ') : null);
+                    $('tm-coords').textContent = total + ' features' + (more ? ' (limit reached)' : '');
+                }, function (err) {
+                    setBusy(-1);
+                    if (err && err.name !== 'AbortError') { showMessage('Loading the features failed: ' + err.message); }
+                });
+        }, 0);
     }
 
     function storeExtent() {
@@ -813,7 +1350,12 @@
         clickSource.clear();
     }
 
-    map.on('moveend', storeExtent);
+    map.on('moveend', function () {
+        storeExtent();
+        if (state.iface && state.caps && kind() === 'vector') { loadVector(); }
+    });
+
+    map.on('movestart', function () { state.tileGroup = null; });
 
     map.on('pointermove', function (evt) {
         if (!state.crs) { return; }
@@ -847,9 +1389,14 @@
         function list(parentKey) {
             var ul = h('ul', { className: 'tm-layer-list' });
             (byParent[parentKey] || []).forEach(function (l) {
-                var checkbox = h('input', { type: 'checkbox' });
+                var radio = adapter().layerMode === 'radio';
+                var checkbox = h('input', radio ? { type: 'radio', name: 'tm-layer' } : { type: 'checkbox' });
                 checkbox.checked = l.isGroup ? descendants(l).some(function (d) { return d.visible; }) : l.visible;
                 checkbox.addEventListener('change', function () {
+                    if (radio) {
+                        selectTileLayer(l);
+                        return;
+                    }
                     if (l.isGroup) {
                         descendants(l).forEach(function (d) { d.visible = checkbox.checked; });
                     } else {
@@ -868,6 +1415,28 @@
         }
 
         container.appendChild(list(''));
+
+        var styleRow = $('tm-style-row');
+        styleRow.hidden = !(caps.styles && caps.styles.length > 1);
+        if (!styleRow.hidden) {
+            var select = $('tm-style');
+            select.textContent = '';
+            caps.styles.forEach(function (st) { select.appendChild(h('option', { value: st, text: st })); });
+            select.value = caps.style;
+        }
+    }
+
+    /* WMTS: another cache, possibly with another grid crs */
+    function selectTileLayer(layer) {
+        var caps = state.caps;
+        adapter().selectLayer(caps, layer);
+        var crs = caps.crsList[0];
+        if (crs && crs !== state.crs && usable(crs)) {
+            setView(crs, transformedExtent({ crs: state.crs, extent: currentExtent() }, crs) || transformedExtent(caps.fullExtent, crs));
+        }
+        fillCrs(caps.crsList);
+        renderLayers();
+        refreshMap();
     }
 
     // ==================================================================== identify
@@ -923,13 +1492,15 @@
         groups.forEach(function (g) {
             total += g.features.length;
             g.features.forEach(function (f) { if (f.geometry) { highlightSource.addFeature(new ol.Feature(f.geometry)); } });
-            container.appendChild(h('details', { className: 'tm-result', open: true }, [
+            container.appendChild(h('details', { className: 'tm-result', open: groups.length < 6 }, [
                 h('summary', null, [h('b', { text: g.layer }), ' ', h('span', { className: 'muted', text: '(' + g.features.length + ')' })]),
+                g.warning ? h('p', { className: 'tm-warning', text: '⚠ ' + g.warning }) : null,
+                g.more ? h('p', { className: 'tm-more', text: 'More features available: the limit was reached.' }) : null,
                 attributeTable(g.features)
             ]));
         });
 
-        if (!total) {
+        if (!total && !groups.some(function (g) { return g.warning; })) {
             container.appendChild(h('p', { className: 'muted', text: 'Nothing found here.' }));
         }
     }
@@ -951,7 +1522,32 @@
         clickSource.addFeature(new ol.Feature(new ol.geom.Point(evt.coordinate)));
         showSide('identify');
         $('tm-identify').textContent = '';
+
+        if (kind() === 'tiles') {
+            $('tm-identify').appendChild(h('p', { className: 'muted', text: 'WMTS has no identify: the tiles are images only.' }));
+            return;
+        }
+
+        if (kind() === 'vector') {
+            // the features are loaded already: select them, no request
+            var byLayer = {}, order = [];
+            map.forEachFeatureAtPixel(evt.pixel, function (feature) {
+                var name = feature.get('tmLayer');
+                if (!byLayer[name]) { byLayer[name] = []; order.push(name); }
+                byLayer[name].push({ attributes: feature.get('tmAttributes') || {}, geometry: feature.getGeometry() });
+            }, { layerFilter: function (l) { return l === vectorLayer; }, hitTolerance: 3 });
+            renderIdentify(order.map(function (n) { return { layer: n, features: byLayer[n] }; }));
+            return;
+        }
+
         $('tm-identify').appendChild(h('p', { className: 'muted', text: 'Identifying…' }));
+
+        if (adapter.identify) {
+            adapter.identify(state.iface, state.caps, click)
+                .then(function (groups) { renderIdentify(groups); })
+                .catch(function (err) { renderIdentify(null, 'The request failed: ' + (err && err.message || err)); });
+            return;
+        }
 
         var request = adapter.identifyRequest(state.iface, state.caps, click);
         send({ iface: state.iface.title, op: 'identify', url: request.url, as: 'text' })
@@ -1018,9 +1614,17 @@
         var keep = state.crs ? { crs: state.crs, extent: currentExtent() } : null;
 
         if (state.controller) { state.controller.abort(); }
+        if (state.vectorController) { state.vectorController.abort(); }
         state.iface = iface;
         state.caps = null;
         imageLayer.setSource(null);
+        tileLayer.setSource(null);
+        vectorSource.clear();
+        resetNotice();
+        $('tm-style-row').hidden = true;
+        $('tm-query').hidden = true;
+        $('tm-limit-field').hidden = true;
+        $('tm-coords').textContent = '';
         highlightSource.clear();
         clickSource.clear();
         showMessage(null);
@@ -1052,6 +1656,8 @@
 
                 fillCrs(caps.crsList);
                 fillInfoFormats(caps.infoFormats);
+                $('tm-query').hidden = !(adapters[key].queryExtent && kind() === 'image');
+                $('tm-limit-field').hidden = $('tm-query').hidden && kind() !== 'vector';
                 renderLayers();
                 refreshMap();
             })
@@ -1089,6 +1695,32 @@
     });
 
     $('tm-infoformat').addEventListener('change', function () { /* used with the next click */ });
+
+    $('tm-style').addEventListener('change', function () {
+        if (!state.caps) { return; }
+        state.caps.style = this.value;
+        refreshMap();
+    });
+
+    $('tm-limit').addEventListener('change', function () {
+        if (state.caps && kind() === 'vector') { loadVector(); }
+    });
+
+    $('tm-asadvertised').addEventListener('change', function () {
+        if (state.iface) { selectInterface(state.iface.key); }
+    });
+
+    $('tm-query').addEventListener('click', function () {
+        if (!state.caps || !adapter().queryExtent) { return; }
+        showSide('identify');
+        $('tm-identify').textContent = '';
+        $('tm-identify').appendChild(h('p', { className: 'muted', text: 'Querying the features in the extent…' }));
+        clickSource.clear();
+        adapter().queryExtent(state.iface, state.caps, currentExtent(), state.crs, queryLimit())
+            .then(function (groups) { renderIdentify(groups); })
+            .catch(function (err) { renderIdentify(null, 'The request failed: ' + (err && err.message || err)); });
+    });
+
 
     // ==================================================================== start
 

@@ -1,4 +1,4 @@
-@model BrowseServicesTestMapModel
+﻿@model BrowseServicesTestMapModel
 
 @{
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -31,7 +31,7 @@
 
     @if (!Model.Interfaces.Any())
     {
-        <p class="muted">None of the interfaces the test map can drive (WMS, GeoServices REST, GeoJson) is available for this service.</p>
+        <p class="muted">None of the interfaces the test map can drive (WMS, WMTS, WFS, OGC API, GeoServices REST, GeoJson) is available for this service.</p>
     }
     else
     {
@@ -45,8 +45,18 @@
             <label class="tm-field">CRS <select id="tm-crs"></select></label>
             <button type="button" id="tm-full" class="btn" title="Zoom to the full extent from the capabilities">Full extent</button>
             <button type="button" id="tm-initial" class="btn" title="Zoom to the initial extent of the map">Map extent</button>
+            <button type="button" id="tm-query" class="btn" title="Query the checked layers in the current extent" hidden>Features in extent</button>
+            <label id="tm-limit-field" class="tm-field" title="Max. features per layer" hidden>Limit
+                <select id="tm-limit"><option value="100">100</option><option value="1000">1000</option></select>
+            </label>
             <label class="tm-check" title="Send the requests without the login cookie: shows what anonymous clients get">
                 <input type="checkbox" id="tm-anonymous" /> Test as anonymous
+            </label>
+        </div>
+        <div id="tm-notice" class="tm-notice" hidden>
+            <span id="tm-notice-text"></span>
+            <label class="tm-check" title="Send the requests to the advertised host: what clients outside do">
+                <input type="checkbox" id="tm-asadvertised" /> Use URLs as advertised
             </label>
         </div>
     }
@@ -64,9 +74,12 @@
         <aside class="tm-side">
             <div class="tm-side-tabs" role="tablist">
                 <button type="button" role="tab" data-side="layers" class="active">Layers</button>
-                <button type="button" role="tab" data-side="identify">Identify</button>
+                <button type="button" role="tab" data-side="identify">Results</button>
             </div>
             <div class="tm-side-panel" data-side="layers">
+                <div id="tm-style-row" class="tm-field-row" hidden>
+                    <label class="tm-field">Style <select id="tm-style"></select></label>
+                </div>
                 <div id="tm-layers" class="tm-layers"><p class="muted">Loading capabilities…</p></div>
             </div>
             <div class="tm-side-panel" data-side="identify" hidden>
@@ -88,6 +101,9 @@
                     <option value="capabilities">capabilities</option>
                     <option value="map">map</option>
                     <option value="identify">identify</option>
+                    <option value="tiles">tiles</option>
+                    <option value="features">features</option>
+                    <option value="query">query</option>
                 </select>
             </label>
             <button type="button" id="tm-log-clear" class="btn">Clear</button>

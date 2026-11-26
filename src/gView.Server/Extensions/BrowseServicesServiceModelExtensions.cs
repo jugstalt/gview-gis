@@ -7,18 +7,22 @@ namespace gView.Server.Extensions;
 
 internal static class BrowseServicesServiceModelExtensions
 {
-    /// <summary>The interfaces the test map drives (v1), in the order of its selector</summary>
+    /// <summary>The interfaces the test map drives, in the order of its selector</summary>
     private static readonly (string Key, string Title)[] TestMapInterfaceKeys =
     [
         ("wms", "WMS"),
+        ("wmts", "WMTS"),
+        ("wfs", "WFS"),
+        ("ogcapi", "OGC API"),
         ("geoservices", "GeoServices REST"),
         ("geojsonservice", "GeoJson")
     ];
 
     /// <summary>
     /// Base urls of the interfaces of the service the test map can drive: the primary url of
-    /// the interface without the query string (GeoJson: the service root instead of /capabilities).
-    /// GeoServices only if the service is a MapServer for the user.
+    /// the interface without the query string (GeoJson: the service root instead of /capabilities,
+    /// OGC API: the landing page). GeoServices only if the service is a MapServer for the user.
+    /// WMTS is offered for every service: without a tile cache its capabilities say so.
     /// </summary>
     public static IEnumerable<TestMapInterface> TestMapInterfaces(this BrowseServicesServiceModel model)
     {

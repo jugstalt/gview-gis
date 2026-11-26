@@ -266,9 +266,20 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   names the `ETag` header of the feature response.
 - gView Server UI: test map of a service for admins (`Test map` in the admin bar of the service page,
   `/BrowseServices/TestMap/{folder@service}`). It drives one interface at a time like a client: WMS 1.3.0,
-  GeoServices REST (MapServer) or GeoJson. It reads the capabilities first (layer tree with checkboxes,
-  extents, CRS), then draws one map image per view and identifies on click (attribute tables per layer,
-  geometries highlighted; WMS with a choice of `INFO_FORMAT`, HTML/XML only as text).
+  WMTS 1.0.0, WFS 1.1.0, OGC API (Maps, Features), GeoServices REST (MapServer) or GeoJson. It reads the
+  capabilities first (layer tree with checkboxes, extents, CRS), then draws one map image per view and
+  identifies on click (attribute tables per layer, geometries highlighted; WMS with a choice of
+  `INFO_FORMAT`, HTML/XML only as text).
+  - WMTS: one tile cache at a time with its styles, shown in the CRS of its grid (no reprojection in the
+    browser); the tiles of a view are one log entry with a table of all tiles (status, time, size).
+  - WFS: like a desktop client, GetFeature per view for the checked feature types (type names as the
+    capabilities advertise them, limit per type), drawn as vectors; a click selects loaded features. A
+    notice shows when the geometries are not in the requested `SRSNAME`.
+  - OGC API: the map of the checked collections, identify with `items` around the click.
+  - `Features in extent` (GeoServices, GeoJson, OGC API): bbox query of the checked layers with a limit of
+    100 or 1000 per layer, with a hint when more features are available.
+  - Capabilities pointing to another host than the page (online resource) are shown in a notice; the
+    requests go to this server unless `Use URLs as advertised` is checked.
   - Starts in the CRS of the service, a selector offers the other CRS of the interface (reprojection test).
     Start extent: the last one used, the initial extent, the full extent, the world.
   - A new view aborts the running map request; a counter shows how long the server renders.
