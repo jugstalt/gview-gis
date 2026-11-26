@@ -163,6 +163,32 @@ public class WfsOutputTests
     }
 
     [Fact]
+    public void Gml_XLinkPrefixDeclared_ForSchemaValidatingClients()
+    {
+        // the GML property types have a default xlink:type attribute: .NET validation failed without the prefix
+        var collection = WfsTestData.Collection();
+        var feature = new gView.Interoperability.Extensions.Features.OgcFeature() { Id = 7, Geometry = new gView.Framework.Geometry.Point(1, 2) };
+
+        var single = Encoding.UTF8.GetString(new WfsFeatureWriter(WfsVersion.V200, GmlFormat.Gml32, null, false).WriteSingleFeature(collection, feature));
+        var result = new WfsQueryResult();
+        result.FeatureSets.Add(new WfsFeatureSet(collection, [feature]));
+        var collectionXml = Encoding.UTF8.GetString(new WfsFeatureWriter(WfsVersion.V110, GmlFormat.Gml31, null, false).Write(result, false, null, DateTime.UtcNow, null, null));
+
+        Assert.Contains("xmlns:xlink=\"http://www.w3.org/1999/xlink\"", single);
+        Assert.Contains("xmlns:xlink=\"http://www.w3.org/1999/xlink\"", collectionXml);
+    }
+
+    [Fact]
+    public void ExceptionReport110_LanguageAttribute()
+    {
+        // OWS 1.0 ExceptionReport has a language attribute, no xml:lang
+        var xml = XElement.Parse(Encoding.UTF8.GetString(WfsExceptionReport.Write(WfsVersion.V110, "InvalidParameterValue", "x", "typeName")));
+
+        Assert.Equal("en", xml.Attribute("language")!.Value);
+        Assert.Null(xml.Attribute(XNamespace.Xml + "lang"));
+    }
+
+    [Fact]
     public void NotFound_Is404()
         => Assert.Equal(404, new WfsException("NotFound", "Feature c0.1 not found", "ID").HttpStatusCode);
 

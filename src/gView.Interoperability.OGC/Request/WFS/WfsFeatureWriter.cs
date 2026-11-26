@@ -69,6 +69,8 @@ public class WfsFeatureWriter
             w.WriteAttributeString("xmlns", "gml", null, gml);
             w.WriteAttributeString("xmlns", WfsVersions.FeatureTypePrefix, null, WfsVersions.FeatureTypeNamespace);
             w.WriteAttributeString("xmlns", "xsi", null, WfsVersions.XsiNamespace);
+            // the GML property types have a default xlink:type attribute: schema validating clients need the prefix
+            w.WriteAttributeString("xmlns", "xlink", null, WfsVersions.XLinkNamespace);
 
             string schemaLocation = $"{wfs} {WfsVersions.WfsSchemaLocation(_version)}";
             if (!String.IsNullOrEmpty(describeFeatureTypeUrl))
@@ -156,6 +158,7 @@ public class WfsFeatureWriter
         if (declareNamespaces)
         {
             w.WriteAttributeString("xmlns", "gml", null, gml);
+            w.WriteAttributeString("xmlns", "xlink", null, WfsVersions.XLinkNamespace);
         }
         if (_format == GmlFormat.Gml2)
         {

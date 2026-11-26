@@ -751,7 +751,7 @@
         return 'http://www.opengis.net/def/crs/EPSG/0/' + epsgNumber(crs);
     }
 
-    /* bbox in the axis order of the crs (OGC API bbox-crs, WFS 1.1.0, WMS 1.3.0) */
+    /* bbox in the axis order of the crs (OGC API bbox-crs, WFS 2.0.0 with URN, WMS 1.3.0) */
     function axisBbox(extent, crs) {
         var e = axisNorthFirst[crs] ? [extent[1], extent[0], extent[3], extent[2]] : extent;
         return bboxString(e, crs);
@@ -980,11 +980,12 @@
         }
     };
 
-    // ---- WFS 1.1.0 (GML) --------------------------------------------------------
+    // ---- WFS 2.0.0 (GeoJSON) ---------------------------------------------------
+    // GeoJSON is always x/y, so the view needs no axis swap; numberMatched and the next link tell if there is more
     adapters.wfs = {
         kind: 'vector',
         capabilities: function (iface) {
-            return send({ iface: iface.title, op: 'capabilities', url: withQuery(iface.url, { SERVICE: 'WFS', VERSION: '1.1.0', REQUEST: 'GetCapabilities' }), as: 'text' })
+            return send({ iface: iface.title, op: 'capabilities', url: withQuery(iface.url, { SERVICE: 'WFS', VERSION: '2.0.0', REQUEST: 'GetCapabilities' }), as: 'text' })
                 .then(function (r) {
                     if (!r.ok) { throw new Error('GetCapabilities failed (' + r.status + ')'); }
                     var xml = new DOMParser().parseFromString(r.text, 'application/xml');
@@ -997,7 +998,7 @@
                     var bbox = null;
                     var layers = Array.prototype.map.call(xml.getElementsByTagNameNS('*', 'FeatureType'), function (ft) {
                         Array.prototype.forEach.call(ft.childNodes, function (n) {
-                            if (n.localName === 'DefaultSRS' || n.localName === 'OtherSRS' || n.localName === 'SRS') {
+                            if (n.localName === 'DefaultCRS' || n.localName === 'OtherCRS' || n.localName === 'DefaultSRS' || n.localName === 'OtherSRS' || n.localName === 'SRS') {
                                 var code = normalizeCrs(n.textContent);
                                 if (code && crsList.indexOf(code) < 0) { crsList.push(code); }
                             }
@@ -1019,25 +1020,29 @@
         },
 
         loadFeatures: function (iface, caps, extent, crs, limit, signal) {
+            // SRSNAME/BBOX in URN notation: the bbox is in the axis order of the crs (north first for EPSG:4326, 31256)
+            var urn = 'urn:ogc:def:crs:EPSG::' + epsgNumber(crs);
             return Promise.all(visibleLayers(caps).map(function (l) {
                 // the type name exactly as the capabilities advertise it, like a client
                 return send({
                     iface: iface.title, op: 'features', signal: signal, as: 'text',
                     url: withQuery(iface.url, {
-                        SERVICE: 'WFS', VERSION: '1.1.0', REQUEST: 'GetFeature', TYPENAME: l.id,
-                        SRSNAME: crs, BBOX: axisBbox(extent, crs) + ',' + crs, MAXFEATURES: limit
+                        SERVICE: 'WFS', VERSION: '2.0.0', REQUEST: 'GetFeature', TYPENAMES: l.id,
+                        SRSNAME: urn, BBOX: axisBbox(extent, crs) + ',' + urn, COUNT: limit,
+                        OUTPUTFORMAT: 'application/json'
                     })
                 }).then(function (r) {
-                    var text = r.text || '';
-                    if (!r.ok || !/FeatureCollection/.test(text)) {
+                    var json = null;
+                    try { json = JSON.parse(r.text || ''); } catch (e) { json = null; }
+                    if (!r.ok || !json || json.type !== 'FeatureCollection') {
                         r.entry.warning = 'No FeatureCollection in the response';
                         updateEntry(r.entry);
                         return { layer: l.name, features: [], warning: r.entry.warning };
                     }
-                    var srs = /srsName="([^"]+)"/.exec(text);
-                    var dataCrs = srs ? normalizeCrs(srs[1]) : crs;
+                    // without crs member the geometries are WGS84 (lon/lat)
+                    var dataCrs = json.crs && json.crs.properties ? normalizeCrs(json.crs.properties.name) : 'EPSG:4326';
                     var olFeatures = [];
-                    try { olFeatures = new ol.format.GML2().readFeatures(text); } catch (e) { olFeatures = []; }
+                    try { olFeatures = new ol.format.GeoJSON().readFeatures(json); } catch (e) { olFeatures = []; }
 
                     return ensureProjections(dataCrs ? [dataCrs] : []).then(function () {
                         var warning = null;
@@ -1046,18 +1051,16 @@
                             r.entry.warning = warning;
                             updateEntry(r.entry);
                         }
+                        var hasNext = (json.links || []).some(function (link) { return link.rel === 'next'; });
                         return {
                             layer: l.name,
                             warning: warning,
-                            more: olFeatures.length >= limit,
+                            more: hasNext || (typeof json.numberMatched === 'number' ? json.numberMatched > olFeatures.length : olFeatures.length >= limit),
                             features: olFeatures.map(function (f) {
                                 var g = f.getGeometry();
-                                // gView writes the coordinates in the axis order of the crs (north first for EPSG:31256, 4326)
-                                if (g && dataCrs && axisNorthFirst[dataCrs]) { g = swapXY(g.clone()); }
                                 if (g && dataCrs && dataCrs !== crs && usable(dataCrs)) { g = g.clone().transform(dataCrs, crs); }
                                 var attributes = f.getProperties();
                                 delete attributes[f.getGeometryName()];
-                                delete attributes.boundedBy;
                                 return { attributes: attributes, geometry: g || null };
                             })
                         };

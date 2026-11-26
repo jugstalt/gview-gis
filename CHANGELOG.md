@@ -266,7 +266,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   names the `ETag` header of the feature response.
 - gView Server UI: test map of a service for admins (`Test map` in the admin bar of the service page,
   `/BrowseServices/TestMap/{folder@service}`). It drives one interface at a time like a client: WMS 1.3.0,
-  WMTS 1.0.0, WFS 1.1.0, OGC API (Maps, Features), GeoServices REST (MapServer) or GeoJson. It reads the
+  WMTS 1.0.0, WFS 2.0.0 (GeoJSON), OGC API (Maps, Features), GeoServices REST (MapServer) or GeoJson. It reads the
   capabilities first (layer tree with checkboxes, extents, CRS), then draws one map image per view and
   identifies on click (attribute tables per layer, geometries highlighted; WMS with a choice of
   `INFO_FORMAT`, HTML/XML only as text).
@@ -345,7 +345,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - Stored queries (2.0.0): `GetFeatureById` (`STOREDQUERY_ID=urn:ogc:def:query:OGC-WFS::GetFeatureById&ID=c0.12`
     or `wfs:StoredQuery`) returns the feature without a collection (GML 3.2 or a GeoJSON Feature), `404 NotFound` if
     there is none; `ListStoredQueries` and `DescribeStoredQueries` describe it. No own stored queries.
-  - Not yet: the test map still uses WFS 1.1.0 with its own axis handling (next phase).
+  - Documentation: [WFS interface](https://docs.gviewonline.com/en/server/manual/wfs.html)
+    ([deutsch](https://docs.gviewonline.com/de/server/manual/wfs.html)); design decisions in
+    [ADR 0005](docs/adr/0005-wfs-on-the-ogc-api-feature-pipeline.md).
+  - Checked once against the official OGC schemas (WFS 1.0.0/1.1.0/2.0, GML 2.1.2/3.1.1/3.2.1, Filter/FES, OWS):
+    capabilities, DescribeFeatureType, GetFeature (points, lines, polygons, several types, hits), GetFeatureById,
+    stored queries and exception reports of all versions are valid. Fixed on the way: the `xlink` prefix is declared
+    in GML responses (the default `xlink:type` attributes failed schema validating .NET clients), and the 1.1.0
+    exception report uses the OWS 1.0 `language` attribute instead of `xml:lang`.
+  - The admin test map uses WFS 2.0.0: `SRSNAME`/`BBOX` in URN notation (axis order of the CRS) and GeoJSON output,
+    so it needs no axis swap of its own anymore; `numberMatched`/`next` tell whether a view has more features.
 - gView Server UI navigation: one way to the services instead of three. The start page and the sidebar
   show `Services` (formerly Browse Services) and `Manage`; the catalogs GeoServices REST and OGC API are
   a row of endpoint links with copy buttons on the start page. A click on a service in the list opens

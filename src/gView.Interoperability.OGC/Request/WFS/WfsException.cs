@@ -81,7 +81,14 @@ public static class WfsExceptionReport
 
                 writer.WriteStartElement("ows", "ExceptionReport", ows);
                 writer.WriteAttributeString("version", version == WfsVersion.V200 ? "2.0.0" : "1.0.0");
-                writer.WriteAttributeString("xml", "lang", null, "en");
+                if (version == WfsVersion.V200)
+                {
+                    writer.WriteAttributeString("xml", "lang", null, "en");  // OWS 1.1
+                }
+                else
+                {
+                    writer.WriteAttributeString("language", "en");  // OWS 1.0
+                }
                 writer.WriteStartElement("ows", "Exception", ows);
                 writer.WriteAttributeString("exceptionCode", code);
                 if (!String.IsNullOrEmpty(locator))
