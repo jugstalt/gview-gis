@@ -10,6 +10,7 @@ using gView.Interoperability.GeoServices.Rest.DTOs;
 using gView.Server.AppCode;
 using gView.Server.AppCode.Extensions;
 using gView.Server.EndPoints.GeoJsonService;
+using gView.Server.Extensions;
 using gView.Server.Models;
 using gView.Server.Services.Hosting;
 using gView.Server.Services.MapServer;
@@ -163,6 +164,7 @@ public class BrowseServicesController : BaseController
             var response = GeoJsonSerializer.DeserializeResponse(jsonResponse);
 
             ViewData["htmlbody"] = response.GeoJsonObjectToHtml(mapService);
+            SetServiceCrumbs(mapService, "Explore");
             return View("_htmlbody");
         } 
         catch
@@ -286,6 +288,7 @@ public class BrowseServicesController : BaseController
                                     supportedRequests.HttpMethods,
                                     HttpContext.RequestServices.GetRequiredService<IAntiforgery>().GetAndStoreTokens(HttpContext).RequestToken
                                     );
+        SetServiceCrumbs(mapService, "Explore", request);
         return View("_htmlbody");
     });
 
@@ -357,6 +360,7 @@ public class BrowseServicesController : BaseController
                 requestUrl: $"{_configuration["onlineresource-url"]}/{requestUrl}",
                 requestTimeSpan: requestTimeSpan
            );
+        SetServiceCrumbs(mapService, "Explore", request);
         return View("_htmlbody");
     }
 
@@ -450,12 +454,43 @@ public class BrowseServicesController : BaseController
                 requestBody: requestBody,
                 requestTimeSpan: requestTimeSpan
            );
+        SetServiceCrumbs(mapService, "Explore", request);
         return View("_htmlbody");
+    }
+
+    /// <summary>
+    /// Breadcrumb Services › folder › service › ... for the pages of a service; "Explore" links to the
+    /// GeoJson capabilities page of the service, the last item is the current page
+    /// </summary>
+    private void SetServiceCrumbs(IMapService mapService, params string[] items)
+    {
+        var id = (String.IsNullOrEmpty(mapService.Folder) ? "" : $"{mapService.Folder}@") + mapService.Name;
+        var crumbs = new Dictionary<string, string>
+        {
+            ["Services"] = Url.Action("Index")
+        };
+        if (!String.IsNullOrEmpty(mapService.Folder))
+        {
+            crumbs[mapService.Folder] = Url.Action("Index", new { folder = mapService.Folder });
+        }
+        crumbs[mapService.Name] = Url.Action("Service", new { id });
+        foreach (var item in items.Where(i => !String.IsNullOrEmpty(i)))
+        {
+            crumbs[item] = item == "Explore"
+                ? Url.Action("ServiceCapabilities", new { id })
+                : "";
+        }
+
+        ViewData["menuItems"] = crumbs;
+        ViewData["Title"] = items.LastOrDefault(i => !String.IsNullOrEmpty(i)) ?? mapService.Name;
     }
 
     #endregion
 
-    public Task<IActionResult> ServiceInterfaces(string id) => SecureMethodHandler(async (identity) =>
+    /// <summary>The former interfaces page is now part of the service page (the #tab of old links still works)</summary>
+    public IActionResult ServiceInterfaces(string id) => RedirectToAction("Service", new { id });
+
+    public Task<IActionResult> Service(string id) => SecureMethodHandler(async (identity) =>
     {
         var mapService = _mapServerService.Instance.GetMapService(id.ServiceName(), id.FolderName());
         if (mapService == null)
@@ -499,13 +534,31 @@ public class BrowseServicesController : BaseController
             }
         }
 
+        int? layerCount = null;
+        try
+        {
+            using var serviceMap = await _mapServerService.Instance.GetServiceMapAsync(mapService);
+            layerCount = serviceMap?.MapElements?.Count();
+        }
+        catch { }  // the page works without
+
+        var authToken = _loginManagerService.GetAuthToken(this.Request);
+        bool isFromAdminNetwork = Request.IsFromAdminNetwork();
+
+        SetServiceCrumbs(mapService);
+
         return View(new BrowseServicesServiceModel()
         {
             Server = _urlHelperService.AppRootUrl(this.Request),
             OnlineResource = Request.Scheme + "://" + Request.Host + "/ogc?",
             MapService = _mapServerService.MapServices.Where(s => s.Name == id.ServiceName() && s.Folder == id.FolderName()).FirstOrDefault(),
             Interpreters = interpreters,
-            GeoServiceTypes = geoServiceTypes
+            GeoServiceTypes = geoServiceTypes,
+            IsPublic = await mapService.HasAnyAccess(new Identity(String.Empty)),
+            LayerCount = layerCount,
+            RunningSinceUtc = mapService.RunningSinceUtc,
+            IsPublisher = isFromAdminNetwork && (authToken.AuthType == AuthToken.AuthTypes.Manage || await mapService.HasPublishAccess(identity)),
+            CanManage = isFromAdminNetwork && authToken.IsManageUser
         });
     });
 

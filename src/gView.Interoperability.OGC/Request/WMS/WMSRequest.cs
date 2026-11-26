@@ -162,7 +162,7 @@ namespace gView.Interoperability.OGC
                 return new InterpreterCapabilities(new InterpreterCapabilities.Capability[]
                 {
                     new InterpreterCapabilities.LinkCapability("Recommended: GetCapabilities (GeoServices - with Token)","{server}/geoservices/rest/services/{folder/service}/MapServer/WmsServer?VERSION=1.1.1&SERVICE=WMS&REQUEST=GetCapabilities","1.1.1"),
-                    new InterpreterCapabilities.LinkCapability("Recommended: GetCapabilities (GeoServices - with Token)","{server}/geoservices/rest/services/{folder/service}/MapServer/WmsServer?VERSION=1.3.0&SERVICE=WMS&REQUEST=GetCapabilities","1.3.0"),
+                    new InterpreterCapabilities.LinkCapability("Recommended: GetCapabilities (GeoServices - with Token)","{server}/geoservices/rest/services/{folder/service}/MapServer/WmsServer?VERSION=1.3.0&SERVICE=WMS&REQUEST=GetCapabilities","1.3.0") { IsPrimary = true },
                     new InterpreterCapabilities.LinkCapability("GetCapabilities (with Basic Auth)","{server}/ogc/{folder@service}?VERSION=1.1.1&SERVICE=WMS&REQUEST=GetCapabilities","1.1.1"),
                     new InterpreterCapabilities.LinkCapability("GetCapabilities (with Basic Auth)","{server}/ogc/{folder@service}?VERSION=1.3.0&SERVICE=WMS&REQUEST=GetCapabilities","1.3.0")
                 });

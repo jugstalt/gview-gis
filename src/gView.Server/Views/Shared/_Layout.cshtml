@@ -45,7 +45,14 @@
                         foreach (var crumb in crumbs)
                         {
                             <span class="ico ico-chevron"></span>
-                            <a href="@crumb.Value">@crumb.Key</a>
+                            @if (String.IsNullOrEmpty(crumb.Value))
+                            {
+                                <span>@crumb.Key</span>
+                            }
+                            else
+                            {
+                                <a href="@crumb.Value">@crumb.Key</a>
+                            }
                         }
                     }
                     else if (!String.IsNullOrEmpty(title))

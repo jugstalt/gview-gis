@@ -34,6 +34,12 @@
             public Method Method { get; private set; }
             public string Version { get; private set; }
             public string RequestText { get; protected set; }
+
+            /// <summary>
+            /// The URL a client needs to connect to the service with this interface (e.g. GetCapabilities,
+            /// landing page); highlighted on the service page of the server UI
+            /// </summary>
+            public bool IsPrimary { get; init; }
         }
 
         public class SimpleCapability : Capability

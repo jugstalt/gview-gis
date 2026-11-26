@@ -61,7 +61,7 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
         new InterpreterCapabilities(new InterpreterCapabilities.Capability[]
         {
             new InterpreterCapabilities.SimpleCapability("Catalog (REST)",InterpreterCapabilities.Method.Post,"{server}/geoservices/rest/services/{folder}","1.0"),
-            new InterpreterCapabilities.SimpleCapability("MapServer (REST)",InterpreterCapabilities.Method.Post,"{server}/geoservices/rest/services/{folder/service}/MapServer","1.0"),
+            new InterpreterCapabilities.SimpleCapability("MapServer (REST)",InterpreterCapabilities.Method.Post,"{server}/geoservices/rest/services/{folder/service}/MapServer","1.0") { IsPrimary = true },
             new InterpreterCapabilities.SimpleCapability("FeatureServer (REST)",InterpreterCapabilities.Method.Post,"{server}/geoservices/rest/services/{folder/service}/FeatureServer","1.0"),
             new InterpreterCapabilities.SimpleCapability("(gView) Network (REST)",InterpreterCapabilities.Method.Post,"{server}/geoservices/rest/services/{folder/service}/NetworkServer","1.0")
         });

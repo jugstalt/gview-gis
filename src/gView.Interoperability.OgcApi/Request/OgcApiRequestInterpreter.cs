@@ -17,7 +17,7 @@ public class OgcApiRequestInterpreter : IServiceRequestInterpreter
     public InterpreterCapabilities Capabilities =>
         new InterpreterCapabilities(new InterpreterCapabilities.Capability[]
         {
-            new InterpreterCapabilities.SimpleCapability("Landing Page",InterpreterCapabilities.Method.Get,"{server}/ogcapi/{folder|_}/{service}","1.0"),
+            new InterpreterCapabilities.SimpleCapability("Landing Page",InterpreterCapabilities.Method.Get,"{server}/ogcapi/{folder|_}/{service}","1.0") { IsPrimary = true },
             new InterpreterCapabilities.SimpleCapability("Collections",InterpreterCapabilities.Method.Get,"{server}/ogcapi/{folder|_}/{service}/collections","1.0")
         });
 

@@ -568,7 +568,7 @@ window.gview.manage = (function() {
         return $service;
     };
 
-    let folderServices = function(folder) {
+    let folderServices = function(folder, highlightService) {
         let $services = $('.services').empty();
         get({
             url: '/manage/services?folder=' + folder,
@@ -576,8 +576,27 @@ window.gview.manage = (function() {
                 $.each(result.services, function(i, service) {
                     createServiceListItem($services, service);
                 });
+                if (highlightService) {
+                    let id = (folder ? folder + '/' : '') + highlightService;
+                    let $service = $services.children('.service').filter(function () { return $(this).attr('data-service') === id; });
+                    if ($service.length) {
+                        $service.addClass('highlight')[0].scrollIntoView({ block: 'center' });
+                    }
+                }
             }
         });
+    };
+
+    // deep link from the service page of the server UI: #service=folder@name
+    let deepLinkService = function () {
+        let match = /^#service=(.+)$/.exec(location.hash || '');
+        if (!match) return null;
+        try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { }
+
+        let id = decodeURIComponent(match[1]), pos = id.indexOf('@');
+        return pos > 0
+            ? { folder: id.substring(0, pos), service: id.substring(pos + 1) }
+            : { folder: '', service: id };
     };
 
     let pageServices = function() {
@@ -872,7 +891,14 @@ window.gview.manage = (function() {
                 let $services = $('<ul>')
                     .addClass('services')
                     .appendTo($container);
-                folderServices('');
+                let target = deepLinkService();
+                if (target && target.folder) {
+                    $folders.children('.folder')
+                        .removeClass('selected')
+                        .filter(function () { return $(this).attr('data-folder') === target.folder; })
+                        .addClass('selected');
+                }
+                folderServices(target ? target.folder : '', target ? target.service : null);
                 //$.each(result.services, function (i, service) {
                 //    createServiceListItem($services, service);
                 //});

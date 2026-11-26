@@ -21,18 +21,8 @@
 <div class="quicklinks">
     <a class="@(!hasManagerLogin ? "disabled" : "")" asp-area="" asp-controller="BrowseServices" asp-action="Index">
         <div class="ql-icon"><span class="ico ico-layers"></span></div>
-        <b>Browse Services</b>
-        <span>Folders, services and all their interfaces</span>
-    </a>
-    <a class="@(!hasManagerLogin ? "disabled" : "")" href="@rootUrl/geoservices/rest/services">
-        <div class="ql-icon"><span class="ico ico-code"></span></div>
-        <b>GeoServices (REST)</b>
-        <span>/geoservices/rest/services</span>
-    </a>
-    <a href="@rootUrl/ogcapi?f=html">
-        <div class="ql-icon"><span class="ico ico-plug"></span></div>
-        <b>OGC API</b>
-        <span>/ogcapi</span>
+        <b>Services</b>
+        <span>Browse the services and connect to them with your GIS client</span>
     </a>
     @if (this.Context.Request.IsFromAdminNetwork() && (isManageUser || (Globals.AllowFormsLogin && String.IsNullOrWhiteSpace(username))))
     {
@@ -42,6 +32,22 @@
             <span>Services, security, metadata, networks</span>
         </a>
     }
+</div>
+
+<h2 class="section-title">Catalog endpoints</h2>
+<div class="endpoints">
+    <div class="endpoint">
+        <b>GeoServices REST</b>
+        <a class="endpoint-url" href="@rootUrl/geoservices/rest/services">@rootUrl/geoservices/rest/services</a>
+        <span class="endpoint-hint">All services, for ArcGIS Pro and QGIS (ArcGIS REST Server connection)</span>
+        <button type="button" class="cap-copy" data-url="@rootUrl/geoservices/rest/services">Copy</button>
+    </div>
+    <div class="endpoint">
+        <b>OGC API</b>
+        <a class="endpoint-url" href="@rootUrl/ogcapi?f=html">@rootUrl/ogcapi</a>
+        <span class="endpoint-hint">All services, for OGC API clients</span>
+        <button type="button" class="cap-copy" data-url="@rootUrl/ogcapi">Copy</button>
+    </div>
 </div>
 
 <h2 class="section-title">Engine</h2>
@@ -54,3 +60,19 @@
     <tr><td>Projection</td><td>@gView.Framework.Geometry.GeometricTransformerFactory.TransformerType</td></tr>
     <tr><td>Version</td><td>@SystemInfo.Version.ToString()</td></tr>
 </table>
+
+@section Scripts {
+    <script type="text/javascript">
+        (function () {
+            $('.endpoint .cap-copy').click(function () {
+                var btn = $(this);
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(btn.data('url')).then(function () {
+                        btn.text('Copied');
+                        setTimeout(function () { btn.text('Copy'); }, 1200);
+                    });
+                }
+            });
+        })();
+    </script>
+}

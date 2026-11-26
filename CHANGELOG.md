@@ -267,6 +267,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Changed
 
+- gView Server UI navigation: one way to the services instead of three. The start page and the sidebar
+  show `Services` (formerly Browse Services) and `Manage`; the catalogs GeoServices REST and OGC API are
+  a row of endpoint links with copy buttons on the start page. A click on a service in the list opens
+  the new service page (`/BrowseServices/Service/{folder@service}`, the former interfaces page
+  `ServiceInterfaces/...` redirects there): resources (MapServer, FeatureServer, NetworkServer),
+  public or secured, number of layers and running since. `Connect` shows the interfaces as tabs in
+  the groups OGC Standards (OGC API, WMS, WMTS, WFS), Esri compatible (GeoServices REST, ArcXML) and
+  gView (GeoJson), each with the URL a client needs (copy button), a short hint for QGIS/ArcGIS Pro and
+  the other requests collapsed. `Explore` opens the GeoJson pages of the service (formerly the target of
+  the click in the list), administrators get `Manage` (opens Manage at the service: `/Manage#service=...`)
+  and `Delete`. The service pages have a breadcrumb Services › folder › service › Explore. The
+  interpreters mark their primary URL (`InterpreterCapabilities.Capability.IsPrimary`).
 - WebApps start page redesigned: hero with contour lines, a big `Sign in` button and the apps as locked
   tiles for visitors who are not signed in (a click signs in and opens the app: `/login?returnUrl=...`,
   only local paths), a hint for signed in users without a gView role, larger app tiles, a `System`

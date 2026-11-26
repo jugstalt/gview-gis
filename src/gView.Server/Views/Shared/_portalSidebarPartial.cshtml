@@ -23,15 +23,8 @@
         <a class="@Active(controller == "home" && action == "index")" asp-area="" asp-controller="Home" asp-action="Index">
             <span class="ico ico-home"></span><span>Home</span>
         </a>
-        <div class="app-nav-label">Services</div>
         <a class="@Active(controller == "browseservices")" asp-area="" asp-controller="BrowseServices" asp-action="Index">
-            <span class="ico ico-layers"></span><span>Browse Services</span>
-        </a>
-        <a class="@Active(controller.StartsWith("geoservices"))" href="@rootUrl/geoservices/rest/services">
-            <span class="ico ico-code"></span><span>GeoServices (REST)</span>
-        </a>
-        <a href="@rootUrl/ogcapi?f=html">
-            <span class="ico ico-plug"></span><span>OGC API</span>
+            <span class="ico ico-layers"></span><span>Services</span>
         </a>
         @if (this.Context.Request.IsFromAdminNetwork() && (isManageUser || (Globals.AllowFormsLogin && String.IsNullOrWhiteSpace(username))))
         {

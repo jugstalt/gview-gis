@@ -1,10 +1,10 @@
 ﻿@model BrowseServicesIndexModel
 @{
-    ViewData["Title"] = "Browse Services";
+    ViewData["Title"] = "Services";
 }
 
 <div class="page-head">
-    <h1>Browse <span class="path">/@(String.IsNullOrWhiteSpace(Model.Folder) ? "" : Model.Folder + "/")</span></h1>
+    <h1>Services <span class="path">/@(String.IsNullOrWhiteSpace(Model.Folder) ? "" : Model.Folder + "/")</span></h1>
     <label class="filter">
         <span class="ico ico-search"></span>
         <input type="search" id="browse-filter" placeholder="Filter services…" autocomplete="off" />
@@ -27,9 +27,7 @@
     @foreach (var mapService in Model.Services)
     {
         <li class="service" data-filter="@mapService.Name.ToLowerInvariant()">
-            @Html.ActionLink(mapService.Name, "ServiceCapabilities", "BrowseServices", new { id = (String.IsNullOrWhiteSpace(mapService.Folder) ? "" : mapService.Folder + "@") + mapService.Name })
-
-            <div class="button-service-interfaces" data-folder="@(mapService.Folder)" data-service="@(mapService.Name)">All Interfaces...</div>
+            @Html.ActionLink(mapService.Name, "Service", "BrowseServices", new { id = (String.IsNullOrWhiteSpace(mapService.Folder) ? "" : mapService.Folder + "@") + mapService.Name })
 
             @if (Model.IsPublisher)
             {
@@ -116,17 +114,6 @@
                     $('ul.browseservices li[data-filter]').each(function () {
                         $(this).toggleClass('hidden', term.length > 0 && $(this).attr('data-filter').indexOf(term) < 0);
                     });
-                });
-
-            $('ul.browseservices li .button-service-interfaces')
-                .click(function(e) {
-                    e.stopPropagation();
-                    let folderName = $(this).attr('data-folder');
-                    let serviceName = $(this).attr('data-service');
-
-                    path="BrowseServices/ServiceInterfaces/"+(folderName ? folderName + "@@" : "")+serviceName;
-
-                    gview.server.redirectToPath(path);
                 });
 
             $('ul.browseservices li .button-delete-service')

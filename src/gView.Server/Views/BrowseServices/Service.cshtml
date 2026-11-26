@@ -1,0 +1,254 @@
+﻿@model BrowseServicesServiceModel
+
+@{
+    ViewData["Title"] = Model.MapService.Name;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var mapService = Model.MapService;
+    var id = (String.IsNullOrEmpty(mapService.Folder) ? "" : mapService.Folder + "@") + mapService.Name;
+    var path = (String.IsNullOrEmpty(mapService.Folder) ? "" : mapService.Folder + "/") + mapService.Name;
+
+    bool IsAvailable(gView.Framework.Core.MapServer.InterpreterCapabilities.Capability cap)
+    {
+        // GeoServices (REST) resources only if the service offers them
+        foreach (var type in new[] { "MapServer", "FeatureServer", "NetworkServer" })
+        {
+            if (cap.RequestText != null && cap.RequestText.EndsWith("/" + type))
+            {
+                return Model.GeoServiceTypes.Contains(type);
+            }
+        }
+        return true;
+    }
+
+    // tab groups and their order; interfaces not listed here are shown in "Other"
+    var tabGroups = new (string Label, string[] Interpreters)[]
+    {
+        ("OGC Standards", new[] { "ogcapi", "wms", "wmts", "wfs" }),
+        ("Esri compatible", new[] { "geoservices", "axl" }),
+        ("gView", new[] { "geojsonservice" })
+    };
+    var tabTitles = new Dictionary<string, string>
+    {
+        ["ogcapi"] = "OGC API",
+        ["wms"] = "WMS",
+        ["wmts"] = "WMTS",
+        ["wfs"] = "WFS",
+        ["geoservices"] = "GeoServices REST",
+        ["axl"] = "ArcXML",
+        ["geojsonservice"] = "GeoJson"
+    };
+    var clientHints = new Dictionary<string, string>
+    {
+        ["ogcapi"] = "QGIS: Layer › Add WFS / OGC API - Features layer › New, paste this URL. Also for web clients.",
+        ["wms"] = "QGIS: Layer › Add WMS/WMTS layer › New. ArcGIS Pro: Insert › Connections › Add WMS Server. The GeoServices URL takes a token, the /ogc URLs Basic Auth.",
+        ["wmts"] = "QGIS: Layer › Add WMS/WMTS layer › New. ArcGIS Pro: Insert › Connections › Add WMTS Server.",
+        ["wfs"] = "QGIS: Layer › Add WFS layer › New. ArcGIS Pro: Insert › Connections › Add WFS Server.",
+        ["geoservices"] = "ArcGIS Pro: Insert › Connections › Add ArcGIS Server. QGIS: ArcGIS REST Server connection. Also for the ArcGIS Maps SDK for JavaScript.",
+        ["axl"] = "Legacy ArcIMS clients only.",
+        ["geojsonservice"] = "For web apps and scripts."
+    };
+
+    var interfaces = Model.Interpreters
+        .Where(i => i.Capabilities != null)
+        .Select(i => new
+        {
+            Interpreter = i,
+            Capabilities = i.Capabilities.Capabilities.Where(IsAvailable).ToList()
+        })
+        .Where(g => g.Capabilities.Count > 0)
+        .ToDictionary(g => g.Interpreter.IdentityName);
+
+    var groups = tabGroups
+        .Select(g => (g.Label, Interpreters: g.Interpreters.Where(interfaces.ContainsKey).ToArray()))
+        .Append((Label: "Other", Interpreters: interfaces.Keys.Where(k => !tabGroups.Any(g => g.Interpreters.Contains(k))).ToArray()))
+        .Where(g => g.Interpreters.Length > 0)
+        .ToList();
+
+    string Title(string identityName) =>
+        tabTitles.TryGetValue(identityName, out var title) ? title : interfaces[identityName].Interpreter.IdentityLongName;
+}
+
+<section class="hub-head">
+    <div class="hub-info">
+        <div class="hub-folder">/@(String.IsNullOrEmpty(mapService.Folder) ? "" : mapService.Folder + "/")</div>
+        <h1>@mapService.Name</h1>
+        <div class="hub-badges">
+            @foreach (var type in new[] { "MapServer", "FeatureServer", "NetworkServer" }.Where(Model.GeoServiceTypes.Contains))
+            {
+                <span class="ogc-badge">@type</span>
+            }
+            @if (Model.IsPublic)
+            {
+                <span class="ogc-badge hub-public"><span class="ico ico-unlock"></span>Public</span>
+            }
+            else
+            {
+                <span class="ogc-badge hub-secured"><span class="ico ico-lock"></span>Secured</span>
+            }
+        </div>
+        <div class="hub-meta">
+            @if (Model.LayerCount.HasValue)
+            {
+                <span>Layers: @Model.LayerCount</span>
+            }
+            @if (Model.RunningSinceUtc.HasValue)
+            {
+                <span>Running since @Model.RunningSinceUtc.Value.ToString("yyyy-MM-dd HH:mm") UTC</span>
+            }
+        </div>
+        <div class="hub-actions">
+            <a class="btn" asp-action="ServiceCapabilities" asp-route-id="@id"><span class="ico ico-search"></span>Explore</a>
+            @if (Model.CanManage || Model.IsPublisher)
+            {
+                <div class="hub-admin">
+                    <span class="hub-admin-label">Admin</span>
+                    @if (Model.CanManage)
+                    {
+                        <a class="btn" href="@Url.Action("Index", "Manage")#service=@id"><span class="ico ico-shield"></span>Manage</a>
+                    }
+                    @if (Model.IsPublisher)
+                    {
+                        <button type="button" class="btn-danger hub-delete" data-folder="@mapService.Folder" data-service="@mapService.Name"><span class="ico ico-trash"></span>Delete</button>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<h2 class="section-title">Connect</h2>
+
+@if (groups.Count == 0)
+{
+    <p class="muted">No interfaces available for this service.</p>
+}
+else
+{
+    <div class="connect-tabs" role="tablist">
+        @foreach (var group in groups)
+        {
+            <div class="connect-group">
+                <span class="connect-group-label">@group.Label</span>
+                <div class="connect-group-tabs">
+                    @foreach (var identityName in group.Interpreters)
+                    {
+                        <button type="button" role="tab" class="iface-group" data-group="@identityName">@Title(identityName)</button>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+
+    @foreach (var group in groups)
+    {
+        foreach (var identityName in group.Interpreters)
+        {
+            var capabilities = interfaces[identityName].Capabilities;
+            var primary = capabilities.FirstOrDefault(c => c.IsPrimary)
+                          ?? capabilities.FirstOrDefault(c => c.Name.Contains("GetCapabilities"))
+                          ?? capabilities.First();
+            var more = capabilities.Where(c => c != primary).ToList();
+            var primaryUrl = Model.ReplaceRequest(primary.RequestText);
+
+            <section class="iface-panel connect-panel" data-group="@identityName" role="tabpanel" hidden>
+                <div class="connect-primary">
+                    <div class="connect-title">
+                        <b>@interfaces[identityName].Interpreter.IdentityLongName</b>
+                        <span class="ogc-badge">@(primary.Method.ToString().ToUpper())</span>
+                        <span class="ogc-badge alt">v@(primary.Version)</span>
+                    </div>
+                    @if (clientHints.TryGetValue(identityName, out var hint))
+                    {
+                        <div class="connect-hint">
+                            @hint
+                            @if (identityName == "geojsonservice")
+                            {
+                                <a href="@(Model.Server)/geojsonservice/v1/services/@(path)/api?f=html" target="_blank" rel="noopener">API documentation (OpenAPI)</a>
+                            }
+                        </div>
+                    }
+                    <div class="connect-url">
+                        <a href="@primaryUrl" target="_blank" rel="noopener">@primaryUrl</a>
+                        <button type="button" class="btn-primary cap-copy" data-url="@primaryUrl">Copy URL</button>
+                    </div>
+                    @if (more.Count > 0)
+                    {
+                        <details class="connect-more">
+                            <summary>More requests (@more.Count)</summary>
+                            @foreach (var cap in more)
+                            {
+                                var url = Model.ReplaceRequest(cap.RequestText);
+                                <div class="iface-card">
+                                    <div class="iface-head">
+                                        <span class="iface-name">@cap.Name</span>
+                                        <span class="ogc-badge">@(cap.Method.ToString().ToUpper())</span>
+                                        <span class="ogc-badge alt">v@(cap.Version)</span>
+                                    </div>
+                                    <div class="iface-url">
+                                        <a href="@url" target="_blank" rel="noopener">@url</a>
+                                        <button type="button" class="cap-copy" data-url="@url">Copy</button>
+                                    </div>
+                                </div>
+                            }
+                        </details>
+                    }
+                </div>
+            </section>
+        }
+    }
+}
+
+@section Scripts {
+    <script type="text/javascript">
+        (function () {
+            function show(group) {
+                $('.iface-group').removeClass('active').attr('aria-selected', 'false')
+                    .filter('[data-group="' + group + '"]').addClass('active').attr('aria-selected', 'true');
+                $('.connect-panel').prop('hidden', true).filter('[data-group="' + group + '"]').prop('hidden', false);
+            }
+            $('.iface-group').click(function () {
+                var group = $(this).data('group');
+                show(group);
+                try { history.replaceState(null, '', '#' + group); } catch (e) { }
+            });
+            var hash = (location.hash || '').substring(1);
+            show(hash && $('.iface-group[data-group="' + hash + '"]').length ? hash : $('.iface-group').first().data('group'));
+
+            $('.cap-copy').click(function () {
+                var btn = $(this), url = btn.data('url'), text = btn.text();
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(url).then(function () {
+                        btn.text('Copied');
+                        setTimeout(function () { btn.text(text); }, 1200);
+                    });
+                }
+            });
+
+            $('.hub-delete').click(function () {
+                var folderName = $(this).attr('data-folder');
+                var serviceName = $(this).attr('data-service');
+
+                gview.server.confirm({
+                    title: "Delete service?",
+                    message: $('<div>').text("Do you want to delete service " + (folderName ? folderName + "/" : "") + serviceName + " now? This cannot be undone.").html(),
+                    cancelLabel: 'Better not',
+                    okLabel: 'Yes, delete!',
+                    danger: true,
+                    callback: function (result) {
+                        if (result === true) {
+                            gview.server.get({
+                                url: "/BrowseServices/DeleteService",
+                                type: 'post',
+                                data: { folder: folderName, service: serviceName },
+                                success: function () {
+                                    window.location.href = '@(Url.Action("Index"))?folder=' + encodeURIComponent(folderName || '');
+                                }
+                            });
+                        }
+                    }
+                });
+            });
+        })();
+    </script>
+}

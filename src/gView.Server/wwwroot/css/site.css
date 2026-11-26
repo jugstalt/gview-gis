@@ -219,8 +219,6 @@ ul.browseservices li.back::before { -webkit-mask-image: var(--ico-up); mask-imag
 ul.browseservices li a { flex: 1; color: var(--text); font-weight: 500; min-width: 0; overflow-wrap: anywhere; }
 ul.browseservices li.empty { color: var(--muted); cursor: default; }
 ul.browseservices li.empty::before { display: none; }
-.button-service-interfaces { font-size: 12px; color: var(--accent); border: 1px solid var(--border); border-radius: 4px; padding: 2px 8px; white-space: nowrap; }
-.button-service-interfaces:hover { background: var(--accent-soft); }
 .button-delete-service { --ico: var(--ico-trash); width: 26px; height: 26px; flex: none; background-color: var(--muted); cursor: pointer; -webkit-mask-size: 16px; mask-size: 16px; }
 .button-delete-service:hover { background-color: var(--danger); }
 
@@ -258,6 +256,54 @@ table.service-capabilities { width: 100%; border-collapse: collapse; background:
 .iface-url { display: flex; align-items: center; gap: 10px; background: var(--surface-2); border-radius: 6px; padding: 6px 10px; }
 .iface-url a { flex: 1; min-width: 0; font-family: var(--mono); font-size: 12px; word-break: break-all; }
 @media (max-width: 520px) { .iface-panel { grid-template-columns: minmax(0, 1fr); } }
+
+/* service page: header, connect tabs grouped by kind of standard, primary URL per interface */
+.ico-unlock { --ico: var(--ico-unlock); }
+.hub-head { display: flex; gap: 20px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px 20px; margin-bottom: 8px; }
+.hub-info { flex: 1; min-width: 0; }
+.hub-head h1 { margin: 2px 0 0; font-size: 24px; overflow-wrap: anywhere; }
+.hub-folder { color: var(--muted); font-family: var(--mono); font-size: 13px; }
+.hub-badges { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+.hub-badges .ogc-badge { font-size: 12px; padding: 2px 10px; display: inline-flex; align-items: center; gap: 5px; }
+.hub-badges .ogc-badge .ico { width: 12px; height: 12px; }
+.hub-public { background: var(--success-soft); color: var(--success); }
+.hub-secured { background: var(--warn-soft); color: var(--warn); }
+.hub-meta { color: var(--muted); font-size: 13px; display: flex; gap: 18px; flex-wrap: wrap; }
+.hub-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 14px; }
+.hub-actions .btn, .hub-actions button { display: inline-flex; align-items: center; gap: 6px; }
+.hub-actions .ico { width: 15px; height: 15px; }
+.hub-admin { display: flex; gap: 8px; align-items: center; margin-left: auto; padding-left: 12px; border-left: 1px solid var(--border); }
+.hub-admin-label { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+@media (max-width: 760px) { .hub-head { flex-direction: column; } .hub-admin { margin-left: 0; } }
+
+.connect-tabs { display: flex; flex-wrap: wrap; align-items: flex-end; row-gap: 12px; margin-bottom: 16px; }
+.connect-group { display: flex; flex-direction: column; gap: 6px; padding: 0 16px; border-left: 1px solid var(--border); }
+.connect-group:first-child { padding-left: 0; border-left: 0; }
+.connect-group-label { font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); }
+.connect-group-tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+@media (max-width: 760px) { .connect-group { border-left: 0; padding: 0; width: 100%; } }
+.iface-panel.connect-panel { display: block; }
+.iface-panel.connect-panel[hidden] { display: none; }
+.connect-primary { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px 18px; }
+.connect-title { display: flex; gap: 8px; align-items: center; margin-bottom: 4px; flex-wrap: wrap; }
+.connect-title b { font-size: 16px; }
+.connect-hint { color: var(--muted); font-size: 13px; margin-bottom: 12px; }
+.connect-hint a { margin-left: 4px; }
+.connect-url { display: flex; gap: 10px; align-items: center; background: var(--surface-2); border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; }
+.connect-url a { flex: 1; min-width: 0; font-family: var(--mono); font-size: 13px; word-break: break-all; }
+.connect-url .cap-copy { padding: 5px 14px; font-size: 13px; white-space: nowrap; }
+.connect-more { margin-top: 12px; }
+.connect-more summary { cursor: pointer; color: var(--muted); font-size: 13px; user-select: none; }
+.connect-more .iface-card { margin-top: 8px; box-shadow: none; }
+
+/* home: catalog endpoints */
+.endpoints { display: grid; gap: 8px; }
+.endpoint { display: grid; grid-template-columns: 150px minmax(0, 1fr) auto; grid-template-areas: "name url copy" "name hint copy"; align-items: center; column-gap: 12px; row-gap: 2px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; }
+.endpoint b { grid-area: name; }
+.endpoint a.endpoint-url { grid-area: url; font-family: var(--mono); font-size: 13px; word-break: break-all; }
+.endpoint .endpoint-hint { grid-area: hint; color: var(--muted); font-size: 12px; }
+.endpoint .cap-copy { grid-area: copy; }
+@media (max-width: 520px) { .endpoint { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "name copy" "url url" "hint hint"; } }
 .service-capabilities tr.interpreter-capabilities { cursor: pointer; }
 .service-capabilities tr.interpreter-capabilities:hover td { background: var(--accent-soft); }
 .cap-request a { font-family: var(--mono); font-size: 12px; word-break: break-all; }
@@ -393,6 +439,7 @@ ul.services:empty { display: none; }
 ul.services li.service { display: grid; grid-template-columns: 10px minmax(140px, 1fr) auto auto; align-items: center; column-gap: 14px; padding: 8px 14px; border-bottom: 1px solid var(--border); }
 ul.services li.service:last-child { border-bottom: 0; }
 ul.services li.service:hover { background: var(--surface-2); }
+ul.services li.service.highlight { background: var(--accent-soft); box-shadow: inset 3px 0 0 var(--accent); }
 ul.services li.service::before { content: ""; grid-row: 1; grid-column: 1; width: 8px; height: 8px; border-radius: 50%; background: var(--st-idle); }
 ul.services li.service.running::before { background: var(--st-running); box-shadow: 0 0 0 3px color-mix(in srgb, var(--st-running) 22%, transparent); }
 ul.services li.service.stopped::before { background: var(--st-stopped); }
